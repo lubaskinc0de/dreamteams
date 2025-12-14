@@ -46,6 +46,7 @@ class CreateLandlord:
             user_id=user.id,
             landlord_name=data.landlord_name,
             phone_number=data.phone_number,
+            avatar=None,
         )
         logger.debug("Creating role 'Landlord' for user", user_id=user.id)
         user.attach_landlord(landlord)
