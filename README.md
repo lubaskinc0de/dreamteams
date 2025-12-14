@@ -1,7 +1,7 @@
-# Crudik (stands for "cute CRUD" in Russian)
+# posutochnik (stands for "cute CRUD" in Russian)
 
-[![License](https://img.shields.io/github/license/lubaskinc0de/crudik)](https://github.com/lubaskinc0de/crudik/blob/master/LICENSE)
-[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/lubaskinc0de/crudik/lint_test_deploy.yml)](https://github.com/lubaskinc0de/crudik/actions)
+[![License](https://img.shields.io/github/license/lubaskinc0de/posutochnik)](https://github.com/lubaskinc0de/posutochnik/blob/master/LICENSE)
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/lubaskinc0de/posutochnik/lint_test_deploy.yml)](https://github.com/lubaskinc0de/posutochnik/actions)
 
 A universal application **template** that follows the principles of a clean architecture and contains everything you need to get started quickly.
 
@@ -111,8 +111,8 @@ Migrations are applied automatically in docker-compose on startup.
 </p>
 
 ```
-crudik/
-├── src/crudik/                    # Main package (following src-layout)
+posutochnik/
+├── src/posutochnik/                    # Main package (following src-layout)
 │   ├── entities/                  # Domain entities
 │   │   ├── base.py               # Base entity class
 │   │   ├── user.py               # User entity
@@ -351,10 +351,13 @@ All images are published to [GitHub Container Registry](https://docs.github.com/
 The AI in this project was only used to cover the code with docstrings, as well as to write some parts of README (under my strict control)
 
 ## Author
+
 **lubaskinc0de**
 
 ## License
+
 **MIT**
 
 ## Contributions
+
 Contributions are welcome

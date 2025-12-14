@@ -1,40 +1,40 @@
 [importlinter]
-root_package = crudik
+root_package = posutochnik
 
 [importlinter:contract:1]
 name=Entities doesn't import application, adapters, presentation or bootstrap
 type=forbidden
 source_modules=
-    crudik.entities
+    posutochnik.entities
 forbidden_modules=
-    crudik.application
-    crudik.adapters
-    crudik.presentation
-    crudik.bootstrap
+    posutochnik.application
+    posutochnik.adapters
+    posutochnik.presentation
+    posutochnik.bootstrap
 
 [importlinter:contract:2]
 name=Application doesn't import adapters, presentation or bootstrap
 type=forbidden
 source_modules=
-    crudik.application
+    posutochnik.application
 forbidden_modules=
-    crudik.adapters
-    crudik.presentation
-    crudik.bootstrap
+    posutochnik.adapters
+    posutochnik.presentation
+    posutochnik.bootstrap
 
 [importlinter:contract:3]
 name=Adapters doesn't import presentation or bootstrap
 type=forbidden
 source_modules=
-    crudik.adapters
+    posutochnik.adapters
 forbidden_modules=
-    crudik.presentation
-    crudik.bootstrap
+    posutochnik.presentation
+    posutochnik.bootstrap
 
 [importlinter:contract:4]
 name=Presentation doesn't import bootstrap
 type=forbidden
 source_modules=
-    crudik.presentation
+    posutochnik.presentation
 forbidden_modules=
-    crudik.bootstrap
+    posutochnik.bootstrap

@@ -1,4 +1,4 @@
-from crudik.adapters.api_client import APIClient
+from posutochnik.adapters.api_client import APIClient
 
 
 async def test_alive(api_client: APIClient) -> None:
