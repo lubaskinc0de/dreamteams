@@ -1,0 +1,85 @@
+services:
+    grafana:
+        extends:
+            file: docker-compose.base.yml
+            service: grafana
+        volumes:
+            - grafana_data:/var/lib/grafana
+
+    nginx:
+        extends:
+            file: docker-compose.base.yml
+            service: nginx
+        depends_on:
+            api:
+                condition: service_healthy
+            oauth2-proxy:
+                condition: service_healthy
+
+    keycloak:
+        extends:
+            file: docker-compose.base.yml
+            service: keycloak
+        volumes:
+            - kc_data:/opt/keycloak/data/
+
+    oauth2-proxy:
+        extends:
+            file: docker-compose.base.yml
+            service: oauth2-proxy
+        depends_on:
+            keycloak:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+
+    redis:
+        extends:
+            file: docker-compose.base.yml
+            service: redis
+        volumes:
+            - redis_data:/data
+
+    migrations:
+        extends:
+            file: docker-compose.base.yml
+            service: migrations
+        depends_on:
+            db:
+                condition: service_healthy
+
+    api:
+        extends:
+            file: docker-compose.base.yml
+            service: api
+        depends_on:
+            db:
+                condition: service_healthy
+            migrations:
+                condition: service_completed_successfully
+
+    db:
+        extends:
+            file: docker-compose.base.yml
+            service: db
+        volumes:
+            - pg_data:/var/lib/postgresql/data/
+
+    vector:
+        extends:
+            file: docker-compose.base.yml
+            service: vector
+
+    loki:
+        extends:
+            file: docker-compose.base.yml
+            service: loki
+        volumes:
+            - loki_data:/loki
+
+volumes:
+    pg_data:
+    grafana_data:
+    loki_data:
+    kc_data:
+    redis_data:

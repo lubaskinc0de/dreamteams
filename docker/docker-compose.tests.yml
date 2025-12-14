@@ -1,0 +1,38 @@
+services:
+    tests:
+        restart: no
+        build:
+            context: ../
+            dockerfile: docker/tests.Dockerfile
+        env_file:
+            - "../.config/.env.tests"
+        volumes:
+            - "../.config/config.toml:/etc/crudik/config.toml"
+        container_name: tests
+        environment:
+            - API_URL=http://api:5000
+        depends_on:
+            - api
+
+    migrations:
+        extends:
+            file: docker-compose.base.yml
+            service: migrations
+        depends_on:
+            db:
+                condition: service_healthy
+
+    api:
+        extends:
+            file: docker-compose.base.yml
+            service: api
+        depends_on:
+            db:
+                condition: service_healthy
+            migrations:
+                condition: service_completed_successfully
+
+    db:
+        extends:
+            file: docker-compose.base.yml
+            service: db

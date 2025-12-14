@@ -1,0 +1,209 @@
+name: lint_test_deploy
+on: [push, pull_request]
+jobs:
+    lint:
+        name: "Run linters"
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
+
+            - name: Set up Python
+              uses: actions/setup-python@v4
+              with:
+                  python-version: "3.13.7"
+
+            - name: Install uv
+              uses: astral-sh/setup-uv@v7
+              with:
+                  version: "0.9.17"
+
+            - name: Install dependencies
+              run: |
+                  uv pip install ".[ci]" --system
+
+            - name: Ruff
+              run: ruff check
+
+            - name: Mypy
+              run: mypy
+
+            - name: Import-linter
+              run: lint-imports
+
+    test:
+        name: "Run tests"
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
+
+            - name: Set up Docker Compose
+              run: |
+                  sudo apt-get install -y docker-compose
+
+            - name: Run tests
+              run: docker compose -f docker/docker-compose.tests.yml up --build --abort-on-container-exit tests
+
+    bump_version:
+        name: "Bump version"
+        if: github.ref == 'refs/heads/master'
+        needs: [lint, test]
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.event.pull_request.merge_commit_sha }}
+                  fetch-depth: "0"
+                  persist-credentials: false
+
+            - name: Bump version and push tag
+              id: bump_version
+              uses: anothrNick/github-tag-action@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  TAG_PREFIX: v
+                  PRERELEASE: false
+                  DEFAULT_BUMP: patch
+
+            - name: Create version file
+              run: |
+                  echo "${STEPS_BUMP_VERSION_OUTPUTS_NEW_TAG}" > VERSION.txt
+              env:
+                  STEPS_BUMP_VERSION_OUTPUTS_NEW_TAG: ${{ steps.bump_version.outputs.new_tag }}
+
+            - name: Upload version file
+              uses: actions/upload-artifact@v4
+              with:
+                  name: version
+                  path: VERSION.txt
+                  retention-days: 1
+
+            - name: Output version info
+              run: |
+                  echo "New version: ${STEPS_BUMP_VERSION_OUTPUTS_NEW_TAG}"
+                  echo "Previous version: ${STEPS_BUMP_VERSION_OUTPUTS_PREVIOUS_TAG}"
+              env:
+                  STEPS_BUMP_VERSION_OUTPUTS_NEW_TAG: ${{ steps.bump_version.outputs.new_tag }}
+                  STEPS_BUMP_VERSION_OUTPUTS_PREVIOUS_TAG: ${{ steps.bump_version.outputs.previous_tag }}
+
+    build_and_push:
+        name: "Build and push"
+        if: always() && ((github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev') && (needs.lint.result == 'success' && needs.test.result == 'success'))
+        needs: [lint, test, bump_version]
+        runs-on: ubuntu-latest
+        permissions:
+            packages: write
+            contents: read
+        steps:
+            - name: Checkout the repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: "0"
+                  persist-credentials: false
+
+            - name: Download version file if exists
+              uses: actions/download-artifact@v4
+              with:
+                  name: version
+                  path: ./
+              continue-on-error: true
+
+            - name: Get version tag
+              id: get_version
+              run: |
+                  if [ -f "VERSION.txt" ]; then
+                    VERSION=$(cat VERSION.txt)
+                    echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+                    echo "Using bumped version: $VERSION"
+
+                  elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+                    VERSION="${GITHUB_REF#refs/tags/}"
+                    echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+                    echo "Using existing tag: $VERSION"
+
+                  else
+                    SHORT_SHA=$(git rev-parse --short HEAD)
+                    echo "VERSION=$SHORT_SHA" >> $GITHUB_OUTPUT
+                    echo "Using commit SHA: $SHORT_SHA"
+                  fi
+
+            - name: Determine image tag suffix and version
+              id: tag
+              run: |
+                  echo "Github ref: ${GITHUB_REF}"
+                  echo "Version: ${STEPS_GET_VERSION_OUTPUTS_VERSION}"
+
+                  if [ "${GITHUB_REF}" == "refs/heads/dev" ]; then
+                    echo "TAG_SUFFIX=-dev" >> $GITHUB_OUTPUT
+                    echo "IMAGE_VERSION=${STEPS_GET_VERSION_OUTPUTS_VERSION}-dev" >> $GITHUB_OUTPUT
+                  else
+                    echo "TAG_SUFFIX=" >> $GITHUB_OUTPUT
+                    echo "IMAGE_VERSION=${STEPS_GET_VERSION_OUTPUTS_VERSION}" >> $GITHUB_OUTPUT
+                  fi
+              env:
+                  STEPS_GET_VERSION_OUTPUTS_VERSION: ${{ steps.get_version.outputs.VERSION }}
+
+            - name: Release info
+              run: |
+                  echo "Tag suffix: ${STEPS_TAG_OUTPUTS_TAG_SUFFIX}"
+                  echo "Image version: ${STEPS_TAG_OUTPUTS_IMAGE_VERSION}"
+              env:
+                  STEPS_TAG_OUTPUTS_TAG_SUFFIX: ${{ steps.tag.outputs.TAG_SUFFIX }}
+                  STEPS_TAG_OUTPUTS_IMAGE_VERSION: ${{ steps.tag.outputs.IMAGE_VERSION }}
+
+            - name: Docker Setup Buildx
+              uses: docker/setup-buildx-action@v2.2.1
+
+            - name: Docker Login
+              uses: docker/login-action@v2.1.0
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Build and push
+              uses: docker/build-push-action@v3.2.0
+              with:
+                  context: .
+                  file: ./docker/Dockerfile
+                  push: true
+                  tags: |
+                      ghcr.io/${{ github.repository }}:${{ steps.tag.outputs.IMAGE_VERSION }}
+                      ghcr.io/${{ github.repository }}:latest${{ steps.tag.outputs.TAG_SUFFIX }}
+
+            - name: Build and push grafana
+              uses: docker/build-push-action@v3.2.0
+              with:
+                  context: .
+                  file: ./docker/grafana.Dockerfile
+                  push: true
+                  tags: |
+                      ghcr.io/${{ github.repository }}-grafana:${{ steps.tag.outputs.IMAGE_VERSION }}
+                      ghcr.io/${{ github.repository }}-grafana:latest${{ steps.tag.outputs.TAG_SUFFIX }}
+
+            - name: Build and push vector
+              uses: docker/build-push-action@v3.2.0
+              with:
+                  context: .
+                  file: ./docker/vector.Dockerfile
+                  push: true
+                  tags: |
+                      ghcr.io/${{ github.repository }}-vector:${{ steps.tag.outputs.IMAGE_VERSION }}
+                      ghcr.io/${{ github.repository }}-vector:latest${{ steps.tag.outputs.TAG_SUFFIX }}
+
+            - name: Build and push loki
+              uses: docker/build-push-action@v3.2.0
+              with:
+                  context: .
+                  file: ./docker/loki.Dockerfile
+                  push: true
+                  tags: |
+                      ghcr.io/${{ github.repository }}-loki:${{ steps.tag.outputs.IMAGE_VERSION }}
+                      ghcr.io/${{ github.repository }}-loki:latest${{ steps.tag.outputs.TAG_SUFFIX }}
