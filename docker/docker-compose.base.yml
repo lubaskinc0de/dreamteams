@@ -54,7 +54,7 @@ services:
             interval: 2s
 
     migrations:
-        command: ["crudik", "migrations", "apply"]
+        command: ["posutochnik", "migrations", "apply"]
         container_name: migrations
         restart: no
         build:
@@ -66,16 +66,22 @@ services:
     api:
         container_name: api
         restart: unless-stopped
-        command: ["crudik", "run", "api"]
+        command: ["posutochnik", "run", "api"]
         build:
             context: ../
             dockerfile: docker/Dockerfile
         env_file:
             - "../.config/.env"
         volumes:
-            - "../.config/config.toml:/etc/crudik/config.toml"
+            - "../.config/config.toml:/etc/posutochnik/config.toml"
         healthcheck:
-            test: ["CMD", "curl", "-f", "http://localhost:${APP_SERVER_PORT}/internal/ready"]
+            test:
+                [
+                    "CMD",
+                    "curl",
+                    "-f",
+                    "http://localhost:${APP_SERVER_PORT}/internal/ready",
+                ]
             interval: 4s
 
     db:

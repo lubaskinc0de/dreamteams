@@ -10,10 +10,10 @@ from dishka import AsyncContainer
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from crudik.adapters.api_client import APIClient, APIClientConfig
-from crudik.adapters.tracing import TraceId
-from crudik.bootstrap.config.loader import Config
-from crudik.bootstrap.di.container import get_async_container
+from posutochnik.adapters.api_client import APIClient, APIClientConfig
+from posutochnik.adapters.tracing import TraceId
+from posutochnik.bootstrap.config.loader import Config
+from posutochnik.bootstrap.di.container import get_async_container
 
 # This is a fake private key used only to sign fake access token for tests
 DUMMY_PRIVATE_KEY = """

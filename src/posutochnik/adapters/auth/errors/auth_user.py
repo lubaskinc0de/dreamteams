@@ -1,0 +1,20 @@
+from typing import Any, ClassVar, override
+
+from posutochnik.adapters.auth.model import AuthUserId
+from posutochnik.entities.errors.base import AppError, app_error
+
+
+@app_error
+class AuthUserAlreadyExistsError(AppError):
+    """Error raised when attempting to create an auth user that already exists in the system."""
+
+    code: ClassVar[str] = "AUTH_USER_ALREADY_EXISTS"
+    auth_user_id: AuthUserId
+    message: str = "Auth user already exists"
+
+    @property
+    @override
+    def meta(self) -> dict[str, Any] | None:
+        return {
+            "auth_user_id": self.auth_user_id,
+        }

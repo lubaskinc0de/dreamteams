@@ -7,7 +7,7 @@ services:
         env_file:
             - "../.config/.env.tests"
         volumes:
-            - "../.config/config.toml:/etc/crudik/config.toml"
+            - "../.config/config.toml:/etc/posutochnik/config.toml"
         container_name: tests
         environment:
             - API_URL=http://api:${APP_SERVER_PORT}
