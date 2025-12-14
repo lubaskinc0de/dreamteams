@@ -1,3 +1,5 @@
+set windows-powershell := true
+
 up:
     docker compose -f docker/docker-compose.yml --env-file=./.config/.env up --build
 
