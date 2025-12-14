@@ -18,37 +18,11 @@ services:
         volumes:
             - ../.config/nginx.conf:/etc/nginx/nginx.conf
 
-    keycloak:
-        image: quay.io/keycloak/keycloak:26.4.7
-        command: ["start-dev"]
-        restart: unless-stopped
-        container_name: keycloak
-        ports:
-            - 8080:80
-        env_file:
-            - ../.config/.env.kc
-        healthcheck:
-            test: ['CMD-SHELL', '[ -f /tmp/HealthCheck.java ] || echo "public class HealthCheck { public static void main(String[] args) throws java.lang.Throwable { System.exit(java.net.HttpURLConnection.HTTP_OK == ((java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection()).getResponseCode() ? 0 : 1); } }" > /tmp/HealthCheck.java && java /tmp/HealthCheck.java http://localhost:9000/health/live']
-            interval: 5s
-            timeout: 5s
-            retries: 30
-
     oauth2-proxy:
         container_name: oauth2-proxy
-        image: quay.io/oauth2-proxy/oauth2-proxy:v7.11.0-alpine
-        command:
-            - --upstream=http://nginx:80
-            - --reverse-proxy=true
-            - --cookie-httponly=true
-            - --request-logging=true
-            - --auth-logging=true
-            - --standard-logging=true
-            - --session-store-type=redis
-            - --redis-connection-url=redis://redis:6379/2
-            - --skip-provider-button
-            - --set-xauthrequest=true
-        entrypoint:
-            - oauth2-proxy
+        build:
+            context: ../
+            dockerfile: docker/oauth2-proxy.Dockerfile
         env_file:
             - ../.config/.env.oauthproxy
         ports:
@@ -80,7 +54,7 @@ services:
             interval: 2s
 
     migrations:
-        command: ["crudik", "migrations", "apply"]
+        command: ["posutochnik", "migrations", "apply"]
         container_name: migrations
         restart: no
         build:
@@ -92,18 +66,22 @@ services:
     api:
         container_name: api
         restart: unless-stopped
-        command: ["crudik", "run", "api"]
-        expose:
-            - 5000
+        command: ["posutochnik", "run", "api"]
         build:
             context: ../
             dockerfile: docker/Dockerfile
         env_file:
             - "../.config/.env"
         volumes:
-            - "../.config/config.toml:/etc/crudik/config.toml"
+            - "../.config/config.toml:/etc/posutochnik/config.toml"
         healthcheck:
-            test: ["CMD", "curl", "-f", "http://localhost:5000/internal/ready"]
+            test:
+                [
+                    "CMD",
+                    "curl",
+                    "-f",
+                    "http://localhost:${APP_SERVER_PORT}/internal/ready",
+                ]
             interval: 4s
 
     db:
