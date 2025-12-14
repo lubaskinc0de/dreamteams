@@ -18,6 +18,8 @@ dependencies = [
     "structlog==25.5.0",
     "pyjwt==2.10.1",
     "cryptography==46.0.3",
+    "pydantic-extra-types==2.10.6",
+    "pydantic==2.12.5",
 ]
 
 [project.optional-dependencies]

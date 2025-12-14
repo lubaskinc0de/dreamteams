@@ -8,7 +8,7 @@ from crudik.application.common.interactor import interactor
 from crudik.application.common.logger import Logger
 from crudik.application.common.uow import UoW
 from crudik.entities.common.identifiers import UserId
-from crudik.entities.user import User
+from crudik.entities.user import create_new_user
 
 logger: Logger = structlog.get_logger(__name__)
 
@@ -31,7 +31,7 @@ class CreateUser:
         logger.debug("Creating new user")
         user_id = uuid4()
         logger.debug("Generated new user id", user_id=user_id)
-        user = User(user_id)
+        user = create_new_user(user_id)
 
         self.uow.add(user)
         await self.uow.flush([user])
