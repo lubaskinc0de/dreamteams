@@ -1,10 +1,12 @@
 import structlog
 from fastapi import Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from posutochnik.adapters.auth.errors.auth_user import AuthUserAlreadyExistsError
 from posutochnik.adapters.auth.errors.base import UnauthorizedError
-from posutochnik.adapters.errors.http.response import ErrorResponse, InternalServerError
+from posutochnik.adapters.errors.http.response import ErrorResponse, InternalServerError, ValidationError
 from posutochnik.adapters.tracing import MissingTraceIdError
 from posutochnik.application.common.logger import Logger
 from posutochnik.application.errors.user import UserNotFoundError
@@ -14,6 +16,7 @@ logger: Logger = structlog.get_logger(__name__)
 
 
 error_to_http_status: dict[type[AppError], int] = {
+    ValidationError: 422,
     UnauthorizedError: 401,
     AuthUserAlreadyExistsError: 409,
     UserNotFoundError: 404,
@@ -57,3 +60,11 @@ async def app_error_handler(_request: Request, exc: Exception) -> JSONResponse:
         logger.exception("Handling unexpected internal server error", exc_info=exc)
         app_error = InternalServerError(orig_error=exc)
     return await get_app_error_response(app_error)
+
+
+async def validation_error_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    """FastAPI exception handler that converts RequestValidationError exceptions to JSON error responses."""
+    return await app_error_handler(
+        request,
+        ValidationError(details=jsonable_encoder({"detail": exc.errors(), "body": exc.body})),
+    )

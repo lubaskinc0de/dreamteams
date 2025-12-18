@@ -1,7 +1,7 @@
-from dishka import BaseScope, Provider, Scope, provide_all
+from dishka import BaseScope, Provider, Scope, provide, provide_all
 
-from posutochnik.application.read_user import ReadUser
-from posutochnik.application.register.create_user import CreateUser
+from posutochnik.application.register.landlord import RegisterLandlord
+from posutochnik.application.register.shared.user_factory import UserFactory
 
 
 class InteractorProvider(Provider):
@@ -10,6 +10,6 @@ class InteractorProvider(Provider):
     scope: BaseScope | None = Scope.REQUEST
 
     interactors = provide_all(
-        CreateUser,
-        ReadUser,
+        RegisterLandlord,
     )
+    user_factory = provide(UserFactory)
