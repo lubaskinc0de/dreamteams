@@ -8,12 +8,13 @@ from aiohttp import ClientResponse, ClientResponseError, ClientSession
 from posutochnik.adapters.auth.model import AuthUserId
 from posutochnik.adapters.errors.http.response import ErrorResponse
 from posutochnik.adapters.tracing import TraceId, TracingConfig
-from posutochnik.application.read_user import UserModel
-from posutochnik.application.register.create_user import CreatedUser
+from posutochnik.application.register.landlord import CreatedLandlord
 from posutochnik.entities.common.config import config
-from posutochnik.entities.common.identifiers import UserId
+from posutochnik.presentation.fast_api.routers.landlords import LandlordForm
 
 retort = Retort()
+
+LANDLORD_URL = "/landlords/"
 
 
 @dataclass
@@ -51,12 +52,25 @@ class APIResponse[T]:
             raise ValueError(msg)
         return self
 
+    def assert_error(self, status: int, error_code: str) -> Self:
+        """Assert that response status matches expected value, response is ``ErrorResponse`` and error code matches."""
+        if self.status != status:
+            msg = f"HTTP status assertion failed. {self.status} != {status}"
+            raise ValueError(msg)
+
+        if self.ensure_err().code != error_code:
+            msg = "Error code does not equal"
+            raise ValueError(msg)
+
+        return self
+
 
 @config
 class APIClientConfig:
     """Config for APIClient."""
 
     auth_user_id_header: str
+    auth_user_email_header: str
     access_token_header: str
 
 
@@ -65,13 +79,15 @@ class AuthContext:
 
     def __init__(
         self,
-        api_client: "APIClient",
+        api_client: "ApiClient",
         auth_user_id: AuthUserId,
+        auth_user_email: str | None,
         config: APIClientConfig,
         access_token: str | None,
     ) -> None:
         self._api_client = api_client
         self._auth_user_id = auth_user_id
+        self._auth_user_email = auth_user_email
         self._config = config
         self._access_token = access_token
 
@@ -83,6 +99,11 @@ class AuthContext:
                 self._config.access_token_header,
                 self._access_token,
             )
+        if self._auth_user_email is not None:
+            self._api_client.set_header(
+                self._config.auth_user_email_header,
+                self._auth_user_email,
+            )
 
     def __exit__(self, *exc_info: object) -> None:
         """Remove authentication header after the context."""
@@ -91,7 +112,7 @@ class AuthContext:
             raise exc_info[1]  # type: ignore[misc] # exc value
 
 
-class APIClient:
+class ApiClient:
     """Client for making API requests."""
 
     def __init__(
@@ -139,9 +160,9 @@ class APIClient:
         """Remove HTTP header."""
         del self._headers[header]
 
-    def authenticate(self, *, auth_user_id: AuthUserId) -> AuthContext:
+    def authenticate(self, *, auth_user_id: AuthUserId, auth_user_email: str | None = None) -> AuthContext:
         """Set auth user ID for requests."""
-        return AuthContext(self, auth_user_id, self._config, self._access_token)
+        return AuthContext(self, auth_user_id, auth_user_email, self._config, self._access_token)
 
     async def readiness(self) -> APIResponse[EmptyResponse]:
         """GET /internal/ready."""
@@ -161,20 +182,11 @@ class APIClient:
                 response_type=EmptyResponse,
             )
 
-    async def create_user(self) -> APIResponse[CreatedUser]:
-        """Create a new user via POST /users/."""
-        url = "/users/"
-        async with self.session.post(url, headers=self._headers) as response:
+    async def register_landlord(self, data: LandlordForm) -> APIResponse[CreatedLandlord]:
+        """Register as landlord via POST /landlord/."""
+        url = LANDLORD_URL
+        async with self.session.post(url, headers=self._headers, json=data.model_dump()) as response:
             return await self._load_response(
                 response,
-                response_type=CreatedUser,
-            )
-
-    async def read_user(self, user_id: UserId) -> APIResponse[UserModel]:
-        """Read user by id via GET /users/{user_id}."""
-        url = f"/users/{user_id}"
-        async with self.session.get(url, headers=self._headers) as response:
-            return await self._load_response(
-                response,
-                response_type=UserModel,
+                response_type=CreatedLandlord,
             )

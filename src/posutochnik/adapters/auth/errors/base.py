@@ -8,6 +8,7 @@ class UnauthorizedReason(Enum):
     """Enumeration of reasons why an authentication request may be unauthorized."""
 
     MISSING_USER_ID = "MISSING_USER_ID"
+    MISSING_USER_EMAIL = "MISSING_USER_EMAIL"
     INVALID_AUTH_USER_ID = "INVALID_AUTH_USER_ID"
     MISSING_ACCESS_TOKEN = "MISSING_ACCESS_TOKEN"  # noqa: S105
     CORRUPTED_ACCESS_TOKEN = "CORRUPTED_ACCESS_TOKEN"  # noqa: S105

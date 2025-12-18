@@ -1,4 +1,4 @@
-from typing import override
+from typing import Any, override
 
 import jwt
 import structlog
@@ -19,6 +19,7 @@ class WebAuthUserIdProviderConfig:
     """Configuration for web-based authentication user ID provider."""
 
     user_id_header: str
+    user_email_header: str
     access_token_header: str
     access_token_alg: str
     allow_unverified_email: bool
@@ -30,6 +31,18 @@ class WebAuthUserIdProvider(AuthUserIdProvider):
 
     http_request: Request
     config: WebAuthUserIdProviderConfig
+
+    def get_auth_user_email(self) -> str:
+        """Reads the auth user email from the configured HTTP header."""
+        user_email = self.http_request.headers.get(self.config.user_email_header)
+        if user_email is None:
+            msg = f"Missing {self.config.user_email_header} header"
+            raise UnauthorizedError(
+                message=msg,
+                reason=UnauthorizedReason.MISSING_USER_EMAIL,
+                header=self.config.user_email_header,
+            )
+        return user_email
 
     @override
     async def get_auth_user_id(self) -> AuthUserId:
@@ -44,24 +57,8 @@ class WebAuthUserIdProvider(AuthUserIdProvider):
             )
 
         if not self.config.allow_unverified_email:
-            access_token = self.http_request.headers.get(self.config.access_token_header)
-            if access_token is None:
-                logger.debug(
-                    "Request unauthorized due to missing access token header",
-                    header=self.config.access_token_header,
-                )
-                msg = f"Missing {self.config.access_token_header} header"
-                raise UnauthorizedError(
-                    message=msg,
-                    reason=UnauthorizedReason.MISSING_ACCESS_TOKEN,
-                    header=self.config.access_token_header,
-                )
             try:
-                email_verified: bool = jwt.decode(
-                    access_token,
-                    options={"verify_signature": False, "verify_exp": True},
-                    algorithms=[self.config.access_token_alg],
-                )["email_verified"]
+                email_verified: bool = self._get_access_token_data()["email_verified"]
             except KeyError as e:
                 logger.debug("Request unauthorized due to corrupted access token")
                 raise UnauthorizedError(
@@ -77,3 +74,22 @@ class WebAuthUserIdProvider(AuthUserIdProvider):
                 )
 
         return user_id
+
+    def _get_access_token_data(self) -> dict[str, Any]:
+        access_token = self.http_request.headers.get(self.config.access_token_header)
+        if access_token is None:
+            logger.debug(
+                "Request unauthorized due to missing access token header",
+                header=self.config.access_token_header,
+            )
+            msg = f"Missing {self.config.access_token_header} header"
+            raise UnauthorizedError(
+                message=msg,
+                reason=UnauthorizedReason.MISSING_ACCESS_TOKEN,
+                header=self.config.access_token_header,
+            )
+        return jwt.decode(  # type: ignore[no-any-return]
+            access_token,
+            options={"verify_signature": False, "verify_exp": True},
+            algorithms=[self.config.access_token_alg],
+        )

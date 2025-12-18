@@ -7,13 +7,18 @@ import jwt
 import pytest
 from aiohttp import ClientSession
 from dishka import AsyncContainer
+from polyfactory.factories.base import BaseFactory
+from polyfactory.factories.pydantic_factory import ModelFactory
+from polyfactory.pytest_plugin import register_fixture
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from posutochnik.adapters.api_client import APIClient, APIClientConfig
 from posutochnik.adapters.tracing import TraceId
+from posutochnik.application.common.phone_number import RussianPhoneNumber
 from posutochnik.bootstrap.config.loader import Config
 from posutochnik.bootstrap.di.container import get_async_container
+from posutochnik.presentation.fast_api.routers.landlords import LandlordForm
+from tests.integration.api_client import ApiClient, APIClientConfig
 
 # This is a fake private key used only to sign fake access token for tests
 DUMMY_PRIVATE_KEY = """
@@ -46,6 +51,8 @@ gJWzg5NcCJa53leWAceA2fpttF2GgEYsR6udisqYI+UH1TUaMrujUqGFbNqXqdHo
 6p95hLlC0FKt9LZYt2jHi5O9
 -----END PRIVATE KEY-----
 """
+
+# Infrastructure
 
 
 @pytest.fixture
@@ -128,15 +135,27 @@ async def access_token(app_config: Config) -> str:
 
 
 @pytest.fixture
-def api_client(http_session: ClientSession, app_config: Config, trace_id: TraceId, access_token: str) -> APIClient:
+def api_client(http_session: ClientSession, app_config: Config, trace_id: TraceId, access_token: str) -> ApiClient:
     """Create and provide API client for tests."""
-    return APIClient(
+    return ApiClient(
         session=http_session,
         config=APIClientConfig(
             auth_user_id_header=app_config.web_auth_user_id_provider.user_id_header,
+            auth_user_email_header=app_config.web_auth_user_id_provider.user_email_header,
             access_token_header=app_config.web_auth_user_id_provider.access_token_header,
         ),
         trace_id=trace_id,
         tracing_config=app_config.tracing,
         access_token=access_token,
     )
+
+
+# Mock data
+BaseFactory.add_provider(RussianPhoneNumber, lambda: RussianPhoneNumber("+79281009843"))
+
+
+@register_fixture
+class LandlordFormFactory(ModelFactory[LandlordForm]):
+    """Factory of LandlordForm models."""
+
+    __model__ = LandlordForm

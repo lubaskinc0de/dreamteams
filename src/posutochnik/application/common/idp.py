@@ -11,3 +11,8 @@ class IdProvider(Protocol):
     async def get_user(self) -> User:
         """Returns the User entity representing the currently authenticated user making the request."""
         raise NotImplementedError
+
+    @abstractmethod
+    async def get_user_or_none(self) -> User | None:
+        """Returns the User entity representing the currently authenticated user making the request or None."""
+        raise NotImplementedError

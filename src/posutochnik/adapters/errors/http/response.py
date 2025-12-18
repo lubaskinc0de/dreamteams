@@ -1,4 +1,4 @@
-from typing import Any, ClassVar
+from typing import Any, ClassVar, override
 
 from pydantic import BaseModel
 
@@ -20,3 +20,17 @@ class InternalServerError(AppError):
     code: ClassVar[str] = "INTERNAL_SERVER_ERROR"
     message: str = "Internal Server Error"
     orig_error: Exception
+
+
+@app_error
+class ValidationError(AppError):
+    """Error used as when fastapi ``RequestValidationError`` exception occurs."""
+
+    code: ClassVar[str] = "VALIDATION_ERROR"
+    message: str = "Validation error"
+    details: dict[str, Any]
+
+    @override
+    @property
+    def meta(self) -> dict[str, Any]:
+        return self.details
