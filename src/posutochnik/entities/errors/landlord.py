@@ -17,3 +17,11 @@ class LandlordUserIdMismatchError(AppError):
 
     code: ClassVar[str] = "LANDLORD_USER_ID_MISMATCH"
     message: str = "You're trying to attach a landlord of user A to user B"
+
+
+@app_error
+class UserHasNoRoleError(AppError):
+    """The error occurs when user doesn't have role, this can only happen when business logic is corrupted."""
+
+    code: ClassVar[str] = "USER_HAS_NO_ROLE"
+    message: str = "User has no role"

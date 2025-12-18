@@ -7,6 +7,7 @@ import jwt
 import pytest
 from aiohttp import ClientSession
 from dishka import AsyncContainer
+from faker import Faker
 from polyfactory.factories.base import BaseFactory
 from polyfactory.factories.pydantic_factory import ModelFactory
 from polyfactory.pytest_plugin import register_fixture
@@ -15,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from posutochnik.adapters.tracing import TraceId
 from posutochnik.application.common.phone_number import RussianPhoneNumber
+from posutochnik.application.register.landlord import CreatedLandlord
 from posutochnik.bootstrap.config.loader import Config
 from posutochnik.bootstrap.di.container import get_async_container
 from posutochnik.presentation.fast_api.routers.landlords import LandlordForm
@@ -154,8 +156,36 @@ def api_client(http_session: ClientSession, app_config: Config, trace_id: TraceI
 BaseFactory.add_provider(RussianPhoneNumber, lambda: RussianPhoneNumber("+79281009843"))
 
 
+@pytest.fixture
+def email(faker: Faker) -> str:
+    """Fake email."""
+    return faker.email()
+
+
 @register_fixture
 class LandlordFormFactory(ModelFactory[LandlordForm]):
     """Factory of LandlordForm models."""
 
     __model__ = LandlordForm
+
+
+@pytest.fixture
+def landlord_form(
+    landlord_form_factory: LandlordFormFactory,
+) -> LandlordForm:
+    """Landlord form."""
+    return landlord_form_factory.build()
+
+
+# Entities
+@pytest.fixture
+async def landlord(
+    api_client: ApiClient,
+    landlord_form: LandlordForm,
+    email: str,
+) -> CreatedLandlord:
+    """Created landlord entity."""
+    with api_client.authenticate(auth_user_id="1", auth_user_email=email):
+        response = await api_client.register_landlord(landlord_form)
+
+    return response.assert_status(200).ensure_ok()

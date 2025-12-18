@@ -2,6 +2,7 @@ from dishka import BaseScope, Provider, Scope, provide, provide_all
 
 from posutochnik.application.register.landlord import RegisterLandlord
 from posutochnik.application.register.shared.user_factory import UserFactory
+from posutochnik.application.view_profile.interactor import ViewProfile
 
 
 class InteractorProvider(Provider):
@@ -11,5 +12,6 @@ class InteractorProvider(Provider):
 
     interactors = provide_all(
         RegisterLandlord,
+        ViewProfile,
     )
     user_factory = provide(UserFactory)

@@ -1,6 +1,10 @@
 from posutochnik.entities.base import Entity, model
 from posutochnik.entities.common.identifiers import UserId
-from posutochnik.entities.errors.landlord import LandlordUserIdMismatchError, UserAlreadyLandlordError
+from posutochnik.entities.errors.landlord import (
+    LandlordUserIdMismatchError,
+    UserAlreadyLandlordError,
+    UserHasNoRoleError,
+)
 from posutochnik.entities.landlord import Landlord
 
 
@@ -20,6 +24,12 @@ class User(Entity):
             raise LandlordUserIdMismatchError
 
         self.landlord = landlord
+
+    def get_role(self) -> Landlord:
+        """Get user role."""
+        if self.landlord is not None:
+            return self.landlord
+        raise UserHasNoRoleError
 
 
 def create_new_user(user_id: UserId) -> User:

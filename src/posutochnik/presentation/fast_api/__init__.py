@@ -4,12 +4,14 @@ from fastapi.exceptions import RequestValidationError
 from posutochnik.presentation.fast_api.error_handlers import app_error_handler, validation_error_handler
 from posutochnik.presentation.fast_api.routers.landlords import router as landlords_router
 from posutochnik.presentation.fast_api.routers.root import router as root_router
+from posutochnik.presentation.fast_api.routers.users import router as users_router
 
 
 def include_routers(app: FastAPI) -> None:
     """Registers all API routers with the FastAPI application."""
     app.include_router(root_router)
     app.include_router(landlords_router)
+    app.include_router(users_router)
 
 
 def include_exception_handlers(app: FastAPI) -> None:

@@ -1,4 +1,5 @@
 from sqlalchemy import UUID, Column, Table
+from sqlalchemy.orm import relationship
 
 from posutochnik.adapters.db.models.base import mapper_registry
 from posutochnik.entities.user import User
@@ -10,4 +11,10 @@ user_table = Table(
 )
 
 
-mapper_registry.map_imperatively(User, user_table)
+mapper_registry.map_imperatively(
+    User,
+    user_table,
+    properties={
+        "landlord": relationship("Landlord", lazy="selectin", uselist=False),
+    },
+)

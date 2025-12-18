@@ -11,6 +11,7 @@ landlord_table = Table(
     Column("landlord_name", String(150), nullable=False),
     Column("phone_number", String(100), nullable=False),
     Column("contact_email", Text, nullable=False),
+    Column("avatar", Text, nullable=True),
 )
 
 

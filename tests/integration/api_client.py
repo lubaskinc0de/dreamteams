@@ -9,12 +9,14 @@ from posutochnik.adapters.auth.model import AuthUserId
 from posutochnik.adapters.errors.http.response import ErrorResponse
 from posutochnik.adapters.tracing import TraceId, TracingConfig
 from posutochnik.application.register.landlord import CreatedLandlord
+from posutochnik.application.view_profile.interactor import ProfileModel
 from posutochnik.entities.common.config import config
 from posutochnik.presentation.fast_api.routers.landlords import LandlordForm
 
 retort = Retort()
 
-LANDLORD_URL = "/landlords/"
+LANDLORD_URL = "/landlords"
+USERS_URL = "/users"
 
 
 @dataclass
@@ -183,10 +185,19 @@ class ApiClient:
             )
 
     async def register_landlord(self, data: LandlordForm) -> APIResponse[CreatedLandlord]:
-        """Register as landlord via POST /landlord/."""
+        """Register as landlord via POST /landlords/."""
         url = LANDLORD_URL
         async with self.session.post(url, headers=self._headers, json=data.model_dump()) as response:
             return await self._load_response(
                 response,
                 response_type=CreatedLandlord,
+            )
+
+    async def view_profile(self) -> APIResponse[ProfileModel]:
+        """View user profile via GET /users/me."""
+        url = f"{USERS_URL}/me"
+        async with self.session.get(url, headers=self._headers) as response:
+            return await self._load_response(
+                response,
+                response_type=ProfileModel,
             )
