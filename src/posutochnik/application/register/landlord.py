@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 import structlog
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 
 from posutochnik.application.common.interactor import interactor
 from posutochnik.application.common.logger import Logger
@@ -26,6 +26,7 @@ class LandlordForm(BaseModel):
 
     landlord_name: str = Field(max_length=70)
     phone_number: RussianPhoneNumber
+    contact_email: EmailStr
 
 
 @interactor
@@ -47,6 +48,7 @@ class RegisterLandlord:
             user_id=user.id,
             landlord_name=data.landlord_name,
             phone_number=data.phone_number,
+            contact_email=data.contact_email,
             avatar=None,
         )
         logger.debug("Creating role 'Landlord' for user", user_id=user.id)

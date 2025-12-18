@@ -1035,6 +1035,7 @@ dependencies = [
 
 [package.optional-dependencies]
 ci = [
+    { name = "faker" },
     { name = "import-linter" },
     { name = "mypy" },
     { name = "polyfactory" },
@@ -1043,6 +1044,7 @@ ci = [
     { name = "ruff" },
 ]
 dev = [
+    { name = "faker" },
     { name = "import-linter" },
     { name = "mypy" },
     { name = "polyfactory" },
@@ -1056,6 +1058,7 @@ lint = [
     { name = "ruff" },
 ]
 test = [
+    { name = "faker" },
     { name = "polyfactory" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -1069,11 +1072,12 @@ requires-dist = [
     { name = "asyncpg", specifier = "==0.31.0" },
     { name = "cryptography", specifier = "==46.0.3" },
     { name = "dishka", specifier = "==1.7.2" },
+    { name = "faker", marker = "extra == 'test'", specifier = ">=39.0.0" },
     { name = "fastapi", extras = ["standard"], specifier = "==0.123.0" },
     { name = "import-linter", marker = "extra == 'lint'", specifier = "==2.7" },
     { name = "mypy", marker = "extra == 'lint'", specifier = "==1.19.0" },
     { name = "phonenumbers", specifier = "==9.0.20" },
-    { name = "polyfactory", marker = "extra == 'test'", specifier = ">=3.1.0" },
+    { name = "polyfactory", marker = "extra == 'test'", specifier = "==3.1.0" },
     { name = "posutochnik", extras = ["dev"], marker = "extra == 'ci'" },
     { name = "posutochnik", extras = ["test", "lint"], marker = "extra == 'dev'" },
     { name = "pydantic", specifier = "==2.12.5" },

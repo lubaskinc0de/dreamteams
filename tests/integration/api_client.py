@@ -8,8 +8,9 @@ from aiohttp import ClientResponse, ClientResponseError, ClientSession
 from posutochnik.adapters.auth.model import AuthUserId
 from posutochnik.adapters.errors.http.response import ErrorResponse
 from posutochnik.adapters.tracing import TraceId, TracingConfig
-from posutochnik.application.register.landlord import CreatedLandlord, LandlordForm
+from posutochnik.application.register.landlord import CreatedLandlord
 from posutochnik.entities.common.config import config
+from posutochnik.presentation.fast_api.routers.landlords import LandlordForm
 
 retort = Retort()
 
@@ -69,6 +70,7 @@ class APIClientConfig:
     """Config for APIClient."""
 
     auth_user_id_header: str
+    auth_user_email_header: str
     access_token_header: str
 
 
@@ -79,11 +81,13 @@ class AuthContext:
         self,
         api_client: "ApiClient",
         auth_user_id: AuthUserId,
+        auth_user_email: str | None,
         config: APIClientConfig,
         access_token: str | None,
     ) -> None:
         self._api_client = api_client
         self._auth_user_id = auth_user_id
+        self._auth_user_email = auth_user_email
         self._config = config
         self._access_token = access_token
 
@@ -94,6 +98,11 @@ class AuthContext:
             self._api_client.set_header(
                 self._config.access_token_header,
                 self._access_token,
+            )
+        if self._auth_user_email is not None:
+            self._api_client.set_header(
+                self._config.auth_user_email_header,
+                self._auth_user_email,
             )
 
     def __exit__(self, *exc_info: object) -> None:
@@ -151,9 +160,9 @@ class ApiClient:
         """Remove HTTP header."""
         del self._headers[header]
 
-    def authenticate(self, *, auth_user_id: AuthUserId) -> AuthContext:
+    def authenticate(self, *, auth_user_id: AuthUserId, auth_user_email: str | None = None) -> AuthContext:
         """Set auth user ID for requests."""
-        return AuthContext(self, auth_user_id, self._config, self._access_token)
+        return AuthContext(self, auth_user_id, auth_user_email, self._config, self._access_token)
 
     async def readiness(self) -> APIResponse[EmptyResponse]:
         """GET /internal/ready."""

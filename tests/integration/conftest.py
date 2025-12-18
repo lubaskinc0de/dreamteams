@@ -15,9 +15,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from posutochnik.adapters.tracing import TraceId
 from posutochnik.application.common.phone_number import RussianPhoneNumber
-from posutochnik.application.register.landlord import LandlordForm
 from posutochnik.bootstrap.config.loader import Config
 from posutochnik.bootstrap.di.container import get_async_container
+from posutochnik.presentation.fast_api.routers.landlords import LandlordForm
 from tests.integration.api_client import ApiClient, APIClientConfig
 
 # This is a fake private key used only to sign fake access token for tests
@@ -141,6 +141,7 @@ def api_client(http_session: ClientSession, app_config: Config, trace_id: TraceI
         session=http_session,
         config=APIClientConfig(
             auth_user_id_header=app_config.web_auth_user_id_provider.user_id_header,
+            auth_user_email_header=app_config.web_auth_user_id_provider.user_email_header,
             access_token_header=app_config.web_auth_user_id_provider.access_token_header,
         ),
         trace_id=trace_id,
