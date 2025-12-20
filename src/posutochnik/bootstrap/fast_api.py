@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 import uvicorn
 from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from posutochnik.bootstrap.config.loader import Config
 from posutochnik.bootstrap.di.container import get_async_container
@@ -25,12 +26,16 @@ def create_app(config: Config) -> FastAPI:
     """Creates and configures the FastAPI application instance with routers, error handlers, and DI container."""
     app = FastAPI(
         lifespan=lifespan,
-        root_path="/api",
-        docs_url="/docs",
-        redoc_url="/redoc",
-        openapi_url="/openapi.json",
+        root_path=config.api.root_path,
     )
     app.middleware("http")(tracing_middleware)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=config.cors.allow_origins,
+        allow_credentials=config.cors.allow_credentials,
+        allow_methods=config.cors.allow_methods,
+        allow_headers=config.cors.allow_headers,
+    )
     container = get_async_container(config)
     setup_dishka(container=container, app=app)
 

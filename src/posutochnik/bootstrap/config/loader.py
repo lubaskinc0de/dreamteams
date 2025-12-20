@@ -9,7 +9,7 @@ from posutochnik.adapters.db.config import DbConfig
 from posutochnik.adapters.env_loader import env
 from posutochnik.adapters.tracing import TracingConfig
 from posutochnik.entities import config
-from posutochnik.presentation.fast_api.config import ServerConfig
+from posutochnik.presentation.fast_api.config import ApiConfig, CorsConfig, ServerConfig
 
 retort = Retort()
 
@@ -20,6 +20,8 @@ class TomlConfig:
 
     auth: WebAuthUserIdProviderConfig
     tracing: TracingConfig
+    cors: CorsConfig
+    api: ApiConfig
 
 
 @config
@@ -30,6 +32,8 @@ class Config:
     web_auth_user_id_provider: WebAuthUserIdProviderConfig
     tracing: TracingConfig
     server: ServerConfig
+    cors: CorsConfig
+    api: ApiConfig
 
     @classmethod
     def load(cls) -> Self:
@@ -49,4 +53,6 @@ class Config:
             web_auth_user_id_provider=toml_config.auth,
             tracing=toml_config.tracing,
             server=server,
+            cors=toml_config.cors,
+            api=toml_config.api,
         )

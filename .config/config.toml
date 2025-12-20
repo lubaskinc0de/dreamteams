@@ -8,3 +8,12 @@ allow_unverified_email = false
 [tracing]
 trace_id_header = "X-Trace-Id"
 trace_id_required = false
+
+[cors]
+allow_origins = ["http://localhost:3001"]
+allow_credentials=true
+allow_methods=["*"]
+allow_headers=["*"]
+
+[api]
+root_path = "/api"
