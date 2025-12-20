@@ -5,17 +5,17 @@ from adaptix import Retort
 from adaptix.load_error import LoadError
 from aiohttp import ClientResponse, ClientResponseError, ClientSession
 
-from posutochnik.adapters.auth.model import AuthUserId
-from posutochnik.adapters.errors.http.response import ErrorResponse
-from posutochnik.adapters.tracing import TraceId, TracingConfig
-from posutochnik.application.register.landlord import CreatedLandlord
-from posutochnik.application.view_profile.interactor import ProfileModel
-from posutochnik.entities.common.config import config
-from posutochnik.presentation.fast_api.routers.landlords import LandlordForm
+from dreamteams.adapters.auth.model import AuthUserId
+from dreamteams.adapters.errors.http.response import ErrorResponse
+from dreamteams.adapters.tracing import TraceId, TracingConfig
+from dreamteams.application.register.organizer import CreatedOrganizer
+from dreamteams.application.view_profile.interactor import ProfileModel
+from dreamteams.entities.common.config import config
+from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
 
 retort = Retort()
 
-LANDLORD_URL = "/landlords"
+ORGANIZER_URL = "/organizers"
 USERS_URL = "/users"
 
 
@@ -184,13 +184,13 @@ class ApiClient:
                 response_type=EmptyResponse,
             )
 
-    async def register_landlord(self, data: LandlordForm) -> APIResponse[CreatedLandlord]:
-        """Register as landlord via POST /landlords/."""
-        url = LANDLORD_URL
+    async def register_organizer(self, data: OrganizerForm) -> APIResponse[CreatedOrganizer]:
+        """Register as organizer via POST /organizers/."""
+        url = ORGANIZER_URL
         async with self.session.post(url, headers=self._headers, json=data.model_dump()) as response:
             return await self._load_response(
                 response,
-                response_type=CreatedLandlord,
+                response_type=CreatedOrganizer,
             )
 
     async def view_profile(self) -> APIResponse[ProfileModel]:

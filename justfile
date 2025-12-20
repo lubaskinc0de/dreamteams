@@ -35,7 +35,7 @@ dev-environment:
 generate-migration NAME:
     just up-db
     sleep 1s
-    set -a && source ./.config/.env.migrations.local && set +a && posutochnik migrations autogenerate "{{NAME}}"
+    set -a && source ./.config/.env.migrations.local && set +a && dreamteams migrations autogenerate "{{NAME}}"
     just down
 
 cookie-secret:

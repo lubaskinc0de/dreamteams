@@ -335,6 +335,86 @@ wheels = [
 ]
 
 [[package]]
+name = "dreamteams"
+version = "1.0.0"
+source = { editable = "." }
+dependencies = [
+    { name = "adaptix" },
+    { name = "aiohttp" },
+    { name = "alembic" },
+    { name = "asyncpg" },
+    { name = "cryptography" },
+    { name = "dishka" },
+    { name = "fastapi", extra = ["standard"] },
+    { name = "phonenumbers" },
+    { name = "pydantic" },
+    { name = "pydantic-extra-types" },
+    { name = "pyjwt" },
+    { name = "sqlalchemy", extra = ["postgresql-asyncpg"] },
+    { name = "structlog" },
+    { name = "toml-rs" },
+]
+
+[package.optional-dependencies]
+ci = [
+    { name = "faker" },
+    { name = "import-linter" },
+    { name = "mypy" },
+    { name = "polyfactory" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "ruff" },
+]
+dev = [
+    { name = "faker" },
+    { name = "import-linter" },
+    { name = "mypy" },
+    { name = "polyfactory" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "ruff" },
+]
+lint = [
+    { name = "import-linter" },
+    { name = "mypy" },
+    { name = "ruff" },
+]
+test = [
+    { name = "faker" },
+    { name = "polyfactory" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "adaptix", specifier = "==3.0.0b11" },
+    { name = "aiohttp", specifier = "==3.13.2" },
+    { name = "alembic", specifier = "==1.17.2" },
+    { name = "asyncpg", specifier = "==0.31.0" },
+    { name = "cryptography", specifier = "==46.0.3" },
+    { name = "dishka", specifier = "==1.7.2" },
+    { name = "dreamteams", extras = ["dev"], marker = "extra == 'ci'" },
+    { name = "dreamteams", extras = ["test", "lint"], marker = "extra == 'dev'" },
+    { name = "faker", marker = "extra == 'test'", specifier = "==39.0.0" },
+    { name = "fastapi", extras = ["standard"], specifier = "==0.123.0" },
+    { name = "import-linter", marker = "extra == 'lint'", specifier = "==2.7" },
+    { name = "mypy", marker = "extra == 'lint'", specifier = "==1.19.0" },
+    { name = "phonenumbers", specifier = "==9.0.20" },
+    { name = "polyfactory", marker = "extra == 'test'", specifier = "==3.1.0" },
+    { name = "pydantic", specifier = "==2.12.5" },
+    { name = "pydantic-extra-types", specifier = "==2.10.6" },
+    { name = "pyjwt", specifier = "==2.10.1" },
+    { name = "pytest", marker = "extra == 'test'", specifier = "==9.0.1" },
+    { name = "pytest-asyncio", marker = "extra == 'test'", specifier = "==1.3.0" },
+    { name = "ruff", marker = "extra == 'lint'", specifier = "==0.14.8" },
+    { name = "sqlalchemy", extras = ["postgresql-asyncpg"], specifier = "==2.0.44" },
+    { name = "structlog", specifier = "==25.5.0" },
+    { name = "toml-rs", specifier = "==0.1.0" },
+]
+provides-extras = ["lint", "test", "dev", "ci"]
+
+[[package]]
 name = "email-validator"
 version = "2.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1011,86 +1091,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/c9/3a/db522ea17e0e8d38f
 wheels = [
     { url = "https://files.pythonhosted.org/packages/94/7c/535646d75a1c510065169ea65693613c7a6bc64491bea13e7dad4f028ff3/polyfactory-3.1.0-py3-none-any.whl", hash = "sha256:78171232342c25906d542513c9f00ebf41eadec2c67b498490a577024dd7e867", size = 61836, upload-time = "2025-11-25T08:10:14.893Z" },
 ]
-
-[[package]]
-name = "posutochnik"
-version = "1.0.0"
-source = { editable = "." }
-dependencies = [
-    { name = "adaptix" },
-    { name = "aiohttp" },
-    { name = "alembic" },
-    { name = "asyncpg" },
-    { name = "cryptography" },
-    { name = "dishka" },
-    { name = "fastapi", extra = ["standard"] },
-    { name = "phonenumbers" },
-    { name = "pydantic" },
-    { name = "pydantic-extra-types" },
-    { name = "pyjwt" },
-    { name = "sqlalchemy", extra = ["postgresql-asyncpg"] },
-    { name = "structlog" },
-    { name = "toml-rs" },
-]
-
-[package.optional-dependencies]
-ci = [
-    { name = "faker" },
-    { name = "import-linter" },
-    { name = "mypy" },
-    { name = "polyfactory" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "ruff" },
-]
-dev = [
-    { name = "faker" },
-    { name = "import-linter" },
-    { name = "mypy" },
-    { name = "polyfactory" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "ruff" },
-]
-lint = [
-    { name = "import-linter" },
-    { name = "mypy" },
-    { name = "ruff" },
-]
-test = [
-    { name = "faker" },
-    { name = "polyfactory" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "adaptix", specifier = "==3.0.0b11" },
-    { name = "aiohttp", specifier = "==3.13.2" },
-    { name = "alembic", specifier = "==1.17.2" },
-    { name = "asyncpg", specifier = "==0.31.0" },
-    { name = "cryptography", specifier = "==46.0.3" },
-    { name = "dishka", specifier = "==1.7.2" },
-    { name = "faker", marker = "extra == 'test'", specifier = ">=39.0.0" },
-    { name = "fastapi", extras = ["standard"], specifier = "==0.123.0" },
-    { name = "import-linter", marker = "extra == 'lint'", specifier = "==2.7" },
-    { name = "mypy", marker = "extra == 'lint'", specifier = "==1.19.0" },
-    { name = "phonenumbers", specifier = "==9.0.20" },
-    { name = "polyfactory", marker = "extra == 'test'", specifier = "==3.1.0" },
-    { name = "posutochnik", extras = ["dev"], marker = "extra == 'ci'" },
-    { name = "posutochnik", extras = ["test", "lint"], marker = "extra == 'dev'" },
-    { name = "pydantic", specifier = "==2.12.5" },
-    { name = "pydantic-extra-types", specifier = "==2.10.6" },
-    { name = "pyjwt", specifier = "==2.10.1" },
-    { name = "pytest", marker = "extra == 'test'", specifier = "==9.0.1" },
-    { name = "pytest-asyncio", marker = "extra == 'test'", specifier = "==1.3.0" },
-    { name = "ruff", marker = "extra == 'lint'", specifier = "==0.14.8" },
-    { name = "sqlalchemy", extras = ["postgresql-asyncpg"], specifier = "==2.0.44" },
-    { name = "structlog", specifier = "==25.5.0" },
-    { name = "toml-rs", specifier = "==0.1.0" },
-]
-provides-extras = ["lint", "test", "dev", "ci"]
 
 [[package]]
 name = "propcache"

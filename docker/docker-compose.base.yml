@@ -54,7 +54,7 @@ services:
             interval: 2s
 
     migrations:
-        command: ["posutochnik", "migrations", "apply"]
+        command: ["dreamteams", "migrations", "apply"]
         container_name: migrations
         restart: no
         build:
@@ -66,14 +66,14 @@ services:
     api:
         container_name: api
         restart: unless-stopped
-        command: ["posutochnik", "run", "api"]
+        command: ["dreamteams", "run", "api"]
         build:
             context: ../
             dockerfile: docker/Dockerfile
         env_file:
             - "../.config/.env"
         volumes:
-            - "../.config/config.toml:/etc/posutochnik/config.toml"
+            - "../.config/config.toml:/etc/dreamteams/config.toml"
         healthcheck:
             test:
                 [

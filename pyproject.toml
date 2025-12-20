@@ -3,7 +3,7 @@ requires = ["uv_build>=0.9.13,<0.10.0"]
 build-backend = "uv_build"
 
 [project]
-name = 'posutochnik'
+name = 'dreamteams'
 version = '1.0.0'
 requires-python = '>=3.13'
 dependencies = [
@@ -28,10 +28,10 @@ test = [
     'pytest==9.0.1',
     'pytest-asyncio==1.3.0',
     "polyfactory==3.1.0",
-    "faker>=39.0.0",
+    "faker==39.0.0",
 ]
-dev = ['posutochnik[test,lint]']
-ci = ['posutochnik[dev]']
+dev = ['dreamteams[test,lint]']
+ci = ['dreamteams[dev]']
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -59,12 +59,12 @@ enable_error_code = [
 ]
 
 files = ["src/", "tests/"]
-exclude = ["src/posutochnik/adapters/db/alembic/migrations/versions/"]
+exclude = ["src/dreamteams/adapters/db/alembic/migrations/versions/"]
 
 [tool.ruff]
 line-length = 120
 include = ["pyproject.toml", "src/**/*.py", "tests/**/*.py"]
-exclude = ["src/posutochnik/adapters/db/alembic/**/*.py"]
+exclude = ["src/dreamteams/adapters/db/alembic/**/*.py"]
 
 [tool.ruff.lint]
 select = ['ALL']
@@ -91,4 +91,4 @@ name = 'lubaskinc0de'
 email = 'lubaskincorporation@gmail.com'
 
 [project.scripts]
-posutochnik = "posutochnik.bootstrap.cli:main"
+dreamteams = "dreamteams.bootstrap.cli:main"

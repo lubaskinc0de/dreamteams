@@ -14,12 +14,12 @@ from polyfactory.pytest_plugin import register_fixture
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from posutochnik.adapters.tracing import TraceId
-from posutochnik.application.common.phone_number import RussianPhoneNumber
-from posutochnik.application.register.landlord import CreatedLandlord
-from posutochnik.bootstrap.config.loader import Config
-from posutochnik.bootstrap.di.container import get_async_container
-from posutochnik.presentation.fast_api.routers.landlords import LandlordForm
+from dreamteams.adapters.tracing import TraceId
+from dreamteams.application.common.phone_number import RussianPhoneNumber
+from dreamteams.application.register.organizer import CreatedOrganizer
+from dreamteams.bootstrap.config.loader import Config
+from dreamteams.bootstrap.di.container import get_async_container
+from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
 from tests.integration.api_client import ApiClient, APIClientConfig
 
 # This is a fake private key used only to sign fake access token for tests
@@ -163,29 +163,29 @@ def email(faker: Faker) -> str:
 
 
 @register_fixture
-class LandlordFormFactory(ModelFactory[LandlordForm]):
-    """Factory of LandlordForm models."""
+class OrganizerFormFactory(ModelFactory[OrganizerForm]):
+    """Factory of OrganizerForm models."""
 
-    __model__ = LandlordForm
+    __model__ = OrganizerForm
 
 
 @pytest.fixture
-def landlord_form(
-    landlord_form_factory: LandlordFormFactory,
-) -> LandlordForm:
-    """Landlord form."""
-    return landlord_form_factory.build()
+def organizer_form(
+    organizer_form_factory: OrganizerFormFactory,
+) -> OrganizerForm:
+    """Organizer form."""
+    return organizer_form_factory.build()
 
 
 # Entities
 @pytest.fixture
-async def landlord(
+async def organizer(
     api_client: ApiClient,
-    landlord_form: LandlordForm,
+    organizer_form: OrganizerForm,
     email: str,
-) -> CreatedLandlord:
-    """Created landlord entity."""
+) -> CreatedOrganizer:
+    """Created organizer entity."""
     with api_client.authenticate(auth_user_id="1", auth_user_email=email):
-        response = await api_client.register_landlord(landlord_form)
+        response = await api_client.register_organizer(organizer_form)
 
     return response.assert_status(200).ensure_ok()
