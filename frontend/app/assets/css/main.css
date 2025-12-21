@@ -1,0 +1,142 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * CSS Custom Properties for Theming
+ * These variables enable dynamic theming and are automatically
+ * updated when the color mode changes
+ */
+@layer base {
+  :root {
+    /* Light theme variables */
+    --color-background-primary: theme("colors.white");
+    --color-background-secondary: theme("colors.gray.50");
+    --color-background-elevated: theme("colors.gray.100");
+    --color-background-card: theme("colors.white");
+
+    --color-text-primary: theme("colors.gray.900");
+    --color-text-secondary: theme("colors.gray.600");
+    --color-text-muted: theme("colors.gray.500");
+    --color-text-highlighted: theme("colors.blue.500");
+
+    --color-border-default: theme("colors.gray.200");
+    --color-border-subtle: theme("colors.gray.100");
+
+    /* Color mode preference */
+    color-scheme: light;
+  }
+
+  .dark {
+    /* Dark theme variables */
+    --color-background-primary: theme("colors.gray.900");
+    --color-background-secondary: theme("colors.gray.800");
+    --color-background-elevated: theme("colors.gray.700");
+    --color-background-card: theme("colors.gray.800/0.9");
+
+    --color-text-primary: theme("colors.gray.100");
+    --color-text-secondary: theme("colors.gray.400");
+    --color-text-muted: theme("colors.gray.500");
+    --color-text-highlighted: theme("colors.blue.400");
+
+    --color-border-default: theme("colors.gray.700");
+    --color-border-subtle: theme("colors.gray.700/0.5");
+
+    /* Color mode preference */
+    color-scheme: dark;
+  }
+
+  /* Base body styles using CSS variables */
+  body {
+    background-color: var(--color-background-primary);
+    color: var(--color-text-primary);
+  }
+}
+
+/**
+ * Custom utility classes for consistent theming
+ */
+@layer utilities {
+  .bg-themed-primary {
+    background-color: var(--color-background-primary);
+  }
+
+  .bg-themed-secondary {
+    background-color: var(--color-background-secondary);
+  }
+
+  .bg-themed-elevated {
+    background-color: var(--color-background-elevated);
+  }
+
+  .text-themed-primary {
+    color: var(--color-text-primary);
+  }
+
+  .text-themed-secondary {
+    color: var(--color-text-secondary);
+  }
+
+  .text-themed-muted {
+    color: var(--color-text-muted);
+  }
+
+  .border-themed {
+    border-color: var(--color-border-default);
+  }
+
+  .border-themed-subtle {
+    border-color: var(--color-border-subtle);
+  }
+}
+
+/**
+ * Animation utilities
+ */
+@layer components {
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

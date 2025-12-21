@@ -17,6 +17,7 @@ services:
             - "80:80"
         volumes:
             - ../.config/nginx.conf:/etc/nginx/nginx.conf
+            - ../frontend/.output/public:/usr/share/nginx/html:ro
 
     oauth2-proxy:
         container_name: oauth2-proxy

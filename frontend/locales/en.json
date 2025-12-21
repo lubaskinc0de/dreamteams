@@ -1,0 +1,162 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "confirm": "Confirm",
+    "personalAccount": "Personal Account"
+  },
+  "nav": {
+    "home": "Home",
+    "profile": "Profile",
+    "register": "Register",
+    "login": "Sign In",
+    "brand": "DreamTeams",
+    "brandSubtitle": "Hackathon Aggregator"
+  },
+  "home": {
+    "title": "DreamTeams",
+    "description": "Hackathon aggregator and team formation platform. Find hackathons, build teams, compete in events.",
+    "registerButton": "Become an Organizer",
+    "profileButton": "Go to Profile",
+    "featuresTitle": "Key Features",
+    "featuresDescription": "Everything you need for hackathon participants and organizers",
+    "features": {
+      "aggregator": {
+        "title": "Event Aggregator",
+        "description": "All hackathons in one place — no need to search across dozens of websites. Smart filters by date, topic, and format",
+        "badge": "One Platform"
+      },
+      "teams": {
+        "title": "Team Formation",
+        "description": "Search by skills — find developers, designers, analysts. Participant profiles with tech stacks and achievements",
+        "badge": "Smart Matching"
+      },
+      "organizers": {
+        "title": "For Organizers",
+        "description": "Centralized event publishing, detailed analytics on participants, and targeted audience reach",
+        "badge": "Full Analytics"
+      }
+    },
+    "stats": {
+      "hackathons": {
+        "value": "500+",
+        "label": "Hackathons on Platform"
+      },
+      "teams": {
+        "value": "1000+",
+        "label": "Teams Formed"
+      },
+      "participants": {
+        "value": "5000+",
+        "label": "Active Participants"
+      }
+    }
+  },
+  "profile": {
+    "title": "User Profile",
+    "description": "Manage your information and settings",
+    "headline": "Dashboard",
+    "loadingProfile": "Loading profile...",
+    "organizerBadge": "Organizer",
+    "userBadge": "User",
+    "notRegistered": {
+      "title": "You're not registered as an organizer yet",
+      "description": "Register to start publishing hackathons and access participant analytics",
+      "button": "Register as Organizer"
+    },
+    "registered": {
+      "title": "You're registered as an organizer",
+      "description": "You can publish hackathons and manage events on the platform"
+    },
+    "fields": {
+      "organizerName": "Organizer Name",
+      "phoneNumber": "Phone Number",
+      "contactEmail": "Contact Email",
+      "organizerId": "Organizer ID",
+      "userId": "User ID"
+    }
+  },
+  "register": {
+    "title": "Organizer Registration",
+    "description": "Fill in your details to get started with the platform",
+    "headline": "New Organizer",
+    "goToProfile": "Go to Profile"
+  },
+  "form": {
+    "organizerName": {
+      "label": "Organizer Name",
+      "placeholder": "IT Company or University",
+      "hint": "Enter your organization name or your name",
+      "required": "Organizer name is required",
+      "maxLength": "Name must not exceed 70 characters"
+    },
+    "phoneNumber": {
+      "label": "Phone Number",
+      "placeholder": "+7 (999) 123-45-67",
+      "hint": "Russian number in format +7XXXXXXXXXX",
+      "invalid": "Enter a valid Russian phone number (+7XXXXXXXXXX)"
+    },
+    "submitButton": {
+      "register": "Register",
+      "registering": "Registering..."
+    },
+    "dataProtection": "All data is protected and not shared with third parties"
+  },
+  "errors": {
+    "UNAUTHORIZED": "Please log in",
+    "USER_NOT_FOUND": "User not found",
+    "USER_HAS_NO_ROLE": "User has no role assigned",
+    "AUTH_USER_ALREADY_EXISTS": "You're already registered as an organizer",
+    "ORGANIZER_ALREADY_EXISTS": "Phone or email is already in use",
+    "VALIDATION_ERROR": "Please check the form for errors",
+    "ACCESS_DENIED": "Access denied",
+    "INTERNAL_SERVER_ERROR": "Internal server error. Please try again later",
+    "NETWORK_ERROR": "Network error. Please check your internet connection",
+    "UNKNOWN_ERROR": "An unknown error occurred"
+  },
+  "toast": {
+    "registrationSuccess": {
+      "title": "Registration Successful!",
+      "description": "Welcome to DreamTeams"
+    },
+    "profileUpdated": {
+      "title": "Profile Updated",
+      "description": "Your data has been saved successfully"
+    }
+  },
+  "footer": {
+    "platformName": "DreamTeams",
+    "platformDescription": "Hackathon aggregator and team formation platform",
+    "version": "v1.0.0",
+    "copyright": "© 2025 All rights reserved",
+    "support": "Support",
+    "documentation": "Documentation"
+  },
+  "theme": {
+    "light": "Light Theme",
+    "dark": "Dark Theme",
+    "system": "System",
+    "toggle": "Toggle Theme"
+  },
+  "seo": {
+    "home": {
+      "title": "DreamTeams - Hackathon Aggregator and Team Formation",
+      "description": "Find hackathons, build teams, compete in events. All events in one place with smart participant matching."
+    },
+    "profile": {
+      "title": "Profile - DreamTeams",
+      "description": "Manage your organizer profile"
+    },
+    "register": {
+      "title": "Organizer Registration - DreamTeams",
+      "description": "Register as an organizer and start publishing hackathons on the platform"
+    }
+  }
+}
