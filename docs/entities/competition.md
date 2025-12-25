@@ -19,7 +19,7 @@ Represents a hackathon or olympiad event created by an organizer.
 | `participant_type` | `ParticipantType` | Target participant category |
 | `venue` | `CompetitionVenue` | Event format and location |
 | `team_size` | `TeamSizeRange` | Min and max team size |
-| `is_deleted` | `bool` | Soft delete flag |
+| `is_archived` | `bool` | Whether competition is archived |
 | `created_at` | `datetime` | When competition was created |
 | `updated_at` | `datetime` | Last update timestamp |
 
@@ -53,7 +53,7 @@ Represents a hackathon or olympiad event created by an organizer.
 ## Business Rules
 
 1. Domains list must not be empty
-2. Soft deleted competitions (`is_deleted=True`) are not visible to participants
+2. Archived competitions (`is_archived=True`) are not visible to participants
 
 ## Relationships
 

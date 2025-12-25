@@ -102,7 +102,7 @@ class Competition(Entity):
     participant_type: ParticipantType
     venue: CompetitionVenue
     team_size: TeamSizeRange
-    is_deleted: bool
+    is_archived: bool
     created_at: datetime
     updated_at: datetime
 
