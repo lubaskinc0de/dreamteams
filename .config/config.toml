@@ -3,7 +3,7 @@ user_id_header = "X-Auth-User"
 user_email_header = "X-Auth-User-Email"
 access_token_header = "X-Access-Token"
 access_token_alg = "RS256"
-allow_unverified_email = false
+allow_unverified_email = true
 
 [tracing]
 trace_id_header = "X-Trace-Id"

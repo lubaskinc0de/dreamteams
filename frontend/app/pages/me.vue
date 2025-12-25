@@ -3,7 +3,6 @@ const userStore = useUserStore();
 const { navigateTo } = useNavigation();
 const { getErrorMessage } = useErrorHandler();
 const { t } = useI18n();
-const config = useRuntimeConfig();
 
 // SEO Meta tags
 useSeoMeta({
@@ -15,41 +14,22 @@ useSeoMeta({
 const errorMessage = computed(() => getErrorMessage(userStore.error));
 
 const goToRegistration = () => {
-  navigateTo("/onboarding");
-};
-
-// Tabs configuration
-const tabs = computed(() => [
-  {
-    label: t('profile.tabs.information'),
-    icon: 'i-heroicons-user-circle',
-    slot: 'information',
-  },
-  {
-    label: t('profile.tabs.settings'),
-    icon: 'i-heroicons-cog-6-tooth',
-    slot: 'settings',
-  },
-]);
-
-// Logout handler
-const handleLogout = () => {
-  window.location.href = `${config.public.apiBase}/oauth2/sign_out?rd=/`;
+  navigateTo("/start");
 };
 </script>
 
 <template>
   <UPage>
+    <div class="max-w-4xl mx-auto">
+      <UPageHeader
+        :title="t('profile.title')"
+        :description="t('profile.description')"
+        :headline="t('profile.headline')"
+      />
+    </div>
+
     <UPageBody>
-      <div class="max-w-6xl mx-auto">
-        <div class="mb-8">
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {{ t('profile.title') }}
-          </h1>
-          <p class="text-gray-600 dark:text-gray-400">
-            {{ t('profile.description') }}
-          </p>
-        </div>
+      <div class="max-w-4xl mx-auto">
         <UAlert
           v-if="errorMessage"
           color="error"
@@ -87,14 +67,6 @@ const handleLogout = () => {
         </div>
 
         <div v-else-if="userStore.profile" class="animate-fade-in">
-          <UTabs
-            :items="tabs"
-            orientation="horizontal"
-            variant="pill"
-            class="w-full"
-          >
-            <!-- Information Tab -->
-            <template #information>
           <UCard>
             <template #header>
               <div class="flex items-start justify-between">
@@ -145,7 +117,7 @@ const handleLogout = () => {
             </template>
 
             <div v-if="userStore.isOrganizer && userStore.organizer">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div class="space-y-1">
                   <div
                     class="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 mb-2"
@@ -199,6 +171,33 @@ const handleLogout = () => {
                   </p>
                 </div>
               </div>
+
+              <USeparator class="my-6" />
+
+              <div
+                class="bg-success-500/10 border border-success-500/20 rounded-lg p-4"
+                role="status"
+              >
+                <div class="flex items-start gap-3">
+                  <div
+                    class="p-1.5 rounded-lg bg-success-500/20 mt-0.5"
+                    aria-hidden="true"
+                  >
+                    <UIcon
+                      name="i-heroicons-check-circle"
+                      class="text-success-400 text-xl"
+                    />
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-success-300 mb-1">
+                      {{ t("profile.registered.title") }}
+                    </h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                      {{ t("profile.registered.description") }}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div v-else>
@@ -232,69 +231,6 @@ const handleLogout = () => {
               </div>
             </template>
           </UCard>
-            </template>
-
-            <!-- Settings Tab -->
-            <template #settings>
-              <UCard>
-                <div class="space-y-8">
-                  <!-- Appearance Section -->
-                  <div>
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                      {{ t('profile.settings.appearance.title') }}
-                    </h3>
-
-                    <div class="space-y-4">
-                      <div class="flex items-center justify-between">
-                        <div>
-                          <p class="font-medium text-gray-900 dark:text-gray-100">
-                            {{ t('profile.settings.appearance.theme') }}
-                          </p>
-                          <p class="text-sm text-gray-600 dark:text-gray-400">
-                            {{ t('profile.settings.appearance.themeDescription') }}
-                          </p>
-                        </div>
-                        <ThemeToggle size="lg" />
-                      </div>
-
-                      <USeparator />
-
-                      <div class="flex items-center justify-between">
-                        <div>
-                          <p class="font-medium text-gray-900 dark:text-gray-100">
-                            {{ t('profile.settings.appearance.language') }}
-                          </p>
-                          <p class="text-sm text-gray-600 dark:text-gray-400">
-                            {{ t('profile.settings.appearance.languageDescription') }}
-                          </p>
-                        </div>
-                        <LanguageSwitcher size="lg" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <USeparator />
-
-                  <!-- Authentication Section -->
-                  <div>
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                      {{ t('profile.settings.authentication.title') }}
-                    </h3>
-
-                    <UButton
-                      color="error"
-                      variant="soft"
-                      size="lg"
-                      icon="i-heroicons-arrow-right-on-rectangle"
-                      @click="handleLogout"
-                    >
-                      {{ t('profile.settings.authentication.logout') }}
-                    </UButton>
-                  </div>
-                </div>
-              </UCard>
-            </template>
-          </UTabs>
         </div>
       </div>
     </UPageBody>

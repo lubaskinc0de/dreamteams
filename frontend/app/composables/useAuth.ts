@@ -3,26 +3,56 @@
  * Provides authentication state checking and login/logout functionality
  */
 export const useAuth = () => {
-  const isAuthenticated = ref<boolean>(false);
-  const isLoading = ref<boolean>(true);
+  const isAuthenticated = useState<boolean>('auth-isAuthenticated', () => false);
+  const needsOnboarding = useState<boolean>('auth-needsOnboarding', () => false);
+  const hasProfile = useState<boolean>('auth-hasProfile', () => false);
+  const isLoading = useState<boolean>('auth-isLoading', () => true);
   const config = useRuntimeConfig();
   const apiBase = config.public.apiBase;
+  const api = useApi();
+  const userStore = useUserStore();
 
   /**
-   * Check authentication status by trying to fetch user profile
-   * This approach avoids direct OAuth endpoint calls from frontend
+   * Check authentication status via OAuth2 endpoint
+   * If authenticated, fetch user profile to determine onboarding state
    */
-  const checkAuth = async () => {
+  const checkAuthStatus = async () => {
     isLoading.value = true;
     try {
-      await $fetch(`${apiBase}/users/me`, {
-        method: 'GET',
-      });
+      // Step 1: Check OAuth2 authentication
+      const authenticated = await api.checkAuth();
+      isAuthenticated.value = authenticated;
 
-      isAuthenticated.value = true;
+      if (!authenticated) {
+        needsOnboarding.value = false;
+        hasProfile.value = false;
+        return;
+      }
+
+      // Step 2: If authenticated, check if user has profile
+      const { data, error } = await api.getUserProfile();
+
+      if (error) {
+        // 401 or 404 USER_HAS_NO_ROLE means user is in Keycloak but hasn't created profile
+        if (error.code === 'UNAUTHORIZED' || error.code === 'USER_HAS_NO_ROLE') {
+          needsOnboarding.value = true;
+          hasProfile.value = false;
+        } else {
+          // Other errors - treat as not having profile
+          needsOnboarding.value = true;
+          hasProfile.value = false;
+        }
+      } else if (data) {
+        // User has profile
+        userStore.profile = data;
+        needsOnboarding.value = false;
+        hasProfile.value = true;
+      }
     } catch (error: any) {
-      // 401 or any other error means not authenticated
+      console.error('Error checking auth status:', error);
       isAuthenticated.value = false;
+      needsOnboarding.value = false;
+      hasProfile.value = false;
     } finally {
       isLoading.value = false;
     }
@@ -44,15 +74,12 @@ export const useAuth = () => {
     window.location.href = `${apiBase}/oauth2/sign_out?rd=/`;
   };
 
-  // Check authentication on composable initialization
-  onMounted(() => {
-    checkAuth();
-  });
-
   return {
-    isAuthenticated: readonly(isAuthenticated),
-    isLoading: readonly(isLoading),
-    checkAuth,
+    isAuthenticated,
+    needsOnboarding,
+    hasProfile,
+    isLoading,
+    checkAuthStatus,
     login,
     logout,
   };

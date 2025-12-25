@@ -2,13 +2,11 @@
 import type { FormSubmitEvent } from "#ui/types";
 import type { OrganizerForm } from "~/types/api";
 import {
-  organizerRegistrationSchema,
-  formatPhoneNumber,
+  createOrganizerSchemas,
   type OrganizerRegistrationSchema,
 } from "~/schemas/organizer";
 
 const organizerStore = useOrganizerStore();
-const { navigateTo } = useNavigation();
 const { getErrorMessage, isErrorCode } = useErrorHandler();
 const { t } = useI18n();
 
@@ -17,10 +15,9 @@ const state = reactive({
   phone_number: "+7",
 });
 
-// Phone number formatting with debounce
-const onPhoneBlur = () => {
-  state.phone_number = formatPhoneNumber(state.phone_number);
-};
+const {
+  organizerRegistrationSchema
+} = createOrganizerSchemas(t);
 
 // Form submission handler
 const onSubmit = async (event: FormSubmitEvent<OrganizerRegistrationSchema>) => {
@@ -30,10 +27,7 @@ const onSubmit = async (event: FormSubmitEvent<OrganizerRegistrationSchema>) => 
   };
 
   await organizerStore.registerOrganizer(formData);
-
-  if (organizerStore.registrationSuccess) {
-    navigateTo("/profile");
-  }
+  // Parent component (onboarding page) will handle redirect on success
 };
 
 // Error handling using centralized composable
@@ -46,102 +40,52 @@ const showProfileLink = computed(() =>
 
 <template>
   <div class="animate-fade-in">
-    <UAlert
-      v-if="apiErrorMessage"
-      color="error"
-      variant="soft"
-      :title="apiErrorMessage"
-      icon="i-heroicons-exclamation-circle"
-      :close-button="{
+    <UAlert v-if="apiErrorMessage" color="error" variant="soft" :title="apiErrorMessage"
+      icon="i-heroicons-exclamation-circle" :close-button="{
         icon: 'i-heroicons-x-mark-20-solid',
         color: 'neutral',
         variant: 'ghost',
         padded: false,
-      }"
-      @close="organizerStore.clearError()"
-      class="mb-6"
-      role="alert"
-    >
+      }" @close="organizerStore.clearError()" class="mb-6" role="alert">
       <template v-if="showProfileLink" #description>
-        <NuxtLink
-          to="/profile"
-          class="text-primary-400 hover:text-primary-300 underline font-medium"
-          :aria-label="t('register.goToProfile')"
-        >
+        <NuxtLink to="/profile" class="text-primary-400 hover:text-primary-300 underline font-medium"
+          :aria-label="t('register.goToProfile')">
           {{ t("register.goToProfile") }}
         </NuxtLink>
       </template>
     </UAlert>
 
-    <UCard>
-      <UForm
-        :schema="organizerRegistrationSchema"
-        :state="state"
-        @submit="onSubmit"
-        class="space-y-6"
-      >
-        <UFormField
-          :label="t('form.organizerName.label')"
-          name="organizer_name"
-          required
-          :aria-required="true"
-        >
-          <UInput
-            v-model="state.organizer_name"
-            :placeholder="t('form.organizerName.placeholder')"
-            icon="i-heroicons-building-office"
-            size="lg"
-            :maxlength="70"
-            :aria-label="t('form.organizerName.label')"
-          />
-        </UFormField>
+    <UForm :schema="organizerRegistrationSchema" :state="state" @submit="onSubmit"
+      :validate-on="['input', 'change']"
+      class="space-y-5 w-full">
+      <UFormField :label="t('form.organizerName.label')" name="organizer_name" required :aria-required="true"
+        class="w-full">
+        <UInput v-model="state.organizer_name" :placeholder="t('form.organizerName.placeholder')"
+          icon="i-heroicons-building-office" size="xl" :maxlength="70" :aria-label="t('form.organizerName.label')"
+          class="w-full" />
+      </UFormField>
 
-        <UFormField
-          :label="t('form.phoneNumber.label')"
-          name="phone_number"
-          required
-          :aria-required="true"
-        >
-          <UInput
-            v-model="state.phone_number"
-            :placeholder="t('form.phoneNumber.placeholder')"
-            icon="i-heroicons-phone"
-            size="lg"
-            type="tel"
-            :aria-label="t('form.phoneNumber.label')"
-            @blur="onPhoneBlur"
-          />
-        </UFormField>
+      <UFormField :label="t('form.phoneNumber.label')" name="phone_number" required :aria-required="true"
+        class="w-full">
+        <UInput v-model="state.phone_number" :placeholder="t('form.phoneNumber.placeholder')" icon="i-heroicons-phone"
+          size="xl" type="tel" :aria-label="t('form.phoneNumber.label')" class="w-full" />
+      </UFormField>
 
-        <USeparator />
+      <div class="pt-2">
+        <UButton type="submit" :loading="organizerStore.loading" :disabled="organizerStore.loading"
+          :aria-busy="organizerStore.loading" block size="xl" icon="i-heroicons-check-circle" :trailing="false">
+          {{
+            organizerStore.loading
+              ? t("form.submitButton.registering")
+              : t("form.submitButton.register")
+          }}
+        </UButton>
 
-        <div class="flex flex-col gap-4">
-          <UButton
-            type="submit"
-            :loading="organizerStore.loading"
-            :disabled="organizerStore.loading"
-            :aria-busy="organizerStore.loading"
-            block
-            size="xl"
-            icon="i-heroicons-check-circle"
-            :trailing="false"
-          >
-            {{
-              organizerStore.loading
-                ? t("form.submitButton.registering")
-                : t("form.submitButton.register")
-            }}
-          </UButton>
-
-          <div
-            class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 justify-center"
-            role="note"
-          >
-            <UIcon name="i-heroicons-shield-check" aria-hidden="true" />
-            <span>{{ t("form.dataProtection") }}</span>
-          </div>
+        <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 justify-center mt-3" role="note">
+          <UIcon name="i-heroicons-shield-check" aria-hidden="true" />
+          <span>{{ t("form.dataProtection") }}</span>
         </div>
-      </UForm>
-    </UCard>
+      </div>
+    </UForm>
   </div>
 </template>

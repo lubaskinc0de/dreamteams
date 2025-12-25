@@ -31,11 +31,26 @@ export const useApi = () => {
     };
   };
 
+  /**
+   * Check if user is authenticated via OAuth2
+   * Returns true if authenticated, false otherwise
+   */
+  const checkAuth = async (): Promise<boolean> => {
+    try {
+      await $fetch(`${apiBase}/oauth2/auth`, {
+        method: "GET",
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const registerOrganizer = async (
     form: OrganizerForm,
   ): Promise<{ data: CreatedOrganizer | null; error: ApiError | null }> => {
     try {
-      const data = await $fetch<CreatedOrganizer>(`${apiBase}/organizers/`, {
+      const data = await $fetch<CreatedOrganizer>(`${apiBase}/api/organizers/`, {
         method: "POST",
         body: form,
         headers: {
@@ -53,7 +68,7 @@ export const useApi = () => {
     error: ApiError | null;
   }> => {
     try {
-      const data = await $fetch<ProfileModel>(`${apiBase}/users/me`, {
+      const data = await $fetch<ProfileModel>(`${apiBase}/api/users/me`, {
         method: "GET",
       });
       return { data, error: null };
@@ -63,6 +78,7 @@ export const useApi = () => {
   };
 
   return {
+    checkAuth,
     registerOrganizer,
     getUserProfile,
   };

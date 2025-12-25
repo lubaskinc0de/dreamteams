@@ -1,6 +1,5 @@
 import { defineStore } from "pinia";
 import type { OrganizerForm, CreatedOrganizer, ApiError } from "~/types/api";
-import { UI_TEXT } from "~/constants/ui-text";
 
 export const useOrganizerStore = defineStore("organizer", {
   state: () => ({
@@ -12,11 +11,14 @@ export const useOrganizerStore = defineStore("organizer", {
 
   actions: {
     async registerOrganizer(form: OrganizerForm) {
+      const { $i18n } = useNuxtApp();
+      const toast = useToast();
+      const api = useApi();
+
       this.loading = true;
       this.error = null;
       this.registrationSuccess = false;
 
-      const api = useApi();
       const { data, error } = await api.registerOrganizer(form);
 
       if (error) {
@@ -25,17 +27,14 @@ export const useOrganizerStore = defineStore("organizer", {
         this.createdOrganizer = data;
         this.registrationSuccess = true;
 
-        // Show success toast notification
-        const toast = useToast();
         toast.add({
-          title: UI_TEXT.toast.registrationSuccess.title,
-          description: UI_TEXT.toast.registrationSuccess.description,
+          title: $i18n.t("toast.registrationSuccess.title"),
+          description: $i18n.t("toast.registrationSuccess.description"),
           icon: "i-heroicons-check-circle",
           color: "success",
           duration: 5000,
         });
 
-        // Update user profile after successful registration
         const userStore = useUserStore();
         await userStore.fetchProfile();
       }

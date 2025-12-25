@@ -19,6 +19,18 @@ export default defineNuxtConfig({
     },
   },
 
+  nitro: {
+    prerender: {
+      routes: ['/'],
+      ignore: ['/profile', '/onboarding', '/me', '/start'],
+      crawlLinks: true,
+      failOnError: false,
+    },
+  },
+
+  // Enable SPA mode for proper 404 handling with static generation
+  ssr: false,
+
   // i18n configuration
   i18n: {
     locales: [

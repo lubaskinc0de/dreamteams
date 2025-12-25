@@ -37,8 +37,10 @@ const items = computed<DropdownMenuItem[]>(() => {
   return locales.value.map((loc) => ({
     label: loc.name || loc.code.toUpperCase(),
     icon: "i-heroicons-language",
-    onSelect: () => {
-      setLocale(loc.code as "ru" | "en");
+    onSelect: async () => {
+      await setLocale(loc.code as "ru" | "en");
+      // Force reload to apply language changes everywhere
+      window.location.reload();
     },
   }));
 });

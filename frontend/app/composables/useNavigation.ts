@@ -23,7 +23,7 @@ export const useNavigation = () => {
     {
       label: t("nav.register"),
       icon: "i-heroicons-user-plus",
-      to: "/register",
+      to: "/onboarding",
     },
   ]);
 
@@ -32,20 +32,12 @@ export const useNavigation = () => {
    */
   const heroLinks = computed(() => [
     {
-      label: t("home.registerButton"),
-      icon: "i-heroicons-user-plus",
+      label: t("home.startButton"),
+      icon: "i-heroicons-rocket-launch",
       size: "xl" as const,
       click: async () => {
-        await router.push("/register");
-      },
-    },
-    {
-      label: t("home.profileButton"),
-      icon: "i-heroicons-user-circle",
-      size: "xl" as const,
-      variant: "outline" as const,
-      click: async () => {
-        await router.push("/profile");
+        const { login } = useAuth();
+        await login();
       },
     },
   ]);

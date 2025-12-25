@@ -10,7 +10,26 @@
     "back": "Back",
     "next": "Next",
     "confirm": "Confirm",
-    "personalAccount": "Personal Account"
+    "personalAccount": "Personal Account",
+    "backToHome": "Back to Home"
+  },
+  "errors": {
+    "unauthorized": {
+      "title": "Authorization Required",
+      "description": "You need to sign in to access this page"
+    },
+    "notFound": {
+      "title": "Page Not Found",
+      "description": "The requested page does not exist or has been removed"
+    },
+    "serverError": {
+      "title": "Server Error",
+      "description": "An internal server error occurred. Please try again later"
+    },
+    "default": {
+      "title": "An Error Occurred",
+      "description": "Something went wrong. Please try again"
+    }
   },
   "nav": {
     "home": "Home",
@@ -18,19 +37,50 @@
     "register": "Register",
     "login": "Sign In",
     "brand": "DreamTeams",
-    "brandSubtitle": "Hackathon Aggregator"
+    "brandSubtitle": "IT Competition Aggregator"
   },
   "home": {
     "title": "DreamTeams",
-    "description": "Hackathon aggregator and team formation platform. Find hackathons, build teams, compete in events.",
+    "heroTitle": "Find People — Create the Future!",
+    "heroDescription": "Innovative service for team formation at IT competitions. All current events aggregated in one place.",
+    "ctaText": "Join the community of participants and create your dream teams today!",
+    "startButton": "Get Started",
     "registerButton": "Become an Organizer",
     "profileButton": "Go to Profile",
+    "findEvents": "Find Events",
+    "about": {
+      "title": "About the Platform",
+      "description": "DreamTeams is an innovative service for team formation at IT competitions, as well as an aggregator of all current events. We strive to simplify the team formation process and provide a centralized platform for finding and participating in competitions."
+    },
     "featuresTitle": "Key Features",
-    "featuresDescription": "Everything you need for hackathon participants and organizers",
+    "featuresDescription": "Everything you need for IT competition participants and organizers",
+    "whyBest": {
+      "title": "Why We're the Best?",
+      "unique": {
+        "title": "No Analogs",
+        "description": "We are the only platform that connects competition organizers and participants"
+      },
+      "demand": {
+        "title": "High Demand",
+        "description": "According to our research, many people participating in competitions need team formation and event aggregation services"
+      },
+      "transparent": {
+        "title": "Transparent Revenue",
+        "description": "Our service earns from organizers posting events, without intrusive advertising or selling user data"
+      },
+      "rating": {
+        "title": "Rating System",
+        "description": "The service provides a rating system for organizers and event participants, encouraging users to use our service"
+      }
+    },
+    "cta": {
+      "title": "Ready to Start?",
+      "description": "Join the growing community of IT competition organizers and participants"
+    },
     "features": {
       "aggregator": {
         "title": "Event Aggregator",
-        "description": "All hackathons in one place — no need to search across dozens of websites. Smart filters by date, topic, and format",
+        "description": "All IT competitions in one place — no need to search across dozens of websites. Smart filters by date, topic, and format",
         "badge": "One Platform"
       },
       "teams": {
@@ -42,12 +92,17 @@
         "title": "For Organizers",
         "description": "Centralized event publishing, detailed analytics on participants, and targeted audience reach",
         "badge": "Full Analytics"
+      },
+      "integration": {
+        "title": "Integration",
+        "description": "Organizers can integrate their own system with ours through a convenient API",
+        "badge": "API"
       }
     },
     "stats": {
-      "hackathons": {
+      "competitions": {
         "value": "500+",
-        "label": "Hackathons on Platform"
+        "label": "IT Competitions on Platform"
       },
       "teams": {
         "value": "1000+",
@@ -66,14 +121,31 @@
     "loadingProfile": "Loading profile...",
     "organizerBadge": "Organizer",
     "userBadge": "User",
+    "tabs": {
+      "information": "Information",
+      "settings": "Settings"
+    },
     "notRegistered": {
       "title": "You're not registered as an organizer yet",
-      "description": "Register to start publishing hackathons and access participant analytics",
+      "description": "Register to start publishing IT competitions and access participant analytics",
       "button": "Register as Organizer"
     },
     "registered": {
       "title": "You're registered as an organizer",
-      "description": "You can publish hackathons and manage events on the platform"
+      "description": "You can publish IT competitions and manage events on the platform"
+    },
+    "settings": {
+      "authentication": {
+        "title": "Authentication",
+        "logout": "Sign out"
+      },
+      "appearance": {
+        "title": "Appearance",
+        "theme": "Theme",
+        "themeDescription": "Switch between light and dark theme",
+        "language": "Language",
+        "languageDescription": "Choose interface language"
+      }
     },
     "fields": {
       "organizerName": "Organizer Name",
@@ -89,10 +161,16 @@
     "headline": "New Organizer",
     "goToProfile": "Go to Profile"
   },
+  "onboarding": {
+    "roleSelection": {
+      "title": "Tell us about yourself",
+      "organizerButton": "I'm an organizer"
+    }
+  },
   "form": {
     "organizerName": {
       "label": "Organizer Name",
-      "placeholder": "IT Company or University",
+      "placeholder": "Your public display name",
       "hint": "Enter your organization name or your name",
       "required": "Organizer name is required",
       "maxLength": "Name must not exceed 70 characters"
@@ -109,7 +187,7 @@
     },
     "dataProtection": "All data is protected and not shared with third parties"
   },
-  "errors": {
+  "apiErrors": {
     "UNAUTHORIZED": "Please log in",
     "USER_NOT_FOUND": "User not found",
     "USER_HAS_NO_ROLE": "User has no role assigned",
@@ -133,11 +211,9 @@
   },
   "footer": {
     "platformName": "DreamTeams",
-    "platformDescription": "Hackathon aggregator and team formation platform",
-    "version": "v1.0.0",
+    "platformDescription": "IT competition aggregator and team formation platform",
     "copyright": "© 2025 All rights reserved",
-    "support": "Support",
-    "documentation": "Documentation"
+    "support": "Support"
   },
   "theme": {
     "light": "Light Theme",
@@ -147,8 +223,8 @@
   },
   "seo": {
     "home": {
-      "title": "DreamTeams - Hackathon Aggregator and Team Formation",
-      "description": "Find hackathons, build teams, compete in events. All events in one place with smart participant matching."
+      "title": "DreamTeams - IT Competition Aggregator and Team Formation",
+      "description": "Find IT competitions, build teams, compete in events. All competitions in one place with smart participant matching."
     },
     "profile": {
       "title": "Profile - DreamTeams",
@@ -156,7 +232,11 @@
     },
     "register": {
       "title": "Organizer Registration - DreamTeams",
-      "description": "Register as an organizer and start publishing hackathons on the platform"
+      "description": "Register as an organizer and start publishing IT competitions on the platform"
+    },
+    "onboarding": {
+      "title": "Getting Started - DreamTeams",
+      "description": "Choose your role and start working with the platform"
     }
   }
 }

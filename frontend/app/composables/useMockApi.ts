@@ -30,6 +30,13 @@ export const useMockApi = () => {
   const delay = (ms: number) =>
     new Promise((resolve) => setTimeout(resolve, ms));
 
+  const checkAuth = async (): Promise<boolean> => {
+    // Simulate network delay
+    await delay(200);
+    // In mock mode, user is always authenticated
+    return true;
+  };
+
   const registerOrganizer = async (
     form: OrganizerForm,
   ): Promise<{ data: CreatedOrganizer | null; error: ApiError | null }> => {
@@ -113,6 +120,7 @@ export const useMockApi = () => {
   };
 
   return {
+    checkAuth,
     registerOrganizer,
     getUserProfile,
   };

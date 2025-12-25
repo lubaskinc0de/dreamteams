@@ -5,9 +5,11 @@
  * Provides Toast notifications, color mode, and i18n support
  */
 
+const { isLoading: authLoading } = useAuth();
+
 // SEO Configuration for the app
 useHead({
-  titleTemplate: "%s - Посуточник",
+  titleTemplate: "%s - DreamTeams",
   meta: [
     { charset: "utf-8" },
     { name: "viewport", content: "width=device-width, initial-scale=1" },
@@ -27,6 +29,15 @@ const toaster = {
 
 <template>
   <UApp :toaster="toaster">
+    <!-- Show loading overlay while initial auth check is in progress -->
+    <div v-if="authLoading" class="fixed inset-0 z-50 flex items-center justify-center bg-white dark:bg-gray-900">
+      <div class="text-center">
+        <UIcon name="i-heroicons-arrow-path" class="text-6xl text-primary-500 animate-spin mb-4" />
+        <p class="text-gray-600 dark:text-gray-400">Загрузка...</p>
+      </div>
+    </div>
+
+    <!-- App content - always present for Nuxt static analysis -->
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
