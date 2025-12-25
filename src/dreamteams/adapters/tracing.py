@@ -1,11 +1,10 @@
 from abc import abstractmethod
+from dataclasses import dataclass
 from typing import Any, ClassVar, Protocol, override
 from uuid import uuid4
 
 from fastapi.requests import Request
 
-from dreamteams.adapters.base import adapter
-from dreamteams.entities.common.config import config
 from dreamteams.entities.errors.base import AppError, app_error
 
 type TraceId = str
@@ -27,7 +26,7 @@ class MissingTraceIdError(AppError):
         }
 
 
-@config
+@dataclass(slots=True, frozen=True, kw_only=True)
 class TracingConfig:
     """Tracing configuration."""
 
@@ -43,18 +42,21 @@ class TraceProvider(Protocol):
         """Provide ``TraceId``."""
 
 
-@adapter
 class HTTPTraceProvider(TraceProvider):
     """Provide ``TraceId`` from HTTP request headers."""
 
-    request: Request
-    config: TracingConfig
+    _request: Request
+    _config: TracingConfig
+
+    def __init__(self, request: Request, config: TracingConfig) -> None:
+        self._request = request
+        self._config = config
 
     @override
     def get_trace_id(self) -> TraceId:
-        trace_id = self.request.headers.get(self.config.trace_id_header)
-        if trace_id is None and self.config.trace_id_required:
-            raise MissingTraceIdError(header=self.config.trace_id_header)
+        trace_id = self._request.headers.get(self._config.trace_id_header)
+        if trace_id is None and self._config.trace_id_required:
+            raise MissingTraceIdError(header=self._config.trace_id_header)
 
         if trace_id is None:
             trace_id = uuid4().hex

@@ -10,7 +10,6 @@ from dreamteams.adapters.errors.http.response import ErrorResponse
 from dreamteams.adapters.tracing import TraceId, TracingConfig
 from dreamteams.application.register.organizer import CreatedOrganizer
 from dreamteams.application.view_profile.interactor import ProfileModel
-from dreamteams.entities.common.config import config
 from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
 
 retort = Retort()
@@ -67,7 +66,7 @@ class APIResponse[T]:
         return self
 
 
-@config
+@dataclass(slots=True, frozen=True, kw_only=True)
 class APIClientConfig:
     """Config for APIClient."""
 

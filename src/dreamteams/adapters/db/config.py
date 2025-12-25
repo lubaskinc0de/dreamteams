@@ -1,12 +1,12 @@
+from dataclasses import dataclass
 from typing import Self
 
 from sqlalchemy import URL
 
 from dreamteams.adapters.env_loader import env
-from dreamteams.entities import config
 
 
-@config
+@dataclass(slots=True, frozen=True, kw_only=True)
 class DbConfig:
     """Database connection configuration parameters."""
 

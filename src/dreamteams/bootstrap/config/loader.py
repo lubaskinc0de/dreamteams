@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Self
 
@@ -8,13 +9,12 @@ from dreamteams.adapters.auth.idp.auth_user import WebAuthUserIdProviderConfig
 from dreamteams.adapters.db.config import DbConfig
 from dreamteams.adapters.env_loader import env
 from dreamteams.adapters.tracing import TracingConfig
-from dreamteams.entities import config
 from dreamteams.presentation.fast_api.config import ApiConfig, CorsConfig, ServerConfig
 
 retort = Retort()
 
 
-@config
+@dataclass(slots=True, frozen=True, kw_only=True)
 class TomlConfig:
     """Configuration structure loaded from TOML file matching the file's schema."""
 
@@ -24,7 +24,7 @@ class TomlConfig:
     api: ApiConfig
 
 
-@config
+@dataclass(slots=True, frozen=True, kw_only=True)
 class Config:
     """Main application configuration."""
 

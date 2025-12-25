@@ -1,7 +1,7 @@
-from dreamteams.entities.common.config import config
+from dataclasses import dataclass
 
 
-@config
+@dataclass(slots=True, frozen=True, kw_only=True)
 class ServerConfig:
     """HTTP-server configuration."""
 
@@ -9,7 +9,7 @@ class ServerConfig:
     server_host: str
 
 
-@config
+@dataclass(slots=True, frozen=True, kw_only=True)
 class CorsConfig:
     """HTTP CORS policy config."""
 
@@ -19,7 +19,7 @@ class CorsConfig:
     allow_headers: list[str]
 
 
-@config
+@dataclass(slots=True, frozen=True, kw_only=True)
 class ApiConfig:
     """HTTP api config."""
 
