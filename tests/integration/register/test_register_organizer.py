@@ -22,7 +22,7 @@ async def test_register_as_organizer(
     with api_client.authenticate(auth_user_id=USER_ID_FIRST, auth_user_email=faker.email()):
         response = await api_client.register_organizer(data.model_dump(mode="json"))
 
-    response.assert_status(200).ensure_ok()
+    response.assert_status(200).ensure_content()
 
 
 @pytest.mark.parametrize(
@@ -63,7 +63,7 @@ async def test_cannot_register_as_organizer_twice(
         first_response = await api_client.register_organizer(data.model_dump(mode="json"))
         second_response = await api_client.register_organizer(data.model_dump(mode="json"))
 
-    first_response.assert_status(200).ensure_ok()
+    first_response.assert_status(200).ensure_content()
     second_response.assert_error(409, "ORGANIZER_ALREADY_EXISTS")
 
 
@@ -95,8 +95,8 @@ async def test_cannot_register_organizer_with_duplicate_contact_info(
     organizer_form_factory: OrganizerFormFactory,
     faker: Faker,
     email: str,
-    use_same_email: bool,
-    use_same_phone: bool,
+    use_same_email: bool,  # noqa: FBT001
+    use_same_phone: bool,  # noqa: FBT001
 ) -> None:
     """Test that organizer cannot be registered with duplicate email or phone number."""
     first_data = organizer_form_factory.build()
@@ -113,5 +113,5 @@ async def test_cannot_register_organizer_with_duplicate_contact_info(
     with api_client.authenticate(auth_user_id=USER_ID_SECOND, auth_user_email=second_email):
         second_response = await api_client.register_organizer(second_data.model_dump(mode="json"))
 
-    first_response.assert_status(200).ensure_ok()
+    first_response.assert_status(200).ensure_content()
     second_response.assert_error(409, "ORGANIZER_ALREADY_EXISTS")

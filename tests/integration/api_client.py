@@ -11,6 +11,7 @@ from dreamteams.adapters.tracing import TraceId, TracingConfig
 from dreamteams.application.create_competition.interactor import CreatedCompetition
 from dreamteams.application.register.organizer import CreatedOrganizer
 from dreamteams.application.view_profile.interactor import ProfileModel
+from dreamteams.entities.common.identifiers import CompetitionId
 
 retort = Retort()
 
@@ -40,7 +41,7 @@ class APIResponse[T]:
             raise ValueError(msg)
         return self.error
 
-    def ensure_ok(self) -> T:
+    def ensure_content(self) -> T:
         """Unwrap successful response or raise ValueError if error occurred."""
         if self.content is None:
             msg = f"Cannot unwrap response, status = {self.status}, error = {self.error}"
@@ -209,4 +210,13 @@ class ApiClient:
             return await self._load_response(
                 response,
                 response_type=CreatedCompetition,
+            )
+
+    async def delete_competition(self, competition_id: CompetitionId) -> APIResponse[None]:
+        """Delete competition via DELETE /competitions/{competition_id}."""
+        url = f"{COMPETITIONS_URL}/{competition_id}"
+        async with self.session.delete(url, headers=self._headers) as response:
+            return await self._load_response(
+                response,
+                response_type=None,
             )

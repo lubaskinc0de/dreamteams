@@ -17,7 +17,7 @@ async def test_view_organizer_profile(
     with api_client.authenticate(auth_user_id=USER_ID):
         response = await api_client.view_profile()
 
-    profile_model = response.assert_status(200).ensure_ok()
+    profile_model = response.assert_status(200).ensure_content()
     assert profile_model == ProfileModel(
         user_id=organizer.user_id,
         organizer=OrganizerModel(

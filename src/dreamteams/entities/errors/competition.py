@@ -9,3 +9,11 @@ class InvalidCompetitionDataError(AppError):
 
     message: str
     code: ClassVar[str] = "INVALID_COMPETITION_DATA"
+
+
+@app_error
+class CompetitionNotFoundError(AppError):
+    """Competition not found."""
+
+    code: ClassVar[str] = "COMPETITION_NOT_FOUND"
+    message: str = "Competition not found"

@@ -23,7 +23,7 @@ async def test_create_competition_as_organizer_succeeds(
     with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=email):
         response = await api_client.create_competition(data)
 
-    response.assert_status(200).ensure_ok()
+    response.assert_status(200).ensure_content()
 
 
 @pytest.mark.parametrize(

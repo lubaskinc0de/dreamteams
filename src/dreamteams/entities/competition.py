@@ -8,6 +8,7 @@ from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
+from dreamteams.entities.user import User
 
 type Banner = str
 
@@ -175,6 +176,10 @@ class Competition(Entity):
     is_archived: bool
     created_at: datetime
     updated_at: datetime
+
+    def can_delete(self, user: User) -> bool:
+        """Check if user can delete this competition."""
+        return user.organizer is not None and self.organizer_id == user.organizer.id
 
 
 def competition_factory(  # noqa: PLR0913

@@ -11,25 +11,25 @@ from dreamteams.entities.errors.competition import InvalidCompetitionDataError
     [
         # Without team formation period
         (
-            timedelta(days=1, hours=8),    # registration starts in 1 day
+            timedelta(days=1, hours=8),  # registration starts in 1 day
             timedelta(days=10, hours=10),  # registration ends in 10 days
             timedelta(days=11, hours=14),  # competition starts in 11 days
             timedelta(days=15, hours=18),  # competition ends in 15 days
-            None,                          # no team formation start
-            None,                          # no team formation end
+            None,  # no team formation start
+            None,  # no team formation end
         ),
         # Registration end same day as competition start (but earlier time)
         (
-            timedelta(days=1, hours=8),    # registration starts in 1 day at 8:00
+            timedelta(days=1, hours=8),  # registration starts in 1 day at 8:00
             timedelta(days=10, hours=10),  # registration ends in 10 days at 10:00
             timedelta(days=10, hours=14),  # competition starts same day at 14:00 (after registration)
             timedelta(days=15, hours=18),  # competition ends in 15 days
-            None,                          # no team formation start
-            None,                          # no team formation end
+            None,  # no team formation start
+            None,  # no team formation end
         ),
         # With team formation: starts after competition start
         (
-            timedelta(days=1, hours=8),    # registration starts in 1 day
+            timedelta(days=1, hours=8),  # registration starts in 1 day
             timedelta(days=10, hours=10),  # registration ends in 10 days
             timedelta(days=11, hours=14),  # competition starts in 11 days
             timedelta(days=15, hours=18),  # competition ends in 15 days
@@ -38,7 +38,7 @@ from dreamteams.entities.errors.competition import InvalidCompetitionDataError
         ),
         # With team formation: spans until competition end
         (
-            timedelta(days=1, hours=8),    # registration starts in 1 day
+            timedelta(days=1, hours=8),  # registration starts in 1 day
             timedelta(days=10, hours=10),  # registration ends in 10 days
             timedelta(days=11, hours=14),  # competition starts in 11 days
             timedelta(days=15, hours=18),  # competition ends in 15 days
@@ -47,7 +47,7 @@ from dreamteams.entities.errors.competition import InvalidCompetitionDataError
         ),
         # With team formation: starts on registration end day (but later time)
         (
-            timedelta(days=1, hours=8),    # registration starts in 1 day
+            timedelta(days=1, hours=8),  # registration starts in 1 day
             timedelta(days=10, hours=10),  # registration ends in 10 days at 10:00
             timedelta(days=11, hours=14),  # competition starts in 11 days
             timedelta(days=15, hours=18),  # competition ends in 15 days
@@ -56,7 +56,7 @@ from dreamteams.entities.errors.competition import InvalidCompetitionDataError
         ),
         # With team formation: starts on registration end day and ends on competition end day
         (
-            timedelta(days=1, hours=8),    # registration starts in 1 day
+            timedelta(days=1, hours=8),  # registration starts in 1 day
             timedelta(days=10, hours=10),  # registration ends in 10 days
             timedelta(days=11, hours=14),  # competition starts in 11 days
             timedelta(days=15, hours=18),  # competition ends in 15 days
@@ -133,117 +133,117 @@ def test_datetime_normalization() -> None:
     [
         # Registration start in the past
         (
-            timedelta(days=-1, hours=8),   # registration starts in the PAST (invalid)
+            timedelta(days=-1, hours=8),  # registration starts in the PAST (invalid)
             timedelta(days=10, hours=10),  # registration ends in 10 days
             timedelta(days=11, hours=14),  # competition starts in 11 days
             timedelta(days=15, hours=18),  # competition ends in 15 days
-            None,                          # no team formation start
-            None,                          # no team formation end
+            None,  # no team formation start
+            None,  # no team formation end
             "Registration start date must not be in the past",
         ),
         # Registration end in the past
         (
-            timedelta(days=1, hours=8),    # registration starts in 1 day
+            timedelta(days=1, hours=8),  # registration starts in 1 day
             timedelta(days=-1, hours=10),  # registration ends in the PAST (invalid)
             timedelta(days=11, hours=14),  # competition starts in 11 days
             timedelta(days=15, hours=18),  # competition ends in 15 days
-            None,                          # no team formation start
-            None,                          # no team formation end
+            None,  # no team formation start
+            None,  # no team formation end
             "Registration end date must not be in the past",
         ),
         # Competition start in the past
         (
-            timedelta(days=1, hours=8),    # registration starts in 1 day
+            timedelta(days=1, hours=8),  # registration starts in 1 day
             timedelta(days=10, hours=10),  # registration ends in 10 days
             timedelta(days=-1, hours=14),  # competition starts in the PAST (invalid)
             timedelta(days=15, hours=18),  # competition ends in 15 days
-            None,                          # no team formation start
-            None,                          # no team formation end
+            None,  # no team formation start
+            None,  # no team formation end
             "Competition start date must not be in the past",
         ),
         # Competition end in the past
         (
-            timedelta(days=1, hours=8),    # registration starts in 1 day
+            timedelta(days=1, hours=8),  # registration starts in 1 day
             timedelta(days=10, hours=10),  # registration ends in 10 days
             timedelta(days=11, hours=14),  # competition starts in 11 days
             timedelta(days=-1, hours=18),  # competition ends in the PAST (invalid)
-            None,                          # no team formation start
-            None,                          # no team formation end
+            None,  # no team formation start
+            None,  # no team formation end
             "Competition end date must not be in the past",
         ),
         # Competition end before competition start
         (
-            timedelta(days=1, hours=8),    # registration starts in 1 day
+            timedelta(days=1, hours=8),  # registration starts in 1 day
             timedelta(days=10, hours=10),  # registration ends in 10 days
             timedelta(days=15, hours=14),  # competition starts in 15 days
             timedelta(days=11, hours=18),  # competition ends in 11 days (BEFORE start - invalid)
-            None,                          # no team formation start
-            None,                          # no team formation end
+            None,  # no team formation start
+            None,  # no team formation end
             "End date must be after start date",
         ),
         # Competition end equals competition start
         (
-            timedelta(days=1, hours=8),    # registration starts in 1 day
+            timedelta(days=1, hours=8),  # registration starts in 1 day
             timedelta(days=10, hours=10),  # registration ends in 10 days
             timedelta(days=11, hours=14),  # competition starts in 11 days
             timedelta(days=11, hours=14),  # competition ends at SAME TIME as start (invalid)
-            None,                          # no team formation start
-            None,                          # no team formation end
+            None,  # no team formation start
+            None,  # no team formation end
             "End date must be after start date",
         ),
         # Registration start after registration end
         (
-            timedelta(days=10, hours=8),   # registration starts in 10 days
-            timedelta(days=1, hours=10),   # registration ends in 1 day (BEFORE start - invalid)
+            timedelta(days=10, hours=8),  # registration starts in 10 days
+            timedelta(days=1, hours=10),  # registration ends in 1 day (BEFORE start - invalid)
             timedelta(days=11, hours=14),  # competition starts in 11 days
             timedelta(days=15, hours=18),  # competition ends in 15 days
-            None,                          # no team formation start
-            None,                          # no team formation end
+            None,  # no team formation start
+            None,  # no team formation end
             "Registration start date must be before end date",
         ),
         # Registration start equals registration end
         (
-            timedelta(days=5, hours=8),    # registration starts in 5 days
-            timedelta(days=5, hours=8),    # registration ends at SAME TIME (invalid)
+            timedelta(days=5, hours=8),  # registration starts in 5 days
+            timedelta(days=5, hours=8),  # registration ends at SAME TIME (invalid)
             timedelta(days=11, hours=14),  # competition starts in 11 days
             timedelta(days=15, hours=18),  # competition ends in 15 days
-            None,                          # no team formation start
-            None,                          # no team formation end
+            None,  # no team formation start
+            None,  # no team formation end
             "Registration start date must be before end date",
         ),
         # Registration end after competition start
         (
-            timedelta(days=1, hours=8),    # registration starts in 1 day
+            timedelta(days=1, hours=8),  # registration starts in 1 day
             timedelta(days=15, hours=10),  # registration ends in 15 days (AFTER competition start - invalid)
             timedelta(days=11, hours=14),  # competition starts in 11 days
             timedelta(days=20, hours=18),  # competition ends in 20 days
-            None,                          # no team formation start
-            None,                          # no team formation end
+            None,  # no team formation start
+            None,  # no team formation end
             "Registration end date must be before or equal to start date",
         ),
         # Team formation start specified but end is None
         (
-            timedelta(days=1, hours=8),    # registration starts in 1 day
+            timedelta(days=1, hours=8),  # registration starts in 1 day
             timedelta(days=10, hours=10),  # registration ends in 10 days
             timedelta(days=11, hours=14),  # competition starts in 11 days
             timedelta(days=15, hours=18),  # competition ends in 15 days
-            None,                          # team formation start is None (invalid - must specify both or neither)
+            None,  # team formation start is None (invalid - must specify both or neither)
             timedelta(days=12, hours=16),  # team formation end is specified
             "Both team formation start and end must be specified together",
         ),
         # Team formation end specified but start is None
         (
-            timedelta(days=1, hours=8),    # registration starts in 1 day
+            timedelta(days=1, hours=8),  # registration starts in 1 day
             timedelta(days=10, hours=10),  # registration ends in 10 days
             timedelta(days=11, hours=14),  # competition starts in 11 days
             timedelta(days=15, hours=18),  # competition ends in 15 days
             timedelta(days=11, hours=12),  # team formation start is specified
-            None,                          # team formation end is None (invalid - must specify both or neither)
+            None,  # team formation end is None (invalid - must specify both or neither)
             "Both team formation start and end must be specified together",
         ),
         # Team formation start in the past
         (
-            timedelta(days=1, hours=8),    # registration starts in 1 day
+            timedelta(days=1, hours=8),  # registration starts in 1 day
             timedelta(days=10, hours=10),  # registration ends in 10 days
             timedelta(days=11, hours=14),  # competition starts in 11 days
             timedelta(days=15, hours=18),  # competition ends in 15 days
@@ -253,7 +253,7 @@ def test_datetime_normalization() -> None:
         ),
         # Team formation end in the past
         (
-            timedelta(days=1, hours=8),    # registration starts in 1 day
+            timedelta(days=1, hours=8),  # registration starts in 1 day
             timedelta(days=10, hours=10),  # registration ends in 10 days
             timedelta(days=11, hours=14),  # competition starts in 11 days
             timedelta(days=15, hours=18),  # competition ends in 15 days
@@ -263,17 +263,17 @@ def test_datetime_normalization() -> None:
         ),
         # Team formation start before registration end
         (
-            timedelta(days=1, hours=8),    # registration starts in 1 day
+            timedelta(days=1, hours=8),  # registration starts in 1 day
             timedelta(days=10, hours=10),  # registration ends in 10 days
             timedelta(days=11, hours=14),  # competition starts in 11 days
             timedelta(days=15, hours=18),  # competition ends in 15 days
-            timedelta(days=9, hours=12),   # team formation starts in 9 days (BEFORE registration end - invalid)
+            timedelta(days=9, hours=12),  # team formation starts in 9 days (BEFORE registration end - invalid)
             timedelta(days=12, hours=16),  # team formation ends in 12 days
             "Team formation start must be after or equal to registration end",
         ),
         # Team formation end equals team formation start
         (
-            timedelta(days=1, hours=8),    # registration starts in 1 day
+            timedelta(days=1, hours=8),  # registration starts in 1 day
             timedelta(days=10, hours=10),  # registration ends in 10 days
             timedelta(days=11, hours=14),  # competition starts in 11 days
             timedelta(days=15, hours=18),  # competition ends in 15 days
@@ -283,7 +283,7 @@ def test_datetime_normalization() -> None:
         ),
         # Team formation end after competition end
         (
-            timedelta(days=1, hours=8),    # registration starts in 1 day
+            timedelta(days=1, hours=8),  # registration starts in 1 day
             timedelta(days=10, hours=10),  # registration ends in 10 days
             timedelta(days=11, hours=14),  # competition starts in 11 days
             timedelta(days=15, hours=18),  # competition ends in 15 days

@@ -155,8 +155,6 @@ def api_client(http_session: ClientSession, app_config: Config, trace_id: TraceI
 
 
 # Mock data
-BaseFactory.add_provider(RussianPhoneNumber, lambda: RussianPhoneNumber("+79281009843"))
-
 register_fixture(CompetitionFormFactory)
 register_fixture(OrganizerFormFactory)
 
@@ -194,7 +192,7 @@ async def organizer(
     with api_client.authenticate(auth_user_id="1", auth_user_email=email):
         response = await api_client.register_organizer(organizer_form.model_dump())
 
-    return response.assert_status(200).ensure_ok()
+    return response.assert_status(200).ensure_content()
 
 
 @pytest.fixture
@@ -208,4 +206,4 @@ async def competition(
     with api_client.authenticate(auth_user_id="1", auth_user_email=email):
         response = await api_client.create_competition(competition_form.model_dump(mode="json"))
 
-    return response.assert_status(200).ensure_ok()
+    return response.assert_status(200).ensure_content()
