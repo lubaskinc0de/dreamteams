@@ -79,35 +79,69 @@ Fix all linting errors and ensure tests pass before considering work complete.
 
 ### Testing
 
+**Parametrization:**
 -   **Always prefer parametrization over creating multiple similar tests**
 -   Use `@pytest.mark.parametrize` to combine tests that check the same behavior with different inputs
 -   Never hardcode test values directly in assertions - use variables or parameters
 -   Parametrized tests are more maintainable and easier to extend with new cases
 -   Group related test cases together using parametrization instead of creating separate test functions
 
+**Test Clarity (Critical):**
+-   **Every parametrize case MUST have a comment explaining what it tests**
+-   Add inline comments directly to parameter values in parametrization
+-   No magic values - every number/string must be self-explanatory
+-   Use constants for repeated values (e.g., `USER_ID = "1"`)
+-   Tests must be understandable to someone unfamiliar with the project
+-   Combine duplicate tests into one parametrized test
+
 Example:
 
 ```python
-# ❌ Bad - Multiple similar tests with hardcoded values
-def test_max_zero_raises_error() -> None:
+# ❌ Bad - No comments, magic values, duplicate tests
+def test_max_zero() -> None:
     with pytest.raises(Error):
         Limits(max=0, min=0)
 
-def test_max_negative_raises_error() -> None:
+def test_max_negative() -> None:
     with pytest.raises(Error):
         Limits(max=-10, min=5)
 
-# ✅ Good - Single parametrized test
+@pytest.mark.parametrize(
+    ("max_value", "min_value"),
+    [
+        (0, 0),
+        (-10, 5),
+    ],
+)
+def test_limits(max_value: int, min_value: int) -> None:
+    with pytest.raises(Error):
+        Limits(max=max_value, min=min_value)
+
+# ✅ Good - Clear comments, combined tests, self-documenting
 @pytest.mark.parametrize(
     ("max_value", "min_value", "expected_error"),
     [
+        # Max must be greater than 0
         (0, 0, "Max must be greater than 0"),
+        # Max cannot be negative
         (-10, 5, "Max must be greater than 0"),
+        # Min cannot exceed max
+        (10, 50, "Min must be less than or equal to max"),
     ],
 )
 def test_invalid_values_raise_error(max_value: int, min_value: int, expected_error: str) -> None:
     with pytest.raises(Error, match=expected_error):
         Limits(max=max_value, min=min_value)
+
+# For complex parametrization with many values, add inline comments
+@pytest.mark.parametrize(
+    ("start_days", "end_days", "desc"),
+    [
+        (1, 10, "Standard 10-day period"),  # start in 1 day, end in 10 days
+        (5, 5, "Same-day start and end"),   # both start and end in 5 days (invalid)
+    ],
+)
+def test_date_ranges(...): ...
 ```
 
 ### Use Case Registration

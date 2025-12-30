@@ -16,13 +16,13 @@ def test_create_online_without_location() -> None:
 @pytest.mark.parametrize(
     "format_type",
     [
-        CompetitionFormat.ONLINE,
-        CompetitionFormat.OFFLINE,
-        CompetitionFormat.HYBRID,
+        CompetitionFormat.ONLINE,  # Online format can have location (optional)
+        CompetitionFormat.OFFLINE,  # Offline format requires location
+        CompetitionFormat.HYBRID,  # Hybrid format requires location
     ],
 )
 def test_create_with_location(faker: Faker, format_type: CompetitionFormat) -> None:
-    """Test creating venue with location."""
+    """Test creating venue with location for any format type."""
     location = faker.address()
 
     venue = CompetitionVenue(format=format_type, location=location)
@@ -34,12 +34,14 @@ def test_create_with_location(faker: Faker, format_type: CompetitionFormat) -> N
 @pytest.mark.parametrize(
     ("format_type", "location"),
     [
+        # Offline format requires non-empty location
         (CompetitionFormat.OFFLINE, None),
-        (CompetitionFormat.HYBRID, None),
         (CompetitionFormat.OFFLINE, ""),
+        (CompetitionFormat.OFFLINE, "   "),  # Whitespace only
+        # Hybrid format requires non-empty location
+        (CompetitionFormat.HYBRID, None),
         (CompetitionFormat.HYBRID, ""),
-        (CompetitionFormat.OFFLINE, "   "),
-        (CompetitionFormat.HYBRID, "   "),
+        (CompetitionFormat.HYBRID, "   "),  # Whitespace only
     ],
 )
 def test_create_with_invalid_location_raises_error(format_type: CompetitionFormat, location: str | None) -> None:

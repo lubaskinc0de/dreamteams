@@ -30,10 +30,18 @@ Represents a hackathon or olympiad event created by an organizer.
 - `competition_end: datetime` - Competition end date
 - `registration_start: datetime` - Registration opens
 - `registration_end: datetime` - Registration closes
+- `team_formation_start: datetime | None` - Team formation period start (optional)
+- `team_formation_end: datetime | None` - Team formation period end (optional)
+- All datetime values are normalized (seconds and microseconds set to 0)
 - Validates:
+  - All dates must not be in the past
   - competition_end must be after competition_start
   - registration_end must be after registration_start
   - registration_end must be before or equal to competition_start
+  - If team formation period is specified, both start and end must be provided
+  - team_formation_start must be after or equal to registration_end
+  - team_formation_end must be after team_formation_start
+  - team_formation_end must be before or equal to competition_end
 
 ### CompetitionVenue
 - `format: CompetitionFormat` - Event format (online/offline/hybrid)

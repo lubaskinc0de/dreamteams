@@ -28,11 +28,21 @@ def _competition_schedule_provider() -> CompetitionSchedule:
     competition_start = registration_end + timedelta(days=comp_start_offset)
     competition_end = competition_start + timedelta(days=comp_duration)
 
+    team_formation_start = None
+    team_formation_end = None
+    if random_.choice([True, False]):
+        team_formation_duration = random_.randint(1, comp_start_offset - 1) if comp_start_offset > 1 else 1
+        team_formation_start = registration_end
+        team_formation_end = team_formation_start + timedelta(days=team_formation_duration)
+        team_formation_end = min(team_formation_end, competition_end)
+
     return CompetitionSchedule(
         competition_start=competition_start,
         competition_end=competition_end,
         registration_start=registration_start,
         registration_end=registration_end,
+        team_formation_start=team_formation_start,
+        team_formation_end=team_formation_end,
     )
 
 

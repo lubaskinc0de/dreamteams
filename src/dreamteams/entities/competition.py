@@ -58,19 +58,49 @@ class TeamSizeRange:
             raise InvalidCompetitionDataError(message="Min team size must be less than or equal to max team size")
 
 
-@dataclass(frozen=True, slots=True)
+def normalize_datetime(dt: datetime) -> datetime:
+    """Normalize datetime by removing seconds and microseconds."""
+    return dt.replace(second=0, microsecond=0)
+
+
+@dataclass(slots=True)
 class CompetitionSchedule:
     """Competition schedule with dates and registration period."""
 
     competition_start: datetime
-    competition_end: datetime
     registration_start: datetime
     registration_end: datetime
+    competition_end: datetime
+    team_formation_start: datetime | None = None
+    team_formation_end: datetime | None = None
 
     def __post_init__(self) -> None:
-        """Validate schedule dates."""
-        now = datetime.now(tz=UTC)
+        """Validate schedule dates and normalize datetime values."""
+        if (self.team_formation_start is None) != (self.team_formation_end is None):
+            raise InvalidCompetitionDataError(
+                message="Both team formation start and end must be specified together or not at all",
+            )
 
+        now = normalize_datetime(datetime.now(tz=UTC))
+
+        self._normalize_all_dates()
+        self._validate_dates_not_in_past(now)
+        self._validate_date_ranges()
+
+    def _normalize_all_dates(self) -> None:
+        """Normalize all datetime values."""
+        self.registration_start = normalize_datetime(self.registration_start)
+        self.registration_end = normalize_datetime(self.registration_end)
+        self.competition_start = normalize_datetime(self.competition_start)
+        self.competition_end = normalize_datetime(self.competition_end)
+
+        if self.team_formation_start is not None:
+            self.team_formation_start = normalize_datetime(self.team_formation_start)
+        if self.team_formation_end is not None:
+            self.team_formation_end = normalize_datetime(self.team_formation_end)
+
+    def _validate_dates_not_in_past(self, now: datetime) -> None:
+        """Validate that all dates are not in the past."""
         if self.registration_start < now:
             raise InvalidCompetitionDataError(message="Registration start date must not be in the past")
         if self.registration_end < now:
@@ -80,14 +110,36 @@ class CompetitionSchedule:
         if self.competition_end < now:
             raise InvalidCompetitionDataError(message="Competition end date must not be in the past")
 
-        if self.competition_end.date() <= self.competition_start.date():
+        if self.team_formation_start is not None and self.team_formation_end is not None:
+            if self.team_formation_start < now:
+                raise InvalidCompetitionDataError(message="Team formation start date must not be in the past")
+            if self.team_formation_end < now:
+                raise InvalidCompetitionDataError(message="Team formation end date must not be in the past")
+
+    def _validate_date_ranges(self) -> None:
+        """Validate date ranges are correct."""
+        if self.competition_end <= self.competition_start:
             raise InvalidCompetitionDataError(message="End date must be after start date")
 
-        if self.registration_start.date() >= self.registration_end.date():
+        if self.registration_start >= self.registration_end:
             raise InvalidCompetitionDataError(message="Registration start date must be before end date")
 
         if self.registration_end > self.competition_start:
             raise InvalidCompetitionDataError(message="Registration end date must be before or equal to start date")
+
+        if self.team_formation_start is not None and self.team_formation_end is not None:
+            if self.team_formation_start < self.registration_end:
+                raise InvalidCompetitionDataError(
+                    message="Team formation start must be after or equal to registration end",
+                )
+
+            if self.team_formation_end <= self.team_formation_start:
+                raise InvalidCompetitionDataError(message="Team formation end must be after start")
+
+            if self.team_formation_end > self.competition_end:
+                raise InvalidCompetitionDataError(
+                    message="Team formation end must be before or equal to competition end",
+                )
 
 
 @dataclass(frozen=True, slots=True)

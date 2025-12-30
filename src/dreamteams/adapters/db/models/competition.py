@@ -25,6 +25,8 @@ competition_table = Table(
     Column("competition_end", DateTime(timezone=True), nullable=False),
     Column("registration_start", DateTime(timezone=True), nullable=False),
     Column("registration_end", DateTime(timezone=True), nullable=False),
+    Column("team_formation_start", DateTime(timezone=True), nullable=True),
+    Column("team_formation_end", DateTime(timezone=True), nullable=True),
     Column("max_participants", Integer, nullable=False),
     Column("min_participants", Integer, nullable=False),
     Column("domains", ARRAY(Enum(Domain, native_enum=False)), nullable=False),
@@ -46,9 +48,11 @@ mapper_registry.map_imperatively(
         "schedule": composite(
             CompetitionSchedule,
             competition_table.c.competition_start,
-            competition_table.c.competition_end,
             competition_table.c.registration_start,
             competition_table.c.registration_end,
+            competition_table.c.competition_end,
+            competition_table.c.team_formation_start,
+            competition_table.c.team_formation_end,
         ),
         "participant_limits": composite(
             ParticipantLimits,
