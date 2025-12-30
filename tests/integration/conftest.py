@@ -8,13 +8,11 @@ import pytest
 from aiohttp import ClientSession
 from dishka import AsyncContainer
 from faker import Faker
-from polyfactory.factories.base import BaseFactory
 from polyfactory.pytest_plugin import register_fixture
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dreamteams.adapters.tracing import TraceId
-from dreamteams.application.common.phone_number import RussianPhoneNumber
 from dreamteams.application.create_competition.interactor import CompetitionForm, CreatedCompetition
 from dreamteams.application.register.organizer import CreatedOrganizer
 from dreamteams.bootstrap.config.loader import Config
