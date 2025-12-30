@@ -60,6 +60,75 @@ Fix all linting errors and ensure tests pass before considering work complete.
 
 ## Code Style Specifics
 
+### Docstrings
+
+-   Keep docstrings concise and minimal
+-   Avoid verbose multi-line docstrings with Args/Returns/Raises sections
+-   Use single-line docstrings when possible
+-   Let type annotations and code speak for themselves
+
+### Logging
+
+-   Always log `user_id` when available in the context
+-   Include `user_id` in all log statements where user context exists
+
+### Module Structure
+
+-   Do not add imports or `__all__` exports to `__init__.py` files
+-   Keep `__init__.py` files empty
+
+### Testing
+
+-   **Always prefer parametrization over creating multiple similar tests**
+-   Use `@pytest.mark.parametrize` to combine tests that check the same behavior with different inputs
+-   Never hardcode test values directly in assertions - use variables or parameters
+-   Parametrized tests are more maintainable and easier to extend with new cases
+-   Group related test cases together using parametrization instead of creating separate test functions
+
+Example:
+
+```python
+# ❌ Bad - Multiple similar tests with hardcoded values
+def test_max_zero_raises_error() -> None:
+    with pytest.raises(Error):
+        Limits(max=0, min=0)
+
+def test_max_negative_raises_error() -> None:
+    with pytest.raises(Error):
+        Limits(max=-10, min=5)
+
+# ✅ Good - Single parametrized test
+@pytest.mark.parametrize(
+    ("max_value", "min_value", "expected_error"),
+    [
+        (0, 0, "Max must be greater than 0"),
+        (-10, 5, "Max must be greater than 0"),
+    ],
+)
+def test_invalid_values_raise_error(max_value: int, min_value: int, expected_error: str) -> None:
+    with pytest.raises(Error, match=expected_error):
+        Limits(max=max_value, min=min_value)
+```
+
+### Use Case Registration
+
+After implementing a use case, register it in the system:
+
+1. **DI Container** (`bootstrap/di/providers/interactor.py`):
+   - Import the interactor class
+   - Add to `provide_all()` in `InteractorProvider.interactors`
+   - Scope is already set to `Scope.REQUEST`
+
+2. **FastAPI Route** (`presentation/fast_api/routers/`):
+   - Create or update router file with `route_class=DishkaRoute`
+   - Inject interactor via `FromDishka[InteractorClass]`
+   - Can create separate Pydantic model for API if needed (transforms to interactor form)
+   - Return interactor's response model directly
+
+3. **Error Mapping** (`presentation/fast_api/error_handlers.py`):
+   - Add new error types to `error_to_http_status` dict
+   - Map error class to HTTP status code (400, 403, 404, 409, 422, etc.)
+
 ## Documentation
 
 -   docs/

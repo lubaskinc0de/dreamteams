@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Self
+from typing import Any, Self
 
 from adaptix import Retort
 from adaptix.load_error import LoadError
@@ -8,14 +8,15 @@ from aiohttp import ClientResponse, ClientResponseError, ClientSession
 from dreamteams.adapters.auth.model import AuthUserId
 from dreamteams.adapters.errors.http.response import ErrorResponse
 from dreamteams.adapters.tracing import TraceId, TracingConfig
+from dreamteams.application.create_competition.interactor import CreatedCompetition
 from dreamteams.application.register.organizer import CreatedOrganizer
 from dreamteams.application.view_profile.interactor import ProfileModel
-from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
 
 retort = Retort()
 
 ORGANIZER_URL = "/organizers"
 USERS_URL = "/users"
+COMPETITIONS_URL = "/competitions"
 
 
 @dataclass
@@ -183,10 +184,10 @@ class ApiClient:
                 response_type=EmptyResponse,
             )
 
-    async def register_organizer(self, data: OrganizerForm) -> APIResponse[CreatedOrganizer]:
+    async def register_organizer(self, data: dict[str, Any]) -> APIResponse[CreatedOrganizer]:
         """Register as organizer via POST /organizers/."""
         url = ORGANIZER_URL
-        async with self.session.post(url, headers=self._headers, json=data.model_dump()) as response:
+        async with self.session.post(url, headers=self._headers, json=data) as response:
             return await self._load_response(
                 response,
                 response_type=CreatedOrganizer,
@@ -199,4 +200,13 @@ class ApiClient:
             return await self._load_response(
                 response,
                 response_type=ProfileModel,
+            )
+
+    async def create_competition(self, data: dict[str, Any]) -> APIResponse[CreatedCompetition]:
+        """Create competition via POST /competitions/."""
+        url = COMPETITIONS_URL
+        async with self.session.post(url, headers=self._headers, json=data) as response:
+            return await self._load_response(
+                response,
+                response_type=CreatedCompetition,
             )

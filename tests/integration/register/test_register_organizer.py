@@ -3,8 +3,8 @@ from typing import Any
 import pytest
 from faker import Faker
 
+from tests.common.factory.organizer import OrganizerFormFactory
 from tests.integration.api_client import ApiClient
-from tests.integration.conftest import OrganizerFormFactory
 
 
 async def test_register_as_organizer(
@@ -16,7 +16,7 @@ async def test_register_as_organizer(
     data = organizer_form_factory.build()
 
     with api_client.authenticate(auth_user_id="1", auth_user_email=faker.email()):
-        response = await api_client.register_organizer(data)
+        response = await api_client.register_organizer(data.model_dump(mode="json"))
 
     response.assert_status(200).ensure_ok()
 
@@ -46,7 +46,7 @@ async def test_register_as_organizer_with_invalid_data(
     data = organizer_form_factory.build().model_copy(update=update_data)
 
     with api_client.authenticate(auth_user_id="1", auth_user_email=faker.email()):
-        response = await api_client.register_organizer(data)
+        response = await api_client.register_organizer(data.model_dump(mode="json"))
 
     response.assert_error(422, "VALIDATION_ERROR")
 
@@ -60,8 +60,8 @@ async def test_cannot_register_as_organizer_twice(
     data = organizer_form_factory.build()
 
     with api_client.authenticate(auth_user_id="1", auth_user_email=faker.email()):
-        first_response = await api_client.register_organizer(data)
-        second_response = await api_client.register_organizer(data)
+        first_response = await api_client.register_organizer(data.model_dump(mode="json"))
+        second_response = await api_client.register_organizer(data.model_dump(mode="json"))
 
     first_response.assert_status(200).ensure_ok()
     second_response.assert_error(409, "ORGANIZER_ALREADY_EXISTS")
@@ -74,7 +74,7 @@ async def test_register_as_organizer_fails_if_unauthorized(
     """Test register as organizer fails when user unauthorized."""
     data = organizer_form_factory.build()
 
-    response = await api_client.register_organizer(data)
+    response = await api_client.register_organizer(data.model_dump(mode="json"))
 
     response.assert_error(401, "UNAUTHORIZED")
 
@@ -89,9 +89,9 @@ async def test_cannot_register_organizer_with_same_phone_number(
     second_data = organizer_form_factory.build().model_copy(update={"phone_number": first_data.phone_number})
 
     with api_client.authenticate(auth_user_id="1", auth_user_email=faker.email()):
-        first_response = await api_client.register_organizer(first_data)
+        first_response = await api_client.register_organizer(first_data.model_dump(mode="json"))
     with api_client.authenticate(auth_user_id="2", auth_user_email=faker.email()):
-        second_response = await api_client.register_organizer(second_data)
+        second_response = await api_client.register_organizer(second_data.model_dump(mode="json"))
 
     first_response.assert_status(200).ensure_ok()
     second_response.assert_error(409, "ORGANIZER_ALREADY_EXISTS")
@@ -107,9 +107,9 @@ async def test_cannot_register_organizer_with_same_email(
     second_data = organizer_form_factory.build()
 
     with api_client.authenticate(auth_user_id="1", auth_user_email=email):
-        first_response = await api_client.register_organizer(first_data)
+        first_response = await api_client.register_organizer(first_data.model_dump(mode="json"))
     with api_client.authenticate(auth_user_id="2", auth_user_email=email):
-        second_response = await api_client.register_organizer(second_data)
+        second_response = await api_client.register_organizer(second_data.model_dump(mode="json"))
 
     first_response.assert_status(200).ensure_ok()
     second_response.assert_error(409, "ORGANIZER_ALREADY_EXISTS")
@@ -125,9 +125,9 @@ async def test_cannot_register_organizer_with_same_phone_and_email(
     second_data = first_data.model_copy()
 
     with api_client.authenticate(auth_user_id="1", auth_user_email=email):
-        first_response = await api_client.register_organizer(first_data)
+        first_response = await api_client.register_organizer(first_data.model_dump(mode="json"))
     with api_client.authenticate(auth_user_id="2", auth_user_email=email):
-        second_response = await api_client.register_organizer(second_data)
+        second_response = await api_client.register_organizer(second_data.model_dump(mode="json"))
 
     first_response.assert_status(200).ensure_ok()
     second_response.assert_error(409, "ORGANIZER_ALREADY_EXISTS")

@@ -9,17 +9,19 @@ from aiohttp import ClientSession
 from dishka import AsyncContainer
 from faker import Faker
 from polyfactory.factories.base import BaseFactory
-from polyfactory.factories.pydantic_factory import ModelFactory
 from polyfactory.pytest_plugin import register_fixture
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dreamteams.adapters.tracing import TraceId
 from dreamteams.application.common.phone_number import RussianPhoneNumber
+from dreamteams.application.create_competition.interactor import CompetitionForm, CreatedCompetition
 from dreamteams.application.register.organizer import CreatedOrganizer
 from dreamteams.bootstrap.config.loader import Config
 from dreamteams.bootstrap.di.container import get_async_container
 from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
+from tests.common.factory.competition import CompetitionFormFactory
+from tests.common.factory.organizer import OrganizerFormFactory
 from tests.integration.api_client import ApiClient, APIClientConfig
 
 # This is a fake private key used only to sign fake access token for tests
@@ -155,18 +157,14 @@ def api_client(http_session: ClientSession, app_config: Config, trace_id: TraceI
 # Mock data
 BaseFactory.add_provider(RussianPhoneNumber, lambda: RussianPhoneNumber("+79281009843"))
 
+register_fixture(CompetitionFormFactory)
+register_fixture(OrganizerFormFactory)
+
 
 @pytest.fixture
 def email(faker: Faker) -> str:
     """Fake email."""
     return faker.email()
-
-
-@register_fixture
-class OrganizerFormFactory(ModelFactory[OrganizerForm]):
-    """Factory of OrganizerForm models."""
-
-    __model__ = OrganizerForm
 
 
 @pytest.fixture
@@ -175,6 +173,14 @@ def organizer_form(
 ) -> OrganizerForm:
     """Organizer form."""
     return organizer_form_factory.build()
+
+
+@pytest.fixture
+def competition_form(
+    competition_form_factory: CompetitionFormFactory,
+) -> CompetitionForm:
+    """Competition form."""
+    return competition_form_factory.build()
 
 
 # Entities
@@ -186,6 +192,20 @@ async def organizer(
 ) -> CreatedOrganizer:
     """Created organizer entity."""
     with api_client.authenticate(auth_user_id="1", auth_user_email=email):
-        response = await api_client.register_organizer(organizer_form)
+        response = await api_client.register_organizer(organizer_form.model_dump())
+
+    return response.assert_status(200).ensure_ok()
+
+
+@pytest.fixture
+async def competition(
+    api_client: ApiClient,
+    organizer: CreatedOrganizer,  # noqa: ARG001
+    competition_form: CompetitionForm,
+    email: str,
+) -> CreatedCompetition:
+    """Created competition entity."""
+    with api_client.authenticate(auth_user_id="1", auth_user_email=email):
+        response = await api_client.create_competition(competition_form.model_dump(mode="json"))
 
     return response.assert_status(200).ensure_ok()

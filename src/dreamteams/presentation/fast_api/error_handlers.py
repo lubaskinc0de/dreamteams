@@ -12,6 +12,7 @@ from dreamteams.application.common.logger import Logger
 from dreamteams.application.errors.organizer import OrganizerAlreadyExistsError
 from dreamteams.application.errors.user import UserNotFoundError
 from dreamteams.entities.errors.base import AccessDeniedError, AppError
+from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 
 logger: Logger = structlog.get_logger(__name__)
 
@@ -24,6 +25,7 @@ error_to_http_status: dict[type[AppError], int] = {
     AccessDeniedError: 403,
     MissingTraceIdError: 422,
     OrganizerAlreadyExistsError: 409,
+    InvalidCompetitionDataError: 422,
 }
 
 
