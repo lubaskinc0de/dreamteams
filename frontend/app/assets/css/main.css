@@ -1,0 +1,224 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  /* Smooth scroll behavior */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Smooth transitions for all interactive elements */
+  button,
+  a,
+  [role="button"] {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+  }
+
+  /* Ultra-smooth card hover transitions */
+  .card-hover-smooth {
+    backface-visibility: hidden;
+    transform: translate3d(0, 0, 0);
+    transition: transform 1200ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 1200ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .card-hover-smooth:hover {
+    transform: translate3d(0, -8px, 0) !important;
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+  }
+
+  /* Scroll-based fade-in animations */
+  .fade-in-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  .fade-in-scroll.is-visible {
+    animation: fade-in-up 0.8s ease-out forwards;
+  }
+
+  .fade-in-left {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+
+  .fade-in-left.is-visible {
+    animation: fade-in-from-left 0.8s ease-out forwards;
+  }
+
+  .fade-in-right {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+
+  .fade-in-right.is-visible {
+    animation: fade-in-from-right 0.8s ease-out forwards;
+  }
+
+  .scale-in-scroll {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  .scale-in-scroll.is-visible {
+    animation: scale-in 0.8s ease-out forwards;
+  }
+
+  /* Stagger animation delays for children */
+  .stagger-children > * {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .stagger-children.is-visible > *:nth-child(1) {
+    animation: stagger-fade-in 0.6s ease-out 0.1s forwards;
+  }
+
+  .stagger-children.is-visible > *:nth-child(2) {
+    animation: stagger-fade-in 0.6s ease-out 0.2s forwards;
+  }
+
+  .stagger-children.is-visible > *:nth-child(3) {
+    animation: stagger-fade-in 0.6s ease-out 0.3s forwards;
+  }
+
+  .stagger-children.is-visible > *:nth-child(4) {
+    animation: stagger-fade-in 0.6s ease-out 0.4s forwards;
+  }
+
+  .stagger-children.is-visible > *:nth-child(5) {
+    animation: stagger-fade-in 0.6s ease-out 0.5s forwards;
+  }
+
+  .stagger-children.is-visible > *:nth-child(6) {
+    animation: stagger-fade-in 0.6s ease-out 0.6s forwards;
+  }
+}
+
+@keyframes fade-in-up {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-from-left {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fade-in-from-right {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scale-in {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes stagger-fade-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/**
+ * CSS Custom Properties for Theming
+ * These variables enable dynamic theming and are automatically
+ * updated when the color mode changes
+ */
+@layer base {
+  :root {
+    /* Light theme variables */
+    --color-background-primary: theme("colors.white");
+    --color-background-secondary: theme("colors.gray.50");
+    --color-background-elevated: theme("colors.gray.100");
+    --color-background-card: theme("colors.white");
+
+    --color-text-primary: theme("colors.gray.900");
+    --color-text-secondary: theme("colors.gray.600");
+    --color-text-muted: theme("colors.gray.500");
+    --color-text-highlighted: theme("colors.blue.500");
+
+    --color-border-default: theme("colors.gray.200");
+    --color-border-subtle: theme("colors.gray.100");
+
+    /* Color mode preference */
+    color-scheme: light;
+  }
+
+  .dark {
+    /* Dark theme variables */
+    --color-background-primary: theme("colors.gray.900");
+    --color-background-secondary: theme("colors.gray.800");
+    --color-background-elevated: theme("colors.gray.700");
+    --color-background-card: theme("colors.gray.800/0.9");
+
+    --color-text-primary: theme("colors.gray.100");
+    --color-text-secondary: theme("colors.gray.400");
+    --color-text-muted: theme("colors.gray.500");
+    --color-text-highlighted: theme("colors.blue.400");
+
+    --color-border-default: theme("colors.gray.700");
+    --color-border-subtle: theme("colors.gray.700/0.5");
+
+    /* Color mode preference */
+    color-scheme: dark;
+  }
+
+  /* Base body styles using CSS variables */
+  body {
+    background-color: var(--color-background-primary);
+    color: var(--color-text-primary);
+  }
+}
+
+/**
+ * Custom utility classes for consistent theming
+ */
+@layer utilities {
+  .bg-themed-primary {
+    background-color: var(--color-background-primary);
+  }
+
+  .bg-themed-secondary {
+    background-color: var(--color-background-secondary);
+  }
+
+  .bg-themed-elevated {
+    background-color: var(--color-background-elevated);
+  }
+
+  .text-themed-primary {
+    color: var(--color-text-primary);
+  }
+
+  .text-themed-secondary {
+    color: var(--color-text-secondary);
+  }
+
+  .text-themed-muted {
+    color: var(--color-text-muted);
+  }
+
+  .border-themed {
+    border-color: var(--color-border-default);
+  }
+
+  .border-themed-subtle {
+    border-color: var(--color-border-subtle);
+  }
+}

@@ -35,8 +35,16 @@ dev-environment:
 generate-migration NAME:
     just up-db
     sleep 1s
-    set -a && source ./.config/.env.migrations.local && set +a && posutochnik migrations autogenerate "{{NAME}}"
+    set -a && source ./.config/.env.migrations.local && set +a && dreamteams migrations autogenerate "{{NAME}}"
     just down
 
 cookie-secret:
     echo "OAUTH2_PROXY_COOKIE_SECRET=$(openssl rand -base64 32)"
+
+build-frontend:
+    cd ./frontend && npm run generate
+
+reload:
+    just down
+    just build-frontend
+    just up

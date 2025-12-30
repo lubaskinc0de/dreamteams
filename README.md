@@ -1,7 +1,4 @@
-# posutochnik (stands for "cute CRUD" in Russian)
-
-[![License](https://img.shields.io/github/license/lubaskinc0de/posutochnik)](https://github.com/lubaskinc0de/posutochnik/blob/master/LICENSE)
-[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/lubaskinc0de/posutochnik/lint_test_deploy.yml)](https://github.com/lubaskinc0de/posutochnik/actions)
+# DreamTeams (inherited from crudik template)
 
 A universal application **template** that follows the principles of a clean architecture and contains everything you need to get started quickly.
 
@@ -111,8 +108,8 @@ Migrations are applied automatically in docker-compose on startup.
 </p>
 
 ```
-posutochnik/
-├── src/posutochnik/                    # Main package (following src-layout)
+dreamteams/
+├── src/dreamteams/                    # Main package (following src-layout)
 │   ├── entities/                  # Domain entities
 │   │   ├── base.py               # Base entity class
 │   │   ├── user.py               # User entity

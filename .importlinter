@@ -1,40 +1,40 @@
 [importlinter]
-root_package = posutochnik
+root_package = dreamteams
 
 [importlinter:contract:1]
 name=Entities doesn't import application, adapters, presentation or bootstrap
 type=forbidden
 source_modules=
-    posutochnik.entities
+    dreamteams.entities
 forbidden_modules=
-    posutochnik.application
-    posutochnik.adapters
-    posutochnik.presentation
-    posutochnik.bootstrap
+    dreamteams.application
+    dreamteams.adapters
+    dreamteams.presentation
+    dreamteams.bootstrap
 
 [importlinter:contract:2]
 name=Application doesn't import adapters, presentation or bootstrap
 type=forbidden
 source_modules=
-    posutochnik.application
+    dreamteams.application
 forbidden_modules=
-    posutochnik.adapters
-    posutochnik.presentation
-    posutochnik.bootstrap
+    dreamteams.adapters
+    dreamteams.presentation
+    dreamteams.bootstrap
 
 [importlinter:contract:3]
 name=Adapters doesn't import presentation or bootstrap
 type=forbidden
 source_modules=
-    posutochnik.adapters
+    dreamteams.adapters
 forbidden_modules=
-    posutochnik.presentation
-    posutochnik.bootstrap
+    dreamteams.presentation
+    dreamteams.bootstrap
 
 [importlinter:contract:4]
 name=Presentation doesn't import bootstrap
 type=forbidden
 source_modules=
-    posutochnik.presentation
+    dreamteams.presentation
 forbidden_modules=
-    posutochnik.bootstrap
+    dreamteams.bootstrap

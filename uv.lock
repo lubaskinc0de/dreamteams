@@ -335,6 +335,86 @@ wheels = [
 ]
 
 [[package]]
+name = "dreamteams"
+version = "1.0.0"
+source = { editable = "." }
+dependencies = [
+    { name = "adaptix" },
+    { name = "aiohttp" },
+    { name = "alembic" },
+    { name = "asyncpg" },
+    { name = "cryptography" },
+    { name = "dishka" },
+    { name = "fastapi", extra = ["standard"] },
+    { name = "phonenumbers" },
+    { name = "pydantic" },
+    { name = "pydantic-extra-types" },
+    { name = "pyjwt" },
+    { name = "sqlalchemy", extra = ["postgresql-asyncpg"] },
+    { name = "structlog" },
+    { name = "toml-rs" },
+]
+
+[package.optional-dependencies]
+ci = [
+    { name = "faker" },
+    { name = "import-linter" },
+    { name = "mypy" },
+    { name = "polyfactory" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "ruff" },
+]
+dev = [
+    { name = "faker" },
+    { name = "import-linter" },
+    { name = "mypy" },
+    { name = "polyfactory" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "ruff" },
+]
+lint = [
+    { name = "import-linter" },
+    { name = "mypy" },
+    { name = "ruff" },
+]
+test = [
+    { name = "faker" },
+    { name = "polyfactory" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "adaptix", specifier = "==3.0.0b11" },
+    { name = "aiohttp", specifier = "==3.13.2" },
+    { name = "alembic", specifier = "==1.17.2" },
+    { name = "asyncpg", specifier = "==0.31.0" },
+    { name = "cryptography", specifier = "==46.0.3" },
+    { name = "dishka", specifier = "==1.7.2" },
+    { name = "dreamteams", extras = ["dev"], marker = "extra == 'ci'" },
+    { name = "dreamteams", extras = ["test", "lint"], marker = "extra == 'dev'" },
+    { name = "faker", marker = "extra == 'test'", specifier = "==39.0.0" },
+    { name = "fastapi", extras = ["standard"], specifier = "==0.123.0" },
+    { name = "import-linter", marker = "extra == 'lint'", specifier = "==2.7" },
+    { name = "mypy", marker = "extra == 'lint'", specifier = "==1.19.0" },
+    { name = "phonenumbers", specifier = "==9.0.20" },
+    { name = "polyfactory", marker = "extra == 'test'", specifier = "==3.1.0" },
+    { name = "pydantic", specifier = "==2.12.5" },
+    { name = "pydantic-extra-types", specifier = "==2.10.6" },
+    { name = "pyjwt", specifier = "==2.10.1" },
+    { name = "pytest", marker = "extra == 'test'", specifier = "==9.0.1" },
+    { name = "pytest-asyncio", marker = "extra == 'test'", specifier = "==1.3.0" },
+    { name = "ruff", marker = "extra == 'lint'", specifier = "==0.14.8" },
+    { name = "sqlalchemy", extras = ["postgresql-asyncpg"], specifier = "==2.0.44" },
+    { name = "structlog", specifier = "==25.5.0" },
+    { name = "toml-rs", specifier = "==0.1.0" },
+]
+provides-extras = ["lint", "test", "dev", "ci"]
+
+[[package]]
 name = "email-validator"
 version = "2.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -345,6 +425,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/f5/22/900cb125c76b7aaa450ce02fd727f452243f2e91a61af068b40adba60ea9/email_validator-2.3.0.tar.gz", hash = "sha256:9fc05c37f2f6cf439ff414f8fc46d917929974a82244c20eb10231ba60c54426", size = 51238, upload-time = "2025-08-26T13:09:06.831Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/de/15/545e2b6cf2e3be84bc1ed85613edd75b8aea69807a71c26f4ca6a9258e82/email_validator-2.3.0-py3-none-any.whl", hash = "sha256:80f13f623413e6b197ae73bb10bf4eb0908faf509ad8362c5edeb0be7fd450b4", size = 35604, upload-time = "2025-08-26T13:09:05.858Z" },
+]
+
+[[package]]
+name = "faker"
+version = "39.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "tzdata" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/30/b9/0897fb5888ddda099dc0f314a8a9afb5faa7e52eaf6865c00686dfb394db/faker-39.0.0.tar.gz", hash = "sha256:ddae46d3b27e01cea7894651d687b33bcbe19a45ef044042c721ceac6d3da0ff", size = 1941757, upload-time = "2025-12-17T19:19:04.762Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/eb/5a/26cdb1b10a55ac6eb11a738cea14865fa753606c4897d7be0f5dc230df00/faker-39.0.0-py3-none-any.whl", hash = "sha256:c72f1fca8f1a24b8da10fcaa45739135a19772218ddd61b86b7ea1b8c790dce7", size = 1980775, upload-time = "2025-12-17T19:19:02.926Z" },
 ]
 
 [[package]]
@@ -970,6 +1062,15 @@ wheels = [
 ]
 
 [[package]]
+name = "phonenumbers"
+version = "9.0.20"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/1b/2a/d6e7fecd1bcd37e65fbb9386e492082bd84e196c9cab14e39166b35cea4b/phonenumbers-9.0.20.tar.gz", hash = "sha256:849788eec8e5a9737a99c8b906d18a62d9fced6497ba7033784b6a7e4c89bb2d", size = 2298276, upload-time = "2025-12-05T12:03:51.072Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/90/b0/e3fd0ae68bc51593ef6f77a44901d1fa14c1b230cdce848b50ed10881ca3/phonenumbers-9.0.20-py2.py3-none-any.whl", hash = "sha256:03bf5dd14891891284ba96f803d0e5e7e11b9306a0ec4fdf25756ada39eacb86", size = 2584219, upload-time = "2025-12-05T12:03:48.388Z" },
+]
+
+[[package]]
 name = "pluggy"
 version = "1.6.0"
 source = { registry = "https://pypi.org/simple" }
@@ -979,74 +1080,17 @@ wheels = [
 ]
 
 [[package]]
-name = "posutochnik"
-version = "1.0.0"
-source = { editable = "." }
+name = "polyfactory"
+version = "3.1.0"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "adaptix" },
-    { name = "aiohttp" },
-    { name = "alembic" },
-    { name = "asyncpg" },
-    { name = "cryptography" },
-    { name = "dishka" },
-    { name = "fastapi", extra = ["standard"] },
-    { name = "pydantic" },
-    { name = "pydantic-extra-types" },
-    { name = "pyjwt" },
-    { name = "sqlalchemy", extra = ["postgresql-asyncpg"] },
-    { name = "structlog" },
-    { name = "toml-rs" },
+    { name = "faker" },
+    { name = "typing-extensions" },
 ]
-
-[package.optional-dependencies]
-ci = [
-    { name = "import-linter" },
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "ruff" },
+sdist = { url = "https://files.pythonhosted.org/packages/c9/3a/db522ea17e0e8d38f3128889b5b600b3a1d5728ae0724f43a0ed5ed1f82e/polyfactory-3.1.0.tar.gz", hash = "sha256:9061c0a282e0594502576455230fce534f2915042be77715256c1e6bbbf24ac5", size = 344189, upload-time = "2025-11-25T08:10:16.555Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/94/7c/535646d75a1c510065169ea65693613c7a6bc64491bea13e7dad4f028ff3/polyfactory-3.1.0-py3-none-any.whl", hash = "sha256:78171232342c25906d542513c9f00ebf41eadec2c67b498490a577024dd7e867", size = 61836, upload-time = "2025-11-25T08:10:14.893Z" },
 ]
-dev = [
-    { name = "import-linter" },
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "ruff" },
-]
-lint = [
-    { name = "import-linter" },
-    { name = "mypy" },
-    { name = "ruff" },
-]
-test = [
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "adaptix", specifier = "==3.0.0b11" },
-    { name = "aiohttp", specifier = "==3.13.2" },
-    { name = "alembic", specifier = "==1.17.2" },
-    { name = "asyncpg", specifier = "==0.31.0" },
-    { name = "cryptography", specifier = "==46.0.3" },
-    { name = "dishka", specifier = "==1.7.2" },
-    { name = "fastapi", extras = ["standard"], specifier = "==0.123.0" },
-    { name = "import-linter", marker = "extra == 'lint'", specifier = "==2.7" },
-    { name = "mypy", marker = "extra == 'lint'", specifier = "==1.19.0" },
-    { name = "posutochnik", extras = ["dev"], marker = "extra == 'ci'" },
-    { name = "posutochnik", extras = ["test", "lint"], marker = "extra == 'dev'" },
-    { name = "pydantic", specifier = "==2.12.5" },
-    { name = "pydantic-extra-types", specifier = "==2.10.6" },
-    { name = "pyjwt", specifier = "==2.10.1" },
-    { name = "pytest", marker = "extra == 'test'", specifier = "==9.0.1" },
-    { name = "pytest-asyncio", marker = "extra == 'test'", specifier = "==1.3.0" },
-    { name = "ruff", marker = "extra == 'lint'", specifier = "==0.14.8" },
-    { name = "sqlalchemy", extras = ["postgresql-asyncpg"], specifier = "==2.0.44" },
-    { name = "structlog", specifier = "==25.5.0" },
-    { name = "toml-rs", specifier = "==0.1.0" },
-]
-provides-extras = ["lint", "test", "dev", "ci"]
 
 [[package]]
 name = "propcache"
@@ -1586,6 +1630,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/55/e3/70399cb7dd41c10ac53367ae42139cf4b1ca5f36bb3dc6c9d33acdb43655/typing_inspection-0.4.2.tar.gz", hash = "sha256:ba561c48a67c5958007083d386c3295464928b01faa735ab8547c5692e87f464", size = 75949, upload-time = "2025-10-01T02:14:41.687Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/dc/9b/47798a6c91d8bdb567fe2698fe81e0c6b7cb7ef4d13da4114b41d239f65d/typing_inspection-0.4.2-py3-none-any.whl", hash = "sha256:4ed1cacbdc298c220f1bd249ed5287caa16f34d44ef4e9c3d0cbad5b521545e7", size = 14611, upload-time = "2025-10-01T02:14:40.154Z" },
+]
+
+[[package]]
+name = "tzdata"
+version = "2025.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/5e/a7/c202b344c5ca7daf398f3b8a477eeb205cf3b6f32e7ec3a6bac0629ca975/tzdata-2025.3.tar.gz", hash = "sha256:de39c2ca5dc7b0344f2eba86f49d614019d29f060fc4ebc8a417896a620b56a7", size = 196772, upload-time = "2025-12-13T17:45:35.667Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c7/b0/003792df09decd6849a5e39c28b513c06e84436a54440380862b5aeff25d/tzdata-2025.3-py2.py3-none-any.whl", hash = "sha256:06a47e5700f3081aab02b2e513160914ff0694bce9947d6b76ebd6bf57cfc5d1", size = 348521, upload-time = "2025-12-13T17:45:33.889Z" },
 ]
 
 [[package]]
