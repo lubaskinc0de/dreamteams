@@ -3,6 +3,7 @@ from datetime import UTC, datetime, timedelta
 from polyfactory.factories.pydantic_factory import ModelFactory
 
 from dreamteams.application.create_competition.interactor import CompetitionForm
+from dreamteams.application.update_competition.interactor import UpdateCompetitionForm
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition import (
@@ -90,6 +91,19 @@ class CompetitionFormFactory(ModelFactory[CompetitionForm]):
     """Factory of CompetitionForm models."""
 
     __model__ = CompetitionForm
+
+    schedule = _competition_schedule_provider
+    participant_limits = _participant_limits_provider
+    venue = _competition_venue_provider
+    team_size = _team_size_provider
+    domains = _domains_provider
+    participant_type = _participant_type_provider
+
+
+class UpdateCompetitionFormFactory(ModelFactory[UpdateCompetitionForm]):
+    """Factory of UpdateCompetitionForm models."""
+
+    __model__ = UpdateCompetitionForm
 
     schedule = _competition_schedule_provider
     participant_limits = _participant_limits_provider

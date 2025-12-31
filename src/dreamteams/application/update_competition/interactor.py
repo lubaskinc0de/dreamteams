@@ -1,0 +1,65 @@
+import structlog
+from pydantic import BaseModel, Field
+
+from dreamteams.application.common.gateway.competition import CompetitionGateway
+from dreamteams.application.common.idp import IdProvider
+from dreamteams.application.common.interactor import interactor
+from dreamteams.application.common.logger import Logger
+from dreamteams.application.common.uow import UoW
+from dreamteams.entities.common.identifiers import CompetitionId
+from dreamteams.entities.common.vo.domain import Domain
+from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.competition import CompetitionSchedule, CompetitionVenue, ParticipantLimits, TeamSizeRange
+from dreamteams.entities.errors.competition import CompetitionNotFoundError
+
+logger: Logger = structlog.get_logger(__name__)
+
+
+class UpdateCompetitionForm(BaseModel):
+    """Form for updating a competition."""
+
+    title: str = Field(max_length=200)
+    description: str
+    schedule: CompetitionSchedule
+    participant_limits: ParticipantLimits
+    domains: list[Domain]
+    participant_type: ParticipantType
+    venue: CompetitionVenue
+    team_size: TeamSizeRange
+    is_archived: bool
+
+
+@interactor
+class UpdateCompetition:
+    """Interactor for updating a competition."""
+
+    uow: UoW
+    idp: IdProvider
+    competition_gateway: CompetitionGateway
+
+    async def execute(self, competition_id: CompetitionId, data: UpdateCompetitionForm) -> None:
+        """Updates competition by organizer who created it."""
+        user = await self.idp.get_user()
+        logger.debug("Updating competition", competition_id=competition_id, user_id=user.id)
+
+        competition = await self.competition_gateway.get(competition_id)
+        if competition is None:
+            logger.warning("Competition not found", competition_id=competition_id, user_id=user.id)
+            raise CompetitionNotFoundError
+
+        competition.update(
+            user=user,
+            title=data.title,
+            description=data.description,
+            schedule=data.schedule,
+            participant_limits=data.participant_limits,
+            domains=data.domains,
+            participant_type=data.participant_type,
+            venue=data.venue,
+            team_size=data.team_size,
+            is_archived=data.is_archived,
+        )
+
+        await self.uow.commit()
+
+        logger.info("Competition updated", competition_id=competition_id, user_id=user.id)

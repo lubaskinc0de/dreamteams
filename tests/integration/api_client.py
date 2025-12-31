@@ -212,6 +212,19 @@ class ApiClient:
                 response_type=CreatedCompetition,
             )
 
+    async def update_competition(
+        self,
+        competition_id: CompetitionId,
+        data: dict[str, Any],
+    ) -> APIResponse[None]:
+        """Update competition via PUT /competitions/{competition_id}."""
+        url = f"{COMPETITIONS_URL}/{competition_id}"
+        async with self.session.put(url, headers=self._headers, json=data) as response:
+            return await self._load_response(
+                response,
+                response_type=None,
+            )
+
     async def delete_competition(self, competition_id: CompetitionId) -> APIResponse[None]:
         """Delete competition via DELETE /competitions/{competition_id}."""
         url = f"{COMPETITIONS_URL}/{competition_id}"

@@ -4,6 +4,7 @@ from dreamteams.application.create_competition.interactor import CreateCompetiti
 from dreamteams.application.delete_competition.interactor import DeleteCompetition
 from dreamteams.application.register.organizer import RegisterOrganizer
 from dreamteams.application.register.shared.user_factory import UserFactory
+from dreamteams.application.update_competition.interactor import UpdateCompetition
 from dreamteams.application.view_profile.interactor import ViewProfile
 
 
@@ -17,5 +18,6 @@ class InteractorProvider(Provider):
         ViewProfile,
         CreateCompetition,
         DeleteCompetition,
+        UpdateCompetition,
     )
     user_factory = provide(UserFactory)

@@ -11,7 +11,6 @@ def configure_structlog() -> dict[str, Any]:
         structlog.stdlib.add_log_level,
         structlog.processors.TimeStamper(fmt="iso"),
         structlog.processors.StackInfoRenderer(),
-        structlog.processors.dict_tracebacks,
         structlog.processors.UnicodeDecoder(),
     ]
 

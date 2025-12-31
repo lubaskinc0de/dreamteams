@@ -7,7 +7,8 @@ from dreamteams.application.create_competition.interactor import (
     CreateCompetition,
     CreatedCompetition,
 )
-from dreamteams.application.delete_competition.interactor import DeleteCompetition, DeleteCompetitionForm
+from dreamteams.application.delete_competition.interactor import DeleteCompetition
+from dreamteams.application.update_competition.interactor import UpdateCompetition, UpdateCompetitionForm
 from dreamteams.entities.common.identifiers import CompetitionId
 
 router = APIRouter(
@@ -26,10 +27,20 @@ async def create_competition(
     return await interactor.execute(data)
 
 
+@router.put("/{competition_id}")
+async def update_competition(
+    interactor: FromDishka[UpdateCompetition],
+    competition_id: CompetitionId,
+    data: UpdateCompetitionForm,
+) -> None:
+    """HTTP endpoint for updating a competition."""
+    await interactor.execute(competition_id, data)
+
+
 @router.delete("/{competition_id}")
 async def delete_competition(
     interactor: FromDishka[DeleteCompetition],
     competition_id: CompetitionId,
 ) -> None:
     """HTTP endpoint for deleting a competition."""
-    await interactor.execute(DeleteCompetitionForm(competition_id=competition_id))
+    await interactor.execute(competition_id)

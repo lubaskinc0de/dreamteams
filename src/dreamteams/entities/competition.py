@@ -7,6 +7,7 @@ from dreamteams.entities.base import Entity, model
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 from dreamteams.entities.user import User
 
@@ -180,6 +181,41 @@ class Competition(Entity):
     def can_delete(self, user: User) -> bool:
         """Check if user can delete this competition."""
         return user.organizer is not None and self.organizer_id == user.organizer.id
+
+    def update(  # noqa: PLR0913
+        self,
+        user: User,
+        title: str,
+        description: str,
+        schedule: CompetitionSchedule,
+        participant_limits: ParticipantLimits,
+        domains: list[Domain],
+        participant_type: ParticipantType,
+        venue: CompetitionVenue,
+        team_size: TeamSizeRange,
+        *,
+        is_archived: bool,
+    ) -> None:
+        """Update competition fields."""
+        if user.organizer is None or self.organizer_id != user.organizer.id:
+            raise AccessDeniedError
+
+        if not description or not description.strip():
+            raise InvalidCompetitionDataError(message="Description must not be empty")
+
+        if not domains:
+            raise InvalidCompetitionDataError(message="Domains list must not be empty")
+
+        self.title = title
+        self.description = description
+        self.schedule = schedule
+        self.participant_limits = participant_limits
+        self.domains = domains
+        self.participant_type = participant_type
+        self.venue = venue
+        self.team_size = team_size
+        self.is_archived = is_archived
+        self.updated_at = datetime.now(tz=UTC)
 
 
 def competition_factory(  # noqa: PLR0913

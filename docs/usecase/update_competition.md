@@ -28,7 +28,6 @@ No output. Operation succeeds or raises error.
 1. Only organizer who created competition can update it
 2. `updated_at` is set to current timestamp
 3. All validation rules from `CompetitionSchedule`, `CompetitionVenue`, `ParticipantLimits`, `TeamSizeRange` apply
-4. Fields with `None` value are not updated
 
 ## Error Cases
 

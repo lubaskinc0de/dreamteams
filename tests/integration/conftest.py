@@ -1,5 +1,7 @@
 import os
 from collections.abc import AsyncIterable, AsyncIterator
+from datetime import UTC, datetime, timedelta
+from typing import Any
 from uuid import uuid4
 
 import aiohttp
@@ -18,9 +20,36 @@ from dreamteams.application.register.organizer import CreatedOrganizer
 from dreamteams.bootstrap.config.loader import Config
 from dreamteams.bootstrap.di.container import get_async_container
 from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
-from tests.common.factory.competition import CompetitionFormFactory
+from tests.common.factory.competition import CompetitionFormFactory, UpdateCompetitionFormFactory
 from tests.common.factory.organizer import OrganizerFormFactory
 from tests.integration.api_client import ApiClient, APIClientConfig
+
+type InvalidCompetitionCases = list[tuple[dict[str, Any], str]]
+
+
+def schedule_from_deltas(
+    *,
+    competition_start: timedelta,
+    competition_end: timedelta,
+    registration_start: timedelta,
+    registration_end: timedelta,
+    team_formation_start: timedelta | None = None,
+    team_formation_end: timedelta | None = None,
+) -> dict[str, Any]:
+    """Convert timedelta values to ISO datetime strings."""
+    now = datetime.now(tz=UTC)
+    result = {
+        "competition_start": (now + competition_start).isoformat(),
+        "competition_end": (now + competition_end).isoformat(),
+        "registration_start": (now + registration_start).isoformat(),
+        "registration_end": (now + registration_end).isoformat(),
+    }
+    if team_formation_start is not None:
+        result["team_formation_start"] = (now + team_formation_start).isoformat()
+    if team_formation_end is not None:
+        result["team_formation_end"] = (now + team_formation_end).isoformat()
+    return result
+
 
 # This is a fake private key used only to sign fake access token for tests
 DUMMY_PRIVATE_KEY = """
@@ -154,6 +183,7 @@ def api_client(http_session: ClientSession, app_config: Config, trace_id: TraceI
 
 # Mock data
 register_fixture(CompetitionFormFactory)
+register_fixture(UpdateCompetitionFormFactory)
 register_fixture(OrganizerFormFactory)
 
 
@@ -205,3 +235,146 @@ async def competition(
         response = await api_client.create_competition(competition_form.model_dump(mode="json"))
 
     return response.assert_status(200).ensure_content()
+
+
+INVALID_COMPETITION_DATA_CASES: InvalidCompetitionCases = [
+    # Title validation
+    ({"title": "a" * 300}, "VALIDATION_ERROR"),  # Title exceeds max length (200 characters)
+    # Description validation
+    ({"description": ""}, "INVALID_COMPETITION_DATA"),  # Description cannot be empty
+    ({"description": "   "}, "INVALID_COMPETITION_DATA"),  # Description cannot be whitespace only
+    # Domains validation
+    ({"domains": []}, "INVALID_COMPETITION_DATA"),  # Domains list cannot be empty
+    # Schedule validation: registration end after competition start
+    (
+        {
+            "schedule": {
+                "competition_start": timedelta(days=10),
+                "competition_end": timedelta(days=20),
+                "registration_start": timedelta(days=5),
+                "registration_end": timedelta(days=15),
+            },
+        },
+        "INVALID_COMPETITION_DATA",
+    ),
+    # Schedule validation: competition end before competition start
+    (
+        {
+            "schedule": {
+                "competition_start": timedelta(days=10),
+                "competition_end": timedelta(days=1),
+                "registration_start": timedelta(days=1),
+                "registration_end": timedelta(days=5),
+            },
+        },
+        "INVALID_COMPETITION_DATA",
+    ),
+    # Schedule validation: dates in the past
+    (
+        {
+            "schedule": {
+                "competition_start": timedelta(days=-10),
+                "competition_end": timedelta(days=1),
+                "registration_start": timedelta(days=-15),
+                "registration_end": timedelta(days=-11),
+            },
+        },
+        "INVALID_COMPETITION_DATA",
+    ),
+    # Participant limits: min exceeds max
+    ({"participant_limits": {"max": 10, "min": 50}}, "INVALID_COMPETITION_DATA"),
+    # Participant limits: both zero
+    ({"participant_limits": {"max": 0, "min": 0}}, "INVALID_COMPETITION_DATA"),
+    # Team size: min exceeds max
+    ({"team_size": {"max": 3, "min": 10}}, "INVALID_COMPETITION_DATA"),
+    # Team size: max is zero
+    ({"team_size": {"max": 0, "min": 1}}, "INVALID_COMPETITION_DATA"),
+    # Team size: min is zero (must be at least 1)
+    ({"team_size": {"max": 5, "min": 0}}, "INVALID_COMPETITION_DATA"),
+    # Participant limits: negative min
+    ({"participant_limits": {"max": 100, "min": -10}}, "INVALID_COMPETITION_DATA"),
+    # Schedule validation: competition start equals competition end
+    (
+        {
+            "schedule": {
+                "competition_start": timedelta(days=10),
+                "competition_end": timedelta(days=10),
+                "registration_start": timedelta(days=1),
+                "registration_end": timedelta(days=5),
+            },
+        },
+        "INVALID_COMPETITION_DATA",
+    ),
+    # Schedule validation: registration start equals registration end
+    (
+        {
+            "schedule": {
+                "competition_start": timedelta(days=10),
+                "competition_end": timedelta(days=20),
+                "registration_start": timedelta(days=5),
+                "registration_end": timedelta(days=5),
+            },
+        },
+        "INVALID_COMPETITION_DATA",
+    ),
+    # Venue: offline format requires location
+    ({"venue": {"format": "offline", "location": ""}}, "INVALID_COMPETITION_DATA"),
+    ({"venue": {"format": "offline", "location": "   "}}, "INVALID_COMPETITION_DATA"),
+    # Venue: hybrid format requires location
+    ({"venue": {"format": "hybrid", "location": ""}}, "INVALID_COMPETITION_DATA"),
+    ({"venue": {"format": "hybrid", "location": "   "}}, "INVALID_COMPETITION_DATA"),
+    # Team formation: only start specified (both must be specified together)
+    (
+        {
+            "schedule": {
+                "competition_start": timedelta(days=11),
+                "competition_end": timedelta(days=15),
+                "registration_start": timedelta(days=1),
+                "registration_end": timedelta(days=10),
+                "team_formation_start": timedelta(days=11),
+            },
+        },
+        "INVALID_COMPETITION_DATA",
+    ),
+    # Team formation: only end specified (both must be specified together)
+    (
+        {
+            "schedule": {
+                "competition_start": timedelta(days=11),
+                "competition_end": timedelta(days=15),
+                "registration_start": timedelta(days=1),
+                "registration_end": timedelta(days=10),
+                "team_formation_end": timedelta(days=12),
+            },
+        },
+        "INVALID_COMPETITION_DATA",
+    ),
+    # Team formation: starts before registration end
+    (
+        {
+            "schedule": {
+                "competition_start": timedelta(days=11),
+                "competition_end": timedelta(days=15),
+                "registration_start": timedelta(days=1),
+                "registration_end": timedelta(days=10),
+                "team_formation_start": timedelta(days=9),
+                "team_formation_end": timedelta(days=12),
+            },
+        },
+        "INVALID_COMPETITION_DATA",
+    ),
+    # Team formation: ends after competition end
+    (
+        {
+            "schedule": {
+                "competition_start": timedelta(days=11),
+                "competition_end": timedelta(days=15),
+                "registration_start": timedelta(days=1),
+                "registration_end": timedelta(days=10),
+                "team_formation_start": timedelta(days=11),
+                "team_formation_end": timedelta(days=16),
+            },
+        },
+        "INVALID_COMPETITION_DATA",
+    ),
+]
