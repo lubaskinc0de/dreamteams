@@ -11,6 +11,7 @@ from sqlalchemy import (
     String,
     Table,
     Text,
+    asc,
 )
 from sqlalchemy.orm import composite, relationship
 
@@ -94,6 +95,7 @@ mapper_registry.map_imperatively(
             foreign_keys=[milestone_table.c.competition_id],
             cascade="all, delete-orphan",
             lazy="selectin",
+            order_by=asc(milestone_table.c.timestamp),
         ),
     },
 )

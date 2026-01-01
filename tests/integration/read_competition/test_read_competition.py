@@ -1,7 +1,9 @@
 from uuid import uuid4
 
+from dishka import AsyncContainer
 from faker import Faker
 
+from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.create_competition.interactor import CompetitionForm, CreatedCompetition
 from dreamteams.application.read_competition.interactor import CompetitionModel
 from dreamteams.application.register.organizer import CreatedOrganizer
@@ -19,13 +21,11 @@ async def test_read_competition_succeeds(
     competition: CreatedCompetition,
     competition_form: CompetitionForm,
     organizer: CreatedOrganizer,
-    email: str,
+    request_container: AsyncContainer,
 ) -> None:
     """Test reading competition by ID returns correct data."""
-    with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=email):
-        response = await api_client.read_competition(competition.competition_id)
-        actual_model = response.assert_status(200).ensure_content()
-
+    competition_gateway = await request_container.get(CompetitionGateway)
+    db_competition = await competition_gateway.get(competition.competition_id)
     expected_model = CompetitionModel(
         id=competition.competition_id,
         organizer_id=organizer.organizer_id,
@@ -39,12 +39,18 @@ async def test_read_competition_succeeds(
         venue=competition_form.venue,
         team_size=competition_form.team_size,
         milestones=[
-            Milestone(timestamp=milestone.timestamp, title=milestone.title) for milestone in competition_form.milestones
+            Milestone(timestamp=milestone.timestamp, title=milestone.title)
+            for milestone in sorted(competition_form.milestones, key=lambda item: item.timestamp)
         ],
         is_archived=True,
-        created_at=actual_model.created_at,
-        updated_at=actual_model.updated_at,
+        created_at=db_competition.created_at,
+        updated_at=db_competition.updated_at,
     )
+
+    with api_client.authenticate(auth_user_id=USER_ID):
+        response = await api_client.read_competition(competition.competition_id)
+        actual_model = response.assert_status(200).ensure_content()
+
     assert actual_model == expected_model
 
 

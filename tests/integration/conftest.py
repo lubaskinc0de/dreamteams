@@ -103,6 +103,13 @@ async def container() -> AsyncIterator[AsyncContainer]:
 
 
 @pytest.fixture
+async def request_container(container: AsyncContainer) -> AsyncIterator[AsyncContainer]:
+    """Provide async request-scoped DI container for tests."""
+    async with container() as request_container:
+        yield request_container
+
+
+@pytest.fixture
 async def session(container: AsyncContainer) -> AsyncIterator[AsyncSession]:
     """Create and provide database session for tests."""
     async with container() as r:

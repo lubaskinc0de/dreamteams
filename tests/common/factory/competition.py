@@ -84,7 +84,7 @@ def _milestones_provider() -> list[MilestoneForm]:
     faker = CompetitionFormFactory.__faker__
     now = datetime.now(tz=UTC)
 
-    count = random_.randint(0, 3)
+    count = random_.randint(0, 10)
     if count == 0:
         return []
 

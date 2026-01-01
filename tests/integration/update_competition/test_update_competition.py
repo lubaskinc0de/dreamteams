@@ -1,10 +1,14 @@
 from typing import Any
 
 import pytest
+from dishka import AsyncContainer
 from faker import Faker
 
+from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.create_competition.interactor import CreatedCompetition
+from dreamteams.application.read_competition.interactor import CompetitionModel
 from dreamteams.application.register.organizer import CreatedOrganizer
+from dreamteams.entities.competition.milestone import Milestone
 from tests.common.factory.competition import UpdateCompetitionFormFactory
 from tests.common.factory.organizer import OrganizerFormFactory
 from tests.integration.api_client import ApiClient
@@ -18,15 +22,44 @@ async def test_update_competition_as_owner_succeeds(
     api_client: ApiClient,
     competition: CreatedCompetition,
     update_competition_form_factory: UpdateCompetitionFormFactory,
-    email: str,
+    request_container: AsyncContainer,
 ) -> None:
     """Test updating competition as owner."""
-    data = update_competition_form_factory.build().model_dump(mode="json")
+    update_form = update_competition_form_factory.build()
+    data = update_form.model_dump(mode="json")
+    competition_gateway = await request_container.get(CompetitionGateway)
+    db_competition = await competition_gateway.get(competition.competition_id)
+    expected_model = CompetitionModel(
+        id=competition.competition_id,
+        title=update_form.title,
+        description=update_form.description,
+        schedule=update_form.schedule,
+        participant_limits=update_form.participant_limits,
+        domains=update_form.domains,
+        participant_type=update_form.participant_type,
+        venue=update_form.venue,
+        team_size=update_form.team_size,
+        milestones=[
+            Milestone(timestamp=milestone.timestamp, title=milestone.title)
+            for milestone in sorted(update_form.milestones, key=lambda item: item.timestamp)
+        ],
+        banner=None,
+        is_archived=update_form.is_archived,
+        updated_at=db_competition.updated_at,
+        created_at=db_competition.created_at,
+        organizer_id=db_competition.organizer_id,
+    )
 
-    with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=email):
-        response = await api_client.update_competition(competition.competition_id, data)
+    with api_client.authenticate(auth_user_id=USER_ID):
+        update_response = await api_client.update_competition(competition.competition_id, data)
+        update_response.assert_status(200)
 
-    response.assert_status(200)
+        read_response = await api_client.read_competition(competition.competition_id)
+
+    actual_model = read_response.assert_status(200).ensure_content()
+    assert actual_model.updated_at > expected_model.updated_at
+    expected_model.updated_at = actual_model.updated_at
+    assert actual_model == expected_model
 
 
 @pytest.mark.parametrize(("update_data", "expected_error"), INVALID_COMPETITION_DATA_CASES)
