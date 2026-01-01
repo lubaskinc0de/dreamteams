@@ -26,6 +26,9 @@ from tests.integration.api_client import ApiClient, APIClientConfig
 
 type InvalidCompetitionCases = list[tuple[dict[str, Any], str]]
 
+USER_ID = "1"
+DIFFERENT_USER_ID = "2"
+
 
 def schedule_from_deltas(
     *,
@@ -220,8 +223,24 @@ async def organizer(
     email: str,
 ) -> CreatedOrganizer:
     """Created organizer entity."""
-    with api_client.authenticate(auth_user_id="1", auth_user_email=email):
+    with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=email):
         response = await api_client.register_organizer(organizer_form.model_dump())
+
+    return response.assert_status(200).ensure_content()
+
+
+@pytest.fixture
+async def different_organizer(
+    api_client: ApiClient,
+    organizer_form_factory: OrganizerFormFactory,
+    faker: Faker,
+) -> CreatedOrganizer:
+    """Created different organizer entity."""
+    organizer_data = organizer_form_factory.build()
+    different_email = faker.email()
+
+    with api_client.authenticate(auth_user_id=DIFFERENT_USER_ID, auth_user_email=different_email):
+        response = await api_client.register_organizer(organizer_data.model_dump())
 
     return response.assert_status(200).ensure_content()
 
@@ -231,10 +250,9 @@ async def competition(
     api_client: ApiClient,
     organizer: CreatedOrganizer,  # noqa: ARG001
     competition_form: CompetitionForm,
-    email: str,
 ) -> CreatedCompetition:
     """Created competition entity."""
-    with api_client.authenticate(auth_user_id="1", auth_user_email=email):
+    with api_client.authenticate(auth_user_id=USER_ID):
         response = await api_client.create_competition(competition_form.model_dump(mode="json"))
 
     return response.assert_status(200).ensure_content()

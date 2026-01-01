@@ -2,9 +2,7 @@ from dreamteams.application.register.organizer import CreatedOrganizer
 from dreamteams.application.view_profile.interactor import OrganizerModel, ProfileModel
 from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
 from tests.integration.api_client import ApiClient
-
-# Test user ID for authentication
-USER_ID = "1"
+from tests.integration.conftest import USER_ID
 
 
 async def test_view_organizer_profile(

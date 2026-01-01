@@ -1,19 +1,14 @@
 from uuid import uuid4
 
 from dishka import AsyncContainer
-from faker import Faker
 
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.create_competition.interactor import CompetitionForm, CreatedCompetition
 from dreamteams.application.read_competition.interactor import CompetitionModel
 from dreamteams.application.register.organizer import CreatedOrganizer
 from dreamteams.entities.competition.milestone import Milestone
-from tests.common.factory.organizer import OrganizerFormFactory
 from tests.integration.api_client import ApiClient
-
-# Test user IDs for authentication
-USER_ID = "1"
-DIFFERENT_USER_ID = "2"
+from tests.integration.conftest import DIFFERENT_USER_ID, USER_ID
 
 
 async def test_read_competition_succeeds(
@@ -57,12 +52,11 @@ async def test_read_competition_succeeds(
 async def test_read_competition_with_non_existent_id_fails(
     api_client: ApiClient,
     organizer: CreatedOrganizer,  # noqa: ARG001
-    email: str,
 ) -> None:
     """Test reading competition with non-existent ID returns 404."""
     non_existent_id = uuid4()
 
-    with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=email):
+    with api_client.authenticate(auth_user_id=USER_ID):
         response = await api_client.read_competition(non_existent_id)
 
     response.assert_error(404, "COMPETITION_NOT_FOUND")
@@ -71,15 +65,10 @@ async def test_read_competition_with_non_existent_id_fails(
 async def test_read_competition_by_different_organizer_fails(
     api_client: ApiClient,
     competition: CreatedCompetition,
-    organizer_form_factory: OrganizerFormFactory,
-    faker: Faker,
+    different_organizer: CreatedOrganizer,  # noqa: ARG001
 ) -> None:
     """Test reading competition by different organizer returns 403."""
-    different_email = faker.email()
-    different_organizer_data = organizer_form_factory.build().model_dump()
-
-    with api_client.authenticate(auth_user_id=DIFFERENT_USER_ID, auth_user_email=different_email):
-        await api_client.register_organizer(different_organizer_data)
+    with api_client.authenticate(auth_user_id=DIFFERENT_USER_ID):
         response = await api_client.read_competition(competition.competition_id)
 
     response.assert_error(403, "ACCESS_DENIED")

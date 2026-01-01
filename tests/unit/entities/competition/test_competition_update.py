@@ -1,7 +1,6 @@
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from faker import Faker
 
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
@@ -13,7 +12,6 @@ from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
-from dreamteams.entities.organizer import Organizer
 from dreamteams.entities.user import User
 
 
@@ -120,8 +118,8 @@ def test_update_competition_with_invalid_data_raises_error(
 
 
 def test_update_competition_by_non_organizer_raises_error(
-    faker: Faker,
     competition: Competition,
+    user_without_organizer: User,
 ) -> None:
     """Test that updating competition by non-organizer raises error."""
     now = datetime.now(tz=UTC)
@@ -129,7 +127,6 @@ def test_update_competition_by_non_organizer_raises_error(
         registration_start=now + timedelta(days=1),
         registration_end=now + timedelta(days=10),
     )
-    user_without_organizer = User(id=faker.uuid4(cast_to=None), organizer=None)
 
     with pytest.raises(AccessDeniedError):
         competition.update(
@@ -148,8 +145,8 @@ def test_update_competition_by_non_organizer_raises_error(
 
 
 def test_update_competition_by_different_organizer_raises_error(
-    faker: Faker,
     competition: Competition,
+    different_user: User,
 ) -> None:
     """Test that updating competition by different organizer raises error."""
     now = datetime.now(tz=UTC)
@@ -157,21 +154,10 @@ def test_update_competition_by_different_organizer_raises_error(
         registration_start=now + timedelta(days=1),
         registration_end=now + timedelta(days=10),
     )
-    different_organizer_id = faker.uuid4(cast_to=None)
-    different_user_id = faker.uuid4(cast_to=None)
-    different_organizer = Organizer(
-        id=different_organizer_id,
-        user_id=different_user_id,
-        organizer_name=faker.company(),
-        phone_number=faker.phone_number(),
-        contact_email=faker.email(),
-        logo=None,
-    )
-    user_different_organizer = User(id=different_user_id, organizer=different_organizer)
 
     with pytest.raises(AccessDeniedError):
         competition.update(
-            user=user_different_organizer,
+            user=different_user,
             title="Updated Title",
             description="Updated description",
             schedule=schedule,

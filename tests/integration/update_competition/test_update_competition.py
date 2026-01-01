@@ -10,12 +10,8 @@ from dreamteams.application.read_competition.interactor import CompetitionModel
 from dreamteams.application.register.organizer import CreatedOrganizer
 from dreamteams.entities.competition.milestone import Milestone
 from tests.common.factory.competition import UpdateCompetitionFormFactory
-from tests.common.factory.organizer import OrganizerFormFactory
 from tests.integration.api_client import ApiClient
-from tests.integration.conftest import INVALID_COMPETITION_DATA_CASES, schedule_from_deltas
-
-# Test user ID for authentication
-USER_ID = "1"
+from tests.integration.conftest import DIFFERENT_USER_ID, INVALID_COMPETITION_DATA_CASES, USER_ID, schedule_from_deltas
 
 
 async def test_update_competition_as_owner_succeeds(
@@ -106,16 +102,12 @@ async def test_update_competition_fails_if_not_owner(
     api_client: ApiClient,
     competition: CreatedCompetition,
     update_competition_form_factory: UpdateCompetitionFormFactory,
-    organizer_form_factory: OrganizerFormFactory,
-    faker: Faker,
+    different_organizer: CreatedOrganizer,  # noqa: ARG001
 ) -> None:
     """Test updating competition fails when user is not the owner."""
     data = update_competition_form_factory.build().model_dump(mode="json")
-    second_organizer_data = organizer_form_factory.build()
-    second_organizer_email = faker.email()
 
-    with api_client.authenticate(auth_user_id="999", auth_user_email=second_organizer_email):
-        (await api_client.register_organizer(second_organizer_data.model_dump(mode="json"))).assert_status(200)
+    with api_client.authenticate(auth_user_id=DIFFERENT_USER_ID):
         response = await api_client.update_competition(competition.competition_id, data)
 
     response.assert_error(403, "ACCESS_DENIED")
@@ -125,14 +117,13 @@ async def test_update_competition_fails_if_not_found(
     api_client: ApiClient,
     organizer: CreatedOrganizer,  # noqa: ARG001
     update_competition_form_factory: UpdateCompetitionFormFactory,
-    email: str,
     faker: Faker,
 ) -> None:
     """Test updating competition fails when competition does not exist."""
     non_existent_id = faker.uuid4(cast_to=None)
     data = update_competition_form_factory.build().model_dump(mode="json")
 
-    with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=email):
+    with api_client.authenticate(auth_user_id=USER_ID):
         response = await api_client.update_competition(non_existent_id, data)
 
     response.assert_error(404, "COMPETITION_NOT_FOUND")

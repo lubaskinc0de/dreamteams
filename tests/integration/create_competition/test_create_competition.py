@@ -5,22 +5,18 @@ import pytest
 from dreamteams.application.register.organizer import CreatedOrganizer
 from tests.common.factory.competition import CompetitionFormFactory
 from tests.integration.api_client import ApiClient
-from tests.integration.conftest import INVALID_COMPETITION_DATA_CASES, schedule_from_deltas
-
-# Test user ID for authentication
-USER_ID = "1"
+from tests.integration.conftest import INVALID_COMPETITION_DATA_CASES, USER_ID, schedule_from_deltas
 
 
 async def test_create_competition_as_organizer_succeeds(
     api_client: ApiClient,
     organizer: CreatedOrganizer,  # noqa: ARG001
     competition_form_factory: CompetitionFormFactory,
-    email: str,
 ) -> None:
     """Test creating competition as organizer."""
     data = competition_form_factory.build().model_dump(mode="json")
 
-    with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=email):
+    with api_client.authenticate(auth_user_id=USER_ID):
         response = await api_client.create_competition(data)
 
     response.assert_status(200).ensure_content()
