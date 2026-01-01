@@ -38,7 +38,6 @@ async def test_create_competition_with_invalid_data(
     """Test creating competition with invalid data."""
     base_data = competition_form_factory.build().model_dump(mode="json")
 
-    # Make a copy to avoid modifying the shared constant
     update_data = update_data.copy()
 
     # Convert schedule with timedelta to ISO strings
