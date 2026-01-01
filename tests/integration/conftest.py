@@ -29,18 +29,14 @@ type InvalidCompetitionCases = list[tuple[dict[str, Any], str]]
 
 def schedule_from_deltas(
     *,
-    competition_start: timedelta,
-    competition_end: timedelta,
     registration_start: timedelta,
     registration_end: timedelta,
     team_formation_start: timedelta | None = None,
     team_formation_end: timedelta | None = None,
 ) -> dict[str, Any]:
-    """Convert timedelta values to ISO datetime strings."""
+    """Convert timedelta values to ISO datetime strings for CompetitionSchedule."""
     now = datetime.now(tz=UTC)
     result = {
-        "competition_start": (now + competition_start).isoformat(),
-        "competition_end": (now + competition_end).isoformat(),
         "registration_start": (now + registration_start).isoformat(),
         "registration_end": (now + registration_end).isoformat(),
     }
@@ -245,36 +241,10 @@ INVALID_COMPETITION_DATA_CASES: InvalidCompetitionCases = [
     ({"description": "   "}, "INVALID_COMPETITION_DATA"),  # Description cannot be whitespace only
     # Domains validation
     ({"domains": []}, "INVALID_COMPETITION_DATA"),  # Domains list cannot be empty
-    # Schedule validation: registration end after competition start
-    (
-        {
-            "schedule": {
-                "competition_start": timedelta(days=10),
-                "competition_end": timedelta(days=20),
-                "registration_start": timedelta(days=5),
-                "registration_end": timedelta(days=15),
-            },
-        },
-        "INVALID_COMPETITION_DATA",
-    ),
-    # Schedule validation: competition end before competition start
-    (
-        {
-            "schedule": {
-                "competition_start": timedelta(days=10),
-                "competition_end": timedelta(days=1),
-                "registration_start": timedelta(days=1),
-                "registration_end": timedelta(days=5),
-            },
-        },
-        "INVALID_COMPETITION_DATA",
-    ),
     # Schedule validation: dates in the past
     (
         {
             "schedule": {
-                "competition_start": timedelta(days=-10),
-                "competition_end": timedelta(days=1),
                 "registration_start": timedelta(days=-15),
                 "registration_end": timedelta(days=-11),
             },
@@ -293,24 +263,10 @@ INVALID_COMPETITION_DATA_CASES: InvalidCompetitionCases = [
     ({"team_size": {"max": 5, "min": 0}}, "INVALID_COMPETITION_DATA"),
     # Participant limits: negative min
     ({"participant_limits": {"max": 100, "min": -10}}, "INVALID_COMPETITION_DATA"),
-    # Schedule validation: competition start equals competition end
-    (
-        {
-            "schedule": {
-                "competition_start": timedelta(days=10),
-                "competition_end": timedelta(days=10),
-                "registration_start": timedelta(days=1),
-                "registration_end": timedelta(days=5),
-            },
-        },
-        "INVALID_COMPETITION_DATA",
-    ),
     # Schedule validation: registration start equals registration end
     (
         {
             "schedule": {
-                "competition_start": timedelta(days=10),
-                "competition_end": timedelta(days=20),
                 "registration_start": timedelta(days=5),
                 "registration_end": timedelta(days=5),
             },
@@ -327,8 +283,6 @@ INVALID_COMPETITION_DATA_CASES: InvalidCompetitionCases = [
     (
         {
             "schedule": {
-                "competition_start": timedelta(days=11),
-                "competition_end": timedelta(days=15),
                 "registration_start": timedelta(days=1),
                 "registration_end": timedelta(days=10),
                 "team_formation_start": timedelta(days=11),
@@ -340,8 +294,6 @@ INVALID_COMPETITION_DATA_CASES: InvalidCompetitionCases = [
     (
         {
             "schedule": {
-                "competition_start": timedelta(days=11),
-                "competition_end": timedelta(days=15),
                 "registration_start": timedelta(days=1),
                 "registration_end": timedelta(days=10),
                 "team_formation_end": timedelta(days=12),
@@ -353,8 +305,6 @@ INVALID_COMPETITION_DATA_CASES: InvalidCompetitionCases = [
     (
         {
             "schedule": {
-                "competition_start": timedelta(days=11),
-                "competition_end": timedelta(days=15),
                 "registration_start": timedelta(days=1),
                 "registration_end": timedelta(days=10),
                 "team_formation_start": timedelta(days=9),
@@ -363,18 +313,41 @@ INVALID_COMPETITION_DATA_CASES: InvalidCompetitionCases = [
         },
         "INVALID_COMPETITION_DATA",
     ),
-    # Team formation: ends after competition end
+    # Milestones: duplicate timestamps
     (
         {
-            "schedule": {
-                "competition_start": timedelta(days=11),
-                "competition_end": timedelta(days=15),
-                "registration_start": timedelta(days=1),
-                "registration_end": timedelta(days=10),
-                "team_formation_start": timedelta(days=11),
-                "team_formation_end": timedelta(days=16),
-            },
+            "milestones": [
+                {"timestamp": (datetime.now(tz=UTC) + timedelta(days=15)).isoformat(), "title": "Stage 1"},
+                {"timestamp": (datetime.now(tz=UTC) + timedelta(days=15)).isoformat(), "title": "Stage 2"},
+            ],
         },
         "INVALID_COMPETITION_DATA",
+    ),
+    # Milestones: empty title
+    (
+        {
+            "milestones": [
+                {"timestamp": (datetime.now(tz=UTC) + timedelta(days=15)).isoformat(), "title": ""},
+            ],
+        },
+        "INVALID_COMPETITION_DATA",
+    ),
+    # Milestones: whitespace-only title
+    (
+        {
+            "milestones": [
+                {"timestamp": (datetime.now(tz=UTC) + timedelta(days=15)).isoformat(), "title": "   "},
+            ],
+        },
+        "INVALID_COMPETITION_DATA",
+    ),
+    # Milestones: too long title
+    (
+        {
+            "milestones": [
+                {"timestamp": (datetime.now(tz=UTC) + timedelta(days=15)).isoformat(), "title": "a" * 300},
+            ],
+        },
+        "VALIDATION_ERROR",
     ),
 ]

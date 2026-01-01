@@ -1,6 +1,6 @@
 import pytest
 
-from dreamteams.entities.competition import TeamSizeRange
+from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 
 

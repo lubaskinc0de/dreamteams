@@ -1,6 +1,7 @@
 import structlog
 from pydantic import BaseModel, Field
 
+from dreamteams.application.common.dto.milestone import MilestoneForm
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.common.interactor import interactor
@@ -9,7 +10,11 @@ from dreamteams.application.common.uow import UoW
 from dreamteams.entities.common.identifiers import CompetitionId
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
-from dreamteams.entities.competition import CompetitionSchedule, CompetitionVenue, ParticipantLimits, TeamSizeRange
+from dreamteams.entities.competition.milestone import Milestone
+from dreamteams.entities.competition.participant_limits import ParticipantLimits
+from dreamteams.entities.competition.schedule import CompetitionSchedule
+from dreamteams.entities.competition.team_size_range import TeamSizeRange
+from dreamteams.entities.competition.venue import CompetitionVenue
 from dreamteams.entities.errors.competition import CompetitionNotFoundError
 
 logger: Logger = structlog.get_logger(__name__)
@@ -26,6 +31,7 @@ class UpdateCompetitionForm(BaseModel):
     participant_type: ParticipantType
     venue: CompetitionVenue
     team_size: TeamSizeRange
+    milestones: list[MilestoneForm]
     is_archived: bool
 
 
@@ -47,6 +53,9 @@ class UpdateCompetition:
             logger.warning("Competition not found", competition_id=competition_id, user_id=user.id)
             raise CompetitionNotFoundError
 
+        if data.milestones:
+            await self.competition_gateway.clear_milestones(competition_id)
+
         competition.update(
             user=user,
             title=data.title,
@@ -57,6 +66,7 @@ class UpdateCompetition:
             participant_type=data.participant_type,
             venue=data.venue,
             team_size=data.team_size,
+            milestones=[Milestone(milestone.timestamp, milestone.title) for milestone in data.milestones],
             is_archived=data.is_archived,
         )
 

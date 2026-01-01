@@ -1,6 +1,6 @@
 import pytest
 
-from dreamteams.entities.competition import ParticipantLimits
+from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 
 

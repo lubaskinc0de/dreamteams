@@ -1,7 +1,7 @@
 import pytest
 from faker import Faker
 
-from dreamteams.entities.competition import CompetitionFormat, CompetitionVenue
+from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 
 

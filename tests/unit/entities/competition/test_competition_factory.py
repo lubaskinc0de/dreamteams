@@ -5,14 +5,12 @@ from faker import Faker
 
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
-from dreamteams.entities.competition import (
-    CompetitionFormat,
-    CompetitionSchedule,
-    CompetitionVenue,
-    ParticipantLimits,
-    TeamSizeRange,
-    competition_factory,
-)
+from dreamteams.entities.competition.entity import competition_factory
+from dreamteams.entities.competition.milestone import Milestone
+from dreamteams.entities.competition.participant_limits import ParticipantLimits
+from dreamteams.entities.competition.schedule import CompetitionSchedule
+from dreamteams.entities.competition.team_size_range import TeamSizeRange
+from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 
 
@@ -28,11 +26,9 @@ from dreamteams.entities.errors.competition import InvalidCompetitionDataError
         "team_min",
         "reg_start_days",
         "reg_end_days",
-        "comp_start_days",
-        "comp_end_days",
     ),
     [
-        # Standard online competition: 10-day registration, 5-day event
+        # Standard online competition: 10-day registration
         (
             [Domain.AI, Domain.BACKEND],
             ParticipantType.STUDENT,
@@ -44,10 +40,8 @@ from dreamteams.entities.errors.competition import InvalidCompetitionDataError
             1,  # min team size (solo allowed)
             1,  # registration starts in 1 day
             10,  # registration ends in 10 days
-            11,  # competition starts in 11 days
-            15,  # competition ends in 15 days
         ),
-        # Large hybrid competition: 1-month registration, 2-week event
+        # Large hybrid competition: 1-month registration
         (
             [Domain.AI, Domain.BACKEND, Domain.MOBILE, Domain.DEVOPS],
             ParticipantType.ANY,
@@ -59,10 +53,8 @@ from dreamteams.entities.errors.competition import InvalidCompetitionDataError
             3,  # min team size (no solo participants)
             7,  # registration starts in 7 days
             37,  # registration ends in 37 days (30-day period)
-            38,  # competition starts in 38 days
-            52,  # competition ends in 52 days (14-day event)
         ),
-        # Small offline competition: same-day registration closes and competition starts
+        # Small offline competition: 8-day registration
         (
             [Domain.FRONTEND],
             ParticipantType.SCHOOLCHILD,
@@ -74,8 +66,6 @@ from dreamteams.entities.errors.competition import InvalidCompetitionDataError
             1,  # min team size (solo only)
             2,  # registration starts in 2 days
             10,  # registration ends in 10 days
-            10,  # competition starts same day as registration ends
-            12,  # competition ends in 12 days (2-day event)
         ),
     ],
 )
@@ -91,8 +81,6 @@ def test_create_competition_with_valid_data(
     team_min: int,
     reg_start_days: int,
     reg_end_days: int,
-    comp_start_days: int,
-    comp_end_days: int,
 ) -> None:
     """Test creating competition with different configurations."""
     now = datetime.now(tz=UTC)
@@ -102,8 +90,6 @@ def test_create_competition_with_valid_data(
     schedule = CompetitionSchedule(
         registration_start=now + timedelta(days=reg_start_days),
         registration_end=now + timedelta(days=reg_end_days),
-        competition_start=now + timedelta(days=comp_start_days),
-        competition_end=now + timedelta(days=comp_end_days),
     )
     participant_limits = ParticipantLimits(max=participant_max, min=participant_min)
     venue = CompetitionVenue(format=venue_format, location=location)
@@ -158,8 +144,6 @@ def test_create_competition_with_invalid_data_raises_error(
     schedule = CompetitionSchedule(
         registration_start=now + timedelta(days=1),
         registration_end=now + timedelta(days=10),
-        competition_start=now + timedelta(days=11),
-        competition_end=now + timedelta(days=15),
     )
 
     with pytest.raises(InvalidCompetitionDataError, match=expected_error):
@@ -183,8 +167,6 @@ def test_competition_created_at_and_updated_at_are_set(faker: Faker) -> None:
     schedule = CompetitionSchedule(
         registration_start=now + timedelta(days=1),
         registration_end=now + timedelta(days=10),
-        competition_start=now + timedelta(days=11),
-        competition_end=now + timedelta(days=15),
     )
 
     competition = competition_factory(
@@ -203,3 +185,62 @@ def test_competition_created_at_and_updated_at_are_set(faker: Faker) -> None:
     assert time_diff < 1
     assert competition.created_at.tzinfo == UTC
     assert competition.updated_at.tzinfo == UTC
+
+
+def test_create_competition_with_valid_milestones(faker: Faker) -> None:
+    """Test creating competition with valid milestones."""
+    now = datetime.now(tz=UTC)
+    organizer_id = faker.uuid4(cast_to=None)
+    schedule = CompetitionSchedule(
+        registration_start=now + timedelta(days=1),
+        registration_end=now + timedelta(days=10),
+    )
+    milestones = [
+        Milestone(timestamp=now + timedelta(days=15), title="Stage 1"),
+        Milestone(timestamp=now + timedelta(days=20), title="Stage 2"),
+        Milestone(timestamp=now + timedelta(days=25), title="Final"),
+    ]
+
+    competition = competition_factory(
+        organizer_id=organizer_id,
+        title=faker.sentence(nb_words=3),
+        description=faker.text(max_nb_chars=150),
+        schedule=schedule,
+        participant_limits=ParticipantLimits(max=100, min=10),
+        domains=[Domain.AI],
+        participant_type=ParticipantType.STUDENT,
+        venue=CompetitionVenue(format=CompetitionFormat.ONLINE, location=None),
+        team_size=TeamSizeRange(max=5, min=1),
+        milestones=milestones,
+    )
+
+    assert competition.milestones == milestones
+
+
+def test_create_competition_with_duplicate_milestone_timestamps_raises_error(faker: Faker) -> None:
+    """Test that duplicate milestone timestamps raise error."""
+    now = datetime.now(tz=UTC)
+    organizer_id = faker.uuid4(cast_to=None)
+    schedule = CompetitionSchedule(
+        registration_start=now + timedelta(days=1),
+        registration_end=now + timedelta(days=10),
+    )
+    duplicate_timestamp = now + timedelta(days=15)
+    milestones = [
+        Milestone(timestamp=duplicate_timestamp, title="Stage 1"),
+        Milestone(timestamp=duplicate_timestamp, title="Stage 2"),
+    ]
+
+    with pytest.raises(InvalidCompetitionDataError, match="Milestone timestamps must be unique"):
+        competition_factory(
+            organizer_id=organizer_id,
+            title=faker.sentence(nb_words=3),
+            description=faker.text(max_nb_chars=150),
+            schedule=schedule,
+            participant_limits=ParticipantLimits(max=100, min=10),
+            domains=[Domain.AI],
+            participant_type=ParticipantType.STUDENT,
+            venue=CompetitionVenue(format=CompetitionFormat.ONLINE, location=None),
+            team_size=TeamSizeRange(max=5, min=1),
+            milestones=milestones,
+        )
