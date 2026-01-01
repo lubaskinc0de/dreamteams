@@ -10,8 +10,13 @@ from dreamteams.application.read_competition.interactor import CompetitionModel
 from dreamteams.application.register.organizer import CreatedOrganizer
 from dreamteams.entities.competition.milestone import Milestone
 from tests.common.factory.competition import UpdateCompetitionFormFactory
+from tests.common.helpers.competition import (
+    INVALID_COMPETITION_DATA_CASES,
+    milestones_from_deltas,
+    schedule_from_deltas,
+)
 from tests.integration.api_client import ApiClient
-from tests.integration.conftest import DIFFERENT_USER_ID, INVALID_COMPETITION_DATA_CASES, USER_ID, schedule_from_deltas
+from tests.integration.conftest import DIFFERENT_USER_ID, USER_ID
 
 
 async def test_update_competition_as_owner_succeeds(
@@ -68,14 +73,14 @@ async def test_update_competition_with_invalid_data(
 ) -> None:
     """Test updating competition with invalid data."""
     base_data = update_competition_form_factory.build().model_dump(mode="json")
-
-    # Make a copy to avoid modifying the shared constant
     update_data = update_data.copy()
 
-    # Convert schedule with timedelta to ISO strings
     if "schedule" in update_data:
         schedule = update_data["schedule"]
         update_data["schedule"] = schedule_from_deltas(**schedule)
+
+    if "milestones" in update_data:
+        update_data["milestones"] = milestones_from_deltas(update_data["milestones"])
 
     base_data.update(update_data)
 

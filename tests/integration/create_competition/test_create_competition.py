@@ -4,8 +4,13 @@ import pytest
 
 from dreamteams.application.register.organizer import CreatedOrganizer
 from tests.common.factory.competition import CompetitionFormFactory
+from tests.common.helpers.competition import (
+    INVALID_COMPETITION_DATA_CASES,
+    milestones_from_deltas,
+    schedule_from_deltas,
+)
 from tests.integration.api_client import ApiClient
-from tests.integration.conftest import INVALID_COMPETITION_DATA_CASES, USER_ID, schedule_from_deltas
+from tests.integration.conftest import USER_ID
 
 
 async def test_create_competition_as_organizer_succeeds(
@@ -40,6 +45,10 @@ async def test_create_competition_with_invalid_data(
     if "schedule" in update_data:
         schedule = update_data["schedule"]
         update_data["schedule"] = schedule_from_deltas(**schedule)
+
+    # Convert milestones with timedelta to ISO strings
+    if "milestones" in update_data:
+        update_data["milestones"] = milestones_from_deltas(update_data["milestones"])
 
     base_data.update(update_data)
 
