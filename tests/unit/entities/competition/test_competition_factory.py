@@ -12,6 +12,7 @@ from dreamteams.entities.competition.schedule import CompetitionSchedule
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
+from dreamteams.entities.user import User
 
 
 @pytest.mark.parametrize(
@@ -71,6 +72,7 @@ from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 )
 def test_create_competition_with_valid_data(
     faker: Faker,
+    organizer_user: User,
     domains: list[Domain],
     participant_type: ParticipantType,
     venue_format: CompetitionFormat,
@@ -84,7 +86,6 @@ def test_create_competition_with_valid_data(
 ) -> None:
     """Test creating competition with different configurations."""
     now = datetime.now(tz=UTC)
-    organizer_id = faker.uuid4(cast_to=None)
     title = faker.sentence(nb_words=4)
     description = faker.text(max_nb_chars=200)
     schedule = CompetitionSchedule(
@@ -96,7 +97,7 @@ def test_create_competition_with_valid_data(
     team_size = TeamSizeRange(max=team_max, min=team_min)
 
     competition = competition_factory(
-        organizer_id=organizer_id,
+        user=organizer_user,
         title=title,
         description=description,
         schedule=schedule,
@@ -107,7 +108,8 @@ def test_create_competition_with_valid_data(
         team_size=team_size,
     )
 
-    assert competition.organizer_id == organizer_id
+    assert organizer_user.organizer is not None
+    assert competition.organizer_id == organizer_user.organizer.id
     assert competition.title == title
     assert competition.description == description
     assert competition.schedule == schedule
@@ -134,13 +136,13 @@ def test_create_competition_with_valid_data(
 )
 def test_create_competition_with_invalid_data_raises_error(
     faker: Faker,
+    organizer_user: User,
     description: str,
     domains: list[Domain],
     expected_error: str,
 ) -> None:
     """Test that invalid data raises appropriate errors."""
     now = datetime.now(tz=UTC)
-    organizer_id = faker.uuid4(cast_to=None)
     schedule = CompetitionSchedule(
         registration_start=now + timedelta(days=1),
         registration_end=now + timedelta(days=10),
@@ -148,7 +150,7 @@ def test_create_competition_with_invalid_data_raises_error(
 
     with pytest.raises(InvalidCompetitionDataError, match=expected_error):
         competition_factory(
-            organizer_id=organizer_id,
+            user=organizer_user,
             title=faker.sentence(nb_words=3),
             description=description,
             schedule=schedule,
@@ -160,17 +162,16 @@ def test_create_competition_with_invalid_data_raises_error(
         )
 
 
-def test_competition_created_at_and_updated_at_are_set(faker: Faker) -> None:
+def test_competition_created_at_and_updated_at_are_set(faker: Faker, organizer_user: User) -> None:
     """Test that created_at and updated_at are set to current time."""
     now = datetime.now(tz=UTC)
-    organizer_id = faker.uuid4(cast_to=None)
     schedule = CompetitionSchedule(
         registration_start=now + timedelta(days=1),
         registration_end=now + timedelta(days=10),
     )
 
     competition = competition_factory(
-        organizer_id=organizer_id,
+        user=organizer_user,
         title=faker.sentence(nb_words=3),
         description=faker.text(max_nb_chars=150),
         schedule=schedule,
@@ -187,10 +188,9 @@ def test_competition_created_at_and_updated_at_are_set(faker: Faker) -> None:
     assert competition.updated_at.tzinfo == UTC
 
 
-def test_create_competition_with_valid_milestones(faker: Faker) -> None:
+def test_create_competition_with_valid_milestones(faker: Faker, organizer_user: User) -> None:
     """Test creating competition with valid milestones."""
     now = datetime.now(tz=UTC)
-    organizer_id = faker.uuid4(cast_to=None)
     schedule = CompetitionSchedule(
         registration_start=now + timedelta(days=1),
         registration_end=now + timedelta(days=10),
@@ -202,7 +202,7 @@ def test_create_competition_with_valid_milestones(faker: Faker) -> None:
     ]
 
     competition = competition_factory(
-        organizer_id=organizer_id,
+        user=organizer_user,
         title=faker.sentence(nb_words=3),
         description=faker.text(max_nb_chars=150),
         schedule=schedule,
@@ -217,10 +217,12 @@ def test_create_competition_with_valid_milestones(faker: Faker) -> None:
     assert competition.milestones == milestones
 
 
-def test_create_competition_with_duplicate_milestone_timestamps_raises_error(faker: Faker) -> None:
+def test_create_competition_with_duplicate_milestone_timestamps_raises_error(
+    faker: Faker,
+    organizer_user: User,
+) -> None:
     """Test that duplicate milestone timestamps raise error."""
     now = datetime.now(tz=UTC)
-    organizer_id = faker.uuid4(cast_to=None)
     schedule = CompetitionSchedule(
         registration_start=now + timedelta(days=1),
         registration_end=now + timedelta(days=10),
@@ -233,7 +235,7 @@ def test_create_competition_with_duplicate_milestone_timestamps_raises_error(fak
 
     with pytest.raises(InvalidCompetitionDataError, match="Milestone timestamps must be unique"):
         competition_factory(
-            organizer_id=organizer_id,
+            user=organizer_user,
             title=faker.sentence(nb_words=3),
             description=faker.text(max_nb_chars=150),
             schedule=schedule,

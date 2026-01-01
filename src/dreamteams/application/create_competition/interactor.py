@@ -15,7 +15,6 @@ from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import CompetitionSchedule
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionVenue
-from dreamteams.entities.errors.base import AccessDeniedError
 
 logger: Logger = structlog.get_logger(__name__)
 
@@ -52,12 +51,8 @@ class CreateCompetition:
         user = await self.idp.get_user()
         logger.debug("Creating competition", title=data.title, user_id=user.id)
 
-        if user.organizer is None:
-            logger.warning("Attempt to create competition by non-organizer user", user_id=user.id)
-            raise AccessDeniedError
-
         competition = competition_factory(
-            organizer_id=user.organizer.id,
+            user=user,
             title=data.title,
             description=data.description,
             schedule=data.schedule,
@@ -72,7 +67,6 @@ class CreateCompetition:
         logger.debug(
             "Competition created",
             competition_id=competition.id,
-            organizer_id=user.organizer.id,
             user_id=user.id,
         )
 

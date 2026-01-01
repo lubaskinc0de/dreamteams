@@ -5,7 +5,7 @@ from faker import Faker
 
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
-from dreamteams.entities.competition.entity import competition_factory
+from dreamteams.entities.competition.entity import Competition
 from dreamteams.entities.competition.milestone import Milestone
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import CompetitionSchedule
@@ -17,44 +17,23 @@ from dreamteams.entities.organizer import Organizer
 from dreamteams.entities.user import User
 
 
-def test_update_competition_with_valid_milestones(faker: Faker) -> None:
+def test_update_competition_with_valid_milestones(
+    competition: Competition,
+    organizer_user: User,
+) -> None:
     """Test updating competition with valid milestones."""
     now = datetime.now(tz=UTC)
-    organizer_id = faker.uuid4(cast_to=None)
-    user_id = faker.uuid4(cast_to=None)
     schedule = CompetitionSchedule(
         registration_start=now + timedelta(days=1),
         registration_end=now + timedelta(days=10),
     )
-
-    competition = competition_factory(
-        organizer_id=organizer_id,
-        title=faker.sentence(nb_words=3),
-        description=faker.text(max_nb_chars=150),
-        schedule=schedule,
-        participant_limits=ParticipantLimits(max=100, min=10),
-        domains=[Domain.AI],
-        participant_type=ParticipantType.STUDENT,
-        venue=CompetitionVenue(format=CompetitionFormat.ONLINE, location=None),
-        team_size=TeamSizeRange(max=5, min=1),
-    )
-
-    organizer = Organizer(
-        id=organizer_id,
-        user_id=user_id,
-        organizer_name=faker.company(),
-        phone_number=faker.phone_number(),
-        contact_email=faker.email(),
-        logo=None,
-    )
-    user = User(id=user_id, organizer=organizer)
     new_milestones = [
         Milestone(timestamp=now + timedelta(days=15), title="Stage 1"),
         Milestone(timestamp=now + timedelta(days=20), title="Stage 2"),
     ]
 
     competition.update(
-        user=user,
+        user=organizer_user,
         title="Updated Title",
         description="Updated description",
         schedule=schedule,
@@ -70,37 +49,16 @@ def test_update_competition_with_valid_milestones(faker: Faker) -> None:
     assert competition.milestones == new_milestones
 
 
-def test_update_competition_with_duplicate_milestone_timestamps_raises_error(faker: Faker) -> None:
+def test_update_competition_with_duplicate_milestone_timestamps_raises_error(
+    competition: Competition,
+    organizer_user: User,
+) -> None:
     """Test that updating competition with duplicate milestone timestamps raises error."""
     now = datetime.now(tz=UTC)
-    organizer_id = faker.uuid4(cast_to=None)
-    user_id = faker.uuid4(cast_to=None)
     schedule = CompetitionSchedule(
         registration_start=now + timedelta(days=1),
         registration_end=now + timedelta(days=10),
     )
-
-    competition = competition_factory(
-        organizer_id=organizer_id,
-        title=faker.sentence(nb_words=3),
-        description=faker.text(max_nb_chars=150),
-        schedule=schedule,
-        participant_limits=ParticipantLimits(max=100, min=10),
-        domains=[Domain.AI],
-        participant_type=ParticipantType.STUDENT,
-        venue=CompetitionVenue(format=CompetitionFormat.ONLINE, location=None),
-        team_size=TeamSizeRange(max=5, min=1),
-    )
-
-    organizer = Organizer(
-        id=organizer_id,
-        user_id=user_id,
-        organizer_name=faker.company(),
-        phone_number=faker.phone_number(),
-        contact_email=faker.email(),
-        logo=None,
-    )
-    user = User(id=user_id, organizer=organizer)
     duplicate_timestamp = now + timedelta(days=15)
     duplicate_milestones = [
         Milestone(timestamp=duplicate_timestamp, title="Stage 1"),
@@ -109,7 +67,7 @@ def test_update_competition_with_duplicate_milestone_timestamps_raises_error(fak
 
     with pytest.raises(InvalidCompetitionDataError, match="Milestone timestamps must be unique"):
         competition.update(
-            user=user,
+            user=organizer_user,
             title="Updated Title",
             description="Updated description",
             schedule=schedule,
@@ -132,45 +90,22 @@ def test_update_competition_with_duplicate_milestone_timestamps_raises_error(fak
     ],
 )
 def test_update_competition_with_invalid_data_raises_error(
-    faker: Faker,
+    competition: Competition,
+    organizer_user: User,
     description: str,
     domains: list[Domain],
     expected_error: str,
 ) -> None:
     """Test that updating with invalid data raises appropriate errors."""
     now = datetime.now(tz=UTC)
-    organizer_id = faker.uuid4(cast_to=None)
-    user_id = faker.uuid4(cast_to=None)
     schedule = CompetitionSchedule(
         registration_start=now + timedelta(days=1),
         registration_end=now + timedelta(days=10),
     )
 
-    competition = competition_factory(
-        organizer_id=organizer_id,
-        title=faker.sentence(nb_words=3),
-        description=faker.text(max_nb_chars=150),
-        schedule=schedule,
-        participant_limits=ParticipantLimits(max=100, min=10),
-        domains=[Domain.AI],
-        participant_type=ParticipantType.STUDENT,
-        venue=CompetitionVenue(format=CompetitionFormat.ONLINE, location=None),
-        team_size=TeamSizeRange(max=5, min=1),
-    )
-
-    organizer = Organizer(
-        id=organizer_id,
-        user_id=user_id,
-        organizer_name=faker.company(),
-        phone_number=faker.phone_number(),
-        contact_email=faker.email(),
-        logo=None,
-    )
-    user = User(id=user_id, organizer=organizer)
-
     with pytest.raises(InvalidCompetitionDataError, match=expected_error):
         competition.update(
-            user=user,
+            user=organizer_user,
             title="Updated Title",
             description=description,
             schedule=schedule,
@@ -184,28 +119,16 @@ def test_update_competition_with_invalid_data_raises_error(
         )
 
 
-def test_update_competition_by_non_organizer_raises_error(faker: Faker) -> None:
+def test_update_competition_by_non_organizer_raises_error(
+    faker: Faker,
+    competition: Competition,
+) -> None:
     """Test that updating competition by non-organizer raises error."""
     now = datetime.now(tz=UTC)
-    organizer_id = faker.uuid4(cast_to=None)
     schedule = CompetitionSchedule(
         registration_start=now + timedelta(days=1),
         registration_end=now + timedelta(days=10),
     )
-
-    competition = competition_factory(
-        organizer_id=organizer_id,
-        title=faker.sentence(nb_words=3),
-        description=faker.text(max_nb_chars=150),
-        schedule=schedule,
-        participant_limits=ParticipantLimits(max=100, min=10),
-        domains=[Domain.AI],
-        participant_type=ParticipantType.STUDENT,
-        venue=CompetitionVenue(format=CompetitionFormat.ONLINE, location=None),
-        team_size=TeamSizeRange(max=5, min=1),
-    )
-
-    # User without organizer
     user_without_organizer = User(id=faker.uuid4(cast_to=None), organizer=None)
 
     with pytest.raises(AccessDeniedError):
@@ -224,28 +147,16 @@ def test_update_competition_by_non_organizer_raises_error(faker: Faker) -> None:
         )
 
 
-def test_update_competition_by_different_organizer_raises_error(faker: Faker) -> None:
+def test_update_competition_by_different_organizer_raises_error(
+    faker: Faker,
+    competition: Competition,
+) -> None:
     """Test that updating competition by different organizer raises error."""
     now = datetime.now(tz=UTC)
-    organizer_id = faker.uuid4(cast_to=None)
     schedule = CompetitionSchedule(
         registration_start=now + timedelta(days=1),
         registration_end=now + timedelta(days=10),
     )
-
-    competition = competition_factory(
-        organizer_id=organizer_id,
-        title=faker.sentence(nb_words=3),
-        description=faker.text(max_nb_chars=150),
-        schedule=schedule,
-        participant_limits=ParticipantLimits(max=100, min=10),
-        domains=[Domain.AI],
-        participant_type=ParticipantType.STUDENT,
-        venue=CompetitionVenue(format=CompetitionFormat.ONLINE, location=None),
-        team_size=TeamSizeRange(max=5, min=1),
-    )
-
-    # User with different organizer
     different_organizer_id = faker.uuid4(cast_to=None)
     different_user_id = faker.uuid4(cast_to=None)
     different_organizer = Organizer(

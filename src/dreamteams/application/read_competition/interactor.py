@@ -60,7 +60,7 @@ class ReadCompetition:
 
         if not competition.can_read(user):
             logger.warning("Access denied to read competition", competition_id=competition_id, user_id=user.id)
-            raise AccessDeniedError
+            raise AccessDeniedError(message="Only the organizer who created this competition can view it")
 
         return CompetitionModel(
             id=competition.id,

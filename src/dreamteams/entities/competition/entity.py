@@ -62,7 +62,7 @@ class Competition(Entity):
     ) -> None:
         """Update competition fields."""
         if user.organizer is None or self.organizer_id != user.organizer.id:
-            raise AccessDeniedError
+            raise AccessDeniedError(message="Only the organizer who created this competition can update it")
 
         if not description or not description.strip():
             raise InvalidCompetitionDataError(message="Description must not be empty")
@@ -89,7 +89,7 @@ class Competition(Entity):
 
 def competition_factory(  # noqa: PLR0913
     *,
-    organizer_id: OrganizerId,
+    user: User,
     title: str,
     description: str,
     schedule: CompetitionSchedule,
@@ -101,6 +101,9 @@ def competition_factory(  # noqa: PLR0913
     milestones: list[Milestone] | None = None,
 ) -> Competition:
     """Create a new competition."""
+    if user.organizer is None:
+        raise AccessDeniedError(message="Only organizers can create competitions")
+
     if not description or not description.strip():
         raise InvalidCompetitionDataError(message="Description must not be empty")
 
@@ -117,7 +120,7 @@ def competition_factory(  # noqa: PLR0913
     now = datetime.now(tz=UTC)
     return Competition(
         id=uuid4(),
-        organizer_id=organizer_id,
+        organizer_id=user.organizer.id,
         title=title,
         banner=None,
         description=description,

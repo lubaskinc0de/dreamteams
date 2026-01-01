@@ -36,7 +36,7 @@ class DeleteCompetition:
                 competition_id=competition_id,
                 user_id=user.id,
             )
-            raise AccessDeniedError
+            raise AccessDeniedError(message="Only the organizer who created this competition can delete it")
 
         await self.uow.delete(competition)
         await self.uow.commit()

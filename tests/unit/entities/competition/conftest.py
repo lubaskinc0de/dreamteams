@@ -1,6 +1,15 @@
+from datetime import UTC, datetime, timedelta
+
 import pytest
 from faker import Faker
 
+from dreamteams.entities.common.vo.domain import Domain
+from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.competition.entity import Competition, competition_factory
+from dreamteams.entities.competition.participant_limits import ParticipantLimits
+from dreamteams.entities.competition.schedule import CompetitionSchedule
+from dreamteams.entities.competition.team_size_range import TeamSizeRange
+from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
 from dreamteams.entities.organizer import Organizer
 from dreamteams.entities.user import User
 
@@ -21,3 +30,25 @@ def organizer_user(faker: Faker) -> User:
     )
 
     return User(id=user_id, organizer=organizer)
+
+
+@pytest.fixture
+def competition(faker: Faker, organizer_user: User) -> Competition:
+    """Competition created by organizer_user."""
+    now = datetime.now(tz=UTC)
+    schedule = CompetitionSchedule(
+        registration_start=now + timedelta(days=1),
+        registration_end=now + timedelta(days=10),
+    )
+
+    return competition_factory(
+        user=organizer_user,
+        title=faker.sentence(nb_words=3),
+        description=faker.text(max_nb_chars=150),
+        schedule=schedule,
+        participant_limits=ParticipantLimits(max=100, min=10),
+        domains=[Domain.AI],
+        participant_type=ParticipantType.STUDENT,
+        venue=CompetitionVenue(format=CompetitionFormat.ONLINE, location=None),
+        team_size=TeamSizeRange(max=5, min=1),
+    )
