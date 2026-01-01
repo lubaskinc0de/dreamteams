@@ -37,6 +37,10 @@ class Competition(Entity):
     created_at: datetime
     updated_at: datetime
 
+    def can_read(self, user: User) -> bool:
+        """Check if user can read this competition."""
+        return user.organizer is not None and self.organizer_id == user.organizer.id
+
     def can_delete(self, user: User) -> bool:
         """Check if user can delete this competition."""
         return user.organizer is not None and self.organizer_id == user.organizer.id

@@ -1,0 +1,89 @@
+from uuid import uuid4
+
+from faker import Faker
+
+from dreamteams.application.create_competition.interactor import CompetitionForm, CreatedCompetition
+from dreamteams.application.read_competition.interactor import CompetitionModel
+from dreamteams.application.register.organizer import CreatedOrganizer
+from dreamteams.entities.competition.milestone import Milestone
+from tests.common.factory.organizer import OrganizerFormFactory
+from tests.integration.api_client import ApiClient
+
+# Test user IDs for authentication
+USER_ID = "1"
+DIFFERENT_USER_ID = "2"
+
+
+async def test_read_competition_succeeds(
+    api_client: ApiClient,
+    competition: CreatedCompetition,
+    competition_form: CompetitionForm,
+    organizer: CreatedOrganizer,
+    email: str,
+) -> None:
+    """Test reading competition by ID returns correct data."""
+    with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=email):
+        response = await api_client.read_competition(competition.competition_id)
+        actual_model = response.assert_status(200).ensure_content()
+
+    expected_model = CompetitionModel(
+        id=competition.competition_id,
+        organizer_id=organizer.organizer_id,
+        title=competition_form.title,
+        banner=None,
+        description=competition_form.description,
+        schedule=competition_form.schedule,
+        participant_limits=competition_form.participant_limits,
+        domains=competition_form.domains,
+        participant_type=competition_form.participant_type,
+        venue=competition_form.venue,
+        team_size=competition_form.team_size,
+        milestones=[
+            Milestone(timestamp=milestone.timestamp, title=milestone.title) for milestone in competition_form.milestones
+        ],
+        is_archived=True,
+        created_at=actual_model.created_at,
+        updated_at=actual_model.updated_at,
+    )
+    assert actual_model == expected_model
+
+
+async def test_read_competition_with_non_existent_id_fails(
+    api_client: ApiClient,
+    organizer: CreatedOrganizer,  # noqa: ARG001
+    email: str,
+) -> None:
+    """Test reading competition with non-existent ID returns 404."""
+    non_existent_id = uuid4()
+
+    with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=email):
+        response = await api_client.read_competition(non_existent_id)
+
+    response.assert_error(404, "COMPETITION_NOT_FOUND")
+
+
+async def test_read_competition_by_different_organizer_fails(
+    api_client: ApiClient,
+    competition: CreatedCompetition,
+    organizer_form_factory: OrganizerFormFactory,
+    faker: Faker,
+) -> None:
+    """Test reading competition by different organizer returns 403."""
+    different_email = faker.email()
+    different_organizer_data = organizer_form_factory.build().model_dump()
+
+    with api_client.authenticate(auth_user_id=DIFFERENT_USER_ID, auth_user_email=different_email):
+        await api_client.register_organizer(different_organizer_data)
+        response = await api_client.read_competition(competition.competition_id)
+
+    response.assert_error(403, "ACCESS_DENIED")
+
+
+async def test_read_competition_fails_if_unauthorized(
+    api_client: ApiClient,
+    competition: CreatedCompetition,
+) -> None:
+    """Test reading competition without authentication returns 401."""
+    response = await api_client.read_competition(competition.competition_id)
+
+    response.assert_error(401, "UNAUTHORIZED")

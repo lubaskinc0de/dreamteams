@@ -9,6 +9,7 @@ from dreamteams.adapters.auth.model import AuthUserId
 from dreamteams.adapters.errors.http.response import ErrorResponse
 from dreamteams.adapters.tracing import TraceId, TracingConfig
 from dreamteams.application.create_competition.interactor import CreatedCompetition
+from dreamteams.application.read_competition.interactor import CompetitionModel
 from dreamteams.application.register.organizer import CreatedOrganizer
 from dreamteams.application.view_profile.interactor import ProfileModel
 from dreamteams.entities.common.identifiers import CompetitionId
@@ -210,6 +211,15 @@ class ApiClient:
             return await self._load_response(
                 response,
                 response_type=CreatedCompetition,
+            )
+
+    async def read_competition(self, competition_id: CompetitionId) -> APIResponse[CompetitionModel]:
+        """Read competition via GET /competitions/{competition_id}."""
+        url = f"{COMPETITIONS_URL}/{competition_id}"
+        async with self.session.get(url, headers=self._headers) as response:
+            return await self._load_response(
+                response,
+                response_type=CompetitionModel,
             )
 
     async def update_competition(

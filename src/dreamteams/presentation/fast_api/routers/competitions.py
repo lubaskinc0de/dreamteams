@@ -8,6 +8,7 @@ from dreamteams.application.create_competition.interactor import (
     CreatedCompetition,
 )
 from dreamteams.application.delete_competition.interactor import DeleteCompetition
+from dreamteams.application.read_competition.interactor import CompetitionModel, ReadCompetition
 from dreamteams.application.update_competition.interactor import UpdateCompetition, UpdateCompetitionForm
 from dreamteams.entities.common.identifiers import CompetitionId
 
@@ -25,6 +26,15 @@ async def create_competition(
 ) -> CreatedCompetition:
     """HTTP endpoint for creating a competition."""
     return await interactor.execute(data)
+
+
+@router.get("/{competition_id}")
+async def read_competition(
+    interactor: FromDishka[ReadCompetition],
+    competition_id: CompetitionId,
+) -> CompetitionModel:
+    """HTTP endpoint for reading a competition by ID."""
+    return await interactor.execute(competition_id)
 
 
 @router.put("/{competition_id}")

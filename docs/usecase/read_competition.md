@@ -1,4 +1,4 @@
-# GetCompetitionById
+# ReadCompetition
 
 ## Purpose
 
@@ -32,7 +32,6 @@ Retrieves full competition information by identifier.
 ## Business Rules
 
 1. Only organizer who created competition can view it
-2. Full competition data is returned including archived status
 
 ## Error Cases
 
