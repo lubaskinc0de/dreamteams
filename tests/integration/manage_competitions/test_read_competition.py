@@ -3,9 +3,9 @@ from uuid import uuid4
 from dishka import AsyncContainer
 
 from dreamteams.application.common.gateway.competition import CompetitionGateway
-from dreamteams.application.create_competition.interactor import CompetitionForm, CreatedCompetition
-from dreamteams.application.read_competition.interactor import CompetitionModel
-from dreamteams.application.register.organizer import CreatedOrganizer
+from dreamteams.application.manage_competitions import CompetitionModel
+from dreamteams.application.publish_competition import CompetitionForm, CreatedCompetition
+from dreamteams.application.register.register_organizer import CreatedOrganizer
 from dreamteams.entities.competition.milestone import Milestone
 from tests.integration.api_client import ApiClient
 from tests.integration.conftest import DIFFERENT_USER_ID, USER_ID

@@ -30,16 +30,16 @@ class ProfileModel(BaseModel):
 
 
 @interactor
-class ViewProfile:
-    """Interactor for viewing user profile."""
+class ReadProfile:
+    """Interactor for reading user profile."""
 
     uow: UoW
     idp: IdProvider
 
     async def execute(self) -> ProfileModel:
-        """View user profile."""
+        """Read user profile."""
         user = await self.idp.get_user()
-        logger.debug("Viewing user profile", user_id=user.id)
+        logger.debug("Reading user profile", user_id=user.id)
 
         organizer = user.get_role()
         organizer_model = OrganizerModel(

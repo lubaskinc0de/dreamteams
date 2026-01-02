@@ -13,8 +13,8 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dreamteams.adapters.tracing import TraceId
-from dreamteams.application.create_competition.interactor import CompetitionForm, CreatedCompetition
-from dreamteams.application.register.organizer import CreatedOrganizer
+from dreamteams.application.publish_competition import CompetitionForm, CreatedCompetition
+from dreamteams.application.register.register_organizer import CreatedOrganizer
 from dreamteams.bootstrap.config.loader import Config
 from dreamteams.bootstrap.di.container import get_async_container
 from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm

@@ -5,9 +5,9 @@ from dishka import AsyncContainer
 from faker import Faker
 
 from dreamteams.application.common.gateway.competition import CompetitionGateway
-from dreamteams.application.create_competition.interactor import CreatedCompetition
-from dreamteams.application.read_competition.interactor import CompetitionModel
-from dreamteams.application.register.organizer import CreatedOrganizer
+from dreamteams.application.manage_competitions import CompetitionModel
+from dreamteams.application.publish_competition import CreatedCompetition
+from dreamteams.application.register.register_organizer import CreatedOrganizer
 from dreamteams.entities.competition.milestone import Milestone
 from tests.common.factory.competition import UpdateCompetitionFormFactory
 from tests.common.helpers.competition import (

@@ -2,7 +2,7 @@ from typing import Any
 
 import pytest
 
-from dreamteams.application.register.organizer import CreatedOrganizer
+from dreamteams.application.register.register_organizer import CreatedOrganizer
 from tests.common.factory.competition import CompetitionFormFactory
 from tests.common.helpers.competition import (
     INVALID_COMPETITION_DATA_CASES,

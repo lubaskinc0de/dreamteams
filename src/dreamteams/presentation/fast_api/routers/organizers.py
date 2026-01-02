@@ -5,11 +5,11 @@ from pydantic import BaseModel, Field
 
 from dreamteams.adapters.auth.idp.auth_user import WebAuthUserIdProvider
 from dreamteams.application.common.phone_number import RussianPhoneNumber
-from dreamteams.application.register.organizer import (
+from dreamteams.application.register.register_organizer import (
     CreatedOrganizer,
     RegisterOrganizer,
 )
-from dreamteams.application.register.organizer import (
+from dreamteams.application.register.register_organizer import (
     OrganizerForm as InteractorOrganizerForm,
 )
 

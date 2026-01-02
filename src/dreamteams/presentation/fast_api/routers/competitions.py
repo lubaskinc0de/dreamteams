@@ -2,14 +2,14 @@ from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter
 
-from dreamteams.application.create_competition.interactor import (
-    CompetitionForm,
-    CreateCompetition,
-    CreatedCompetition,
+from dreamteams.application.manage_competitions import (
+    CompetitionModel,
+    DeleteCompetition,
+    ReadCompetition,
+    UpdateCompetition,
+    UpdateCompetitionForm,
 )
-from dreamteams.application.delete_competition.interactor import DeleteCompetition
-from dreamteams.application.read_competition.interactor import CompetitionModel, ReadCompetition
-from dreamteams.application.update_competition.interactor import UpdateCompetition, UpdateCompetitionForm
+from dreamteams.application.publish_competition import CompetitionForm, CreateCompetition, CreatedCompetition
 from dreamteams.entities.common.identifiers import CompetitionId
 
 router = APIRouter(

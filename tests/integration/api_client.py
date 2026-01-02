@@ -8,10 +8,10 @@ from aiohttp import ClientResponse, ClientResponseError, ClientSession
 from dreamteams.adapters.auth.model import AuthUserId
 from dreamteams.adapters.errors.http.response import ErrorResponse
 from dreamteams.adapters.tracing import TraceId, TracingConfig
-from dreamteams.application.create_competition.interactor import CreatedCompetition
-from dreamteams.application.read_competition.interactor import CompetitionModel
-from dreamteams.application.register.organizer import CreatedOrganizer
-from dreamteams.application.view_profile.interactor import ProfileModel
+from dreamteams.application.manage_competitions import CompetitionModel
+from dreamteams.application.manage_profile import ProfileModel
+from dreamteams.application.publish_competition import CreatedCompetition
+from dreamteams.application.register.register_organizer import CreatedOrganizer
 from dreamteams.entities.common.identifiers import CompetitionId
 
 retort = Retort()

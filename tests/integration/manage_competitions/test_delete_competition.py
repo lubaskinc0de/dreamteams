@@ -1,7 +1,7 @@
 from faker import Faker
 
-from dreamteams.application.create_competition.interactor import CreatedCompetition
-from dreamteams.application.register.organizer import CreatedOrganizer
+from dreamteams.application.publish_competition import CreatedCompetition
+from dreamteams.application.register.register_organizer import CreatedOrganizer
 from tests.integration.api_client import ApiClient
 from tests.integration.conftest import DIFFERENT_USER_ID, USER_ID
 

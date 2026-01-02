@@ -3,8 +3,8 @@ from datetime import UTC, datetime, timedelta
 from polyfactory.factories.pydantic_factory import ModelFactory
 
 from dreamteams.application.common.dto.milestone import MilestoneForm
-from dreamteams.application.create_competition.interactor import CompetitionForm
-from dreamteams.application.update_competition.interactor import UpdateCompetitionForm
+from dreamteams.application.manage_competitions import UpdateCompetitionForm
+from dreamteams.application.publish_competition import CompetitionForm
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.participant_limits import ParticipantLimits

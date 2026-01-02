@@ -1,5 +1,5 @@
-from dreamteams.application.register.organizer import CreatedOrganizer
-from dreamteams.application.view_profile.interactor import OrganizerModel, ProfileModel
+from dreamteams.application.manage_profile import OrganizerModel, ProfileModel
+from dreamteams.application.register.register_organizer import CreatedOrganizer
 from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
 from tests.integration.api_client import ApiClient
 from tests.integration.conftest import USER_ID
