@@ -1,3 +1,4 @@
+import asyncio
 import os
 from collections.abc import AsyncIterable, AsyncIterator
 from uuid import uuid4
@@ -13,6 +14,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dreamteams.adapters.tracing import TraceId
+from dreamteams.application.manage_competitions.read import CompetitionModel
 from dreamteams.application.publish_competition import CompetitionForm, CreatedCompetition
 from dreamteams.application.register.register_organizer import CreatedOrganizer
 from dreamteams.bootstrap.config.loader import Config
@@ -232,3 +234,20 @@ async def competition(
         response = await api_client.create_competition(competition_form.model_dump(mode="json"))
 
     return response.assert_status(200).ensure_content()
+
+
+async def create_competitions(
+    num_competitions: int,
+    competition_form_factory: CompetitionFormFactory,
+    api_client: ApiClient,
+    user_id: str = USER_ID,
+) -> list[CompetitionModel]:
+    """Create and read competitions."""
+    forms = [competition_form_factory.build() for _ in range(num_competitions)]
+    with api_client.authenticate(auth_user_id=user_id):
+        created_responses = await asyncio.gather(
+            *[api_client.create_competition(form.model_dump(mode="json")) for form in forms],
+        )
+        created = [response.assert_status(200).ensure_content() for response in created_responses]
+        read_responses = await asyncio.gather(*[api_client.read_competition(c.competition_id) for c in created])
+        return [response.assert_status(200).ensure_content() for response in read_responses]
