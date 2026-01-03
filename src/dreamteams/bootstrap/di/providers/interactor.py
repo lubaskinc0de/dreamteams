@@ -1,6 +1,11 @@
 from dishka import BaseScope, Provider, Scope, provide, provide_all
 
-from dreamteams.application.manage_competitions import DeleteCompetition, ReadCompetition, UpdateCompetition
+from dreamteams.application.manage_competitions import (
+    DeleteCompetition,
+    ListCompetitions,
+    ReadCompetition,
+    UpdateCompetition,
+)
 from dreamteams.application.manage_profile import ReadProfile
 from dreamteams.application.publish_competition import CreateCompetition
 from dreamteams.application.register.register_organizer import RegisterOrganizer
@@ -16,6 +21,7 @@ class InteractorProvider(Provider):
         RegisterOrganizer,
         ReadProfile,
         CreateCompetition,
+        ListCompetitions,
         ReadCompetition,
         DeleteCompetition,
         UpdateCompetition,

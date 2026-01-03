@@ -4,12 +4,16 @@ Organizer manages their existing competitions.
 """
 
 from dreamteams.application.manage_competitions.delete import DeleteCompetition
+from dreamteams.application.manage_competitions.list import CompetitionsList, ListCompetitions, ListCompetitionsInput
 from dreamteams.application.manage_competitions.read import CompetitionModel, ReadCompetition
 from dreamteams.application.manage_competitions.update import UpdateCompetition, UpdateCompetitionForm
 
 __all__ = [
     "CompetitionModel",
+    "CompetitionsList",
     "DeleteCompetition",
+    "ListCompetitions",
+    "ListCompetitionsInput",
     "ReadCompetition",
     "UpdateCompetition",
     "UpdateCompetitionForm",

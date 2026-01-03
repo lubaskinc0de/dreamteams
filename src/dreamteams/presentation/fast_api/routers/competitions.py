@@ -1,10 +1,15 @@
+from typing import Annotated
+
 from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 
 from dreamteams.application.manage_competitions import (
     CompetitionModel,
+    CompetitionsList,
     DeleteCompetition,
+    ListCompetitions,
+    ListCompetitionsInput,
     ReadCompetition,
     UpdateCompetition,
     UpdateCompetitionForm,
@@ -17,6 +22,15 @@ router = APIRouter(
     route_class=DishkaRoute,
     prefix="/competitions",
 )
+
+
+@router.get("/")
+async def list_competitions(
+    interactor: FromDishka[ListCompetitions],
+    input_data: Annotated[ListCompetitionsInput, Query()],
+) -> CompetitionsList:
+    """HTTP endpoint for listing competitions."""
+    return await interactor.execute(input_data)
 
 
 @router.post("/")

@@ -13,8 +13,10 @@ async def test_delete_competition_as_owner_succeeds(
     """Test deleting competition by owner organizer."""
     with api_client.authenticate(auth_user_id=USER_ID):
         response = await api_client.delete_competition(competition.competition_id)
+        read_response = await api_client.read_competition(competition.competition_id)
 
     response.assert_status(200)
+    read_response.assert_status(404)
 
 
 async def test_delete_competition_fails_if_not_found(

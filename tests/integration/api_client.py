@@ -8,7 +8,9 @@ from aiohttp import ClientResponse, ClientResponseError, ClientSession
 from dreamteams.adapters.auth.model import AuthUserId
 from dreamteams.adapters.errors.http.response import ErrorResponse
 from dreamteams.adapters.tracing import TraceId, TracingConfig
-from dreamteams.application.manage_competitions import CompetitionModel
+from dreamteams.application.common.gateway.competition import CompetitionSortBy
+from dreamteams.application.common.gateway.sorting import SortOrder
+from dreamteams.application.manage_competitions import CompetitionModel, CompetitionsList
 from dreamteams.application.manage_profile import ProfileModel
 from dreamteams.application.publish_competition import CreatedCompetition
 from dreamteams.application.register.register_organizer import CreatedOrganizer
@@ -211,6 +213,20 @@ class ApiClient:
             return await self._load_response(
                 response,
                 response_type=CreatedCompetition,
+            )
+
+    async def list_competitions(
+        self,
+        page: int = 1,
+        sort_by: CompetitionSortBy = CompetitionSortBy.CREATED_AT,
+        sort_order: SortOrder = SortOrder.DESC,
+    ) -> APIResponse[CompetitionsList]:
+        """List competitions via GET /competitions/."""
+        url = f"{COMPETITIONS_URL}/?page={page}&sort_by={sort_by}&sort_order={sort_order}"
+        async with self.session.get(url, headers=self._headers) as response:
+            return await self._load_response(
+                response,
+                response_type=CompetitionsList,
             )
 
     async def read_competition(self, competition_id: CompetitionId) -> APIResponse[CompetitionModel]:

@@ -1,11 +1,12 @@
 from typing import override
 
-from sqlalchemy import delete
+from sqlalchemy import delete, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dreamteams.adapters.db.models import milestone_table
-from dreamteams.application.common.gateway.competition import CompetitionGateway
-from dreamteams.entities.common.identifiers import CompetitionId
+from dreamteams.adapters.db.models import competition_table, milestone_table
+from dreamteams.application.common.gateway.competition import CompetitionGateway, CompetitionSortBy
+from dreamteams.application.common.gateway.sorting import SortOrder
+from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
 from dreamteams.entities.competition.entity import Competition
 from dreamteams.entities.competition.milestone import Milestone
 
@@ -26,3 +27,39 @@ class SACompetitionGateway(CompetitionGateway):
         """Delete all competition milestones from storage."""
         q = delete(Milestone).where(milestone_table.c.competition_id == competition_id)
         await self._session.execute(q)
+
+    @override
+    async def list_by_organizer(
+        self,
+        organizer_id: OrganizerId,
+        *,
+        page: int,
+        page_size: int,
+        sort_by: CompetitionSortBy,
+        sort_order: SortOrder,
+    ) -> tuple[list[Competition], int]:
+        """List competitions by organizer with pagination and sorting."""
+        sort_column = {
+            CompetitionSortBy.CREATED_AT: competition_table.c.created_at,
+            CompetitionSortBy.TITLE: competition_table.c.title,
+            CompetitionSortBy.REGISTRATION_START: competition_table.c.registration_start,
+            CompetitionSortBy.TEAM_FORMATION_START: competition_table.c.team_formation_start,
+        }[sort_by]
+
+        order = desc(sort_column) if sort_order == SortOrder.DESC else sort_column
+
+        count_query = select(func.count()).where(competition_table.c.organizer_id == organizer_id)
+        total = await self._session.scalar(count_query) or 0
+
+        query = (
+            select(Competition)
+            .where(competition_table.c.organizer_id == organizer_id)
+            .order_by(order, desc(competition_table.c.id) if sort_order == SortOrder.DESC else competition_table.c.id)
+            .limit(page_size)
+            .offset((page - 1) * page_size)
+        )
+
+        result = await self._session.scalars(query)
+        competitions = list(result.all())
+
+        return competitions, total
