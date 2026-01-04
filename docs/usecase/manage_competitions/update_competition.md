@@ -16,6 +16,13 @@
 | `milestones` | `list[MilestoneForm]` | Competition milestones | Can be empty list |
 | `is_archived` | `bool` | Archive status | Boolean |
 
+### MilestoneForm
+
+| Field | Type | Description | Validation |
+|-------|------|-------------|------------|
+| `title` | `str` | Milestone title | Max 50 characters, non-empty |
+| `timestamp` | `datetime` | Milestone timestamp | Valid datetime |
+
 ## Output
 
 No output. Operation succeeds or raises error.

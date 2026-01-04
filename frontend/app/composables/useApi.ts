@@ -3,6 +3,12 @@ import type {
   OrganizerForm,
   CreatedOrganizer,
   ProfileModel,
+  CompetitionForm,
+  CreatedCompetition,
+  CompetitionModel,
+  CompetitionsList,
+  CompetitionSortBy,
+  SortOrder,
 } from "~/types/api";
 
 export const useApi = () => {
@@ -77,9 +83,71 @@ export const useApi = () => {
     }
   };
 
+  const listCompetitions = async (
+    page: number = 1,
+    sortBy: CompetitionSortBy = "created_at",
+    sortOrder: SortOrder = "desc",
+  ): Promise<{ data: CompetitionsList | null; error: ApiError | null }> => {
+    try {
+      const data = await $fetch<CompetitionsList>(
+        `${apiBase}/api/competitions/`,
+        {
+          method: "GET",
+          params: {
+            page,
+            sort_by: sortBy,
+            sort_order: sortOrder,
+          },
+        },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const createCompetition = async (
+    form: CompetitionForm,
+  ): Promise<{ data: CreatedCompetition | null; error: ApiError | null }> => {
+    try {
+      const data = await $fetch<CreatedCompetition>(
+        `${apiBase}/api/competitions/`,
+        {
+          method: "POST",
+          body: form,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const getCompetition = async (
+    competitionId: string,
+  ): Promise<{ data: CompetitionModel | null; error: ApiError | null }> => {
+    try {
+      const data = await $fetch<CompetitionModel>(
+        `${apiBase}/api/competitions/${competitionId}`,
+        {
+          method: "GET",
+        },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
   return {
     checkAuth,
     registerOrganizer,
     getUserProfile,
+    listCompetitions,
+    createCompetition,
+    getCompetition,
   };
 };

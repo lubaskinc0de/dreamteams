@@ -3,6 +3,12 @@ import type {
   OrganizerForm,
   CreatedOrganizer,
   ProfileModel,
+  CompetitionForm,
+  CreatedCompetition,
+  CompetitionModel,
+  CompetitionsList,
+  CompetitionSortBy,
+  SortOrder,
 } from "~/types/api";
 
 // Mock data
@@ -25,6 +31,85 @@ const mockUserWithoutOrganizer: ProfileModel = {
 
 // Storage for current state
 let isRegistered = false;
+
+// Mock competitions data
+const mockCompetitions: CompetitionModel[] = [
+  {
+    id: "comp-1",
+    organizer_id: "123e4567-e89b-12d3-a456-426614174001",
+    title: "Хакатон по веб-разработке 2026",
+    banner: null,
+    description:
+      "Соревнование для разработчиков фронтенда и бэкенда. Создайте инновационное веб-приложение за 48 часов!",
+    schedule: {
+      registration_start: "2026-02-01T00:00:00Z",
+      registration_end: "2026-02-28T23:59:59Z",
+      team_formation_start: "2026-02-15T00:00:00Z",
+      team_formation_end: "2026-02-28T23:59:59Z",
+    },
+    participant_limits: { min: 50, max: 200 },
+    domains: ["frontend", "backend"],
+    participant_type: "student",
+    venue: { format: "hybrid", location: "Москва, Технопарк" },
+    team_size: { min: 2, max: 5 },
+    milestones: [
+      { title: "Открытие регистрации", timestamp: "2026-02-01T00:00:00Z" },
+      { title: "Начало хакатона", timestamp: "2026-03-15T10:00:00Z" },
+      { title: "Защита проектов", timestamp: "2026-03-17T14:00:00Z" },
+    ],
+    is_archived: false,
+    created_at: "2026-01-01T12:00:00Z",
+    updated_at: "2026-01-01T12:00:00Z",
+  },
+  {
+    id: "comp-2",
+    organizer_id: "123e4567-e89b-12d3-a456-426614174001",
+    title: "AI Challenge: Чат-боты нового поколения",
+    banner: null,
+    description:
+      "Создайте интеллектуального чат-бота с использованием современных AI технологий",
+    schedule: {
+      registration_start: "2026-01-15T00:00:00Z",
+      registration_end: "2026-02-15T23:59:59Z",
+      team_formation_start: null,
+      team_formation_end: null,
+    },
+    participant_limits: { min: 20, max: 100 },
+    domains: ["ai", "backend"],
+    participant_type: "any",
+    venue: { format: "online", location: null },
+    team_size: { min: 1, max: 3 },
+    milestones: [],
+    is_archived: false,
+    created_at: "2025-12-20T12:00:00Z",
+    updated_at: "2025-12-20T12:00:00Z",
+  },
+  {
+    id: "comp-3",
+    organizer_id: "123e4567-e89b-12d3-a456-426614174001",
+    title: "Mobile Dev Cup",
+    banner: null,
+    description:
+      "Разработка мобильных приложений для iOS и Android. Покажи свои навыки!",
+    schedule: {
+      registration_start: "2026-03-01T00:00:00Z",
+      registration_end: "2026-03-20T23:59:59Z",
+      team_formation_start: "2026-03-05T00:00:00Z",
+      team_formation_end: "2026-03-20T23:59:59Z",
+    },
+    participant_limits: { min: 30, max: 150 },
+    domains: ["mobile"],
+    participant_type: "schoolchild",
+    venue: { format: "offline", location: "Санкт-Петербург" },
+    team_size: { min: 2, max: 4 },
+    milestones: [
+      { title: "Старт регистрации", timestamp: "2026-03-01T00:00:00Z" },
+    ],
+    is_archived: false,
+    created_at: "2025-12-15T12:00:00Z",
+    updated_at: "2025-12-15T12:00:00Z",
+  },
+];
 
 export const useMockApi = () => {
   const delay = (ms: number) =>
@@ -119,9 +204,136 @@ export const useMockApi = () => {
     };
   };
 
+  const listCompetitions = async (
+    page: number = 1,
+    sortBy: CompetitionSortBy = "created_at",
+    sortOrder: SortOrder = "desc",
+  ): Promise<{ data: CompetitionsList | null; error: ApiError | null }> => {
+    await delay(300);
+
+    // Sort competitions
+    const sorted = [...mockCompetitions].sort((a, b) => {
+      let aVal: any;
+      let bVal: any;
+
+      if (sortBy === "created_at") {
+        aVal = new Date(a.created_at).getTime();
+        bVal = new Date(b.created_at).getTime();
+      } else if (sortBy === "title") {
+        aVal = a.title;
+        bVal = b.title;
+      } else if (sortBy === "registration_start") {
+        aVal = new Date(a.schedule.registration_start).getTime();
+        bVal = new Date(b.schedule.registration_start).getTime();
+      } else if (sortBy === "team_formation_start") {
+        aVal = a.schedule.team_formation_start
+          ? new Date(a.schedule.team_formation_start).getTime()
+          : 0;
+        bVal = b.schedule.team_formation_start
+          ? new Date(b.schedule.team_formation_start).getTime()
+          : 0;
+      }
+
+      if (sortOrder === "asc") {
+        return aVal > bVal ? 1 : -1;
+      } else {
+        return aVal < bVal ? 1 : -1;
+      }
+    });
+
+    return {
+      data: {
+        items: sorted,
+        total: mockCompetitions.length,
+        page,
+      },
+      error: null,
+    };
+  };
+
+  const createCompetition = async (
+    form: CompetitionForm,
+  ): Promise<{ data: CreatedCompetition | null; error: ApiError | null }> => {
+    await delay(500);
+
+    // Validate title
+    if (form.title.length > 200) {
+      return {
+        data: null,
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Название не должно превышать 200 символов",
+          meta: {
+            detail: [
+              {
+                loc: ["body", "title"],
+                msg: "ensure this value has at most 200 characters",
+                type: "value_error.any_str.max_length",
+              },
+            ],
+          },
+        },
+      };
+    }
+
+    const newCompetition: CompetitionModel = {
+      id: `comp-${Date.now()}`,
+      organizer_id: "123e4567-e89b-12d3-a456-426614174001",
+      title: form.title,
+      banner: null,
+      description: form.description,
+      schedule: form.schedule,
+      participant_limits: form.participant_limits,
+      domains: form.domains,
+      participant_type: form.participant_type,
+      venue: form.venue,
+      team_size: form.team_size,
+      milestones: form.milestones || [],
+      is_archived: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    mockCompetitions.push(newCompetition);
+
+    return {
+      data: {
+        competition_id: newCompetition.id,
+      },
+      error: null,
+    };
+  };
+
+  const getCompetition = async (
+    competitionId: string,
+  ): Promise<{ data: CompetitionModel | null; error: ApiError | null }> => {
+    await delay(300);
+
+    const competition = mockCompetitions.find((c) => c.id === competitionId);
+
+    if (!competition) {
+      return {
+        data: null,
+        error: {
+          code: "USER_NOT_FOUND",
+          message: "Соревнование не найдено",
+          meta: null,
+        },
+      };
+    }
+
+    return {
+      data: competition,
+      error: null,
+    };
+  };
+
   return {
     checkAuth,
     registerOrganizer,
     getUserProfile,
+    listCompetitions,
+    createCompetition,
+    getCompetition,
   };
 };

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 
 from dreamteams.entities.competition.schedule import normalize_datetime
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
@@ -17,4 +17,10 @@ class Milestone:
         if not self.title or not self.title.strip():
             raise InvalidCompetitionDataError(message="Milestone title must not be empty")
 
-        self.timestamp = normalize_datetime(self.timestamp)
+        now = normalize_datetime(datetime.now(tz=UTC))
+        normalized_ts = normalize_datetime(self.timestamp)
+
+        if normalized_ts < now:
+            raise InvalidCompetitionDataError(message="Milestone timestamp cannot be in past")
+
+        self.timestamp = normalized_ts

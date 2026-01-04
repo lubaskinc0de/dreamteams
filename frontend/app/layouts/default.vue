@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { NavigationMenuItem } from '@nuxt/ui';
+
 const { t } = useI18n();
 const { isAuthenticated, hasProfile } = useAuth();
 const userStore = useUserStore();
@@ -10,13 +12,28 @@ const brandLink = computed(() => {
 
 // Show avatar for authenticated users with profile
 const showAvatar = computed(() => isAuthenticated.value && hasProfile.value);
+
+// Navigation items for organizers
+const navItems = computed<NavigationMenuItem[]>(() => {
+  if (!isAuthenticated.value || !hasProfile.value || !userStore.isOrganizer) {
+    return [];
+  }
+
+  return [
+    {
+      label: t('nav.competitions'),
+      icon: 'i-heroicons-trophy',
+      to: '/competitions',
+    },
+  ];
+});
 </script>
 
 <template>
   <!-- Main Layout -->
   <div class="min-h-screen bg-white dark:bg-gray-900 flex flex-col">
     <UHeader>
-      <template #title>
+      <template #left>
         <NuxtLink
           :to="brandLink"
           class="flex items-center gap-3 group"
@@ -38,6 +55,16 @@ const showAvatar = computed(() => isAuthenticated.value && hasProfile.value);
             }}</span>
           </div>
         </NuxtLink>
+      </template>
+
+      <template #default>
+        <!-- Navigation for organizers -->
+        <UNavigationMenu
+          v-if="navItems.length > 0"
+          :items="navItems"
+          variant="link"
+          class="hidden md:flex"
+        />
       </template>
 
       <template #right>

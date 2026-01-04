@@ -5,6 +5,7 @@
     "cancel": "Отмена",
     "save": "Сохранить",
     "delete": "Удалить",
+    "remove": "Удалить",
     "edit": "Редактировать",
     "close": "Закрыть",
     "back": "Назад",
@@ -36,6 +37,7 @@
     "profile": "Профиль",
     "register": "Регистрация",
     "login": "Войти",
+    "competitions": "Мои соревнования",
     "brand": "DreamTeams",
     "brandSubtitle": "Агрегатор IT-соревнований"
   },
@@ -207,6 +209,10 @@
     "profileUpdated": {
       "title": "Профиль обновлен",
       "description": "Ваши данные успешно сохранены"
+    },
+    "competitionCreated": {
+      "title": "Соревнование создано!",
+      "description": "Ваше соревнование успешно опубликовано"
     }
   },
   "footer": {
@@ -237,6 +243,185 @@
     "onboarding": {
       "title": "Начало работы - DreamTeams",
       "description": "Выберите роль и начните работу с платформой"
+    },
+    "competitions": {
+      "title": "Мои соревнования - DreamTeams",
+      "description": "Управляйте своими IT-соревнованиями"
+    },
+    "createCompetition": {
+      "title": "Создать соревнование - DreamTeams",
+      "description": "Создайте новое IT-соревнование на платформе"
+    }
+  },
+  "competitions": {
+    "title": "Мои соревнования",
+    "description": "Управляйте своими IT-соревнованиями",
+    "empty": "У вас пока нет соревнований",
+    "emptyDescription": "Создайте первое соревнование, чтобы начать работу",
+    "createButton": "Создать соревнование",
+    "searchPlaceholder": "Поиск соревнований...",
+    "filters": {
+      "title": "Фильтры",
+      "all": "Все соревнования",
+      "active": "Активные",
+      "archived": "Архив"
+    },
+    "sortBy": {
+      "title": "Сортировать по",
+      "created_at": "Дате создания",
+      "title": "Названию",
+      "registration_start": "Началу регистрации",
+      "team_formation_start": "Началу формирования команд"
+    },
+    "card": {
+      "participants": "Участников",
+      "teamSize": "Размер команды",
+      "domains": "Направления",
+      "registrationPeriod": "Регистрация",
+      "venue": "Формат"
+    }
+  },
+  "competition": {
+    "create": {
+      "title": "Создать соревнование",
+      "description": "Заполните информацию о соревновании",
+      "backButton": "Назад к списку",
+      "submitButton": "Создать соревнование",
+      "submitting": "Создание...",
+      "sections": {
+        "basic": "Основная информация",
+        "schedule": "Расписание",
+        "participants": "Участники",
+        "venue": "Место проведения",
+        "milestones": "Вехи (опционально)"
+      }
+    },
+    "form": {
+      "title": {
+        "label": "Название соревнования",
+        "placeholder": "Например: Хакатон по веб-разработке 2026",
+        "required": "Название обязательно",
+        "maxLength": "Название не должно превышать 200 символов"
+      },
+      "description": {
+        "label": "Описание",
+        "placeholder": "Опишите ваше соревнование, его цели и особенности...",
+        "required": "Описание обязательно"
+      },
+      "schedule": {
+        "registrationPeriod": {
+          "label": "Период регистрации"
+        },
+        "teamFormationPeriod": {
+          "label": "Период формирования команд (опционально)"
+        },
+        "startTime": {
+          "label": "Время начала"
+        },
+        "endTime": {
+          "label": "Время окончания"
+        },
+        "registrationStart": {
+          "label": "Начало регистрации",
+          "required": "Укажите дату начала регистрации"
+        },
+        "registrationEnd": {
+          "label": "Окончание регистрации",
+          "required": "Укажите дату окончания регистрации"
+        },
+        "teamFormationStart": {
+          "label": "Начало формирования команд (опционально)",
+          "placeholder": "Не указано"
+        },
+        "teamFormationEnd": {
+          "label": "Окончание формирования команд (опционально)",
+          "placeholder": "Не указано"
+        }
+      },
+      "participantLimits": {
+        "label": "Количество участников",
+        "min": {
+          "label": "Минимум",
+          "minValue": "Минимум должен быть не менее 1"
+        },
+        "max": {
+          "label": "Максимум",
+          "minValue": "Максимум должен быть не менее 1"
+        }
+      },
+      "domains": {
+        "label": "Направления",
+        "placeholder": "Выберите направления",
+        "required": "Выберите хотя бы одно направление",
+        "options": {
+          "frontend": "Frontend",
+          "mobile": "Mobile",
+          "backend": "Backend",
+          "ai": "AI",
+          "devops": "DevOps"
+        }
+      },
+      "participantType": {
+        "label": "Тип участников",
+        "options": {
+          "schoolchild": "Школьники",
+          "student": "Студенты",
+          "any": "Все"
+        }
+      },
+      "venue": {
+        "format": {
+          "label": "Формат проведения",
+          "options": {
+            "online": "Онлайн",
+            "offline": "Оффлайн",
+            "hybrid": "Гибридный"
+          }
+        },
+        "location": {
+          "label": "Место проведения",
+          "placeholder": "Например: Москва, Технопарк"
+        }
+      },
+      "teamSize": {
+        "label": "Размер команды",
+        "min": {
+          "label": "Минимум",
+          "minValue": "Минимум должен быть не менее 1"
+        },
+        "max": {
+          "label": "Максимум",
+          "minValue": "Максимум должен быть не менее 1"
+        }
+      },
+      "milestone": {
+        "title": {
+          "label": "Название вехи",
+          "placeholder": "Например: Защита проектов",
+          "required": "Название вехи обязательно",
+          "maxLength": "Название не должно превышать 50 символов"
+        },
+        "timestamp": {
+          "label": "Дата и время",
+          "required": "Укажите дату и время"
+        },
+        "datetime": {
+          "label": "Дата и время вехи"
+        },
+        "addButton": "Добавить веху",
+        "removeButton": "Удалить",
+        "empty": "Нажмите \"Добавить веху\" чтобы создать контрольные точки мероприятия"
+      }
+    },
+    "formats": {
+      "online": "Онлайн",
+      "offline": "Оффлайн",
+      "hybrid": "Гибридный"
+    },
+    "participantTypes": {
+      "schoolchild": "Школьники",
+      "student": "Студенты",
+      "any": "Все"
     }
   }
 }

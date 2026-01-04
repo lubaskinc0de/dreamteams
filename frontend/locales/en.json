@@ -5,6 +5,7 @@
     "cancel": "Cancel",
     "save": "Save",
     "delete": "Delete",
+    "remove": "Remove",
     "edit": "Edit",
     "close": "Close",
     "back": "Back",
@@ -36,6 +37,7 @@
     "profile": "Profile",
     "register": "Register",
     "login": "Sign In",
+    "competitions": "My Competitions",
     "brand": "DreamTeams",
     "brandSubtitle": "IT Competition Aggregator"
   },
@@ -207,6 +209,10 @@
     "profileUpdated": {
       "title": "Profile Updated",
       "description": "Your data has been saved successfully"
+    },
+    "competitionCreated": {
+      "title": "Competition Created!",
+      "description": "Your competition has been published successfully"
     }
   },
   "footer": {
@@ -237,6 +243,185 @@
     "onboarding": {
       "title": "Getting Started - DreamTeams",
       "description": "Choose your role and start working with the platform"
+    },
+    "competitions": {
+      "title": "My Competitions - DreamTeams",
+      "description": "Manage your IT competitions"
+    },
+    "createCompetition": {
+      "title": "Create Competition - DreamTeams",
+      "description": "Create a new IT competition on the platform"
+    }
+  },
+  "competitions": {
+    "title": "My Competitions",
+    "description": "Manage your IT competitions",
+    "empty": "You don't have any competitions yet",
+    "emptyDescription": "Create your first competition to get started",
+    "createButton": "Create Competition",
+    "searchPlaceholder": "Search competitions...",
+    "filters": {
+      "title": "Filters",
+      "all": "All Competitions",
+      "active": "Active",
+      "archived": "Archived"
+    },
+    "sortBy": {
+      "title": "Sort by",
+      "created_at": "Creation Date",
+      "title": "Title",
+      "registration_start": "Registration Start",
+      "team_formation_start": "Team Formation Start"
+    },
+    "card": {
+      "participants": "Participants",
+      "teamSize": "Team Size",
+      "domains": "Domains",
+      "registrationPeriod": "Registration",
+      "venue": "Format"
+    }
+  },
+  "competition": {
+    "create": {
+      "title": "Create Competition",
+      "description": "Fill in competition information",
+      "backButton": "Back to List",
+      "submitButton": "Create Competition",
+      "submitting": "Creating...",
+      "sections": {
+        "basic": "Basic Information",
+        "schedule": "Schedule",
+        "participants": "Participants",
+        "venue": "Venue",
+        "milestones": "Milestones (optional)"
+      }
+    },
+    "form": {
+      "title": {
+        "label": "Competition Title",
+        "placeholder": "e.g., Web Development Hackathon 2026",
+        "required": "Title is required",
+        "maxLength": "Title must not exceed 200 characters"
+      },
+      "description": {
+        "label": "Description",
+        "placeholder": "Describe your competition, its goals and features...",
+        "required": "Description is required"
+      },
+      "schedule": {
+        "registrationPeriod": {
+          "label": "Registration Period"
+        },
+        "teamFormationPeriod": {
+          "label": "Team Formation Period (optional)"
+        },
+        "startTime": {
+          "label": "Start Time"
+        },
+        "endTime": {
+          "label": "End Time"
+        },
+        "registrationStart": {
+          "label": "Registration Start",
+          "required": "Please specify registration start date"
+        },
+        "registrationEnd": {
+          "label": "Registration End",
+          "required": "Please specify registration end date"
+        },
+        "teamFormationStart": {
+          "label": "Team Formation Start (optional)",
+          "placeholder": "Not specified"
+        },
+        "teamFormationEnd": {
+          "label": "Team Formation End (optional)",
+          "placeholder": "Not specified"
+        }
+      },
+      "participantLimits": {
+        "label": "Number of Participants",
+        "min": {
+          "label": "Minimum",
+          "minValue": "Minimum must be at least 1"
+        },
+        "max": {
+          "label": "Maximum",
+          "minValue": "Maximum must be at least 1"
+        }
+      },
+      "domains": {
+        "label": "Domains",
+        "placeholder": "Select domains",
+        "required": "Please select at least one domain",
+        "options": {
+          "frontend": "Frontend",
+          "mobile": "Mobile",
+          "backend": "Backend",
+          "ai": "AI",
+          "devops": "DevOps"
+        }
+      },
+      "participantType": {
+        "label": "Participant Type",
+        "options": {
+          "schoolchild": "School Students",
+          "student": "University Students",
+          "any": "Everyone"
+        }
+      },
+      "venue": {
+        "format": {
+          "label": "Format",
+          "options": {
+            "online": "Online",
+            "offline": "Offline",
+            "hybrid": "Hybrid"
+          }
+        },
+        "location": {
+          "label": "Location",
+          "placeholder": "e.g., Moscow, Tech Park"
+        }
+      },
+      "teamSize": {
+        "label": "Team Size",
+        "min": {
+          "label": "Minimum",
+          "minValue": "Minimum must be at least 1"
+        },
+        "max": {
+          "label": "Maximum",
+          "minValue": "Maximum must be at least 1"
+        }
+      },
+      "milestone": {
+        "title": {
+          "label": "Milestone Title",
+          "placeholder": "e.g., Project Defense",
+          "required": "Milestone title is required",
+          "maxLength": "Title must not exceed 50 characters"
+        },
+        "timestamp": {
+          "label": "Date and Time",
+          "required": "Please specify date and time"
+        },
+        "datetime": {
+          "label": "Milestone Date and Time"
+        },
+        "addButton": "Add Milestone",
+        "removeButton": "Remove",
+        "empty": "Click \"Add Milestone\" to create event checkpoints"
+      }
+    },
+    "formats": {
+      "online": "Online",
+      "offline": "Offline",
+      "hybrid": "Hybrid"
+    },
+    "participantTypes": {
+      "schoolchild": "School Students",
+      "student": "University Students",
+      "any": "Everyone"
     }
   }
 }

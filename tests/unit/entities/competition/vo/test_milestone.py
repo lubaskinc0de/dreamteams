@@ -1,6 +1,7 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import pytest
+from faker import Faker
 
 from dreamteams.entities.competition.milestone import Milestone
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
@@ -8,25 +9,13 @@ from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 
 def test_create_milestone_with_valid_data() -> None:
     """Test creating Milestone with valid timestamp and title."""
-    timestamp = datetime(2024, 10, 24, tzinfo=UTC)
+    timestamp = datetime.now(tz=UTC) + timedelta(days=1)
     title = "Stage 1"
 
     milestone = Milestone(timestamp=timestamp, title=title)
 
-    assert milestone.timestamp == timestamp
+    assert milestone.timestamp == timestamp.replace(second=0, microsecond=0)
     assert milestone.title == title
-
-
-def test_milestone_timestamp_normalization() -> None:
-    """Test that Milestone normalizes timestamp by removing seconds and microseconds."""
-    timestamp_with_seconds = datetime(2024, 10, 24, 14, 30, 45, 123456, tzinfo=UTC)
-    expected_normalized = datetime(2024, 10, 24, 14, 30, 0, 0, tzinfo=UTC)
-
-    milestone = Milestone(timestamp=timestamp_with_seconds, title="Stage 1")
-
-    assert milestone.timestamp == expected_normalized
-    assert milestone.timestamp.second == 0
-    assert milestone.timestamp.microsecond == 0
 
 
 @pytest.mark.parametrize(
@@ -43,3 +32,17 @@ def test_create_milestone_with_invalid_title_raises_error(title: str, expected_e
 
     with pytest.raises(InvalidCompetitionDataError, match=expected_error):
         Milestone(timestamp=timestamp, title=title)
+
+
+@pytest.mark.parametrize(
+    ("delta"),
+    [
+        timedelta(days=-1),
+    ],
+)
+def test_cannot_create_milestone_with_timestamp_in_past(delta: timedelta, faker: Faker) -> None:
+    """Test that empty or whitespace-only titles raise appropriate errors."""
+    timestamp = datetime.now(tz=UTC) + delta
+
+    with pytest.raises(InvalidCompetitionDataError, match="Milestone timestamp cannot be in past"):
+        Milestone(timestamp=timestamp, title=faker.sentence(nb_words=4))

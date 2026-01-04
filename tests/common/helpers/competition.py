@@ -148,4 +148,13 @@ INVALID_COMPETITION_DATA_CASES: list[tuple[dict[str, Any], str]] = [
         },
         "VALIDATION_ERROR",
     ),
+    # Milestones: timestamp in past  # noqa: ERA001
+    (
+        {
+            "milestones": [
+                {"timestamp": timedelta(days=-1), "title": "Stage 1"},
+            ],
+        },
+        "INVALID_COMPETITION_DATA",
+    ),
 ]

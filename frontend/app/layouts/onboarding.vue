@@ -15,7 +15,7 @@ const { isLoading } = useAuth();
   <div v-show="!isLoading" class="min-h-screen bg-white dark:bg-gray-900 flex flex-col">
     <UHeader>
       <template #left>
-        <LanguageSwitcher size="lg" />
+        <ThemeToggle size="lg" />
       </template>
 
       <template #title>
@@ -37,7 +37,7 @@ const { isLoading } = useAuth();
       </template>
 
       <template #right>
-        <ThemeToggle size="lg" />
+        <LanguageSwitcher size="lg" />
       </template>
     </UHeader>
 

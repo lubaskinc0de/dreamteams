@@ -14,6 +14,13 @@
 | `team_size` | `TeamSizeRange` | Team size range | Value object validation |
 | `milestones` | `list[MilestoneForm]` | Competition milestones | Optional, default [] |
 
+### MilestoneForm
+
+| Field | Type | Description | Validation |
+|-------|------|-------------|------------|
+| `title` | `str` | Milestone title | Max 50 characters, non-empty |
+| `timestamp` | `datetime` | Milestone timestamp | Valid datetime |
+
 ## Output
 
 | Field | Type | Description |
