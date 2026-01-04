@@ -97,6 +97,19 @@ export interface CompetitionForm {
   milestones?: MilestoneForm[];
 }
 
+export interface UpdateCompetitionForm {
+  title: string;
+  description: string;
+  schedule: CompetitionSchedule;
+  participant_limits: ParticipantLimits;
+  domains: Domain[];
+  participant_type: ParticipantType;
+  venue: CompetitionVenue;
+  team_size: TeamSizeRange;
+  milestones: MilestoneForm[];
+  is_archived: boolean;
+}
+
 export interface CompetitionModel {
   id: string;
   organizer_id: string;

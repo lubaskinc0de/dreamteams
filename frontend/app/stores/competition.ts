@@ -1,9 +1,9 @@
 import { defineStore } from "pinia";
 import type {
   CompetitionForm,
+  UpdateCompetitionForm,
   CreatedCompetition,
   CompetitionModel,
-  CompetitionsList,
   CompetitionSortBy,
   SortOrder,
   ApiError,
@@ -25,6 +25,7 @@ export const useCompetitionStore = defineStore("competition", {
 
   getters: {
     hasCompetitions: (state) => state.competitions.length > 0,
+    hasMorePages: (state) => state.competitions.length < state.total,
   },
 
   actions: {
@@ -32,6 +33,8 @@ export const useCompetitionStore = defineStore("competition", {
       page?: number,
       sortBy?: CompetitionSortBy,
       sortOrder?: SortOrder,
+      isArchived?: boolean,
+      reset = true,
     ) {
       this.loading = true;
       this.error = null;
@@ -41,12 +44,18 @@ export const useCompetitionStore = defineStore("competition", {
         page || this.currentPage,
         sortBy || this.sortBy,
         sortOrder || this.sortOrder,
+        isArchived,
       );
 
       if (error) {
         this.error = error;
       } else if (data) {
-        this.competitions = data.items;
+        if (reset) {
+          this.competitions = data.items;
+        } else {
+          // Append to existing competitions for infinite scroll
+          this.competitions = [...this.competitions, ...data.items];
+        }
         this.total = data.total;
         this.currentPage = data.page;
         if (sortBy) this.sortBy = sortBy;
@@ -54,6 +63,63 @@ export const useCompetitionStore = defineStore("competition", {
       }
 
       this.loading = false;
+    },
+
+    async loadNextPage(isArchived?: boolean) {
+      if (!this.hasMorePages || this.loading) return;
+      await this.fetchCompetitions(this.currentPage + 1, undefined, undefined, isArchived, false);
+    },
+
+    async updateCompetition(competitionId: string, form: UpdateCompetitionForm) {
+      const { $i18n } = useNuxtApp();
+      const toast = useToast();
+      const api = useApi();
+
+      this.loading = true;
+      this.error = null;
+
+      const { error } = await api.updateCompetition(competitionId, form);
+
+      if (error) {
+        this.error = error;
+        this.loading = false;
+        return { success: false, error };
+      }
+
+      toast.add({
+        title: $i18n.t("toast.competitionUpdated.title"),
+        description: $i18n.t("toast.competitionUpdated.description"),
+        icon: "i-heroicons-check-circle",
+        color: "success",
+        duration: 5000,
+      });
+
+      // Refresh the competition
+      await this.fetchCompetition(competitionId);
+
+      this.loading = false;
+      return { success: true, error: null };
+    },
+
+    async deleteCompetition(competitionId: string) {
+      this.loading = true;
+      this.error = null;
+
+      const api = useApi();
+      const { error } = await api.deleteCompetition(competitionId);
+
+      if (error) {
+        this.error = error;
+        this.loading = false;
+        return { success: false, error };
+      }
+
+      // Remove from local state
+      this.competitions = this.competitions.filter((c) => c.id !== competitionId);
+      this.total = Math.max(0, this.total - 1);
+
+      this.loading = false;
+      return { success: true, error: null };
     },
 
     async createCompetition(form: CompetitionForm) {

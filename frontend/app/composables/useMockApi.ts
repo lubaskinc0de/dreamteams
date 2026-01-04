@@ -4,6 +4,7 @@ import type {
   CreatedOrganizer,
   ProfileModel,
   CompetitionForm,
+  UpdateCompetitionForm,
   CreatedCompetition,
   CompetitionModel,
   CompetitionsList,
@@ -208,11 +209,18 @@ export const useMockApi = () => {
     page: number = 1,
     sortBy: CompetitionSortBy = "created_at",
     sortOrder: SortOrder = "desc",
+    isArchived?: boolean,
   ): Promise<{ data: CompetitionsList | null; error: ApiError | null }> => {
     await delay(300);
 
+    // Filter by is_archived if specified
+    let filtered = mockCompetitions;
+    if (isArchived !== undefined) {
+      filtered = mockCompetitions.filter((c) => c.is_archived === isArchived);
+    }
+
     // Sort competitions
-    const sorted = [...mockCompetitions].sort((a, b) => {
+    const sorted = [...filtered].sort((a, b) => {
       let aVal: any;
       let bVal: any;
 
@@ -244,7 +252,7 @@ export const useMockApi = () => {
     return {
       data: {
         items: sorted,
-        total: mockCompetitions.length,
+        total: filtered.length,
         page,
       },
       error: null,
@@ -328,6 +336,77 @@ export const useMockApi = () => {
     };
   };
 
+  const updateCompetition = async (
+    competitionId: string,
+    form: UpdateCompetitionForm,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    await delay(500);
+
+    const index = mockCompetitions.findIndex((c) => c.id === competitionId);
+
+    if (index === -1) {
+      return {
+        data: null,
+        error: {
+          code: "USER_NOT_FOUND",
+          message: "Соревнование не найдено",
+          meta: null,
+        },
+      };
+    }
+
+    // Update the competition
+    const currentCompetition = mockCompetitions[index]!;
+    mockCompetitions[index] = {
+      id: currentCompetition.id,
+      organizer_id: currentCompetition.organizer_id,
+      banner: currentCompetition.banner,
+      title: form.title,
+      description: form.description,
+      schedule: form.schedule,
+      participant_limits: form.participant_limits,
+      domains: form.domains,
+      participant_type: form.participant_type,
+      venue: form.venue,
+      team_size: form.team_size,
+      milestones: form.milestones,
+      is_archived: form.is_archived,
+      created_at: currentCompetition.created_at,
+      updated_at: new Date().toISOString(),
+    };
+
+    return {
+      data: {},
+      error: null,
+    };
+  };
+
+  const deleteCompetition = async (
+    competitionId: string,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    await delay(400);
+
+    const index = mockCompetitions.findIndex((c) => c.id === competitionId);
+
+    if (index === -1) {
+      return {
+        data: null,
+        error: {
+          code: "USER_NOT_FOUND",
+          message: "Соревнование не найдено",
+          meta: null,
+        },
+      };
+    }
+
+    mockCompetitions.splice(index, 1);
+
+    return {
+      data: {},
+      error: null,
+    };
+  };
+
   return {
     checkAuth,
     registerOrganizer,
@@ -335,5 +414,7 @@ export const useMockApi = () => {
     listCompetitions,
     createCompetition,
     getCompetition,
+    updateCompetition,
+    deleteCompetition,
   };
 };

@@ -4,6 +4,7 @@ import type {
   CreatedOrganizer,
   ProfileModel,
   CompetitionForm,
+  UpdateCompetitionForm,
   CreatedCompetition,
   CompetitionModel,
   CompetitionsList,
@@ -87,17 +88,24 @@ export const useApi = () => {
     page: number = 1,
     sortBy: CompetitionSortBy = "created_at",
     sortOrder: SortOrder = "desc",
+    isArchived?: boolean,
   ): Promise<{ data: CompetitionsList | null; error: ApiError | null }> => {
     try {
+      const params: Record<string, any> = {
+        page,
+        sort_by: sortBy,
+        sort_order: sortOrder,
+      };
+
+      if (isArchived !== undefined) {
+        params.is_archived = isArchived;
+      }
+
       const data = await $fetch<CompetitionsList>(
         `${apiBase}/api/competitions/`,
         {
           method: "GET",
-          params: {
-            page,
-            sort_by: sortBy,
-            sort_order: sortOrder,
-          },
+          params,
         },
       );
       return { data, error: null };
@@ -142,6 +150,43 @@ export const useApi = () => {
     }
   };
 
+  const updateCompetition = async (
+    competitionId: string,
+    form: UpdateCompetitionForm,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await $fetch<{}>(
+        `${apiBase}/api/competitions/${competitionId}`,
+        {
+          method: "PUT",
+          body: form,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const deleteCompetition = async (
+    competitionId: string,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await $fetch<{}>(
+        `${apiBase}/api/competitions/${competitionId}`,
+        {
+          method: "DELETE",
+        },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
   return {
     checkAuth,
     registerOrganizer,
@@ -149,5 +194,7 @@ export const useApi = () => {
     listCompetitions,
     createCompetition,
     getCompetition,
+    updateCompetition,
+    deleteCompetition,
   };
 };

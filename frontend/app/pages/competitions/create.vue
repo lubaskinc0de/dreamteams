@@ -15,8 +15,11 @@ useSeoMeta({
   description: t('seo.createCompetition.description'),
 });
 
+// Is team competition toggle
+const isTeamCompetition = ref(true);
+
 // Form state
-const formState = reactive<CompetitionForm>({
+const formState = reactive<CompetitionForm & { is_team: boolean }>({
   title: '',
   description: '',
   schedule: {
@@ -40,7 +43,30 @@ const formState = reactive<CompetitionForm>({
     max: 5,
   },
   milestones: [],
+  is_team: true,
 });
+
+// Watch isTeamCompetition and clear team fields when switching to individual
+watch(isTeamCompetition, (isTeam) => {
+  formState.is_team = isTeam;
+
+  if (!isTeam) {
+    // Clear team formation dates
+    teamFormationDateRange.value = undefined;
+    teamFormationStartTime.value = new Time(0, 0);
+    teamFormationEndTime.value = new Time(0, 0);
+    formState.schedule.team_formation_start = null;
+    formState.schedule.team_formation_end = null;
+
+    // Reset team size to defaults (will not be sent if not team competition)
+    formState.team_size.min = 1;
+    formState.team_size.max = 5;
+  }
+});
+
+// Template refs for calendar popovers
+const registrationDateInput = useTemplateRef('registrationDateInput');
+const teamFormationDateInput = useTemplateRef('teamFormationDateInput');
 
 // Date ranges for schedule
 const registrationDateRange = ref<{ start: CalendarDate; end: CalendarDate } | undefined>(undefined);
@@ -119,6 +145,11 @@ interface MilestoneInput {
 
 const milestones = ref<MilestoneInput[]>([]);
 
+// Sync milestones into formState for validation
+watch(milestones, () => {
+  formState.milestones = getMilestonesForSubmit();
+}, { deep: true });
+
 const addMilestone = () => {
   milestones.value.push({
     title: '',
@@ -148,16 +179,14 @@ const handleSubmit = async () => {
   isSubmitting.value = true;
 
   try {
-    // Prepare form data
+    // Prepare form data with milestones (exclude is_team field)
+    const { is_team, ...formDataWithoutIsTeam } = formState;
     const formData: CompetitionForm = {
-      ...formState,
+      ...formDataWithoutIsTeam,
       milestones: getMilestonesForSubmit(),
     };
 
-    // Validate
-    await schemas.competitionFormSchema.parseAsync(formData);
-
-    // Submit
+    // Submit (validation will be handled by UForm)
     await competitionStore.createCompetition(formData);
 
     if (competitionStore.creationSuccess) {
@@ -172,14 +201,37 @@ const handleSubmit = async () => {
       });
     }
   } catch (error: any) {
+    // API errors (not validation errors)
     toast.add({
-      title: t('apiErrors.VALIDATION_ERROR'),
+      title: t('errors.default.title'),
       description: error.message || t('errors.default.description'),
       icon: 'i-heroicons-exclamation-triangle',
       color: 'error',
     });
   } finally {
     isSubmitting.value = false;
+  }
+};
+
+const handleError = async (event: any) => {
+  const errors = event.errors || [];
+
+  if (errors.length > 0) {
+    // Show toast notification with error count
+    toast.add({
+      title: t('competition.create.validation.errorsFound', { count: errors.length }),
+      description: t('competition.create.validation.scrollToErrors'),
+      icon: 'i-heroicons-exclamation-circle',
+      color: 'error',
+    });
+
+    // Scroll to first error field
+    await nextTick();
+    const firstErrorElement = document.getElementById(errors[0].id);
+    if (firstErrorElement) {
+      firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      firstErrorElement.focus();
+    }
   }
 };
 
@@ -211,9 +263,17 @@ const goBack = () => {
         </div>
 
         <!-- Form -->
-        <form @submit.prevent="handleSubmit" class="space-y-6">
-          <!-- Basic Information -->
-          <UCard>
+        <UForm
+          :state="formState"
+          :schema="schemas.competitionFormSchema"
+          @submit="handleSubmit"
+          @error="handleError"
+          class="space-y-6"
+        >
+          <!-- Cards Grid - Two columns on large screens -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Basic Information -->
+            <UCard class="lg:col-span-2">
             <template #header>
               <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
                 {{ t('competition.create.sections.basic') }}
@@ -223,6 +283,7 @@ const goBack = () => {
             <div class="space-y-6">
               <!-- Title -->
               <UFormField
+                name="title"
                 :label="t('competition.form.title.label')"
                 required
                 size="xl"
@@ -237,6 +298,7 @@ const goBack = () => {
 
               <!-- Description -->
               <UFormField
+                name="description"
                 :label="t('competition.form.description.label')"
                 required
                 size="xl"
@@ -252,6 +314,7 @@ const goBack = () => {
 
               <!-- Domains -->
               <UFormField
+                name="domains"
                 :label="t('competition.form.domains.label')"
                 required
                 size="xl"
@@ -266,6 +329,7 @@ const goBack = () => {
 
               <!-- Participant Type -->
               <UFormField
+                name="participant_type"
                 :label="t('competition.form.participantType.label')"
                 required
                 size="xl"
@@ -276,11 +340,23 @@ const goBack = () => {
                   size="xl"
                 />
               </UFormField>
+
+              <!-- Is Team Competition -->
+              <UFormField
+                :label="t('competition.form.isTeam.label')"
+                size="xl"
+              >
+                <UCheckbox
+                  v-model="isTeamCompetition"
+                  :label="t('competition.form.isTeam.checkboxLabel')"
+                  size="xl"
+                />
+              </UFormField>
             </div>
           </UCard>
 
           <!-- Schedule -->
-          <UCard>
+          <UCard class="lg:col-span-2">
             <template #header>
               <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
                 {{ t('competition.create.sections.schedule') }}
@@ -291,20 +367,46 @@ const goBack = () => {
               <!-- Registration Period -->
               <div>
                 <UFormField
+                  name="schedule.registration_start"
                   :label="t('competition.form.schedule.registrationPeriod.label')"
                   required
                   size="xl"
                   class="mb-3"
+                  :error-pattern="/schedule\.(registration_start|registration_end)/"
                 >
                   <UInputDate
+                    ref="registrationDateInput"
                     :model-value="(registrationDateRange as any)"
                     @update:model-value="(val: any) => registrationDateRange = val"
                     range
                     size="xl"
-                  />
+                  >
+                    <template #trailing>
+                      <UPopover :reference="registrationDateInput?.inputsRef[0]?.$el">
+                        <UButton
+                          color="neutral"
+                          variant="link"
+                          size="sm"
+                          icon="i-heroicons-calendar"
+                          :aria-label="t('competition.form.schedule.selectDateRange')"
+                          class="px-0"
+                        />
+
+                        <template #content>
+                          <UCalendar
+                            :model-value="(registrationDateRange as any)"
+                            @update:model-value="(val: any) => registrationDateRange = val"
+                            class="p-2"
+                            :number-of-months="2"
+                            range
+                          />
+                        </template>
+                      </UPopover>
+                    </template>
+                  </UInputDate>
                 </UFormField>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                <div class="space-y-3 mt-3">
                   <UFormField
                     :label="t('competition.form.schedule.startTime.label')"
                     size="lg"
@@ -333,22 +435,49 @@ const goBack = () => {
                 </div>
               </div>
 
-              <!-- Team Formation Period -->
-              <div>
+              <!-- Team Formation Period (only for team competitions) -->
+              <div v-if="isTeamCompetition">
                 <UFormField
+                  name="schedule.team_formation_start"
                   :label="t('competition.form.schedule.teamFormationPeriod.label')"
+                  :required="isTeamCompetition"
                   size="xl"
                   class="mb-3"
+                  :error-pattern="/schedule\.team_formation_(start|end)/"
                 >
                   <UInputDate
+                    ref="teamFormationDateInput"
                     :model-value="(teamFormationDateRange as any)"
                     @update:model-value="(val: any) => teamFormationDateRange = val"
                     range
                     size="xl"
-                  />
+                  >
+                    <template #trailing>
+                      <UPopover :reference="teamFormationDateInput?.inputsRef[0]?.$el">
+                        <UButton
+                          color="neutral"
+                          variant="link"
+                          size="sm"
+                          icon="i-heroicons-calendar"
+                          :aria-label="t('competition.form.schedule.selectDateRange')"
+                          class="px-0"
+                        />
+
+                        <template #content>
+                          <UCalendar
+                            :model-value="(teamFormationDateRange as any)"
+                            @update:model-value="(val: any) => teamFormationDateRange = val"
+                            class="p-2"
+                            :number-of-months="2"
+                            range
+                          />
+                        </template>
+                      </UPopover>
+                    </template>
+                  </UInputDate>
                 </UFormField>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                <div class="space-y-3 mt-3">
                   <UFormField
                     :label="t('competition.form.schedule.startTime.label')"
                     size="lg"
@@ -390,6 +519,7 @@ const goBack = () => {
             <div class="space-y-6">
               <!-- Participant Limits -->
               <UFormField
+                name="participant_limits"
                 :label="t('competition.form.participantLimits.label')"
                 required
                 size="xl"
@@ -415,10 +545,12 @@ const goBack = () => {
                 </div>
               </UFormField>
 
-              <!-- Team Size -->
+              <!-- Team Size (only for team competitions) -->
               <UFormField
+                v-if="isTeamCompetition"
+                name="team_size"
                 :label="t('competition.form.teamSize.label')"
-                required
+                :required="isTeamCompetition"
                 size="xl"
               >
                 <div class="space-y-3">
@@ -455,6 +587,7 @@ const goBack = () => {
             <div class="space-y-6">
               <!-- Format -->
               <UFormField
+                name="venue.format"
                 :label="t('competition.form.venue.format.label')"
                 required
                 size="xl"
@@ -469,6 +602,7 @@ const goBack = () => {
               <!-- Location -->
               <UFormField
                 v-if="formState.venue.format !== 'online'"
+                name="venue.location"
                 :label="t('competition.form.venue.location.label')"
                 size="xl"
               >
@@ -483,7 +617,7 @@ const goBack = () => {
           </UCard>
 
           <!-- Milestones (Optional) -->
-          <UCard>
+          <UCard class="lg:col-span-2">
             <template #header>
               <div class="flex items-center justify-between">
                 <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
@@ -561,6 +695,7 @@ const goBack = () => {
               </div>
             </div>
           </UCard>
+          </div>
 
           <!-- Submit Button -->
           <div class="flex justify-end gap-4 pt-4">
@@ -581,7 +716,7 @@ const goBack = () => {
               :disabled="isSubmitting"
             />
           </div>
-        </form>
+        </UForm>
       </div>
     </UPageBody>
   </UPage>

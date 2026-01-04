@@ -213,6 +213,18 @@
     "competitionCreated": {
       "title": "Competition Created!",
       "description": "Your competition has been published successfully"
+    },
+    "competitionUpdated": {
+      "title": "Competition Updated!",
+      "description": "Your competition has been updated successfully"
+    },
+    "competitionDeleted": {
+      "title": "Competition Deleted",
+      "description": "The competition has been deleted successfully"
+    },
+    "competitionDeleteError": {
+      "title": "Delete Failed",
+      "description": "Failed to delete the competition. Please try again"
     }
   },
   "footer": {
@@ -251,6 +263,10 @@
     "createCompetition": {
       "title": "Create Competition - DreamTeams",
       "description": "Create a new IT competition on the platform"
+    },
+    "competitionDetail": {
+      "title": "Competition Details - DreamTeams",
+      "description": "View and edit competition information"
     }
   },
   "competitions": {
@@ -266,19 +282,34 @@
       "active": "Active",
       "archived": "Archived"
     },
-    "sortBy": {
-      "title": "Sort by",
-      "created_at": "Creation Date",
+    "sort": {
+      "createdAt": "Created At",
       "title": "Title",
-      "registration_start": "Registration Start",
-      "team_formation_start": "Team Formation Start"
+      "registrationStart": "Registration Start",
+      "teamFormationStart": "Team Formation Start",
+      "asc": "Ascending",
+      "desc": "Descending"
+    },
+    "status": {
+      "open": "Registration Open",
+      "notOpen": "Registration Not Open",
+      "closed": "Registration Closed"
+    },
+    "badge": {
+      "archived": "Archived"
     },
     "card": {
       "participants": "Participants",
       "teamSize": "Team Size",
+      "noTeams": "No Teams",
       "domains": "Domains",
       "registrationPeriod": "Registration",
       "venue": "Format"
+    },
+    "delete": {
+      "title": "Delete Competition",
+      "description": "Are you sure you want to delete this competition? This action cannot be undone.",
+      "confirm": "Delete"
     }
   },
   "competition": {
@@ -294,7 +325,22 @@
         "participants": "Participants",
         "venue": "Venue",
         "milestones": "Milestones (optional)"
+      },
+      "validation": {
+        "errorsFound": "Found {count} errors",
+        "scrollToErrors": "Please check the form fields"
       }
+    },
+    "detail": {
+      "editButton": "Edit",
+      "description": "Description",
+      "schedule": "Schedule",
+      "participants": "Participants",
+      "venue": "Venue"
+    },
+    "edit": {
+      "title": "Edit Competition",
+      "description": "Update competition information"
     },
     "form": {
       "title": {
@@ -313,7 +359,7 @@
           "label": "Registration Period"
         },
         "teamFormationPeriod": {
-          "label": "Team Formation Period (optional)"
+          "label": "Team Formation Period"
         },
         "startTime": {
           "label": "Start Time"
@@ -336,6 +382,15 @@
         "teamFormationEnd": {
           "label": "Team Formation End (optional)",
           "placeholder": "Not specified"
+        },
+        "selectDateRange": "Select date range",
+        "validation": {
+          "registrationEndAfterStart": "Registration end must be after start",
+          "teamFormationBothRequired": "Both team formation start and end must be specified",
+          "teamFormationAfterRegistration": "Team formation must start after registration ends",
+          "teamFormationEndAfterStart": "Team formation end must be after start",
+          "dateInPast": "Date cannot be in the past",
+          "teamFormationRequired": "Team formation period is required for team competitions"
         }
       },
       "participantLimits": {
@@ -347,6 +402,9 @@
         "max": {
           "label": "Maximum",
           "minValue": "Maximum must be at least 1"
+        },
+        "validation": {
+          "minLessThanMax": "Minimum must be less than or equal to maximum"
         }
       },
       "domains": {
@@ -369,6 +427,10 @@
           "any": "Everyone"
         }
       },
+      "isTeam": {
+        "label": "Competition Type",
+        "checkboxLabel": "Team Competition"
+      },
       "venue": {
         "format": {
           "label": "Format",
@@ -381,6 +443,9 @@
         "location": {
           "label": "Location",
           "placeholder": "e.g., Moscow, Tech Park"
+        },
+        "validation": {
+          "locationRequired": "Location is required for offline and hybrid formats"
         }
       },
       "teamSize": {
@@ -392,6 +457,9 @@
         "max": {
           "label": "Maximum",
           "minValue": "Maximum must be at least 1"
+        },
+        "validation": {
+          "minLessThanMax": "Minimum must be less than or equal to maximum"
         }
       },
       "milestone": {
@@ -410,6 +478,10 @@
         },
         "addButton": "Add Milestone",
         "removeButton": "Remove",
+        "validation": {
+          "dateInPast": "Milestone date cannot be in the past",
+          "duplicateTimestamp": "Milestone timestamps must be unique"
+        },
         "empty": "Click \"Add Milestone\" to create event checkpoints"
       }
     },
