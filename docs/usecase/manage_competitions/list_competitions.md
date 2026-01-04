@@ -7,6 +7,7 @@
 | `page` | `int` | Page number for pagination | Positive integer |
 | `sort_by` | `str` | Field to sort by | Must be one of `created_at`, `title`, `registration_start`, `team_formation_start` |
 | `sort_order` | `str` | Sort order | `asc` or `desc` |
+| `is_archived` | `bool` | Is archived | `1` or `0` |
 
 ## Output
 

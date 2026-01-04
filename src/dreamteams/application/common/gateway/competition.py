@@ -30,7 +30,7 @@ class CompetitionGateway(Protocol):
         raise NotImplementedError
 
     @abstractmethod
-    async def list_by_organizer(
+    async def list_by_organizer(  # noqa: PLR0913
         self,
         organizer_id: OrganizerId,
         *,
@@ -38,6 +38,7 @@ class CompetitionGateway(Protocol):
         page_size: int,
         sort_by: CompetitionSortBy,
         sort_order: SortOrder,
+        is_archived: bool | None,
     ) -> tuple[list[Competition], int]:
         """List competitions by organizer with pagination and sorting.
 

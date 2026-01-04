@@ -5,10 +5,10 @@ from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.manage_competitions import CompetitionModel
 from dreamteams.application.manage_competitions.list import PAGE_SIZE
 from dreamteams.application.register.register_organizer import CreatedOrganizer
-from tests.common.factory.competition import CompetitionFormFactory
+from tests.common.factory.competition import CompetitionFormFactory, UpdateCompetitionFormFactory
 from tests.integration.api_client import ApiClient
 from tests.integration.conftest import DIFFERENT_USER_ID, USER_ID, create_competitions
-from tests.integration.manage_competitions.helpers import create_competitions_list
+from tests.integration.manage_competitions.helpers import create_competitions_list, update_competition
 
 
 @pytest.fixture(params=[0, 1, 5, 10])
@@ -108,6 +108,45 @@ async def test_list_competitions_sorted_by_registration_start(
 
     result = list_response.assert_status(200).ensure_content()
     assert result == expected_model
+
+
+@pytest.mark.parametrize("sort_order", [SortOrder.ASC, SortOrder.DESC])
+@pytest.mark.parametrize("is_archived", [True, False])
+async def test_list_competitions_filtered_by_is_archived(
+    api_client: ApiClient,
+    created_competitions: list[CompetitionModel],
+    sort_order: SortOrder,
+    competition_form_factory: CompetitionFormFactory,
+    update_competition_form_factory: UpdateCompetitionFormFactory,
+    is_archived: bool,  # noqa: FBT001
+) -> None:
+    """Test sorting competitions by registration_start in different orders."""
+    update_data = update_competition_form_factory.build().model_copy(update={"is_archived": False})
+    active_competition = await create_competitions(1, competition_form_factory, api_client)
+    await update_competition(active_competition[0].id, data=update_data, api_client=api_client)
+
+    with api_client.authenticate(auth_user_id=USER_ID):
+        list_response = await api_client.list_competitions(
+            sort_by=CompetitionSortBy.CREATED_AT,
+            sort_order=sort_order,
+            is_archived=is_archived,
+        )
+
+    result = list_response.assert_status(200).ensure_content()
+    assert (
+        result
+        == create_competitions_list(
+            created_competitions,
+            sort_by=CompetitionSortBy.CREATED_AT,
+            sort_order=sort_order,
+        )
+        if is_archived is True
+        else create_competitions_list(
+            active_competition,
+            sort_by=CompetitionSortBy.CREATED_AT,
+            sort_order=sort_order,
+        )
+    )
 
 
 async def test_organizers_can_only_see_their_own_competitions(

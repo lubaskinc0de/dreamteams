@@ -217,13 +217,25 @@ class ApiClient:
 
     async def list_competitions(
         self,
+        *,
         page: int = 1,
-        sort_by: CompetitionSortBy = CompetitionSortBy.CREATED_AT,
-        sort_order: SortOrder = SortOrder.DESC,
+        sort_by: CompetitionSortBy | None = None,
+        sort_order: SortOrder | None = None,
+        is_archived: bool | None = None,
     ) -> APIResponse[CompetitionsList]:
         """List competitions via GET /competitions/."""
-        url = f"{COMPETITIONS_URL}/?page={page}&sort_by={sort_by}&sort_order={sort_order}"
-        async with self.session.get(url, headers=self._headers) as response:
+        params = {
+            "page": page,
+            "sort_by": sort_by,
+            "sort_order": sort_order,
+            "is_archived": int(is_archived) if is_archived is not None else None,
+        }
+        url = f"{COMPETITIONS_URL}"
+        async with self.session.get(
+            url,
+            headers=self._headers,
+            params={name: value for name, value in params.items() if value is not None},
+        ) as response:
             return await self._load_response(
                 response,
                 response_type=CompetitionsList,

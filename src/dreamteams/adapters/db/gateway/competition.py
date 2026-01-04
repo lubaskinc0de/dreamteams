@@ -1,6 +1,6 @@
 from typing import override
 
-from sqlalchemy import delete, desc, func, select
+from sqlalchemy import and_, delete, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dreamteams.adapters.db.models import competition_table, milestone_table
@@ -37,6 +37,7 @@ class SACompetitionGateway(CompetitionGateway):
         page_size: int,
         sort_by: CompetitionSortBy,
         sort_order: SortOrder,
+        is_archived: bool | None,
     ) -> tuple[list[Competition], int]:
         """List competitions by organizer with pagination and sorting."""
         sort_column = {
@@ -47,13 +48,17 @@ class SACompetitionGateway(CompetitionGateway):
         }[sort_by]
 
         order = desc(sort_column) if sort_order == SortOrder.DESC else sort_column
+        filters = competition_table.c.organizer_id == organizer_id
 
-        count_query = select(func.count()).where(competition_table.c.organizer_id == organizer_id)
+        if is_archived is not None:
+            filters = and_(filters, competition_table.c.is_archived == is_archived)
+
+        count_query = select(func.count()).where(filters)
         total = await self._session.scalar(count_query) or 0
 
         query = (
             select(Competition)
-            .where(competition_table.c.organizer_id == organizer_id)
+            .where(filters)
             .order_by(order, desc(competition_table.c.id) if sort_order == SortOrder.DESC else competition_table.c.id)
             .limit(page_size)
             .offset((page - 1) * page_size)

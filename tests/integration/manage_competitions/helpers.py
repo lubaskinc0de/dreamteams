@@ -5,7 +5,10 @@ from dreamteams.application.common.gateway.competition import CompetitionSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.manage_competitions.list import PAGE_SIZE, CompetitionsList
 from dreamteams.application.manage_competitions.read import CompetitionModel
+from dreamteams.application.manage_competitions.update import UpdateCompetitionForm
 from dreamteams.entities.common.identifiers import CompetitionId
+from tests.integration.api_client import ApiClient
+from tests.integration.conftest import USER_ID
 
 
 def create_competitions_list(
@@ -37,3 +40,17 @@ def create_competitions_list(
         total=len(competitions),
         page=page,
     )
+
+
+async def update_competition(
+    competition_id: CompetitionId,
+    data: UpdateCompetitionForm,
+    api_client: ApiClient,
+    user_id: str = USER_ID,
+) -> CompetitionModel:
+    """Update competition and read updated model."""
+    with api_client.authenticate(auth_user_id=user_id):
+        update_response = await api_client.update_competition(competition_id, data.model_dump(mode="json"))
+        update_response.assert_status(200)
+
+        return (await api_client.read_competition(competition_id)).assert_status(200).ensure_content()

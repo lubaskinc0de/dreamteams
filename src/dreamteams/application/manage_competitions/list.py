@@ -17,9 +17,10 @@ PAGE_SIZE = 10
 class ListCompetitionsInput(BaseModel):
     """Input parameters for listing competitions."""
 
-    page: int = Field(ge=1)
-    sort_by: CompetitionSortBy
-    sort_order: SortOrder
+    page: int = Field(ge=1, default=1)
+    sort_by: CompetitionSortBy = CompetitionSortBy.CREATED_AT
+    sort_order: SortOrder = SortOrder.DESC
+    is_archived: bool | None = None
 
 
 class CompetitionsList(BaseModel):
@@ -46,6 +47,8 @@ class ListCompetitions:
             page=input_data.page,
             sort_by=input_data.sort_by,
             sort_order=input_data.sort_order,
+            is_archived=input_data.is_archived,
+            page_size=PAGE_SIZE,
         )
 
         if user.organizer is None:
@@ -58,6 +61,7 @@ class ListCompetitions:
             page_size=PAGE_SIZE,
             sort_by=input_data.sort_by,
             sort_order=input_data.sort_order,
+            is_archived=input_data.is_archived,
         )
 
         items = [
