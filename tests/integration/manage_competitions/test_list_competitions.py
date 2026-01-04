@@ -120,7 +120,7 @@ async def test_list_competitions_filtered_by_is_archived(
     update_competition_form_factory: UpdateCompetitionFormFactory,
     is_archived: bool,  # noqa: FBT001
 ) -> None:
-    """Test sorting competitions by registration_start in different orders."""
+    """Test filtering competitions by is archived in different orders."""
     update_data = update_competition_form_factory.build().model_copy(update={"is_archived": False})
     active_competition = await create_competitions(1, competition_form_factory, api_client)
     await update_competition(active_competition[0].id, data=update_data, api_client=api_client)
