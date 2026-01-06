@@ -1,3 +1,4 @@
+from dreamteams.application.publish_competition.create import CreatedCompetition
 from dreamteams.application.register.register_organizer import CreatedOrganizer
 from tests.integration.api_client import ApiClient
 from tests.integration.conftest import USER_ID
@@ -6,6 +7,7 @@ from tests.integration.conftest import USER_ID
 async def test_delete_profile(
     api_client: ApiClient,
     organizer: CreatedOrganizer,  # noqa: ARG001
+    competition: CreatedCompetition,  # noqa: ARG001
 ) -> None:
     """Test viewing organizer profile."""
     with api_client.authenticate(auth_user_id=USER_ID):

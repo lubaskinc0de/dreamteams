@@ -26,7 +26,6 @@ const { t } = useI18n();
           color="primary"
           size="xl"
           icon="i-heroicons-rocket-launch"
-          class="!px-8 !py-4 !text-lg sm:!text-xl"
         >
           {{ t('home.startButton') }}
         </UButton>

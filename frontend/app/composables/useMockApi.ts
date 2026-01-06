@@ -1,3 +1,4 @@
+import { success } from "zod";
 import type {
   ApiError,
   OrganizerForm,
@@ -201,6 +202,16 @@ export const useMockApi = () => {
 
     return {
       data: isRegistered ? mockUser : mockUserWithoutOrganizer,
+      error: null,
+    };
+  };
+
+  const deleteUserProfile = async () => {
+    // Simulate network delay
+    await delay(300);
+
+    return {
+      success: "true",
       error: null,
     };
   };
@@ -416,5 +427,6 @@ export const useMockApi = () => {
     getCompetition,
     updateCompetition,
     deleteCompetition,
+    deleteUserProfile,
   };
 };

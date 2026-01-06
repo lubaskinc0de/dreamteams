@@ -127,6 +127,10 @@
       "information": "Information",
       "settings": "Settings"
     },
+    "delete": {
+      "title": "You are about to delete your profile",
+      "description": "ATTENTION!! All your data, as well as all your activity on the platform, will be permanently deleted WITHOUT the possibility of recovery"
+    },
     "notRegistered": {
       "title": "You're not registered as an organizer yet",
       "description": "Register to start publishing IT competitions and access participant analytics",
@@ -138,8 +142,9 @@
     },
     "settings": {
       "authentication": {
-        "title": "Authentication",
-        "logout": "Sign out"
+          "title": "Authentication",
+          "logout": "Sign out",
+          "delete_profile": "Delete my profile"
       },
       "appearance": {
         "title": "Appearance",

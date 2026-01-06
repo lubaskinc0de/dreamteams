@@ -30,6 +30,23 @@ export const useUserStore = defineStore("user", {
       this.loading = false;
     },
 
+    async deleteProfile() {
+      this.loading = true;
+      this.error = null;
+
+      const api = useApi();
+      const { error } = await api.deleteUserProfile();
+      this.loading = false;
+
+      if (error) {
+        this.error = error;
+        return {"success": false, "error": error}
+      } else {
+        return {"success": true, "error": false}
+      }
+    },
+
+
     clearError() {
       this.error = null;
     },

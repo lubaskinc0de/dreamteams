@@ -51,7 +51,7 @@ const { t } = useI18n();
             icon="i-heroicons-rocket-launch"
             color="primary"
             variant="solid"
-            class="!px-8 !py-4 !text-lg sm:!text-xl"
+            class="text-center justify-center min-w-0 max-w-xs sm:max-w-none mx-auto"
           >
             {{ t('home.startButton') }}
           </UButton>

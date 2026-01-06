@@ -84,6 +84,20 @@ export const useApi = () => {
     }
   };
 
+  const deleteUserProfile = async (): Promise<{
+    data: null;
+    error: ApiError | null;
+  }> => {
+    try {
+      const data = await $fetch<null>(`${apiBase}/api/users/me`, {
+        method: "DELETE",
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
   const listCompetitions = async (
     page: number = 1,
     sortBy: CompetitionSortBy = "created_at",
@@ -196,5 +210,6 @@ export const useApi = () => {
     getCompetition,
     updateCompetition,
     deleteCompetition,
+    deleteUserProfile,
   };
 };

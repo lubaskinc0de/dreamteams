@@ -1,4 +1,7 @@
-"""Use case: Manage Profile."""
+"""Use case: Manage Profile.
+
+Actor: User
+"""
 
 from dreamteams.application.manage_profile.read import OrganizerModel, ProfileModel, ReadProfile
 

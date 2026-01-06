@@ -1,5 +1,6 @@
 """Use case: Manage Competitions.
 
+Actor: Organizer
 Organizer manages their existing competitions.
 """
 

@@ -1,1 +1,4 @@
-"""User registration use case."""
+"""User registration use case.
+
+Actors: Organizer, Participant.
+"""
