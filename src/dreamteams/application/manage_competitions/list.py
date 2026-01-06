@@ -21,6 +21,7 @@ class ListCompetitionsInput(BaseModel):
     sort_by: CompetitionSortBy = CompetitionSortBy.CREATED_AT
     sort_order: SortOrder = SortOrder.DESC
     is_archived: bool | None = None
+    search: str | None = None
 
 
 class CompetitionsList(BaseModel):
@@ -48,6 +49,7 @@ class ListCompetitions:
             sort_by=input_data.sort_by,
             sort_order=input_data.sort_order,
             is_archived=input_data.is_archived,
+            search=input_data.search,
             page_size=PAGE_SIZE,
         )
 
@@ -62,6 +64,7 @@ class ListCompetitions:
             sort_by=input_data.sort_by,
             sort_order=input_data.sort_order,
             is_archived=input_data.is_archived,
+            search=input_data.search,
         )
 
         items = [

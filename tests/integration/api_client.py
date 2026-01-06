@@ -222,6 +222,7 @@ class ApiClient:
         sort_by: CompetitionSortBy | None = None,
         sort_order: SortOrder | None = None,
         is_archived: bool | None = None,
+        search: str | None = None,
     ) -> APIResponse[CompetitionsList]:
         """List competitions via GET /competitions/."""
         params = {
@@ -229,6 +230,7 @@ class ApiClient:
             "sort_by": sort_by,
             "sort_order": sort_order,
             "is_archived": int(is_archived) if is_archived is not None else None,
+            "search": search,
         }
         url = f"{COMPETITIONS_URL}"
         async with self.session.get(

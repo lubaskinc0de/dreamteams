@@ -13,8 +13,8 @@ from tests.integration.conftest import USER_ID
 
 def create_competitions_list(
     competitions: list[CompetitionModel],
-    sort_by: CompetitionSortBy,
-    sort_order: SortOrder,
+    sort_by: CompetitionSortBy | None,
+    sort_order: SortOrder | None,
     page: int = 1,
     page_size: int = PAGE_SIZE,
 ) -> CompetitionsList:
@@ -25,10 +25,14 @@ def create_competitions_list(
         CompetitionSortBy.REGISTRATION_START: lambda c: (c.schedule.registration_start, c.id),
     }
 
-    sorted_items = sorted(
-        competitions,
-        key=sort_key_mapping[sort_by],
-        reverse=(sort_order == SortOrder.DESC),
+    sorted_items = (
+        sorted(
+            competitions,
+            key=sort_key_mapping[sort_by],
+            reverse=(sort_order == SortOrder.DESC),
+        )
+        if sort_by is not None and sort_order is not None
+        else competitions
     )
 
     start_idx = (page - 1) * page_size

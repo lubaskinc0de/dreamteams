@@ -251,3 +251,17 @@ async def create_competitions(
         created = [response.assert_status(200).ensure_content() for response in created_responses]
         read_responses = await asyncio.gather(*[api_client.read_competition(c.competition_id) for c in created])
         return [response.assert_status(200).ensure_content() for response in read_responses]
+
+
+async def create_competition(
+    competition_form: CompetitionForm,
+    api_client: ApiClient,
+) -> CompetitionModel:
+    """Create and read competition."""
+    competition_id = (
+        (await api_client.create_competition(competition_form.model_dump(mode="json")))
+        .assert_status(200)
+        .ensure_content()
+        .competition_id
+    )
+    return (await api_client.read_competition(competition_id)).assert_status(200).ensure_content()

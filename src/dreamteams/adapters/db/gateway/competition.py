@@ -1,6 +1,6 @@
 from typing import override
 
-from sqlalchemy import and_, delete, desc, func, select
+from sqlalchemy import delete, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dreamteams.adapters.db.models import competition_table, milestone_table
@@ -9,6 +9,8 @@ from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
 from dreamteams.entities.competition.entity import Competition
 from dreamteams.entities.competition.milestone import Milestone
+
+SIMILARITY_THRESHOLD = 0.15
 
 
 class SACompetitionGateway(CompetitionGateway):
@@ -38,6 +40,7 @@ class SACompetitionGateway(CompetitionGateway):
         sort_by: CompetitionSortBy,
         sort_order: SortOrder,
         is_archived: bool | None,
+        search: str | None,
     ) -> tuple[list[Competition], int]:
         """List competitions by organizer with pagination and sorting."""
         sort_column = {
@@ -46,25 +49,32 @@ class SACompetitionGateway(CompetitionGateway):
             CompetitionSortBy.REGISTRATION_START: competition_table.c.registration_start,
             CompetitionSortBy.TEAM_FORMATION_START: competition_table.c.team_formation_start,
         }[sort_by]
-
-        order = desc(sort_column) if sort_order == SortOrder.DESC else sort_column
-        filters = competition_table.c.organizer_id == organizer_id
+        order_by = [desc(sort_column) if sort_order == SortOrder.DESC else sort_column]
+        filter_by = [competition_table.c.organizer_id == organizer_id]
 
         if is_archived is not None:
-            filters = and_(filters, competition_table.c.is_archived == is_archived)
+            filter_by.append(competition_table.c.is_archived == is_archived)
 
-        count_query = select(func.count()).where(filters)
+        if search is not None:
+            search_vector = func.lower(func.concat(competition_table.c.title, " ", competition_table.c.description))
+            similarity = func.word_similarity(search_vector, search.lower())
+
+            filter_by.append(similarity > SIMILARITY_THRESHOLD)
+            order_by = [similarity.desc(), *order_by]
+
+        count_query = select(func.count()).where(*filter_by)
         total = await self._session.scalar(count_query) or 0
-
         query = (
             select(Competition)
-            .where(filters)
-            .order_by(order, desc(competition_table.c.id) if sort_order == SortOrder.DESC else competition_table.c.id)
+            .where(*filter_by)
+            .order_by(
+                *order_by,
+                desc(competition_table.c.id) if sort_order == SortOrder.DESC else competition_table.c.id,
+            )
             .limit(page_size)
             .offset((page - 1) * page_size)
         )
 
         result = await self._session.scalars(query)
         competitions = list(result.all())
-
         return competitions, total

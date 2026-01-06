@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 from dreamteams.application.common.gateway.competition import CompetitionSortBy
@@ -7,7 +9,7 @@ from dreamteams.application.manage_competitions.list import PAGE_SIZE
 from dreamteams.application.register.register_organizer import CreatedOrganizer
 from tests.common.factory.competition import CompetitionFormFactory, UpdateCompetitionFormFactory
 from tests.integration.api_client import ApiClient
-from tests.integration.conftest import DIFFERENT_USER_ID, USER_ID, create_competitions
+from tests.integration.conftest import DIFFERENT_USER_ID, USER_ID, create_competition, create_competitions
 from tests.integration.manage_competitions.helpers import create_competitions_list, update_competition
 
 
@@ -147,6 +149,147 @@ async def test_list_competitions_filtered_by_is_archived(
             sort_order=sort_order,
         )
     )
+
+
+@pytest.mark.parametrize(
+    ("search_query", "competitions", "expected_competitions_titles"),
+    [
+        # Basic exact matches
+        (
+            "Foo",
+            [
+                {"title": "Foo", "description": "Foo"},
+                {"title": "Bar", "description": "Bar"},
+                {"title": "Fo", "description": "Fo"},
+            ],
+            ["Foo", "Fo"],  # "Fo" is similar to "Foo"
+        ),
+        (
+            "Bar",
+            [
+                {"title": "Foo", "description": "Foo"},
+                {"title": "Bar", "description": "Bar"},
+                {"title": "Fo", "description": "Fo"},
+            ],
+            ["Bar"],
+        ),
+        # Search in description
+        (
+            "description",
+            [
+                {"title": "Competition", "description": "This is an interesting description"},
+                {"title": "Tournament", "description": "Another description"},
+                {"title": "Challenge", "description": "No match here"},
+            ],
+            ["Tournament", "Competition"],  # "Tournament" might rank higher
+        ),
+        # Combined search
+        (
+            "championship",
+            [
+                {"title": "Football Championship", "description": "Annual tournament"},
+                {"title": "Basketball", "description": "Championship league"},
+                {"title": "Tennis", "description": "Tournament"},
+            ],
+            ["Basketball", "Football Championship"],  # "Championship" in description might rank higher
+        ),
+        # Partial word matches
+        (
+            "rogram",
+            [
+                {"title": "Programming Contest", "description": "Coding competition"},
+                {"title": "Progressive Marathon", "description": "Running event"},
+                {"title": "Game Tournament", "description": "Gaming competition"},
+            ],
+            [],  # "rogram" is too different from "Programming" with high threshold
+        ),
+        # Case insensitive search
+        (
+            "python",
+            [
+                {"title": "Python Hackathon", "description": "Coding in Python"},
+                {"title": "PYTHON Workshop", "description": "Learn programming"},
+                {"title": "Java Competition", "description": "Java coding"},
+            ],
+            ["Python Hackathon", "PYTHON Workshop"],
+        ),
+        # Multiple words
+        (
+            "code competition",
+            [
+                {"title": "Coding Challenge", "description": "Competition for programmers"},
+                {"title": "Code Review Contest", "description": "Review competition"},
+                {"title": "Design Competition", "description": "No code here"},
+            ],
+            ["Code Review Contest", "Design Competition", "Coding Challenge"],
+        ),
+        # Short search terms
+        (
+            "AI",
+            [
+                {"title": "AI Competition", "description": "Artificial intelligence"},
+                {"title": "AIML Challenge", "description": "AI and ML"},
+                {"title": "Programming", "description": "General programming"},
+            ],
+            [],
+        ),
+        # No matches
+        (
+            "XYZ",
+            [
+                {"title": "ABC Competition", "description": "Test event"},
+                {"title": "DEF Tournament", "description": "Another test"},
+                {"title": "GHI Challenge", "description": "Test challenge"},
+            ],
+            [],  # No similarity
+        ),
+        # Verify result ordering
+        (
+            "competition",
+            [
+                {"title": "Competition", "description": "Just competition"},
+                {"title": "My Competition", "description": "My competition"},
+                {"title": "Computer science", "description": "I love my computer"},
+            ],
+            ["My Competition", "Competition"],
+        ),
+        # Search with dash
+        (
+            "data-science",
+            [
+                {"title": "Data Science Hackathon", "description": "Data science competition"},
+                {"title": "Данные", "description": "Analyze"},
+                {"title": "Science Fair", "description": "General science"},
+            ],
+            ["Data Science Hackathon", "Science Fair"],
+        ),
+    ],
+)
+async def test_search_competitions(
+    api_client: ApiClient,
+    competition_form_factory: CompetitionFormFactory,
+    organizer: CreatedOrganizer,  # noqa: ARG001,
+    search_query: str,
+    competitions: list[dict[str, str]],
+    expected_competitions_titles: list[str],
+) -> None:
+    """Test searching competitions."""
+    with api_client.authenticate(auth_user_id=USER_ID):
+        await asyncio.gather(
+            *[
+                create_competition(
+                    competition_form_factory.build(factory_use_construct=False, **competition_data),
+                    api_client,
+                )
+                for competition_data in competitions
+            ],
+        )
+
+    with api_client.authenticate(auth_user_id=USER_ID):
+        list_response = await api_client.list_competitions(search=search_query)
+
+    actual_titles = [competition.title for competition in list_response.assert_status(200).ensure_content().items]
+    assert actual_titles == expected_competitions_titles
 
 
 async def test_organizers_can_only_see_their_own_competitions(

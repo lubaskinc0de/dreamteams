@@ -333,10 +333,21 @@
     },
     "detail": {
       "editButton": "Редактировать",
+      "deleteButton": "Удалить",
       "description": "Описание",
       "schedule": "Расписание",
       "participants": "Участники",
-      "venue": "Место проведения"
+      "venue": "Место проведения",
+      "registration": "Регистрация",
+      "teamFormation": "Формирование команд",
+      "participantCount": "Участников",
+      "teamSize": "Размер команды",
+      "milestones": "Вехи",
+      "archivedBadge": "Архив",
+      "dateRangeFrom": "с",
+      "dateRangeTo": "по",
+      "rangeFrom": "от",
+      "rangeTo": "до"
     },
     "edit": {
       "title": "Редактировать соревнование",
@@ -483,6 +494,10 @@
           "duplicateTimestamp": "Даты вех должны быть уникальными"
         },
         "empty": "Нажмите \"Добавить веху\" чтобы создать контрольные точки мероприятия"
+      },
+      "isArchived": {
+        "label": "Статус архивации",
+        "checkboxLabel": "Соревнование архивировано"
       }
     },
     "formats": {

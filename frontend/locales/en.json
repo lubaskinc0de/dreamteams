@@ -333,10 +333,21 @@
     },
     "detail": {
       "editButton": "Edit",
+      "deleteButton": "Delete",
       "description": "Description",
       "schedule": "Schedule",
       "participants": "Participants",
-      "venue": "Venue"
+      "venue": "Venue",
+      "registration": "Registration",
+      "teamFormation": "Team Formation",
+      "participantCount": "Participants",
+      "teamSize": "Team Size",
+      "milestones": "Milestones",
+      "archivedBadge": "Archived",
+      "dateRangeFrom": "from",
+      "dateRangeTo": "to",
+      "rangeFrom": "from",
+      "rangeTo": "to"
     },
     "edit": {
       "title": "Edit Competition",
@@ -483,6 +494,10 @@
           "duplicateTimestamp": "Milestone timestamps must be unique"
         },
         "empty": "Click \"Add Milestone\" to create event checkpoints"
+      },
+      "isArchived": {
+        "label": "Archive Status",
+        "checkboxLabel": "Competition is archived"
       }
     },
     "formats": {

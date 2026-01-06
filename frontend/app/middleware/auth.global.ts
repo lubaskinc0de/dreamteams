@@ -24,7 +24,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   // Define protected routes that require authentication
-  const protectedRoutes = ['/profile', '/onboarding', '/me', '/start', '/competitions'];
+  const protectedRoutes = ['/profile', '/onboarding', '/competitions'];
   const isProtectedRoute = protectedRoutes.some(route => to.path.startsWith(route));
 
   const isHomeRoute = to.path === '/';
