@@ -15,6 +15,6 @@ mapper_registry.map_imperatively(
     User,
     user_table,
     properties={
-        "organizer": relationship("Organizer", lazy="selectin", uselist=False),
+        "organizer": relationship("Organizer", lazy="selectin", cascade="all, delete-orphan", uselist=False),
     },
 )

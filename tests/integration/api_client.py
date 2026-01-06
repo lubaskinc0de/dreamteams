@@ -206,6 +206,15 @@ class ApiClient:
                 response_type=ProfileModel,
             )
 
+    async def delete_profile(self) -> APIResponse[None]:
+        """Delete user profile via DELETE /users/me."""
+        url = f"{USERS_URL}/me"
+        async with self.session.delete(url, headers=self._headers) as response:
+            return await self._load_response(
+                response,
+                response_type=None,
+            )
+
     async def create_competition(self, data: dict[str, Any]) -> APIResponse[CreatedCompetition]:
         """Create competition via POST /competitions/."""
         url = COMPETITIONS_URL
