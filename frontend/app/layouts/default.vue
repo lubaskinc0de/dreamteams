@@ -2,12 +2,12 @@
 import type { NavigationMenuItem } from '@nuxt/ui';
 
 const { t } = useI18n();
-const { isAuthenticated, hasProfile } = useAuth();
+const { isAuthenticated, hasProfile, login } = useAuth();
 const userStore = useUserStore();
 
 // Brand link destination depends on auth state
 const brandLink = computed(() => {
-  return isAuthenticated.value && hasProfile.value ? '/profile' : '/';
+  return isAuthenticated.value && hasProfile.value ? '/me' : '/';
 });
 
 // Show avatar for authenticated users with profile
@@ -27,6 +27,11 @@ const navItems = computed<NavigationMenuItem[]>(() => {
     },
   ];
 });
+
+// Handle login
+const handleLogin = async () => {
+  await login();
+};
 </script>
 
 <template>
@@ -55,18 +60,92 @@ const navItems = computed<NavigationMenuItem[]>(() => {
       </template>
 
       <template #right>
-        <!-- Show avatar for authenticated users, otherwise show theme/language controls -->
+        <!-- Show avatar for authenticated users -->
         <template v-if="showAvatar">
-          <NuxtLink to="/profile" :aria-label="t('nav.profile')">
+          <NuxtLink to="/me" :aria-label="t('nav.profile')">
             <UAvatar :src="userStore.organizer?.logo || undefined"
               :alt="userStore.organizer?.organizer_name || t('profile.userBadge')" size="md"
               class="hover:ring-2 hover:ring-primary-500 transition-all cursor-pointer" />
           </NuxtLink>
         </template>
+        <!-- Login button and settings menu for unauthenticated users -->
         <template v-else>
-          <ThemeToggle size="lg" />
-          <LanguageSwitcher size="lg" />
+          <UButton
+            @click="handleLogin"
+            color="primary"
+            variant="solid"
+            size="md"
+            :label="t('nav.login')"
+            icon="i-heroicons-arrow-right-on-rectangle"
+          />
+          <UPopover>
+            <UButton
+              color="neutral"
+              variant="ghost"
+              size="md"
+              icon="i-heroicons-cog-6-tooth"
+              square
+              :aria-label="t('nav.settings')"
+            />
+            <template #content>
+              <div class="p-4 space-y-4 min-w-48">
+                <div class="flex items-center justify-between gap-4">
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">
+                    {{ t('nav.theme') }}
+                  </span>
+                  <ThemeToggle size="md" />
+                </div>
+                <USeparator />
+                <div class="flex items-center justify-between gap-4">
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">
+                    {{ t('nav.language') }}
+                  </span>
+                  <LanguageSwitcher size="md" />
+                </div>
+              </div>
+            </template>
+          </UPopover>
         </template>
+      </template>
+
+      <template #body>
+        <!-- Mobile menu content -->
+        <UNavigationMenu v-if="navItems.length > 0" :items="navItems" orientation="vertical" class="-mx-2.5" />
+
+        <USeparator v-if="navItems.length > 0" class="my-4" />
+
+        <!-- Mobile menu footer with controls -->
+        <div v-if="showAvatar" class="flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <ThemeToggle size="lg" />
+            <LanguageSwitcher size="lg" />
+          </div>
+
+          <NuxtLink to="/me" :aria-label="t('nav.profile')">
+            <UAvatar :src="userStore.organizer?.logo || undefined"
+              :alt="userStore.organizer?.organizer_name || t('profile.userBadge')" size="md"
+              class="hover:ring-2 hover:ring-primary-500 transition-all cursor-pointer" />
+          </NuxtLink>
+        </div>
+
+        <!-- Mobile menu for unauthenticated users -->
+        <div v-else class="space-y-4">
+          <UButton
+            @click="handleLogin"
+            color="primary"
+            variant="solid"
+            size="lg"
+            :label="t('nav.login')"
+            icon="i-heroicons-arrow-right-on-rectangle"
+            block
+          />
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <ThemeToggle size="lg" />
+              <LanguageSwitcher size="lg" />
+            </div>
+          </div>
+        </div>
       </template>
     </UHeader>
 

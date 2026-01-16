@@ -117,12 +117,14 @@ const participantTypeOptions = [
         :label="t('competition.form.isTeam.label')"
         size="xl"
       >
-        <UCheckbox
-          :model-value="isTeamCompetition"
-          @update:model-value="emit('update:isTeamCompetition', $event)"
-          :label="t('competition.form.isTeam.checkboxLabel')"
-          size="xl"
-        />
+        <div class="flex items-center gap-3">
+          <USwitch
+            :model-value="isTeamCompetition"
+            @update:model-value="emit('update:isTeamCompetition', $event)"
+            size="xl"
+          />
+          <span class="text-gray-700 dark:text-gray-300">{{ t('competition.form.isTeam.checkboxLabel') }}</span>
+        </div>
       </UFormField>
 
       <!-- Is Archived (only in edit mode) -->
@@ -131,12 +133,14 @@ const participantTypeOptions = [
         :label="t('competition.form.isArchived.label')"
         size="xl"
       >
-        <UCheckbox
-          :model-value="isArchived"
-          @update:model-value="emit('update:isArchived', $event)"
-          :label="t('competition.form.isArchived.checkboxLabel')"
-          size="xl"
-        />
+        <div class="flex items-center gap-3">
+          <USwitch
+            :model-value="isArchived"
+            @update:model-value="emit('update:isArchived', $event)"
+            size="xl"
+          />
+          <span class="text-gray-700 dark:text-gray-300">{{ t('competition.form.isArchived.checkboxLabel') }}</span>
+        </div>
       </UFormField>
     </div>
   </UCard>

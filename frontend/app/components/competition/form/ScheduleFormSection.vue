@@ -11,9 +11,24 @@ interface Props {
   teamFormationStartTime: any;
   teamFormationEndTime: any;
   isTeamCompetition: boolean;
+  // Locked date props (for edit mode - past dates cannot be changed)
+  lockedRegistrationStart?: boolean;
+  lockedRegistrationEnd?: boolean;
+  lockedTeamFormationStart?: boolean;
+  lockedTeamFormationEnd?: boolean;
+  // Min value props for date restrictions
+  registrationMinValue?: any;
+  registrationEndMinValue?: any;
+  teamFormationMinValue?: any;
+  teamFormationEndMinValue?: any;
 }
 
-defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  lockedRegistrationStart: false,
+  lockedRegistrationEnd: false,
+  lockedTeamFormationStart: false,
+  lockedTeamFormationEnd: false,
+});
 const emit = defineEmits(['update:registrationDateRange', 'update:registrationStartTime', 'update:registrationEndTime', 'update:teamFormationDateRange', 'update:teamFormationStartTime', 'update:teamFormationEndTime']);
 
 const { t } = useI18n();
@@ -21,6 +36,12 @@ const { t } = useI18n();
 // Template refs for calendar popovers
 const registrationDateInput = useTemplateRef('registrationDateInput');
 const teamFormationDateInput = useTemplateRef('teamFormationDateInput');
+
+// Computed: is entire registration period locked?
+const isRegistrationLocked = computed(() => props.lockedRegistrationStart && props.lockedRegistrationEnd);
+
+// Computed: is entire team formation period locked?
+const isTeamFormationLocked = computed(() => props.lockedTeamFormationStart && props.lockedTeamFormationEnd);
 </script>
 
 <template>
@@ -34,6 +55,14 @@ const teamFormationDateInput = useTemplateRef('teamFormationDateInput');
     <div class="space-y-6">
       <!-- Registration Period -->
       <div>
+        <!-- Locked notice -->
+        <div v-if="lockedRegistrationStart || lockedRegistrationEnd" class="mb-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+          <p class="text-sm text-amber-700 dark:text-amber-300 flex items-center gap-2">
+            <UIcon name="i-heroicons-lock-closed" class="w-4 h-4" />
+            {{ t('competition.form.schedule.lockedNotice') }}
+          </p>
+        </div>
+
         <UFormField
           name="schedule.registration_start"
           :label="t('competition.form.schedule.registrationPeriod.label')"
@@ -48,9 +77,11 @@ const teamFormationDateInput = useTemplateRef('teamFormationDateInput');
             @update:model-value="(val: any) => emit('update:registrationDateRange', val)"
             range
             size="xl"
+            :disabled="isRegistrationLocked"
+            :min-value="registrationMinValue"
           >
             <template #trailing>
-              <UPopover :reference="registrationDateInput?.inputsRef[0]?.$el">
+              <UPopover v-if="!isRegistrationLocked" :reference="registrationDateInput?.inputsRef[0]?.$el">
                 <UButton
                   color="neutral"
                   variant="link"
@@ -67,9 +98,11 @@ const teamFormationDateInput = useTemplateRef('teamFormationDateInput');
                     class="p-2"
                     :number-of-months="2"
                     range
+                    :min-value="registrationMinValue"
                   />
                 </template>
               </UPopover>
+              <UIcon v-else name="i-heroicons-lock-closed" class="w-4 h-4 text-gray-400" />
             </template>
           </UInputDate>
         </UFormField>
@@ -85,6 +118,7 @@ const teamFormationDateInput = useTemplateRef('teamFormationDateInput');
               size="xl"
               :hour-cycle="24"
               leading-icon="i-heroicons-clock"
+              :disabled="lockedRegistrationStart"
             />
           </UFormField>
 
@@ -98,6 +132,7 @@ const teamFormationDateInput = useTemplateRef('teamFormationDateInput');
               size="xl"
               :hour-cycle="24"
               leading-icon="i-heroicons-clock"
+              :disabled="lockedRegistrationEnd"
             />
           </UFormField>
         </div>
@@ -105,6 +140,14 @@ const teamFormationDateInput = useTemplateRef('teamFormationDateInput');
 
       <!-- Team Formation Period (only for team competitions) -->
       <div v-if="isTeamCompetition">
+        <!-- Locked notice -->
+        <div v-if="lockedTeamFormationStart || lockedTeamFormationEnd" class="mb-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+          <p class="text-sm text-amber-700 dark:text-amber-300 flex items-center gap-2">
+            <UIcon name="i-heroicons-lock-closed" class="w-4 h-4" />
+            {{ t('competition.form.schedule.lockedNotice') }}
+          </p>
+        </div>
+
         <UFormField
           name="schedule.team_formation_start"
           :label="t('competition.form.schedule.teamFormationPeriod.label')"
@@ -119,9 +162,11 @@ const teamFormationDateInput = useTemplateRef('teamFormationDateInput');
             @update:model-value="(val: any) => emit('update:teamFormationDateRange', val)"
             range
             size="xl"
+            :disabled="isTeamFormationLocked"
+            :min-value="teamFormationMinValue"
           >
             <template #trailing>
-              <UPopover :reference="teamFormationDateInput?.inputsRef[0]?.$el">
+              <UPopover v-if="!isTeamFormationLocked" :reference="teamFormationDateInput?.inputsRef[0]?.$el">
                 <UButton
                   color="neutral"
                   variant="link"
@@ -138,9 +183,11 @@ const teamFormationDateInput = useTemplateRef('teamFormationDateInput');
                     class="p-2"
                     :number-of-months="2"
                     range
+                    :min-value="teamFormationMinValue"
                   />
                 </template>
               </UPopover>
+              <UIcon v-else name="i-heroicons-lock-closed" class="w-4 h-4 text-gray-400" />
             </template>
           </UInputDate>
         </UFormField>
@@ -156,6 +203,7 @@ const teamFormationDateInput = useTemplateRef('teamFormationDateInput');
               size="xl"
               :hour-cycle="24"
               leading-icon="i-heroicons-clock"
+              :disabled="lockedTeamFormationStart"
             />
           </UFormField>
 
@@ -169,6 +217,7 @@ const teamFormationDateInput = useTemplateRef('teamFormationDateInput');
               size="xl"
               :hour-cycle="24"
               leading-icon="i-heroicons-clock"
+              :disabled="lockedTeamFormationEnd"
             />
           </UFormField>
         </div>

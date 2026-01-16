@@ -33,7 +33,7 @@ const goBack = () => {
 
 // Navigate to edit page
 const goToEdit = () => {
-  router.push(`/competitions/${competitionId.value}/edit`);
+  router.push(`/competitions/edit/${competitionId.value}`);
 };
 
 // Delete competition
@@ -68,7 +68,7 @@ const handleDelete = async () => {
 <template>
   <UPage>
     <UPageBody>
-      <div class="max-w-7xl mx-auto">
+      <UContainer class="!max-w-7xl">
         <!-- Header -->
         <div class="mb-6">
           <div class="flex items-center gap-4 mb-4">
@@ -82,7 +82,7 @@ const handleDelete = async () => {
 
           <div v-if="competition">
             <div class="flex items-start gap-4 mb-4">
-              <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex-1">
+              <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex-1 min-w-0 truncate">
                 {{ competition.title }}
               </h1>
               <UBadge
@@ -129,7 +129,7 @@ const handleDelete = async () => {
 
         <!-- View Mode -->
         <CompetitionDetailsView v-if="competition" :competition="competition" />
-      </div>
+      </UContainer>
     </UPageBody>
 
     <!-- Delete Confirmation Modal -->

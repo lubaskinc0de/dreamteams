@@ -27,19 +27,18 @@ const handleClick = () => {
 };
 
 // Handle delete click
-const handleDelete = (event: Event) => {
-  event.stopPropagation();
+const handleDelete = () => {
   emit('delete', props.competition.id);
 };
 </script>
 
 <template>
-  <UCard class="hover:shadow-lg transition-shadow">
+  <UCard class="w-full hover:shadow-lg transition-shadow overflow-hidden">
     <div class="space-y-4">
       <!-- Title, Status and Actions -->
       <div class="flex items-start justify-between gap-4">
         <h3
-          class="text-xl font-semibold text-gray-900 dark:text-white cursor-pointer flex-1"
+          class="text-xl font-semibold text-gray-900 dark:text-white cursor-pointer flex-1 min-w-0 truncate"
           @click="handleClick"
         >
           {{ competition.title }}
@@ -52,7 +51,7 @@ const handleDelete = (event: Event) => {
             variant="ghost"
             size="sm"
             square
-            @click="handleDelete"
+            @click.stop="handleDelete"
           />
         </div>
       </div>

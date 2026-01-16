@@ -15,7 +15,7 @@ from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 from dreamteams.entities.user import User
 
 
-def test_update_competition_with_valid_milestones(
+def test_update_competition_with_valid_milestones_succeeds(
     competition: Competition,
     organizer_user: User,
     schedule: CompetitionSchedule,
@@ -25,7 +25,7 @@ def test_update_competition_with_valid_milestones(
     team_size: TeamSizeRange,
     milestones: list[Milestone],
 ) -> None:
-    """Test updating competition with valid milestones."""
+    """Test updating competition with valid milestones succeeds."""
     competition.update(
         user=organizer_user,
         title="Updated Title",
@@ -43,7 +43,7 @@ def test_update_competition_with_valid_milestones(
     assert competition.milestones == milestones
 
 
-def test_update_competition_with_duplicate_milestone_timestamps_raises_error(
+def test_duplicate_milestone_timestamps_is_not_allowed(
     competition: Competition,
     organizer_user: User,
     schedule: CompetitionSchedule,
@@ -112,7 +112,7 @@ def test_update_competition_with_invalid_data_raises_error(
         )
 
 
-def test_update_competition_by_non_organizer_raises_error(
+def test_cannot_update_competition_by_non_organizer(
     competition: Competition,
     user_without_organizer: User,
     schedule: CompetitionSchedule,
@@ -121,7 +121,7 @@ def test_update_competition_by_non_organizer_raises_error(
     venue: CompetitionVenue,
     team_size: TeamSizeRange,
 ) -> None:
-    """Test that updating competition by non-organizer raises error."""
+    """Test that updating competition by non-organizer user raises error."""
     with pytest.raises(AccessDeniedError):
         competition.update(
             user=user_without_organizer,
@@ -138,7 +138,7 @@ def test_update_competition_by_non_organizer_raises_error(
         )
 
 
-def test_update_competition_by_different_organizer_raises_error(
+def test_cannot_update_competition_by_different_organizer(
     competition: Competition,
     different_user: User,
     schedule: CompetitionSchedule,

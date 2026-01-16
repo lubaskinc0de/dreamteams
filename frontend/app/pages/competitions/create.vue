@@ -3,7 +3,7 @@ import type { CompetitionForm } from '~/types/api';
 import type { MilestoneInput } from '~/components/competition/form/MilestonesFormSection.vue';
 import { createCompetitionSchemas } from '~/schemas/competition';
 import { useCompetitionStore } from '~/stores/competition';
-import { CalendarDate, Time } from '@internationalized/date';
+import { CalendarDate, Time, today, getLocalTimeZone } from '@internationalized/date';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -55,6 +55,19 @@ const registrationEndTime = ref<Time | undefined>(new Time(0, 0));
 const teamFormationDateRange = ref<{ start: CalendarDate; end: CalendarDate } | undefined>(undefined);
 const teamFormationStartTime = ref<Time | undefined>(new Time(0, 0));
 const teamFormationEndTime = ref<Time | undefined>(new Time(0, 0));
+
+// Min values for date pickers
+// Registration: must be today or later
+const registrationMinValue = computed(() => today(getLocalTimeZone()));
+
+// Team formation: must be after registration end date (or today if not set)
+const teamFormationMinValue = computed(() => {
+  if (registrationDateRange.value?.end) {
+    // Day after registration end
+    return registrationDateRange.value.end.add({ days: 1 });
+  }
+  return today(getLocalTimeZone());
+});
 
 // Watch isTeamCompetition and clear team fields when switching to individual
 watch(isTeamCompetition, (isTeam) => {
@@ -211,7 +224,7 @@ const goBack = () => {
 <template>
   <UPage>
     <UPageBody>
-      <div class="max-w-4xl mx-auto">
+      <UContainer class="!max-w-4xl">
         <!-- Header -->
         <div class="mb-8">
           <UButton
@@ -258,6 +271,8 @@ const goBack = () => {
               v-model:team-formation-start-time="teamFormationStartTime"
               v-model:team-formation-end-time="teamFormationEndTime"
               :is-team-competition="isTeamCompetition"
+              :registration-min-value="registrationMinValue"
+              :team-formation-min-value="teamFormationMinValue"
             />
 
             <!-- Participants -->
@@ -303,7 +318,7 @@ const goBack = () => {
             />
           </div>
         </UForm>
-      </div>
+      </UContainer>
     </UPageBody>
   </UPage>
 </template>

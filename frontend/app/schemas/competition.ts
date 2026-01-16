@@ -233,6 +233,86 @@ export const createCompetitionSchemas = (t: (key: string) => string) => {
     }
   );
 
+  // Update schema - no "date in past" validation, uses is_archived instead of is_team
+  const updateScheduleSchema = z.object({
+    registration_start: z.string().min(1, t("competition.form.schedule.registrationStart.required")),
+    registration_end: z.string().min(1, t("competition.form.schedule.registrationEnd.required")),
+    team_formation_start: z.string().nullable().optional(),
+    team_formation_end: z.string().nullable().optional(),
+  }).refine(
+    (data) => {
+      // registration_start must be before registration_end
+      if (data.registration_start && data.registration_end) {
+        return new Date(data.registration_start) < new Date(data.registration_end);
+      }
+      return true;
+    },
+    {
+      message: t("competition.form.schedule.validation.registrationEndAfterStart"),
+      path: ["registration_end"],
+    }
+  ).refine(
+    (data) => {
+      // If team formation is specified, both start and end must be provided
+      const hasStart = data.team_formation_start !== null && data.team_formation_start !== undefined && data.team_formation_start !== '';
+      const hasEnd = data.team_formation_end !== null && data.team_formation_end !== undefined && data.team_formation_end !== '';
+
+      if (hasStart || hasEnd) {
+        return hasStart && hasEnd;
+      }
+      return true;
+    },
+    {
+      message: t("competition.form.schedule.validation.teamFormationBothRequired"),
+      path: ["team_formation_end"],
+    }
+  ).refine(
+    (data) => {
+      // team_formation_start must be >= registration_end
+      if (data.team_formation_start && data.registration_end) {
+        return new Date(data.team_formation_start) >= new Date(data.registration_end);
+      }
+      return true;
+    },
+    {
+      message: t("competition.form.schedule.validation.teamFormationAfterRegistration"),
+      path: ["team_formation_start"],
+    }
+  ).refine(
+    (data) => {
+      // team_formation_end must be > team_formation_start
+      if (data.team_formation_start && data.team_formation_end) {
+        return new Date(data.team_formation_end) > new Date(data.team_formation_start);
+      }
+      return true;
+    },
+    {
+      message: t("competition.form.schedule.validation.teamFormationEndAfterStart"),
+      path: ["team_formation_end"],
+    }
+  );
+
+  const updateMilestoneSchema = z.object({
+    title: z
+      .string()
+      .min(1, t("competition.form.milestone.title.required"))
+      .max(50, t("competition.form.milestone.title.maxLength")),
+    timestamp: z.string().min(1, t("competition.form.milestone.timestamp.required")),
+  });
+
+  const competitionUpdateSchema = z.object({
+    title: titleSchema,
+    description: descriptionSchema,
+    schedule: updateScheduleSchema,
+    participant_limits: participantLimitsSchema,
+    domains: z.array(z.enum(["frontend", "mobile", "backend", "ai", "devops"])).min(1, t("competition.form.domains.required")),
+    participant_type: z.enum(["schoolchild", "student", "any"]),
+    venue: venueSchema,
+    team_size: teamSizeSchema,
+    milestones: z.array(updateMilestoneSchema).optional(),
+    is_archived: z.boolean().optional(),
+  });
+
   return {
     titleSchema,
     descriptionSchema,
@@ -242,6 +322,7 @@ export const createCompetitionSchemas = (t: (key: string) => string) => {
     venueSchema,
     milestoneSchema,
     competitionFormSchema,
+    competitionUpdateSchema,
   };
 };
 

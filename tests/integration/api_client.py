@@ -54,16 +54,13 @@ class APIResponse[T]:
     def assert_status(self, status: int) -> Self:
         """Assert that response status matches expected value."""
         if self.status != status:
-            msg = f"HTTP status assertion failed. {self.status} != {status}"
+            msg = f"HTTP status assertion failed. {self.status} != {status}."
             raise ValueError(msg)
         return self
 
     def assert_error(self, status: int, error_code: str) -> Self:
         """Assert that response status matches expected value, response is ``ErrorResponse`` and error code matches."""
-        if self.status != status:
-            msg = f"HTTP status assertion failed. {self.status} != {status}"
-            raise ValueError(msg)
-
+        self.assert_status(status)
         if self.ensure_err().code != error_code:
             msg = "Error code does not equal"
             raise ValueError(msg)

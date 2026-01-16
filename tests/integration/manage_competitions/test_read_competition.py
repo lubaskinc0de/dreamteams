@@ -3,12 +3,11 @@ from uuid import uuid4
 from dishka import AsyncContainer
 
 from dreamteams.application.common.gateway.competition import CompetitionGateway
-from dreamteams.application.manage_competitions import CompetitionModel
 from dreamteams.application.publish_competition import CompetitionForm, CreatedCompetition
 from dreamteams.application.register.register_organizer import CreatedOrganizer
-from dreamteams.entities.competition.milestone import Milestone
 from tests.integration.api_client import ApiClient
 from tests.integration.conftest import DIFFERENT_USER_ID, USER_ID
+from tests.integration.manage_competitions.helpers import competition_form_to_model
 
 
 async def test_read_competition_succeeds(
@@ -21,25 +20,12 @@ async def test_read_competition_succeeds(
     """Test reading competition by ID returns correct data."""
     competition_gateway = await request_container.get(CompetitionGateway)
     db_competition = await competition_gateway.get(competition.competition_id)
-    expected_model = CompetitionModel(
-        id=competition.competition_id,
-        organizer_id=organizer.organizer_id,
-        title=competition_form.title,
-        banner=None,
-        description=competition_form.description,
-        schedule=competition_form.schedule,
-        participant_limits=competition_form.participant_limits,
-        domains=competition_form.domains,
-        participant_type=competition_form.participant_type,
-        venue=competition_form.venue,
-        team_size=competition_form.team_size,
-        milestones=[
-            Milestone(timestamp=milestone.timestamp, title=milestone.title)
-            for milestone in sorted(competition_form.milestones, key=lambda item: item.timestamp)
-        ],
-        is_archived=True,
-        created_at=db_competition.created_at,
-        updated_at=db_competition.updated_at,
+    expected_model = competition_form_to_model(
+        competition.competition_id,
+        organizer.organizer_id,
+        db_competition.created_at,
+        db_competition.updated_at,
+        competition_form,
     )
 
     with api_client.authenticate(auth_user_id=USER_ID):

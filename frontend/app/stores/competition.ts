@@ -35,6 +35,7 @@ export const useCompetitionStore = defineStore("competition", {
       sortOrder?: SortOrder,
       isArchived?: boolean,
       reset = true,
+      search?: string,
     ) {
       this.loading = true;
       this.error = null;
@@ -45,6 +46,7 @@ export const useCompetitionStore = defineStore("competition", {
         sortBy || this.sortBy,
         sortOrder || this.sortOrder,
         isArchived,
+        search,
       );
 
       if (error) {
@@ -65,9 +67,9 @@ export const useCompetitionStore = defineStore("competition", {
       this.loading = false;
     },
 
-    async loadNextPage(isArchived?: boolean) {
+    async loadNextPage(isArchived?: boolean, search?: string) {
       if (!this.hasMorePages || this.loading) return;
-      await this.fetchCompetitions(this.currentPage + 1, undefined, undefined, isArchived, false);
+      await this.fetchCompetitions(this.currentPage + 1, undefined, undefined, isArchived, false, search);
     },
 
     async updateCompetition(competitionId: string, form: UpdateCompetitionForm) {

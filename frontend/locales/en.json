@@ -39,7 +39,10 @@
     "login": "Sign In",
     "competitions": "My Competitions",
     "brand": "DreamTeams",
-    "brandSubtitle": "IT Competition Aggregator"
+    "brandSubtitle": "IT Competition Aggregator",
+    "settings": "Settings",
+    "theme": "Theme",
+    "language": "Language"
   },
   "home": {
     "title": "DreamTeams",
@@ -271,7 +274,11 @@
     },
     "competitionDetail": {
       "title": "Competition Details - DreamTeams",
-      "description": "View and edit competition information"
+      "description": "View competition information"
+    },
+    "competitionEdit": {
+      "title": "Edit Competition - DreamTeams",
+      "description": "Edit competition information"
     }
   },
   "competitions": {
@@ -400,6 +407,7 @@
           "placeholder": "Not specified"
         },
         "selectDateRange": "Select date range",
+        "lockedNotice": "This date has already passed and cannot be changed",
         "validation": {
           "registrationEndAfterStart": "Registration end must be after start",
           "teamFormationBothRequired": "Both team formation start and end must be specified",
@@ -498,7 +506,9 @@
           "dateInPast": "Milestone date cannot be in the past",
           "duplicateTimestamp": "Milestone timestamps must be unique"
         },
-        "empty": "Click \"Add Milestone\" to create event checkpoints"
+        "empty": "Click \"Add Milestone\" to create event checkpoints",
+        "lockedNotice": "This milestone date has already passed and cannot be changed",
+        "selectDate": "Select date"
       },
       "isArchived": {
         "label": "Archive Status",

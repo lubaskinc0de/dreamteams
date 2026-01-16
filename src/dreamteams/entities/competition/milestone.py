@@ -17,10 +17,24 @@ class Milestone:
         if not self.title or not self.title.strip():
             raise InvalidCompetitionDataError(message="Milestone title must not be empty")
 
-        now = normalize_datetime(datetime.now(tz=UTC))
         normalized_ts = normalize_datetime(self.timestamp)
-
-        if normalized_ts < now:
-            raise InvalidCompetitionDataError(message="Milestone timestamp cannot be in past")
-
         self.timestamp = normalized_ts
+
+
+@dataclass(slots=True)
+class MilestoneData:
+    """Milestone creation data."""
+
+    title: str
+    timestamp: datetime
+
+
+def milestone_factory(data: MilestoneData) -> Milestone:
+    """Create new milestone."""
+    now = normalize_datetime(datetime.now(tz=UTC))
+    normalized_ts = normalize_datetime(data.timestamp)
+
+    if normalized_ts < now:
+        raise InvalidCompetitionDataError(message="Milestone timestamp cannot be in past")
+
+    return Milestone(normalized_ts, data.title)

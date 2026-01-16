@@ -39,16 +39,6 @@ INVALID_COMPETITION_DATA_CASES: list[tuple[dict[str, Any], str]] = [
     ({"description": "   "}, "INVALID_COMPETITION_DATA"),  # Description cannot be whitespace only
     # Domains validation
     ({"domains": []}, "INVALID_COMPETITION_DATA"),  # Domains list cannot be empty
-    # Schedule validation: dates in the past
-    (
-        {
-            "schedule": {
-                "registration_start": timedelta(days=-15),
-                "registration_end": timedelta(days=-11),
-            },
-        },
-        "INVALID_COMPETITION_DATA",
-    ),
     # Participant limits: min exceeds max
     ({"participant_limits": {"max": 10, "min": 50}}, "INVALID_COMPETITION_DATA"),
     # Participant limits: both zero

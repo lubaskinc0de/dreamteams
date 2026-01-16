@@ -2,7 +2,7 @@
 import type { UpdateCompetitionForm } from '~/types/api';
 import type { MilestoneInput } from '~/components/competition/form/MilestonesFormSection.vue';
 import { useCompetitionStore } from '~/stores/competition';
-import { CalendarDate, Time, parseDateTime } from '@internationalized/date';
+import { CalendarDate, Time, parseAbsoluteToLocal, today, getLocalTimeZone } from '@internationalized/date';
 import { createCompetitionSchemas } from '~/schemas/competition';
 
 const { t } = useI18n();
@@ -38,10 +38,26 @@ const goBack = () => {
 };
 
 // ===== FORM STATE =====
-const { competitionFormSchema } = createCompetitionSchemas(t);
+const { competitionUpdateSchema } = createCompetitionSchemas(t);
 const isTeamCompetition = ref(true);
 const isInitializingForm = ref(false);
 const isSubmitting = ref(false);
+
+// Track which dates are locked (already in the past and cannot be changed)
+const lockedDates = ref({
+  registrationStart: false,
+  registrationEnd: false,
+  teamFormationStart: false,
+  teamFormationEnd: false,
+});
+
+// Original dates to use when locked
+const originalDates = ref({
+  registrationStart: '',
+  registrationEnd: '',
+  teamFormationStart: null as string | null,
+  teamFormationEnd: null as string | null,
+});
 
 // Form state
 const formState = ref<UpdateCompetitionForm>({
@@ -82,6 +98,19 @@ const teamFormationEndTime = ref<Time | undefined>(new Time(0, 0));
 
 // Milestones
 const milestones = ref<MilestoneInput[]>([]);
+
+// Min values for date pickers
+// Registration: must be today or later
+const registrationMinValue = computed(() => today(getLocalTimeZone()));
+
+// Team formation: must be after registration end date (or today if not set)
+const teamFormationMinValue = computed(() => {
+  if (registrationDateRange.value?.end) {
+    // Day after registration end
+    return registrationDateRange.value.end.add({ days: 1 });
+  }
+  return today(getLocalTimeZone());
+});
 
 // Helper function to combine date and time into ISO string
 const combineDateTime = (date: any, time: any): string => {
@@ -140,10 +169,28 @@ watch(milestones, () => {
   formState.value.milestones = getMilestonesForSubmit();
 }, { deep: true });
 
+// Helper function to check if a date is in the past
+const isDateInPast = (dateString: string | null): boolean => {
+  if (!dateString) return false;
+  const date = new Date(dateString);
+  return date < new Date();
+};
+
 // Initialize form when entering edit mode
 const initializeForm = (comp: any) => {
   // Block watchers during initialization
   isInitializingForm.value = true;
+
+  // Store original dates and check which are locked (in the past)
+  originalDates.value.registrationStart = comp.schedule.registration_start;
+  originalDates.value.registrationEnd = comp.schedule.registration_end;
+  originalDates.value.teamFormationStart = comp.schedule.team_formation_start;
+  originalDates.value.teamFormationEnd = comp.schedule.team_formation_end;
+
+  lockedDates.value.registrationStart = isDateInPast(comp.schedule.registration_start);
+  lockedDates.value.registrationEnd = isDateInPast(comp.schedule.registration_end);
+  lockedDates.value.teamFormationStart = isDateInPast(comp.schedule.team_formation_start);
+  lockedDates.value.teamFormationEnd = isDateInPast(comp.schedule.team_formation_end);
 
   // Set form state first - all the actual form data
   formState.value.title = comp.title;
@@ -166,31 +213,60 @@ const initializeForm = (comp: any) => {
   }));
   formState.value.is_archived = comp.is_archived;
 
-  // Initialize team competition flag
-  isTeamCompetition.value = !(comp.team_size.min === 1 && comp.team_size.max === 1);
+  // Initialize team competition flag based on whether team_formation dates exist
+  const hasTeamFormationDates = !!(comp.schedule.team_formation_start && comp.schedule.team_formation_end);
+  isTeamCompetition.value = hasTeamFormationDates;
 
   // Parse and set registration dates for UI components
-  const regStart = parseDateTime(comp.schedule.registration_start);
-  const regEnd = parseDateTime(comp.schedule.registration_end);
+  try {
+    const regStart = parseAbsoluteToLocal(comp.schedule.registration_start);
+    const regEnd = parseAbsoluteToLocal(comp.schedule.registration_end);
 
-  registrationDateRange.value = {
-    start: new CalendarDate(regStart.year, regStart.month, regStart.day),
-    end: new CalendarDate(regEnd.year, regEnd.month, regEnd.day),
-  };
-  registrationStartTime.value = new Time(regStart.hour, regStart.minute);
-  registrationEndTime.value = new Time(regEnd.hour, regEnd.minute);
+    registrationDateRange.value = {
+      start: new CalendarDate(regStart.year, regStart.month, regStart.day),
+      end: new CalendarDate(regEnd.year, regEnd.month, regEnd.day),
+    };
+    registrationStartTime.value = new Time(regStart.hour, regStart.minute);
+    registrationEndTime.value = new Time(regEnd.hour, regEnd.minute);
+  } catch (e) {
+    console.error('Failed to parse registration dates:', e);
+    // Fallback: try parsing as Date
+    const regStartDate = new Date(comp.schedule.registration_start);
+    const regEndDate = new Date(comp.schedule.registration_end);
+
+    registrationDateRange.value = {
+      start: new CalendarDate(regStartDate.getFullYear(), regStartDate.getMonth() + 1, regStartDate.getDate()),
+      end: new CalendarDate(regEndDate.getFullYear(), regEndDate.getMonth() + 1, regEndDate.getDate()),
+    };
+    registrationStartTime.value = new Time(regStartDate.getHours(), regStartDate.getMinutes());
+    registrationEndTime.value = new Time(regEndDate.getHours(), regEndDate.getMinutes());
+  }
 
   // Parse and set team formation dates for UI components if they exist
-  if (comp.schedule.team_formation_start && comp.schedule.team_formation_end) {
-    const teamStart = parseDateTime(comp.schedule.team_formation_start);
-    const teamEnd = parseDateTime(comp.schedule.team_formation_end);
+  if (hasTeamFormationDates) {
+    try {
+      const teamStart = parseAbsoluteToLocal(comp.schedule.team_formation_start);
+      const teamEnd = parseAbsoluteToLocal(comp.schedule.team_formation_end);
 
-    teamFormationDateRange.value = {
-      start: new CalendarDate(teamStart.year, teamStart.month, teamStart.day),
-      end: new CalendarDate(teamEnd.year, teamEnd.month, teamEnd.day),
-    };
-    teamFormationStartTime.value = new Time(teamStart.hour, teamStart.minute);
-    teamFormationEndTime.value = new Time(teamEnd.hour, teamEnd.minute);
+      teamFormationDateRange.value = {
+        start: new CalendarDate(teamStart.year, teamStart.month, teamStart.day),
+        end: new CalendarDate(teamEnd.year, teamEnd.month, teamEnd.day),
+      };
+      teamFormationStartTime.value = new Time(teamStart.hour, teamStart.minute);
+      teamFormationEndTime.value = new Time(teamEnd.hour, teamEnd.minute);
+    } catch (e) {
+      console.error('Failed to parse team formation dates:', e);
+      // Fallback: try parsing as Date
+      const teamStartDate = new Date(comp.schedule.team_formation_start);
+      const teamEndDate = new Date(comp.schedule.team_formation_end);
+
+      teamFormationDateRange.value = {
+        start: new CalendarDate(teamStartDate.getFullYear(), teamStartDate.getMonth() + 1, teamStartDate.getDate()),
+        end: new CalendarDate(teamEndDate.getFullYear(), teamEndDate.getMonth() + 1, teamEndDate.getDate()),
+      };
+      teamFormationStartTime.value = new Time(teamStartDate.getHours(), teamStartDate.getMinutes());
+      teamFormationEndTime.value = new Time(teamEndDate.getHours(), teamEndDate.getMinutes());
+    }
   } else {
     teamFormationDateRange.value = undefined;
     teamFormationStartTime.value = new Time(0, 0);
@@ -199,12 +275,23 @@ const initializeForm = (comp: any) => {
 
   // Parse and set milestones for UI components
   milestones.value = comp.milestones.map((m: any) => {
-    const dt = parseDateTime(m.timestamp);
-    return {
-      title: m.title,
-      date: new CalendarDate(dt.year, dt.month, dt.day),
-      time: new Time(dt.hour, dt.minute),
-    };
+    try {
+      const dt = parseAbsoluteToLocal(m.timestamp);
+      return {
+        title: m.title,
+        date: new CalendarDate(dt.year, dt.month, dt.day),
+        time: new Time(dt.hour, dt.minute),
+      };
+    } catch (e) {
+      console.error('Failed to parse milestone date:', e);
+      // Fallback: try parsing as Date
+      const date = new Date(m.timestamp);
+      return {
+        title: m.title,
+        date: new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate()),
+        time: new Time(date.getHours(), date.getMinutes()),
+      };
+    }
   });
 
   // Unblock watchers after initialization completes
@@ -236,14 +323,36 @@ const getMilestonesForSubmit = (): Array<{ title: string; timestamp: string }> =
     })) as Array<{ title: string; timestamp: string }>;
 };
 
+// Prepare form data with locked dates replaced by originals
+const prepareFormDataForSubmit = (): UpdateCompetitionForm => {
+  const data = { ...formState.value };
+
+  // Replace locked dates with original values
+  if (lockedDates.value.registrationStart) {
+    data.schedule.registration_start = originalDates.value.registrationStart;
+  }
+  if (lockedDates.value.registrationEnd) {
+    data.schedule.registration_end = originalDates.value.registrationEnd;
+  }
+  if (lockedDates.value.teamFormationStart && originalDates.value.teamFormationStart) {
+    data.schedule.team_formation_start = originalDates.value.teamFormationStart;
+  }
+  if (lockedDates.value.teamFormationEnd && originalDates.value.teamFormationEnd) {
+    data.schedule.team_formation_end = originalDates.value.teamFormationEnd;
+  }
+
+  return data;
+};
+
 // Handle form submission
 const handleSubmit = async () => {
   isSubmitting.value = true;
 
   try {
+    const submitData = prepareFormDataForSubmit();
     const result = await competitionStore.updateCompetition(
       competitionId.value,
-      formState.value
+      submitData
     );
 
     if (result.success) {
@@ -297,7 +406,7 @@ const handleError = async (event: any) => {
 <template>
   <UPage>
     <UPageBody>
-      <div class="max-w-7xl mx-auto">
+      <UContainer class="!max-w-7xl">
         <!-- Header -->
         <div class="mb-6">
           <div class="flex items-center gap-4 mb-4">
@@ -326,7 +435,7 @@ const handleError = async (event: any) => {
         <div v-else-if="competition">
           <UForm
             :state="formState"
-            :schema="competitionFormSchema"
+            :schema="competitionUpdateSchema"
             @submit="handleSubmit"
             @error="handleError"
             class="space-y-6"
@@ -341,6 +450,7 @@ const handleError = async (event: any) => {
                 v-model:participant-type="formState.participant_type"
                 v-model:is-team-competition="isTeamCompetition"
                 v-model:is-archived="formState.is_archived"
+                show-archive-field
               />
 
               <!-- Schedule -->
@@ -352,6 +462,12 @@ const handleError = async (event: any) => {
                 v-model:team-formation-start-time="teamFormationStartTime"
                 v-model:team-formation-end-time="teamFormationEndTime"
                 :is-team-competition="isTeamCompetition"
+                :locked-registration-start="lockedDates.registrationStart"
+                :locked-registration-end="lockedDates.registrationEnd"
+                :locked-team-formation-start="lockedDates.teamFormationStart"
+                :locked-team-formation-end="lockedDates.teamFormationEnd"
+                :registration-min-value="registrationMinValue"
+                :team-formation-min-value="teamFormationMinValue"
               />
 
               <!-- Participants -->
@@ -398,7 +514,7 @@ const handleError = async (event: any) => {
             </div>
           </UForm>
         </div>
-      </div>
+      </UContainer>
     </UPageBody>
   </UPage>
 </template>

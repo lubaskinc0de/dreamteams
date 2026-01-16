@@ -10,9 +10,9 @@ from dreamteams.entities.common.identifiers import CompetitionId
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import competition_factory
-from dreamteams.entities.competition.milestone import Milestone
+from dreamteams.entities.competition.milestone import MilestoneData
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
-from dreamteams.entities.competition.schedule import CompetitionSchedule
+from dreamteams.entities.competition.schedule import ScheduleData
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionVenue
 
@@ -30,7 +30,7 @@ class CompetitionForm(BaseModel):
 
     title: str = Field(max_length=200)
     description: str
-    schedule: CompetitionSchedule
+    schedule: ScheduleData
     participant_limits: ParticipantLimits
     domains: list[Domain]
     participant_type: ParticipantType
@@ -61,7 +61,7 @@ class CreateCompetition:
             participant_type=data.participant_type,
             venue=data.venue,
             team_size=data.team_size,
-            milestones=[Milestone(milestone.timestamp, milestone.title) for milestone in data.milestones],
+            milestones=[MilestoneData(milestone.title, milestone.timestamp) for milestone in data.milestones],
         )
 
         logger.debug(

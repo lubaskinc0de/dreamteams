@@ -103,6 +103,7 @@ export const useApi = () => {
     sortBy: CompetitionSortBy = "created_at",
     sortOrder: SortOrder = "desc",
     isArchived?: boolean,
+    search?: string,
   ): Promise<{ data: CompetitionsList | null; error: ApiError | null }> => {
     try {
       const params: Record<string, any> = {
@@ -113,6 +114,10 @@ export const useApi = () => {
 
       if (isArchived !== undefined) {
         params.is_archived = isArchived;
+      }
+
+      if (search) {
+        params.search = search;
       }
 
       const data = await $fetch<CompetitionsList>(

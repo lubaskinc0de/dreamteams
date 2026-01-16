@@ -15,11 +15,12 @@ const props = defineProps<Props>();
 const emit = defineEmits(['click', 'delete', 'load-more']);
 
 const scrollArea = useTemplateRef('scrollArea');
+const isScrollSetup = ref(false);
 
-// Setup infinite scroll
-onMounted(() => {
-  if (scrollArea.value?.$el) {
-    useInfiniteScroll(scrollArea.value.$el, () => {
+// Setup infinite scroll when scrollArea becomes available
+watch(scrollArea, (newRef) => {
+  if (newRef?.$el && !isScrollSetup.value) {
+    useInfiniteScroll(newRef.$el, () => {
       emit('load-more');
     }, {
       distance: 200,
@@ -27,15 +28,16 @@ onMounted(() => {
         return props.hasMore && !props.loading;
       }
     });
+    isScrollSetup.value = true;
   }
-});
+}, { immediate: true });
 </script>
 
 <template>
-  <div class="flex-1 relative">
+  <div class="flex-1 min-w-0 relative flex flex-col overflow-hidden">
     <UScrollArea
       ref="scrollArea"
-      class="h-[calc(100vh-280px)]"
+      class="flex-1 min-h-0"
       :ui="{ viewport: 'gap-4 p-1' }"
     >
       <CompetitionCard

@@ -3,7 +3,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from faker import Faker
 
-from dreamteams.entities.competition.milestone import Milestone
+from dreamteams.entities.competition.milestone import MilestoneData, milestone_factory
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 
 
@@ -12,7 +12,7 @@ def test_create_milestone_with_valid_data() -> None:
     timestamp = datetime.now(tz=UTC) + timedelta(days=1)
     title = "Stage 1"
 
-    milestone = Milestone(timestamp=timestamp, title=title)
+    milestone = milestone_factory(MilestoneData(timestamp=timestamp, title=title))
 
     assert milestone.timestamp == timestamp.replace(second=0, microsecond=0)
     assert milestone.title == title
@@ -28,10 +28,10 @@ def test_create_milestone_with_valid_data() -> None:
 )
 def test_create_milestone_with_invalid_title_raises_error(title: str, expected_error: str) -> None:
     """Test that empty or whitespace-only titles raise appropriate errors."""
-    timestamp = datetime(2024, 10, 24, tzinfo=UTC)
+    timestamp = datetime.now(tz=UTC) + timedelta(days=1)
 
     with pytest.raises(InvalidCompetitionDataError, match=expected_error):
-        Milestone(timestamp=timestamp, title=title)
+        milestone_factory(MilestoneData(timestamp=timestamp, title=title))
 
 
 @pytest.mark.parametrize(
@@ -45,4 +45,4 @@ def test_cannot_create_milestone_with_timestamp_in_past(delta: timedelta, faker:
     timestamp = datetime.now(tz=UTC) + delta
 
     with pytest.raises(InvalidCompetitionDataError, match="Milestone timestamp cannot be in past"):
-        Milestone(timestamp=timestamp, title=faker.sentence(nb_words=4))
+        milestone_factory(MilestoneData(timestamp=timestamp, title=faker.sentence(nb_words=4)))

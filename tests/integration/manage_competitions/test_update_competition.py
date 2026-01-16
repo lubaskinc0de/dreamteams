@@ -5,10 +5,8 @@ from dishka import AsyncContainer
 from faker import Faker
 
 from dreamteams.application.common.gateway.competition import CompetitionGateway
-from dreamteams.application.manage_competitions import CompetitionModel
 from dreamteams.application.publish_competition import CreatedCompetition
 from dreamteams.application.register.register_organizer import CreatedOrganizer
-from dreamteams.entities.competition.milestone import Milestone
 from tests.common.factory.competition import UpdateCompetitionFormFactory
 from tests.common.helpers.competition import (
     INVALID_COMPETITION_DATA_CASES,
@@ -17,6 +15,7 @@ from tests.common.helpers.competition import (
 )
 from tests.integration.api_client import ApiClient
 from tests.integration.conftest import DIFFERENT_USER_ID, USER_ID
+from tests.integration.manage_competitions.helpers import competition_update_form_to_model
 
 
 async def test_update_competition_as_owner_succeeds(
@@ -30,25 +29,12 @@ async def test_update_competition_as_owner_succeeds(
     data = update_form.model_dump(mode="json")
     competition_gateway = await request_container.get(CompetitionGateway)
     db_competition = await competition_gateway.get(competition.competition_id)
-    expected_model = CompetitionModel(
-        id=competition.competition_id,
-        title=update_form.title,
-        description=update_form.description,
-        schedule=update_form.schedule,
-        participant_limits=update_form.participant_limits,
-        domains=update_form.domains,
-        participant_type=update_form.participant_type,
-        venue=update_form.venue,
-        team_size=update_form.team_size,
-        milestones=[
-            Milestone(timestamp=milestone.timestamp, title=milestone.title)
-            for milestone in sorted(update_form.milestones, key=lambda item: item.timestamp)
-        ],
-        banner=None,
-        is_archived=update_form.is_archived,
+    expected_model = competition_update_form_to_model(
+        competition_id=competition.competition_id,
         updated_at=db_competition.updated_at,
         created_at=db_competition.created_at,
         organizer_id=db_competition.organizer_id,
+        form=update_form,
     )
 
     with api_client.authenticate(auth_user_id=USER_ID):
@@ -72,6 +58,7 @@ async def test_update_competition_with_invalid_data(
     expected_error: str,
 ) -> None:
     """Test updating competition with invalid data."""
+    # Arrange
     base_data = update_competition_form_factory.build().model_dump(mode="json")
     update_data = update_data.copy()
 
@@ -84,9 +71,11 @@ async def test_update_competition_with_invalid_data(
 
     base_data.update(update_data)
 
+    # Act
     with api_client.authenticate(auth_user_id=USER_ID):
         response = await api_client.update_competition(competition.competition_id, base_data)
 
+    # Assert
     response.assert_error(422, expected_error)
 
 

@@ -87,7 +87,28 @@ const updateMilestone = (index: number, field: keyof MilestoneInput, value: any)
                 :model-value="(milestone.date as any)"
                 @update:model-value="updateMilestone(index, 'date', $event)"
                 size="xl"
-              />
+              >
+                <template #trailing>
+                  <UPopover>
+                    <UButton
+                      color="neutral"
+                      variant="link"
+                      size="sm"
+                      icon="i-heroicons-calendar"
+                      :aria-label="t('competition.form.milestone.selectDate')"
+                      class="px-0"
+                    />
+
+                    <template #content>
+                      <UCalendar
+                        :model-value="(milestone.date as any)"
+                        @update:model-value="updateMilestone(index, 'date', $event)"
+                        class="p-2"
+                      />
+                    </template>
+                  </UPopover>
+                </template>
+              </UInputDate>
               <UInputTime
                 :model-value="(milestone.time as any)"
                 @update:model-value="updateMilestone(index, 'time', $event)"

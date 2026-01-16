@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import type { CompetitionModel, CompetitionSortBy, SortOrder } from '~/types/api';
+import type { CompetitionSortBy, SortOrder } from '~/types/api';
 import { useCompetitionStore } from '~/stores/competition';
+import { useDebounceFn } from '@vueuse/core';
 
 const { t } = useI18n();
 const competitionStore = useCompetitionStore();
@@ -36,36 +37,37 @@ const isArchivedFilter = computed(() => {
   return undefined;
 });
 
+// Computed search value for API (empty string becomes undefined)
+const searchFilter = computed(() => searchQuery.value.trim() || undefined);
+
+// Fetch competitions function
+const fetchCompetitions = () => {
+  competitionStore.fetchCompetitions(1, sortBy.value, sortOrder.value, isArchivedFilter.value, true, searchFilter.value);
+};
+
+// Debounced search handler
+const debouncedSearch = useDebounceFn(() => {
+  fetchCompetitions();
+}, 300);
+
 // Fetch competitions on mount
 onMounted(() => {
-  competitionStore.fetchCompetitions(1, sortBy.value, sortOrder.value, isArchivedFilter.value, true);
+  fetchCompetitions();
 });
 
-// Watch sort and filter changes and refetch
+// Watch sort and filter changes and refetch immediately
 watch([sortBy, sortOrder, filterStatus], () => {
-  competitionStore.fetchCompetitions(1, sortBy.value, sortOrder.value, isArchivedFilter.value, true);
+  fetchCompetitions();
 });
 
-// Filtered competitions based on search (status is filtered server-side)
-const filteredCompetitions = computed(() => {
-  let result = competitionStore.competitions;
-
-  // Filter by search query
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase();
-    result = result.filter(
-      (comp: CompetitionModel) =>
-        comp.title.toLowerCase().includes(query) ||
-        comp.description.toLowerCase().includes(query),
-    );
-  }
-
-  return result;
+// Watch search changes with debounce
+watch(searchQuery, () => {
+  debouncedSearch();
 });
 
 // Load more handler for infinite scroll
 const handleLoadMore = () => {
-  competitionStore.loadNextPage(isArchivedFilter.value);
+  competitionStore.loadNextPage(isArchivedFilter.value, searchFilter.value);
 };
 
 // Navigate to create page
@@ -111,7 +113,7 @@ const handleDelete = async () => {
 <template>
   <UPage>
     <UPageBody>
-      <div class="max-w-7xl mx-auto">
+      <UContainer class="!max-w-7xl">
         <!-- Header -->
         <CompetitionCompetitionsHeader />
 
@@ -119,12 +121,13 @@ const handleDelete = async () => {
         <CompetitionCompetitionsToolbar
           v-model:search-query="searchQuery"
           v-model:sort-by="sortBy"
+          v-model:filter-status="filterStatus"
           :sort-order="sortOrder"
           @toggle-sort-order="toggleSortOrder"
           @create="goToCreate"
         />
 
-        <div class="flex gap-6">
+        <div class="flex gap-4 md:gap-6 min-h-[calc(100vh-280px)]">
           <!-- Filters Sidebar -->
           <CompetitionCompetitionsFiltersSidebar
             v-model:filter-status="filterStatus"
@@ -132,13 +135,13 @@ const handleDelete = async () => {
 
           <!-- Competitions List -->
           <CompetitionCompetitionsEmptyState
-            v-if="!competitionStore.loading && filteredCompetitions.length === 0"
+            v-if="!competitionStore.loading && competitionStore.competitions.length === 0"
             @create="goToCreate"
           />
 
           <CompetitionCompetitionsList
             v-else
-            :competitions="filteredCompetitions"
+            :competitions="competitionStore.competitions"
             :loading="competitionStore.loading"
             :has-more="competitionStore.hasMorePages"
             @click="router.push(`/competitions/${$event}`)"
@@ -146,7 +149,7 @@ const handleDelete = async () => {
             @load-more="handleLoadMore"
           />
         </div>
-      </div>
+      </UContainer>
     </UPageBody>
 
     <!-- Delete Confirmation Modal -->

@@ -22,7 +22,7 @@ export default defineNuxtConfig({
   nitro: {
     prerender: {
       routes: ['/'],
-      ignore: ['/profile', '/onboarding', '/me', '/start'],
+      ignore: ['/me', '/onboarding', '/start'],
       crawlLinks: true,
       failOnError: false,
     },

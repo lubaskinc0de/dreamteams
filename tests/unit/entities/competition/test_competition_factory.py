@@ -6,9 +6,9 @@ from faker import Faker
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import Competition, competition_factory
-from dreamteams.entities.competition.milestone import Milestone
+from dreamteams.entities.competition.milestone import Milestone, MilestoneData
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
-from dreamteams.entities.competition.schedule import CompetitionSchedule
+from dreamteams.entities.competition.schedule import CompetitionSchedule, ScheduleData
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
@@ -91,6 +91,8 @@ def test_create_competition_with_valid_data(
     schedule = CompetitionSchedule(
         registration_start=now + reg_start,
         registration_end=now + reg_end,
+        team_formation_end=None,
+        team_formation_start=None,
     )
     participant_limits = ParticipantLimits(max=participant_max, min=participant_min)
     venue = CompetitionVenue(format=venue_format, location=location)
@@ -100,7 +102,12 @@ def test_create_competition_with_valid_data(
         user=organizer_user,
         title=title,
         description=description,
-        schedule=schedule,
+        schedule=ScheduleData(
+            schedule.registration_start,
+            schedule.registration_end,
+            schedule.team_formation_start,
+            schedule.team_formation_end,
+        ),
         participant_limits=participant_limits,
         domains=domains,
         participant_type=participant_type,
@@ -143,7 +150,7 @@ def test_create_competition_with_valid_data(
 def test_create_competition_with_invalid_data_raises_error(
     faker: Faker,
     organizer_user: User,
-    schedule: CompetitionSchedule,
+    valid_schedule_data: ScheduleData,
     participant_limits: ParticipantLimits,
     venue: CompetitionVenue,
     team_size: TeamSizeRange,
@@ -157,7 +164,7 @@ def test_create_competition_with_invalid_data_raises_error(
             user=organizer_user,
             title=faker.sentence(nb_words=3),
             description=description,
-            schedule=schedule,
+            schedule=valid_schedule_data,
             participant_limits=participant_limits,
             domains=test_domains,
             participant_type=ParticipantType.STUDENT,
@@ -169,7 +176,7 @@ def test_create_competition_with_invalid_data_raises_error(
 def test_competition_created_at_and_updated_at_are_set(
     faker: Faker,
     organizer_user: User,
-    schedule: CompetitionSchedule,
+    valid_schedule_data: ScheduleData,
     participant_limits: ParticipantLimits,
     domains: list[Domain],
     venue: CompetitionVenue,
@@ -180,7 +187,7 @@ def test_competition_created_at_and_updated_at_are_set(
         user=organizer_user,
         title=faker.sentence(nb_words=3),
         description=faker.text(max_nb_chars=150),
-        schedule=schedule,
+        schedule=valid_schedule_data,
         participant_limits=participant_limits,
         domains=domains,
         participant_type=ParticipantType.STUDENT,
@@ -197,7 +204,7 @@ def test_competition_created_at_and_updated_at_are_set(
 def test_create_competition_with_valid_milestones(
     faker: Faker,
     organizer_user: User,
-    schedule: CompetitionSchedule,
+    valid_schedule_data: ScheduleData,
     participant_limits: ParticipantLimits,
     domains: list[Domain],
     venue: CompetitionVenue,
@@ -209,13 +216,13 @@ def test_create_competition_with_valid_milestones(
         user=organizer_user,
         title=faker.sentence(nb_words=3),
         description=faker.text(max_nb_chars=150),
-        schedule=schedule,
+        schedule=valid_schedule_data,
         participant_limits=participant_limits,
         domains=domains,
         participant_type=ParticipantType.STUDENT,
         venue=venue,
         team_size=team_size,
-        milestones=milestones,
+        milestones=[MilestoneData(milestone.title, milestone.timestamp) for milestone in milestones],
     )
 
     assert competition.milestones == milestones
@@ -224,7 +231,7 @@ def test_create_competition_with_valid_milestones(
 def test_create_competition_with_duplicate_milestone_timestamps_raises_error(
     faker: Faker,
     organizer_user: User,
-    schedule: CompetitionSchedule,
+    valid_schedule_data: ScheduleData,
     participant_limits: ParticipantLimits,
     domains: list[Domain],
     venue: CompetitionVenue,
@@ -234,8 +241,8 @@ def test_create_competition_with_duplicate_milestone_timestamps_raises_error(
     now = datetime.now(tz=UTC)
     duplicate_timestamp = now + timedelta(days=15)
     duplicate_milestones = [
-        Milestone(timestamp=duplicate_timestamp, title="Stage 1"),
-        Milestone(timestamp=duplicate_timestamp, title="Stage 2"),
+        MilestoneData(timestamp=duplicate_timestamp, title="Stage 1"),
+        MilestoneData(timestamp=duplicate_timestamp, title="Stage 2"),
     ]
 
     with pytest.raises(InvalidCompetitionDataError, match="Milestone timestamps must be unique"):
@@ -243,7 +250,7 @@ def test_create_competition_with_duplicate_milestone_timestamps_raises_error(
             user=organizer_user,
             title=faker.sentence(nb_words=3),
             description=faker.text(max_nb_chars=150),
-            schedule=schedule,
+            schedule=valid_schedule_data,
             participant_limits=participant_limits,
             domains=domains,
             participant_type=ParticipantType.STUDENT,

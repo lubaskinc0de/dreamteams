@@ -10,9 +10,9 @@ from dreamteams.application.common.uow import UoW
 from dreamteams.entities.common.identifiers import CompetitionId
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
-from dreamteams.entities.competition.milestone import Milestone
+from dreamteams.entities.competition.milestone import MilestoneData, milestone_factory
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
-from dreamteams.entities.competition.schedule import CompetitionSchedule
+from dreamteams.entities.competition.schedule import ScheduleData
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionVenue
 from dreamteams.entities.errors.competition import CompetitionNotFoundError
@@ -25,13 +25,13 @@ class UpdateCompetitionForm(BaseModel):
 
     title: str = Field(max_length=200)
     description: str
-    schedule: CompetitionSchedule
+    schedule: ScheduleData
     participant_limits: ParticipantLimits
     domains: list[Domain]
     participant_type: ParticipantType
     venue: CompetitionVenue
     team_size: TeamSizeRange
-    milestones: list[MilestoneForm]
+    milestones: list[MilestoneForm] | None
     is_archived: bool
 
 
@@ -66,7 +66,11 @@ class UpdateCompetition:
             participant_type=data.participant_type,
             venue=data.venue,
             team_size=data.team_size,
-            milestones=[Milestone(milestone.timestamp, milestone.title) for milestone in data.milestones],
+            milestones=[
+                milestone_factory(MilestoneData(milestone.title, milestone.timestamp)) for milestone in data.milestones
+            ]
+            if data.milestones is not None
+            else None,
             is_archived=data.is_archived,
         )
 

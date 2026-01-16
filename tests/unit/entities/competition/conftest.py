@@ -8,7 +8,7 @@ from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import Competition, competition_factory
 from dreamteams.entities.competition.milestone import Milestone
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
-from dreamteams.entities.competition.schedule import CompetitionSchedule
+from dreamteams.entities.competition.schedule import CompetitionSchedule, ScheduleData
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
 from dreamteams.entities.organizer import Organizer
@@ -58,12 +58,26 @@ def user_without_organizer(faker: Faker) -> User:
 
 
 @pytest.fixture
+def valid_schedule_data() -> ScheduleData:
+    """Valid schedule data with team formation period."""
+    now = datetime.now(tz=UTC)
+    return ScheduleData(
+        registration_start=now + timedelta(days=1, hours=8),
+        registration_end=now + timedelta(days=10, hours=10),
+        team_formation_start=now + timedelta(days=11, hours=12),
+        team_formation_end=now + timedelta(days=20, hours=14),
+    )
+
+
+@pytest.fixture
 def schedule() -> CompetitionSchedule:
     """Competition schedule for tests."""
     now = datetime.now(tz=UTC)
     return CompetitionSchedule(
         registration_start=now + timedelta(days=1),
         registration_end=now + timedelta(days=10),
+        team_formation_start=None,
+        team_formation_end=None,
     )
 
 
@@ -105,7 +119,7 @@ def milestones() -> list[Milestone]:
 def competition(
     faker: Faker,
     organizer_user: User,
-    schedule: CompetitionSchedule,
+    valid_schedule_data: ScheduleData,
     participant_limits: ParticipantLimits,
     domains: list[Domain],
     venue: CompetitionVenue,
@@ -116,7 +130,7 @@ def competition(
         user=organizer_user,
         title=faker.sentence(nb_words=3),
         description=faker.text(max_nb_chars=150),
-        schedule=schedule,
+        schedule=valid_schedule_data,
         participant_limits=participant_limits,
         domains=domains,
         participant_type=ParticipantType.STUDENT,

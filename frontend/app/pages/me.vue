@@ -55,7 +55,7 @@ const handleLogout = () => {
 <template>
   <UPage>
     <UPageBody>
-      <div class="max-w-6xl mx-auto">
+      <UContainer class="!max-w-6xl">
         <div class="mb-8">
           <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             {{ t('profile.title') }}
@@ -257,10 +257,16 @@ const handleLogout = () => {
             </template>
           </UTabs>
         </div>
-      </div>
-      <!-- <UiConfirmDeleteModal v-model="isDeleteModalOpen" :title="t('profile.delete.title')"
-        :description="t('profile.delete.description')" :confirm-label="t('common.confirm')"
-        :cancel-label="t('common.cancel')" :is-deleting="isDeleting" @confirm="handleDelete" /> -->
+      </UContainer>
+      <UiConfirmDeleteModal
+        v-model:open="isDeleteModalOpen"
+        :title="t('profile.delete.title')"
+        :description="t('profile.delete.description')"
+        :confirm-label="t('common.confirm')"
+        :cancel-label="t('common.cancel')"
+        :is-deleting="isDeleting"
+        @confirm="handleDelete"
+      />
     </UPageBody>
   </UPage>
 </template>

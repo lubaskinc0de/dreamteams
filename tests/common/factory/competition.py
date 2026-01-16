@@ -8,12 +8,12 @@ from dreamteams.application.publish_competition import CompetitionForm
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
-from dreamteams.entities.competition.schedule import CompetitionSchedule
+from dreamteams.entities.competition.schedule import ScheduleData
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
 
 
-def _competition_schedule_provider() -> CompetitionSchedule:
+def _competition_schedule_provider() -> ScheduleData:
     """Provider for CompetitionSchedule with random but valid dates."""
     now = datetime.now(tz=UTC)
     random_ = CompetitionFormFactory.__random__
@@ -30,7 +30,7 @@ def _competition_schedule_provider() -> CompetitionSchedule:
         team_formation_start = registration_end
         team_formation_end = team_formation_start + timedelta(days=team_formation_duration)
 
-    return CompetitionSchedule(
+    return ScheduleData(
         registration_start=registration_start,
         registration_end=registration_end,
         team_formation_start=team_formation_start,

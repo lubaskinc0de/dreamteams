@@ -16,6 +16,28 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { t } = useI18n();
 const { getRegistrationStatus, isArchived } = useCompetitionStatus();
+
+/**
+ * Возвращает иконку в зависимости от статуса соревнования
+ */
+const getStatusIcon = computed(() => {
+  if (isArchived(props.competition)) {
+    return 'i-heroicons-archive-box';
+  }
+
+  const status = getRegistrationStatus(props.competition);
+
+  if (status.color === 'success') {
+    // Регистрация открыта
+    return 'i-heroicons-check-circle';
+  } else if (status.color === 'warning') {
+    // Регистрация еще не открыта
+    return 'i-heroicons-clock';
+  } else {
+    // Регистрация закрыта
+    return 'i-heroicons-x-circle';
+  }
+});
 </script>
 
 <template>
@@ -25,6 +47,7 @@ const { getRegistrationStatus, isArchived } = useCompetitionStatus();
     variant="subtle"
     :size="size"
     :label="t('competition.detail.archivedBadge')"
+    :icon="getStatusIcon"
   />
   <UBadge
     v-else
@@ -32,5 +55,6 @@ const { getRegistrationStatus, isArchived } = useCompetitionStatus();
     variant="subtle"
     :size="size"
     :label="getRegistrationStatus(competition).label"
+    :icon="getStatusIcon"
   />
 </template>

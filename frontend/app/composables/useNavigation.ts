@@ -18,7 +18,7 @@ export const useNavigation = () => {
     {
       label: t("nav.profile"),
       icon: "i-heroicons-user",
-      to: "/profile",
+      to: "/me",
     },
     {
       label: t("nav.register"),

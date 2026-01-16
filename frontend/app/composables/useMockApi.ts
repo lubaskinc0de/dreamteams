@@ -221,6 +221,7 @@ export const useMockApi = () => {
     sortBy: CompetitionSortBy = "created_at",
     sortOrder: SortOrder = "desc",
     isArchived?: boolean,
+    search?: string,
   ): Promise<{ data: CompetitionsList | null; error: ApiError | null }> => {
     await delay(300);
 
@@ -228,6 +229,16 @@ export const useMockApi = () => {
     let filtered = mockCompetitions;
     if (isArchived !== undefined) {
       filtered = mockCompetitions.filter((c) => c.is_archived === isArchived);
+    }
+
+    // Filter by search query
+    if (search) {
+      const query = search.toLowerCase();
+      filtered = filtered.filter(
+        (c) =>
+          c.title.toLowerCase().includes(query) ||
+          c.description.toLowerCase().includes(query),
+      );
     }
 
     // Sort competitions
