@@ -5,10 +5,7 @@ from faker import Faker
 
 from tests.common.factory.organizer import OrganizerFormFactory
 from tests.integration.api_client import ApiClient
-
-# Test user IDs for authentication
-USER_ID_FIRST = "1"
-USER_ID_SECOND = "2"
+from tests.integration.conftest import DIFFERENT_USER_ID, USER_ID
 
 
 async def test_register_as_organizer(
@@ -19,7 +16,7 @@ async def test_register_as_organizer(
     """Test register as organizer."""
     data = organizer_form_factory.build()
 
-    with api_client.authenticate(auth_user_id=USER_ID_FIRST, auth_user_email=faker.email()):
+    with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=faker.email()):
         response = await api_client.register_organizer(data.model_dump(mode="json"))
 
     response.assert_status(200).ensure_content()
@@ -45,7 +42,7 @@ async def test_register_as_organizer_with_invalid_data(
     """Test register as organizer with invalid data."""
     data = organizer_form_factory.build().model_copy(update=update_data)
 
-    with api_client.authenticate(auth_user_id=USER_ID_FIRST, auth_user_email=faker.email()):
+    with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=faker.email()):
         response = await api_client.register_organizer(data.model_dump(mode="json"))
 
     response.assert_error(422, "VALIDATION_ERROR")
@@ -59,7 +56,7 @@ async def test_cannot_register_as_organizer_twice(
     """Test that user cannot register as organizer when already registered as organizer."""
     data = organizer_form_factory.build()
 
-    with api_client.authenticate(auth_user_id=USER_ID_FIRST, auth_user_email=faker.email()):
+    with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=faker.email()):
         first_response = await api_client.register_organizer(data.model_dump(mode="json"))
         second_response = await api_client.register_organizer(data.model_dump(mode="json"))
 
@@ -108,9 +105,9 @@ async def test_cannot_register_organizer_with_duplicate_contact_info(
     first_email = email if use_same_email else faker.email()
     second_email = email if use_same_email else faker.email()
 
-    with api_client.authenticate(auth_user_id=USER_ID_FIRST, auth_user_email=first_email):
+    with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=first_email):
         first_response = await api_client.register_organizer(first_data.model_dump(mode="json"))
-    with api_client.authenticate(auth_user_id=USER_ID_SECOND, auth_user_email=second_email):
+    with api_client.authenticate(auth_user_id=DIFFERENT_USER_ID, auth_user_email=second_email):
         second_response = await api_client.register_organizer(second_data.model_dump(mode="json"))
 
     first_response.assert_status(200).ensure_content()

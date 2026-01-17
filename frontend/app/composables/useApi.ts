@@ -3,6 +3,13 @@ import type {
   OrganizerForm,
   CreatedOrganizer,
   ProfileModel,
+  CompetitionForm,
+  UpdateCompetitionForm,
+  CreatedCompetition,
+  CompetitionModel,
+  CompetitionsList,
+  CompetitionSortBy,
+  SortOrder,
 } from "~/types/api";
 
 export const useApi = () => {
@@ -77,9 +84,137 @@ export const useApi = () => {
     }
   };
 
+  const deleteUserProfile = async (): Promise<{
+    data: null;
+    error: ApiError | null;
+  }> => {
+    try {
+      const data = await $fetch<null>(`${apiBase}/api/users/me`, {
+        method: "DELETE",
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const listCompetitions = async (
+    page: number = 1,
+    sortBy: CompetitionSortBy = "created_at",
+    sortOrder: SortOrder = "desc",
+    isArchived?: boolean,
+    search?: string,
+  ): Promise<{ data: CompetitionsList | null; error: ApiError | null }> => {
+    try {
+      const params: Record<string, any> = {
+        page,
+        sort_by: sortBy,
+        sort_order: sortOrder,
+      };
+
+      if (isArchived !== undefined) {
+        params.is_archived = isArchived;
+      }
+
+      if (search) {
+        params.search = search;
+      }
+
+      const data = await $fetch<CompetitionsList>(
+        `${apiBase}/api/competitions/`,
+        {
+          method: "GET",
+          params,
+        },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const createCompetition = async (
+    form: CompetitionForm,
+  ): Promise<{ data: CreatedCompetition | null; error: ApiError | null }> => {
+    try {
+      const data = await $fetch<CreatedCompetition>(
+        `${apiBase}/api/competitions/`,
+        {
+          method: "POST",
+          body: form,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const getCompetition = async (
+    competitionId: string,
+  ): Promise<{ data: CompetitionModel | null; error: ApiError | null }> => {
+    try {
+      const data = await $fetch<CompetitionModel>(
+        `${apiBase}/api/competitions/${competitionId}`,
+        {
+          method: "GET",
+        },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const updateCompetition = async (
+    competitionId: string,
+    form: UpdateCompetitionForm,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await $fetch<{}>(
+        `${apiBase}/api/competitions/${competitionId}`,
+        {
+          method: "PUT",
+          body: form,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const deleteCompetition = async (
+    competitionId: string,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await $fetch<{}>(
+        `${apiBase}/api/competitions/${competitionId}`,
+        {
+          method: "DELETE",
+        },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
   return {
     checkAuth,
     registerOrganizer,
     getUserProfile,
+    listCompetitions,
+    createCompetition,
+    getCompetition,
+    updateCompetition,
+    deleteCompetition,
+    deleteUserProfile,
   };
 };

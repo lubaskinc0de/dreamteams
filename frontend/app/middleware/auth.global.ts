@@ -24,7 +24,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   // Define protected routes that require authentication
-  const protectedRoutes = ['/profile', '/onboarding', '/me', '/start'];
+  const protectedRoutes = ['/me', '/onboarding', '/competitions'];
   const isProtectedRoute = protectedRoutes.some(route => to.path.startsWith(route));
 
   const isHomeRoute = to.path === '/';
@@ -46,11 +46,11 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   // If authenticated and has profile, redirect from home to profile
   if (isAuthenticated.value && hasProfile.value && isHomeRoute) {
-    return navigateTo('/profile', { replace: true });
+    return navigateTo('/me', { replace: true });
   }
 
   // If authenticated and has profile, prevent access to onboarding
   if (isAuthenticated.value && hasProfile.value && isOnboardingRoute) {
-    return navigateTo('/profile', { replace: true });
+    return navigateTo('/me', { replace: true });
   }
 });

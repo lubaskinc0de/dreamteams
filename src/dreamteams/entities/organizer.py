@@ -6,7 +6,7 @@ type Logo = str
 
 @model
 class Organizer(Entity):
-    """The organization that hosts hackathons and competitions."""
+    """The organization that hosts competitions."""
 
     id: OrganizerId
     user_id: UserId

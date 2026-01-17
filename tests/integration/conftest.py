@@ -1,3 +1,4 @@
+import asyncio
 import os
 from collections.abc import AsyncIterable, AsyncIterator
 from uuid import uuid4
@@ -13,14 +14,19 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dreamteams.adapters.tracing import TraceId
-from dreamteams.application.create_competition.interactor import CompetitionForm, CreatedCompetition
-from dreamteams.application.register.organizer import CreatedOrganizer
+from dreamteams.application.manage_competitions.read import CompetitionModel
+from dreamteams.application.publish_competition import CompetitionForm, CreatedCompetition
+from dreamteams.application.register.register_organizer import CreatedOrganizer
 from dreamteams.bootstrap.config.loader import Config
 from dreamteams.bootstrap.di.container import get_async_container
 from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
-from tests.common.factory.competition import CompetitionFormFactory
+from tests.common.factory.competition import CompetitionFormFactory, UpdateCompetitionFormFactory
 from tests.common.factory.organizer import OrganizerFormFactory
 from tests.integration.api_client import ApiClient, APIClientConfig
+
+USER_ID = "1"
+DIFFERENT_USER_ID = "2"
+
 
 # This is a fake private key used only to sign fake access token for tests
 DUMMY_PRIVATE_KEY = """
@@ -75,6 +81,13 @@ async def container() -> AsyncIterator[AsyncContainer]:
     container = get_async_container(Config.load())
     yield container
     await container.close()
+
+
+@pytest.fixture
+async def request_container(container: AsyncContainer) -> AsyncIterator[AsyncContainer]:
+    """Provide async request-scoped DI container for tests."""
+    async with container() as request_container:
+        yield request_container
 
 
 @pytest.fixture
@@ -154,6 +167,7 @@ def api_client(http_session: ClientSession, app_config: Config, trace_id: TraceI
 
 # Mock data
 register_fixture(CompetitionFormFactory)
+register_fixture(UpdateCompetitionFormFactory)
 register_fixture(OrganizerFormFactory)
 
 
@@ -187,8 +201,24 @@ async def organizer(
     email: str,
 ) -> CreatedOrganizer:
     """Created organizer entity."""
-    with api_client.authenticate(auth_user_id="1", auth_user_email=email):
+    with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=email):
         response = await api_client.register_organizer(organizer_form.model_dump())
+
+    return response.assert_status(200).ensure_content()
+
+
+@pytest.fixture
+async def different_organizer(
+    api_client: ApiClient,
+    organizer_form_factory: OrganizerFormFactory,
+    faker: Faker,
+) -> CreatedOrganizer:
+    """Created different organizer entity."""
+    organizer_data = organizer_form_factory.build()
+    different_email = faker.email()
+
+    with api_client.authenticate(auth_user_id=DIFFERENT_USER_ID, auth_user_email=different_email):
+        response = await api_client.register_organizer(organizer_data.model_dump())
 
     return response.assert_status(200).ensure_content()
 
@@ -198,10 +228,40 @@ async def competition(
     api_client: ApiClient,
     organizer: CreatedOrganizer,  # noqa: ARG001
     competition_form: CompetitionForm,
-    email: str,
 ) -> CreatedCompetition:
     """Created competition entity."""
-    with api_client.authenticate(auth_user_id="1", auth_user_email=email):
+    with api_client.authenticate(auth_user_id=USER_ID):
         response = await api_client.create_competition(competition_form.model_dump(mode="json"))
 
     return response.assert_status(200).ensure_content()
+
+
+async def create_competitions(
+    num_competitions: int,
+    competition_form_factory: CompetitionFormFactory,
+    api_client: ApiClient,
+    user_id: str = USER_ID,
+) -> list[CompetitionModel]:
+    """Create and read competitions."""
+    forms = [competition_form_factory.build() for _ in range(num_competitions)]
+    with api_client.authenticate(auth_user_id=user_id):
+        created_responses = await asyncio.gather(
+            *[api_client.create_competition(form.model_dump(mode="json")) for form in forms],
+        )
+        created = [response.assert_status(200).ensure_content() for response in created_responses]
+        read_responses = await asyncio.gather(*[api_client.read_competition(c.competition_id) for c in created])
+        return [response.assert_status(200).ensure_content() for response in read_responses]
+
+
+async def create_competition(
+    competition_form: CompetitionForm,
+    api_client: ApiClient,
+) -> CompetitionModel:
+    """Create and read competition."""
+    competition_id = (
+        (await api_client.create_competition(competition_form.model_dump(mode="json")))
+        .assert_status(200)
+        .ensure_content()
+        .competition_id
+    )
+    return (await api_client.read_competition(competition_id)).assert_status(200).ensure_content()

@@ -8,9 +8,12 @@ from aiohttp import ClientResponse, ClientResponseError, ClientSession
 from dreamteams.adapters.auth.model import AuthUserId
 from dreamteams.adapters.errors.http.response import ErrorResponse
 from dreamteams.adapters.tracing import TraceId, TracingConfig
-from dreamteams.application.create_competition.interactor import CreatedCompetition
-from dreamteams.application.register.organizer import CreatedOrganizer
-from dreamteams.application.view_profile.interactor import ProfileModel
+from dreamteams.application.common.gateway.competition import CompetitionSortBy
+from dreamteams.application.common.gateway.sorting import SortOrder
+from dreamteams.application.manage_competitions import CompetitionModel, CompetitionsList
+from dreamteams.application.manage_profile import ProfileModel
+from dreamteams.application.publish_competition import CreatedCompetition
+from dreamteams.application.register.register_organizer import CreatedOrganizer
 from dreamteams.entities.common.identifiers import CompetitionId
 
 retort = Retort()
@@ -51,16 +54,13 @@ class APIResponse[T]:
     def assert_status(self, status: int) -> Self:
         """Assert that response status matches expected value."""
         if self.status != status:
-            msg = f"HTTP status assertion failed. {self.status} != {status}"
+            msg = f"HTTP status assertion failed. {self.status} != {status}."
             raise ValueError(msg)
         return self
 
     def assert_error(self, status: int, error_code: str) -> Self:
         """Assert that response status matches expected value, response is ``ErrorResponse`` and error code matches."""
-        if self.status != status:
-            msg = f"HTTP status assertion failed. {self.status} != {status}"
-            raise ValueError(msg)
-
+        self.assert_status(status)
         if self.ensure_err().code != error_code:
             msg = "Error code does not equal"
             raise ValueError(msg)
@@ -203,6 +203,15 @@ class ApiClient:
                 response_type=ProfileModel,
             )
 
+    async def delete_profile(self) -> APIResponse[None]:
+        """Delete user profile via DELETE /users/me."""
+        url = f"{USERS_URL}/me"
+        async with self.session.delete(url, headers=self._headers) as response:
+            return await self._load_response(
+                response,
+                response_type=None,
+            )
+
     async def create_competition(self, data: dict[str, Any]) -> APIResponse[CreatedCompetition]:
         """Create competition via POST /competitions/."""
         url = COMPETITIONS_URL
@@ -210,6 +219,56 @@ class ApiClient:
             return await self._load_response(
                 response,
                 response_type=CreatedCompetition,
+            )
+
+    async def list_competitions(
+        self,
+        *,
+        page: int = 1,
+        sort_by: CompetitionSortBy | None = None,
+        sort_order: SortOrder | None = None,
+        is_archived: bool | None = None,
+        search: str | None = None,
+    ) -> APIResponse[CompetitionsList]:
+        """List competitions via GET /competitions/."""
+        params = {
+            "page": page,
+            "sort_by": sort_by,
+            "sort_order": sort_order,
+            "is_archived": int(is_archived) if is_archived is not None else None,
+            "search": search,
+        }
+        url = f"{COMPETITIONS_URL}"
+        async with self.session.get(
+            url,
+            headers=self._headers,
+            params={name: value for name, value in params.items() if value is not None},
+        ) as response:
+            return await self._load_response(
+                response,
+                response_type=CompetitionsList,
+            )
+
+    async def read_competition(self, competition_id: CompetitionId) -> APIResponse[CompetitionModel]:
+        """Read competition via GET /competitions/{competition_id}."""
+        url = f"{COMPETITIONS_URL}/{competition_id}"
+        async with self.session.get(url, headers=self._headers) as response:
+            return await self._load_response(
+                response,
+                response_type=CompetitionModel,
+            )
+
+    async def update_competition(
+        self,
+        competition_id: CompetitionId,
+        data: dict[str, Any],
+    ) -> APIResponse[None]:
+        """Update competition via PUT /competitions/{competition_id}."""
+        url = f"{COMPETITIONS_URL}/{competition_id}"
+        async with self.session.put(url, headers=self._headers, json=data) as response:
+            return await self._load_response(
+                response,
+                response_type=None,
             )
 
     async def delete_competition(self, competition_id: CompetitionId) -> APIResponse[None]:

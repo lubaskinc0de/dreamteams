@@ -2,43 +2,35 @@ from datetime import UTC, datetime, timedelta
 
 from polyfactory.factories.pydantic_factory import ModelFactory
 
-from dreamteams.application.create_competition.interactor import CompetitionForm
+from dreamteams.application.common.dto.milestone import MilestoneForm
+from dreamteams.application.manage_competitions import UpdateCompetitionForm
+from dreamteams.application.publish_competition import CompetitionForm
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
-from dreamteams.entities.competition import (
-    CompetitionFormat,
-    CompetitionSchedule,
-    CompetitionVenue,
-    ParticipantLimits,
-    TeamSizeRange,
-)
+from dreamteams.entities.competition.participant_limits import ParticipantLimits
+from dreamteams.entities.competition.schedule import ScheduleData
+from dreamteams.entities.competition.team_size_range import TeamSizeRange
+from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
 
 
-def _competition_schedule_provider() -> CompetitionSchedule:
+def _competition_schedule_provider() -> ScheduleData:
     """Provider for CompetitionSchedule with random but valid dates."""
     now = datetime.now(tz=UTC)
     random_ = CompetitionFormFactory.__random__
     reg_start_offset = random_.randint(1, 10)
     reg_duration = random_.randint(5, 30)
-    comp_start_offset = random_.randint(1, 5)
-    comp_duration = random_.randint(1, 7)
 
     registration_start = now + timedelta(days=reg_start_offset)
     registration_end = registration_start + timedelta(days=reg_duration)
-    competition_start = registration_end + timedelta(days=comp_start_offset)
-    competition_end = competition_start + timedelta(days=comp_duration)
 
     team_formation_start = None
     team_formation_end = None
     if random_.choice([True, False]):
-        team_formation_duration = random_.randint(1, comp_start_offset - 1) if comp_start_offset > 1 else 1
+        team_formation_duration = random_.randint(1, 7)
         team_formation_start = registration_end
         team_formation_end = team_formation_start + timedelta(days=team_formation_duration)
-        team_formation_end = min(team_formation_end, competition_end)
 
-    return CompetitionSchedule(
-        competition_start=competition_start,
-        competition_end=competition_end,
+    return ScheduleData(
         registration_start=registration_start,
         registration_end=registration_end,
         team_formation_start=team_formation_start,
@@ -86,6 +78,34 @@ def _participant_type_provider() -> ParticipantType:
     return random_.choice(list(ParticipantType))
 
 
+def _milestones_provider() -> list[MilestoneForm]:
+    """Provider for milestones list with random but valid dates."""
+    random_ = CompetitionFormFactory.__random__
+    faker = CompetitionFormFactory.__faker__
+    now = datetime.now(tz=UTC)
+
+    count = random_.randint(0, 10)
+    if count == 0:
+        return []
+
+    milestones = []
+    timestamps = set()
+    for i in range(count):
+        days_offset = random_.randint(1, 30) + i * 5
+        milestone_form = MilestoneForm(
+            timestamp=now + timedelta(days=days_offset),
+            title=faker.sentence(nb_words=3),
+        )
+
+        if milestone_form.timestamp in timestamps:
+            continue
+
+        timestamps.add(milestone_form.timestamp)
+        milestones.append(milestone_form)
+
+    return milestones
+
+
 class CompetitionFormFactory(ModelFactory[CompetitionForm]):
     """Factory of CompetitionForm models."""
 
@@ -97,3 +117,18 @@ class CompetitionFormFactory(ModelFactory[CompetitionForm]):
     team_size = _team_size_provider
     domains = _domains_provider
     participant_type = _participant_type_provider
+    milestones = _milestones_provider
+
+
+class UpdateCompetitionFormFactory(ModelFactory[UpdateCompetitionForm]):
+    """Factory of UpdateCompetitionForm models."""
+
+    __model__ = UpdateCompetitionForm
+
+    schedule = _competition_schedule_provider
+    participant_limits = _participant_limits_provider
+    venue = _competition_venue_provider
+    team_size = _team_size_provider
+    domains = _domains_provider
+    participant_type = _participant_type_provider
+    milestones = _milestones_provider

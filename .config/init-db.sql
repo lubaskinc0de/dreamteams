@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 -- Сreating user for grafana
 CREATE USER grafana WITH PASSWORD 'grafana-password';
 

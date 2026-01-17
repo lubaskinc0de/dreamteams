@@ -48,7 +48,7 @@ const showProfileLink = computed(() =>
         padded: false,
       }" @close="organizerStore.clearError()" class="mb-6" role="alert">
       <template v-if="showProfileLink" #description>
-        <NuxtLink to="/profile" class="text-primary-400 hover:text-primary-300 underline font-medium"
+        <NuxtLink to="/me" class="text-primary-400 hover:text-primary-300 underline font-medium"
           :aria-label="t('register.goToProfile')">
           {{ t("register.goToProfile") }}
         </NuxtLink>

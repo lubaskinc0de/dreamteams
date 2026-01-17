@@ -1,10 +1,16 @@
 from dishka import BaseScope, Provider, Scope, provide, provide_all
 
-from dreamteams.application.create_competition.interactor import CreateCompetition
-from dreamteams.application.delete_competition.interactor import DeleteCompetition
-from dreamteams.application.register.organizer import RegisterOrganizer
+from dreamteams.application.manage_competitions import (
+    DeleteCompetition,
+    ListCompetitions,
+    ReadCompetition,
+    UpdateCompetition,
+)
+from dreamteams.application.manage_profile import ReadProfile
+from dreamteams.application.manage_profile.delete import DeleteProfile
+from dreamteams.application.publish_competition import CreateCompetition
+from dreamteams.application.register.register_organizer import RegisterOrganizer
 from dreamteams.application.register.shared.user_factory import UserFactory
-from dreamteams.application.view_profile.interactor import ViewProfile
 
 
 class InteractorProvider(Provider):
@@ -14,8 +20,12 @@ class InteractorProvider(Provider):
 
     interactors = provide_all(
         RegisterOrganizer,
-        ViewProfile,
+        ReadProfile,
         CreateCompetition,
+        ListCompetitions,
+        ReadCompetition,
         DeleteCompetition,
+        UpdateCompetition,
+        DeleteProfile,
     )
     user_factory = provide(UserFactory)

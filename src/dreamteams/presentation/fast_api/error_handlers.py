@@ -14,6 +14,7 @@ from dreamteams.application.errors.user import UserNotFoundError
 from dreamteams.entities.errors.base import AccessDeniedError, AppError
 from dreamteams.entities.errors.competition import CompetitionNotFoundError, InvalidCompetitionDataError
 
+SERVER_ERROR = 500
 logger: Logger = structlog.get_logger(__name__)
 
 
@@ -51,7 +52,11 @@ async def get_app_error_response(
         meta=err.meta,
     ).model_dump(mode="json")
 
-    logger.info("Handled error", error_response=error_response, exc_info=err)
+    if http_status < SERVER_ERROR:
+        logger.info("Handled error", error_response=error_response, exc_info=err)
+    else:
+        logger.error("Unexpected error", exc_info=err)
+
     return JSONResponse(
         status_code=http_status,
         content=error_response,

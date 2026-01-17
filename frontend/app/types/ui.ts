@@ -116,3 +116,13 @@ export interface SkeletonConfig {
   rounded?: string;
   className?: string;
 }
+
+/**
+ * Testimonial for landing page
+ */
+export interface Testimonial {
+  name: string;
+  role: string;
+  avatar: string;
+  text: string;
+}

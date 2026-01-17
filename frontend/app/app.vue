@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import * as uiLocales from '@nuxt/ui/locale';
+
 /**
  * Root App component
  * Wraps the entire application with UApp for global configurations
@@ -6,6 +8,10 @@
  */
 
 const { isLoading: authLoading } = useAuth();
+const { locale } = useI18n();
+
+// Get Nuxt UI locale based on current i18n locale
+const uiLocale = computed(() => uiLocales[locale.value as keyof typeof uiLocales] || uiLocales.ru);
 
 // SEO Configuration for the app
 useHead({
@@ -28,7 +34,7 @@ const toaster = {
 </script>
 
 <template>
-  <UApp :toaster="toaster">
+  <UApp :toaster="toaster" :locale="uiLocale">
     <!-- Show loading overlay while initial auth check is in progress -->
     <div v-if="authLoading" class="fixed inset-0 z-50 flex items-center justify-center bg-white dark:bg-gray-900">
       <div class="text-center">

@@ -12,7 +12,7 @@ export const useOnboarding = () => {
    */
   const completeOnboarding = async () => {
     await checkAuthStatus();
-    router.push('/profile');
+    router.push('/me');
   };
 
   return {

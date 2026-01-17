@@ -5,6 +5,7 @@
     "cancel": "Cancel",
     "save": "Save",
     "delete": "Delete",
+    "remove": "Remove",
     "edit": "Edit",
     "close": "Close",
     "back": "Back",
@@ -36,67 +37,109 @@
     "profile": "Profile",
     "register": "Register",
     "login": "Sign In",
+    "competitions": "My Competitions",
     "brand": "DreamTeams",
-    "brandSubtitle": "IT Competition Aggregator"
+    "brandSubtitle": "IT Competition Aggregator",
+    "settings": "Settings",
+    "theme": "Theme",
+    "language": "Language"
   },
   "home": {
     "title": "DreamTeams",
     "heroTitle": "Find People — Create the Future!",
     "heroDescription": "Innovative service for team formation at IT competitions. All current events aggregated in one place.",
-    "ctaText": "Join the community of participants and create your dream teams today!",
-    "startButton": "Get Started",
+    "ctaText": "All IT hackathons in one place. Find a team or post your event in 5 minutes",
+    "startButton": "Start",
     "registerButton": "Become an Organizer",
     "profileButton": "Go to Profile",
     "findEvents": "Find Events",
     "about": {
       "title": "About the Platform",
-      "description": "DreamTeams is an innovative service for team formation at IT competitions, as well as an aggregator of all current events. We strive to simplify the team formation process and provide a centralized platform for finding and participating in competitions."
+      "description": "First IT hackathon platform in Russia. Connecting participants and organizers. No more searching through hundreds of sources — everything's here."
     },
-    "featuresTitle": "Key Features",
-    "featuresDescription": "Everything you need for IT competition participants and organizers",
+    "featuresTitle": "What We Offer",
+    "featuresDescription": "Everything for successful hackathon participation and hosting",
     "whyBest": {
-      "title": "Why We're the Best?",
+      "title": "Why DreamTeams",
       "unique": {
-        "title": "No Analogs",
-        "description": "We are the only platform that connects competition organizers and participants"
+        "title": "Only One in Russia",
+        "description": "First IT hackathon aggregator with built-in team search"
       },
       "demand": {
-        "title": "High Demand",
-        "description": "According to our research, many people participating in competitions need team formation and event aggregation services"
+        "title": "Real Need",
+        "description": "67% of participants can't find a team. We solve this problem"
       },
       "transparent": {
-        "title": "Transparent Revenue",
-        "description": "Our service earns from organizers posting events, without intrusive advertising or selling user data"
+        "title": "No Ads",
+        "description": "We earn from event listings, not from your data"
       },
       "rating": {
-        "title": "Rating System",
-        "description": "The service provides a rating system for organizers and event participants, encouraging users to use our service"
+        "title": "Participant Rating",
+        "description": "Choose reliable teammates by participation history"
       }
     },
     "cta": {
-      "title": "Ready to Start?",
-      "description": "Join the growing community of IT competition organizers and participants"
+      "title": "Start Today",
+      "description": "Thousands of participants already found teams. Join now"
+    },
+    "testimonials": {
+      "title": "What People Say",
+      "description": "Stories from participants and organizers who found their teammates",
+      "participants": {
+        "alex": {
+          "name": "Alexander Petrov",
+          "role": "Frontend Developer",
+          "text": "Found a team 2 days before the hackathon. We won first place! Without DreamTeams I'd definitely be sitting at home"
+        },
+        "maria": {
+          "name": "Maria Ivanova",
+          "role": "UX/UI Designer",
+          "text": "First time participating in a hackathon. Immediately found people with the right stack. We made it to the finals together"
+        },
+        "dmitry": {
+          "name": "Dmitry Smirnov",
+          "role": "Backend Developer",
+          "text": "Hackathon aggregator is just a gem. Used to search through 10+ sources. Now everything's in one place"
+        }
+      },
+      "organizers": {
+        "techlab": {
+          "name": "TechLab",
+          "role": "Hackathon Organizer",
+          "text": "Posted our hackathon and got 200+ applications in a week. The audience is truly targeted and active"
+        },
+        "innohub": {
+          "name": "InnoHub",
+          "role": "IT Community",
+          "text": "The platform solves a real problem. Participants come with teams already formed — saves time at the event"
+        },
+        "devfest": {
+          "name": "DevFest Moscow",
+          "role": "Organizer",
+          "text": "Real-time analytics on applications is very helpful. We can see right away who's missing in teams"
+        }
+      }
     },
     "features": {
       "aggregator": {
-        "title": "Event Aggregator",
-        "description": "All IT competitions in one place — no need to search across dozens of websites. Smart filters by date, topic, and format",
-        "badge": "One Platform"
+        "title": "All Hackathons Here",
+        "description": "Forget dozens of Telegram channels. Smart filters by date, tech stack, and format",
+        "badge": "Time Saver"
       },
       "teams": {
-        "title": "Team Formation",
-        "description": "Search by skills — find developers, designers, analysts. Participant profiles with tech stacks and achievements",
-        "badge": "Smart Matching"
+        "title": "Search by Skills",
+        "description": "Need frontend? Find a React developer in a minute. Filters by tech and experience",
+        "badge": "In Minutes"
       },
       "organizers": {
         "title": "For Organizers",
-        "description": "Centralized event publishing, detailed analytics on participants, and targeted audience reach",
-        "badge": "Full Analytics"
+        "description": "Post your hackathon and get targeted audience. Real-time analytics on registrations",
+        "badge": "Targeted Audience"
       },
       "integration": {
-        "title": "Integration",
-        "description": "Organizers can integrate their own system with ours through a convenient API",
-        "badge": "API"
+        "title": "API Integrations",
+        "description": "Connect your registration system via open API",
+        "badge": "Open API"
       }
     },
     "stats": {
@@ -125,6 +168,10 @@
       "information": "Information",
       "settings": "Settings"
     },
+    "delete": {
+      "title": "You are about to delete your profile",
+      "description": "ATTENTION!! All your data, as well as all your activity on the platform, will be permanently deleted WITHOUT the possibility of recovery"
+    },
     "notRegistered": {
       "title": "You're not registered as an organizer yet",
       "description": "Register to start publishing IT competitions and access participant analytics",
@@ -136,8 +183,9 @@
     },
     "settings": {
       "authentication": {
-        "title": "Authentication",
-        "logout": "Sign out"
+          "title": "Authentication",
+          "logout": "Sign out",
+          "delete_profile": "Delete my profile"
       },
       "appearance": {
         "title": "Appearance",
@@ -207,13 +255,31 @@
     "profileUpdated": {
       "title": "Profile Updated",
       "description": "Your data has been saved successfully"
+    },
+    "competitionCreated": {
+      "title": "Competition Created!",
+      "description": "Your competition has been published successfully"
+    },
+    "competitionUpdated": {
+      "title": "Competition Updated!",
+      "description": "Your competition has been updated successfully"
+    },
+    "competitionDeleted": {
+      "title": "Competition Deleted",
+      "description": "The competition has been deleted successfully"
+    },
+    "competitionDeleteError": {
+      "title": "Delete Failed",
+      "description": "Failed to delete the competition. Please try again"
     }
   },
   "footer": {
     "platformName": "DreamTeams",
-    "platformDescription": "IT competition aggregator and team formation platform",
-    "copyright": "© 2025 All rights reserved",
-    "support": "Support"
+    "platformDescription": "IT hackathon aggregator and team search platform",
+    "copyright": "© 2025 DreamTeams. All rights reserved",
+    "support": "Support",
+    "quickLinks": "Quick Links",
+    "contact": "Contact"
   },
   "theme": {
     "light": "Light Theme",
@@ -237,6 +303,267 @@
     "onboarding": {
       "title": "Getting Started - DreamTeams",
       "description": "Choose your role and start working with the platform"
+    },
+    "competitions": {
+      "title": "My Competitions - DreamTeams",
+      "description": "Manage your IT competitions"
+    },
+    "createCompetition": {
+      "title": "Create Competition - DreamTeams",
+      "description": "Create a new IT competition on the platform"
+    },
+    "competitionDetail": {
+      "title": "Competition Details - DreamTeams",
+      "description": "View competition information"
+    },
+    "competitionEdit": {
+      "title": "Edit Competition - DreamTeams",
+      "description": "Edit competition information"
+    }
+  },
+  "competitions": {
+    "title": "My Competitions",
+    "description": "Manage your IT competitions",
+    "empty": "You don't have any competitions yet",
+    "emptyDescription": "Create your first competition to get started",
+    "createButton": "Create Competition",
+    "searchPlaceholder": "Search competitions...",
+    "filters": {
+      "title": "Filters",
+      "all": "All Competitions",
+      "active": "Active",
+      "archived": "Archived"
+    },
+    "sort": {
+      "createdAt": "Created At",
+      "title": "Title",
+      "registrationStart": "Registration Start",
+      "teamFormationStart": "Team Formation Start",
+      "asc": "Ascending",
+      "desc": "Descending"
+    },
+    "status": {
+      "open": "Registration Open",
+      "notOpen": "Registration Not Open",
+      "closed": "Registration Closed"
+    },
+    "badge": {
+      "archived": "Archived"
+    },
+    "card": {
+      "participants": "Participants",
+      "teamSize": "Team Size",
+      "noTeams": "No Teams",
+      "domains": "Domains",
+      "registrationPeriod": "Registration",
+      "venue": "Format"
+    },
+    "delete": {
+      "title": "Delete Competition",
+      "description": "Are you sure you want to delete this competition? This action cannot be undone.",
+      "confirm": "Delete"
+    }
+  },
+  "competition": {
+    "create": {
+      "title": "Create Competition",
+      "description": "Fill in competition information",
+      "backButton": "Back to List",
+      "submitButton": "Create Competition",
+      "submitting": "Creating...",
+      "sections": {
+        "basic": "Basic Information",
+        "schedule": "Schedule",
+        "participants": "Participants",
+        "venue": "Venue",
+        "milestones": "Milestones (optional)"
+      },
+      "validation": {
+        "errorsFound": "Found {count} errors",
+        "scrollToErrors": "Please check the form fields"
+      }
+    },
+    "detail": {
+      "editButton": "Edit",
+      "deleteButton": "Delete",
+      "description": "Description",
+      "schedule": "Schedule",
+      "participants": "Participants",
+      "venue": "Venue",
+      "registration": "Registration",
+      "teamFormation": "Team Formation",
+      "participantCount": "Participants",
+      "teamSize": "Team Size",
+      "milestones": "Milestones",
+      "archivedBadge": "Archived",
+      "dateRangeFrom": "from",
+      "dateRangeTo": "to",
+      "rangeFrom": "from",
+      "rangeTo": "to"
+    },
+    "edit": {
+      "title": "Edit Competition",
+      "description": "Update competition information"
+    },
+    "form": {
+      "title": {
+        "label": "Competition Title",
+        "placeholder": "e.g., Web Development Hackathon 2026",
+        "required": "Title is required",
+        "maxLength": "Title must not exceed 200 characters"
+      },
+      "description": {
+        "label": "Description",
+        "placeholder": "Describe your competition, its goals and features...",
+        "required": "Description is required"
+      },
+      "schedule": {
+        "registrationPeriod": {
+          "label": "Registration Period"
+        },
+        "teamFormationPeriod": {
+          "label": "Team Formation Period"
+        },
+        "startTime": {
+          "label": "Start Time"
+        },
+        "endTime": {
+          "label": "End Time"
+        },
+        "registrationStart": {
+          "label": "Registration Start",
+          "required": "Please specify registration start date"
+        },
+        "registrationEnd": {
+          "label": "Registration End",
+          "required": "Please specify registration end date"
+        },
+        "teamFormationStart": {
+          "label": "Team Formation Start (optional)",
+          "placeholder": "Not specified"
+        },
+        "teamFormationEnd": {
+          "label": "Team Formation End (optional)",
+          "placeholder": "Not specified"
+        },
+        "selectDateRange": "Select date range",
+        "lockedNotice": "This date has already passed and cannot be changed",
+        "validation": {
+          "registrationEndAfterStart": "Registration end must be after start",
+          "teamFormationBothRequired": "Both team formation start and end must be specified",
+          "teamFormationAfterRegistration": "Team formation must start after registration ends",
+          "teamFormationEndAfterStart": "Team formation end must be after start",
+          "dateInPast": "Date cannot be in the past",
+          "teamFormationRequired": "Team formation period is required for team competitions"
+        }
+      },
+      "participantLimits": {
+        "label": "Number of Participants",
+        "min": {
+          "label": "Minimum",
+          "minValue": "Minimum must be at least 1"
+        },
+        "max": {
+          "label": "Maximum",
+          "minValue": "Maximum must be at least 1"
+        },
+        "validation": {
+          "minLessThanMax": "Minimum must be less than or equal to maximum"
+        }
+      },
+      "domains": {
+        "label": "Domains",
+        "placeholder": "Select domains",
+        "required": "Please select at least one domain",
+        "options": {
+          "frontend": "Frontend",
+          "mobile": "Mobile",
+          "backend": "Backend",
+          "ai": "AI",
+          "devops": "DevOps"
+        }
+      },
+      "participantType": {
+        "label": "Participant Type",
+        "options": {
+          "schoolchild": "School Students",
+          "student": "University Students",
+          "any": "Everyone"
+        }
+      },
+      "isTeam": {
+        "label": "Competition Type",
+        "checkboxLabel": "Team Competition"
+      },
+      "venue": {
+        "format": {
+          "label": "Format",
+          "options": {
+            "online": "Online",
+            "offline": "Offline",
+            "hybrid": "Hybrid"
+          }
+        },
+        "location": {
+          "label": "Location",
+          "placeholder": "e.g., Moscow, Tech Park"
+        },
+        "validation": {
+          "locationRequired": "Location is required for offline and hybrid formats"
+        }
+      },
+      "teamSize": {
+        "label": "Team Size",
+        "min": {
+          "label": "Minimum",
+          "minValue": "Minimum must be at least 1"
+        },
+        "max": {
+          "label": "Maximum",
+          "minValue": "Maximum must be at least 1"
+        },
+        "validation": {
+          "minLessThanMax": "Minimum must be less than or equal to maximum"
+        }
+      },
+      "milestone": {
+        "title": {
+          "label": "Milestone Title",
+          "placeholder": "e.g., Project Defense",
+          "required": "Milestone title is required",
+          "maxLength": "Title must not exceed 50 characters"
+        },
+        "timestamp": {
+          "label": "Date and Time",
+          "required": "Please specify date and time"
+        },
+        "datetime": {
+          "label": "Milestone Date and Time"
+        },
+        "addButton": "Add Milestone",
+        "removeButton": "Remove",
+        "validation": {
+          "dateInPast": "Milestone date cannot be in the past",
+          "duplicateTimestamp": "Milestone timestamps must be unique"
+        },
+        "empty": "Click \"Add Milestone\" to create event checkpoints",
+        "lockedNotice": "This milestone date has already passed and cannot be changed",
+        "selectDate": "Select date"
+      },
+      "isArchived": {
+        "label": "Archive Status",
+        "checkboxLabel": "Competition is archived"
+      }
+    },
+    "formats": {
+      "online": "Online",
+      "offline": "Offline",
+      "hybrid": "Hybrid"
+    },
+    "participantTypes": {
+      "schoolchild": "School Students",
+      "student": "University Students",
+      "any": "Everyone"
     }
   }
 }
