@@ -48,60 +48,98 @@
     "title": "DreamTeams",
     "heroTitle": "Find People — Create the Future!",
     "heroDescription": "Innovative service for team formation at IT competitions. All current events aggregated in one place.",
-    "ctaText": "Join the community of participants and create your dream teams today!",
-    "startButton": "Get Started",
+    "ctaText": "All IT hackathons in one place. Find a team or post your event in 5 minutes",
+    "startButton": "Start",
     "registerButton": "Become an Organizer",
     "profileButton": "Go to Profile",
     "findEvents": "Find Events",
     "about": {
       "title": "About the Platform",
-      "description": "DreamTeams is an innovative service for team formation at IT competitions, as well as an aggregator of all current events. We strive to simplify the team formation process and provide a centralized platform for finding and participating in competitions."
+      "description": "First IT hackathon platform in Russia. Connecting participants and organizers. No more searching through hundreds of sources — everything's here."
     },
-    "featuresTitle": "Key Features",
-    "featuresDescription": "Everything you need for IT competition participants and organizers",
+    "featuresTitle": "What We Offer",
+    "featuresDescription": "Everything for successful hackathon participation and hosting",
     "whyBest": {
-      "title": "Why We're the Best?",
+      "title": "Why DreamTeams",
       "unique": {
-        "title": "No Analogs",
-        "description": "We are the only platform that connects competition organizers and participants"
+        "title": "Only One in Russia",
+        "description": "First IT hackathon aggregator with built-in team search"
       },
       "demand": {
-        "title": "High Demand",
-        "description": "According to our research, many people participating in competitions need team formation and event aggregation services"
+        "title": "Real Need",
+        "description": "67% of participants can't find a team. We solve this problem"
       },
       "transparent": {
-        "title": "Transparent Revenue",
-        "description": "Our service earns from organizers posting events, without intrusive advertising or selling user data"
+        "title": "No Ads",
+        "description": "We earn from event listings, not from your data"
       },
       "rating": {
-        "title": "Rating System",
-        "description": "The service provides a rating system for organizers and event participants, encouraging users to use our service"
+        "title": "Participant Rating",
+        "description": "Choose reliable teammates by participation history"
       }
     },
     "cta": {
-      "title": "Ready to Start?",
-      "description": "Join the growing community of IT competition organizers and participants"
+      "title": "Start Today",
+      "description": "Thousands of participants already found teams. Join now"
+    },
+    "testimonials": {
+      "title": "What People Say",
+      "description": "Stories from participants and organizers who found their teammates",
+      "participants": {
+        "alex": {
+          "name": "Alexander Petrov",
+          "role": "Frontend Developer",
+          "text": "Found a team 2 days before the hackathon. We won first place! Without DreamTeams I'd definitely be sitting at home"
+        },
+        "maria": {
+          "name": "Maria Ivanova",
+          "role": "UX/UI Designer",
+          "text": "First time participating in a hackathon. Immediately found people with the right stack. We made it to the finals together"
+        },
+        "dmitry": {
+          "name": "Dmitry Smirnov",
+          "role": "Backend Developer",
+          "text": "Hackathon aggregator is just a gem. Used to search through 10+ sources. Now everything's in one place"
+        }
+      },
+      "organizers": {
+        "techlab": {
+          "name": "TechLab",
+          "role": "Hackathon Organizer",
+          "text": "Posted our hackathon and got 200+ applications in a week. The audience is truly targeted and active"
+        },
+        "innohub": {
+          "name": "InnoHub",
+          "role": "IT Community",
+          "text": "The platform solves a real problem. Participants come with teams already formed — saves time at the event"
+        },
+        "devfest": {
+          "name": "DevFest Moscow",
+          "role": "Organizer",
+          "text": "Real-time analytics on applications is very helpful. We can see right away who's missing in teams"
+        }
+      }
     },
     "features": {
       "aggregator": {
-        "title": "Event Aggregator",
-        "description": "All IT competitions in one place — no need to search across dozens of websites. Smart filters by date, topic, and format",
-        "badge": "One Platform"
+        "title": "All Hackathons Here",
+        "description": "Forget dozens of Telegram channels. Smart filters by date, tech stack, and format",
+        "badge": "Time Saver"
       },
       "teams": {
-        "title": "Team Formation",
-        "description": "Search by skills — find developers, designers, analysts. Participant profiles with tech stacks and achievements",
-        "badge": "Smart Matching"
+        "title": "Search by Skills",
+        "description": "Need frontend? Find a React developer in a minute. Filters by tech and experience",
+        "badge": "In Minutes"
       },
       "organizers": {
         "title": "For Organizers",
-        "description": "Centralized event publishing, detailed analytics on participants, and targeted audience reach",
-        "badge": "Full Analytics"
+        "description": "Post your hackathon and get targeted audience. Real-time analytics on registrations",
+        "badge": "Targeted Audience"
       },
       "integration": {
-        "title": "Integration",
-        "description": "Organizers can integrate their own system with ours through a convenient API",
-        "badge": "API"
+        "title": "API Integrations",
+        "description": "Connect your registration system via open API",
+        "badge": "Open API"
       }
     },
     "stats": {
@@ -237,9 +275,11 @@
   },
   "footer": {
     "platformName": "DreamTeams",
-    "platformDescription": "IT competition aggregator and team formation platform",
-    "copyright": "© 2025 All rights reserved",
-    "support": "Support"
+    "platformDescription": "IT hackathon aggregator and team search platform",
+    "copyright": "© 2025 DreamTeams. All rights reserved",
+    "support": "Support",
+    "quickLinks": "Quick Links",
+    "contact": "Contact"
   },
   "theme": {
     "light": "Light Theme",

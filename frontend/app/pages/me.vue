@@ -160,15 +160,6 @@ const handleLogout = () => {
                       </p>
                     </div>
 
-                    <div class="space-y-1">
-                      <div class="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
-                        <UIcon name="i-heroicons-identification" class="text-base" />
-                        <span>{{ t("profile.fields.organizerId") }}</span>
-                      </div>
-                      <p class="text-sm text-gray-600 dark:text-gray-400 pl-6 font-mono">
-                        {{ userStore.organizer.id }}
-                      </p>
-                    </div>
                   </div>
                 </div>
 
@@ -183,14 +174,6 @@ const handleLogout = () => {
                     </template>
                   </UEmpty>
                 </div>
-
-                <template #footer>
-                  <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-500">
-                    <UIcon name="i-heroicons-identification" />
-                    <span class="font-mono">{{ t("profile.fields.userId") }}:
-                      {{ userStore.profile.user_id }}</span>
-                  </div>
-                </template>
               </UCard>
             </template>
 
@@ -205,8 +188,8 @@ const handleLogout = () => {
                     </h3>
 
                     <div class="space-y-4">
-                      <div class="flex items-center justify-between">
-                        <div>
+                      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div class="flex-1">
                           <p class="font-medium text-gray-900 dark:text-gray-100">
                             {{ t('profile.settings.appearance.theme') }}
                           </p>
@@ -214,13 +197,15 @@ const handleLogout = () => {
                             {{ t('profile.settings.appearance.themeDescription') }}
                           </p>
                         </div>
-                        <ThemeToggle size="lg" />
+                        <div class="shrink-0">
+                          <ThemeToggle size="lg" />
+                        </div>
                       </div>
 
                       <USeparator />
 
-                      <div class="flex items-center justify-between">
-                        <div>
+                      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div class="flex-1">
                           <p class="font-medium text-gray-900 dark:text-gray-100">
                             {{ t('profile.settings.appearance.language') }}
                           </p>
@@ -228,7 +213,9 @@ const handleLogout = () => {
                             {{ t('profile.settings.appearance.languageDescription') }}
                           </p>
                         </div>
-                        <LanguageSwitcher size="lg" />
+                        <div class="shrink-0">
+                          <LanguageSwitcher size="lg" />
+                        </div>
                       </div>
                     </div>
                   </div>

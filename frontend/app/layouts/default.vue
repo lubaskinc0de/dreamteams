@@ -41,16 +41,11 @@ const handleLogin = async () => {
       <template #left>
         <NuxtLink :to="brandLink" class="flex items-center gap-3 group" :aria-label="t('nav.brand')">
           <img src="/logo.png" alt="DreamTeams Logo"
-            class="h-16 w-16 object-contain transition-transform group-hover:scale-110" />
-          <div class="hidden sm:block">
-            <span
-              class="text-xl font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors">
-              {{ t("nav.brand") }}
-            </span>
-            <span class="block text-xs text-gray-600 dark:text-gray-400">{{
-              t("nav.brandSubtitle")
-            }}</span>
-          </div>
+            class="h-12 w-12 sm:h-16 sm:w-16 object-contain transition-transform group-hover:scale-110" />
+          <span
+            class="text-lg sm:text-xl font-extrabold text-gray-900 dark:text-gray-100 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors">
+            {{ t("nav.brand") }}
+          </span>
         </NuxtLink>
       </template>
 
@@ -68,7 +63,7 @@ const handleLogin = async () => {
               class="hover:ring-2 hover:ring-primary-500 transition-all cursor-pointer" />
           </NuxtLink>
         </template>
-        <!-- Login button and settings menu for unauthenticated users -->
+        <!-- Login button (desktop only) and settings menu for unauthenticated users -->
         <template v-else>
           <UButton
             @click="handleLogin"
@@ -77,6 +72,7 @@ const handleLogin = async () => {
             size="md"
             :label="t('nav.login')"
             icon="i-heroicons-arrow-right-on-rectangle"
+            class="hidden md:flex"
           />
           <UPopover>
             <UButton
@@ -109,43 +105,10 @@ const handleLogin = async () => {
       </template>
 
       <template #body>
-        <!-- Mobile menu content -->
-        <UNavigationMenu v-if="navItems.length > 0" :items="navItems" orientation="vertical" class="-mx-2.5" />
-
-        <USeparator v-if="navItems.length > 0" class="my-4" />
-
-        <!-- Mobile menu footer with controls -->
-        <div v-if="showAvatar" class="flex items-center justify-between gap-4">
-          <div class="flex items-center gap-3">
-            <ThemeToggle size="lg" />
-            <LanguageSwitcher size="lg" />
-          </div>
-
-          <NuxtLink to="/me" :aria-label="t('nav.profile')">
-            <UAvatar :src="userStore.organizer?.logo || undefined"
-              :alt="userStore.organizer?.organizer_name || t('profile.userBadge')" size="md"
-              class="hover:ring-2 hover:ring-primary-500 transition-all cursor-pointer" />
-          </NuxtLink>
-        </div>
-
-        <!-- Mobile menu for unauthenticated users -->
-        <div v-else class="space-y-4">
-          <UButton
-            @click="handleLogin"
-            color="primary"
-            variant="solid"
-            size="lg"
-            :label="t('nav.login')"
-            icon="i-heroicons-arrow-right-on-rectangle"
-            block
-          />
-          <div class="flex items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-              <ThemeToggle size="lg" />
-              <LanguageSwitcher size="lg" />
-            </div>
-          </div>
-        </div>
+        <!-- Mobile menu for authenticated organizers -->
+        <template v-if="showAvatar && navItems.length > 0">
+          <UNavigationMenu :items="navItems" orientation="vertical" class="-mx-2.5" />
+        </template>
       </template>
     </UHeader>
 
@@ -153,32 +116,54 @@ const handleLogin = async () => {
       <slot />
     </UMain>
 
-    <UFooter class="mt-0 pt-0">
-      <template #left>
-        <div class="flex items-center gap-3">
-          <img src="/logo.png" alt="DreamTeams Logo" class="h-14 w-14 object-contain" />
-          <div>
-            <p class="font-semibold text-gray-900 dark:text-gray-100">
-              {{ t("footer.platformName") }}
-            </p>
-            <p class="text-xs text-gray-600 dark:text-gray-400">
+    <!-- Footer -->
+    <footer class="bg-gray-900 dark:bg-gray-950 border-t border-gray-800">
+      <UContainer class="py-12">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- Brand Section -->
+          <div class="space-y-4">
+            <div class="flex items-center gap-3">
+              <img src="/logo.png" alt="DreamTeams Logo" class="h-10 w-10 object-contain" />
+              <span class="text-xl font-bold bg-gradient-to-r from-primary-400 to-success-400 bg-clip-text text-transparent">
+                {{ t("nav.brand") }}
+              </span>
+            </div>
+            <p class="text-sm text-gray-400 leading-relaxed max-w-xs">
               {{ t("footer.platformDescription") }}
             </p>
           </div>
-        </div>
-      </template>
 
-      <template #right>
-        <div class="flex flex-col items-center md:items-end gap-2">
-          <span class="text-xs text-gray-600 dark:text-gray-500">{{
-            t("footer.copyright")
-          }}</span>
-          <UButton icon="i-heroicons-envelope" variant="ghost" size="xs" color="neutral"
-            to="mailto:structnull@yandex.ru" :aria-label="t('footer.support')">
-            {{ t("footer.support") }}
-          </UButton>
+          <!-- Links Section -->
+          <div class="space-y-4">
+            <h3 class="text-sm font-semibold text-white uppercase tracking-wider">
+              {{ t("footer.quickLinks") }}
+            </h3>
+            <div class="flex flex-col gap-2">
+              <NuxtLink to="/" class="text-sm text-gray-400 hover:text-primary-400 transition-colors">
+                {{ t("nav.home") }}
+              </NuxtLink>
+              <a href="mailto:structnull@yandex.ru" class="text-sm text-gray-400 hover:text-primary-400 transition-colors">
+                {{ t("footer.support") }}
+              </a>
+            </div>
+          </div>
+
+          <!-- Contact Section -->
+          <div class="space-y-2">
+            <h3 class="text-sm font-semibold text-white uppercase tracking-wider">
+              {{ t("footer.contact") }}
+            </h3>
+            <a href="mailto:structnull@yandex.ru"
+               class="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-primary-400 transition-colors">
+              <UIcon name="i-heroicons-envelope" class="text-lg" />
+              structnull@yandex.ru
+            </a>
+            <p class="text-sm text-gray-500 pt-2">
+              {{ t("footer.copyright") }}
+            </p>
+          </div>
         </div>
-      </template>
-    </UFooter>
+      </UContainer>
+    </footer>
   </div>
 </template>

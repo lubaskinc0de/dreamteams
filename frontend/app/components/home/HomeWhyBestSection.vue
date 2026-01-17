@@ -18,15 +18,17 @@ const { t } = useI18n();
 </script>
 
 <template>
-  <section class="py-16 sm:py-20 bg-white dark:bg-gray-900">
+  <section class="relative py-12 sm:py-16 md:py-20 overflow-hidden bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
     <UContainer>
-      <div class="text-center mb-12 sm:mb-16 px-4 fade-in-scroll">
-        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-          {{ t('home.whyBest.title') }}
+      <div class="text-center mb-8 sm:mb-12 md:mb-16 fade-in-scroll">
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4">
+          <span class="bg-gradient-to-r from-primary-600 via-success-600 to-primary-500 dark:from-primary-400 dark:via-success-400 dark:to-primary-300 bg-clip-text text-transparent">
+            {{ t('home.whyBest.title') }}
+          </span>
         </h2>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-5xl mx-auto px-4 stagger-children">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-5xl mx-auto stagger-children">
         <UCard
           v-for="(item, index) in items"
           :key="index"

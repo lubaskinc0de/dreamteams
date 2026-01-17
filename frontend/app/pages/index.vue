@@ -128,12 +128,52 @@ const whyBest = [
     description: t("home.whyBest.rating.description"),
   },
 ];
+
+// Testimonials from participants and organizers
+const testimonials = [
+  {
+    name: t("home.testimonials.participants.alex.name"),
+    role: t("home.testimonials.participants.alex.role"),
+    avatar: "https://i.pravatar.cc/150?img=12",
+    text: t("home.testimonials.participants.alex.text"),
+  },
+  {
+    name: t("home.testimonials.participants.maria.name"),
+    role: t("home.testimonials.participants.maria.role"),
+    avatar: "https://i.pravatar.cc/150?img=47",
+    text: t("home.testimonials.participants.maria.text"),
+  },
+  {
+    name: t("home.testimonials.participants.dmitry.name"),
+    role: t("home.testimonials.participants.dmitry.role"),
+    avatar: "https://i.pravatar.cc/150?img=33",
+    text: t("home.testimonials.participants.dmitry.text"),
+  },
+  {
+    name: t("home.testimonials.organizers.techlab.name"),
+    role: t("home.testimonials.organizers.techlab.role"),
+    avatar: "https://i.pravatar.cc/150?img=60",
+    text: t("home.testimonials.organizers.techlab.text"),
+  },
+  {
+    name: t("home.testimonials.organizers.innohub.name"),
+    role: t("home.testimonials.organizers.innohub.role"),
+    avatar: "https://i.pravatar.cc/150?img=15",
+    text: t("home.testimonials.organizers.innohub.text"),
+  },
+  {
+    name: t("home.testimonials.organizers.devfest.name"),
+    role: t("home.testimonials.organizers.devfest.role"),
+    avatar: "https://i.pravatar.cc/150?img=68",
+    text: t("home.testimonials.organizers.devfest.text"),
+  },
+];
 </script>
 
 <template>
   <div>
     <!-- Hero Section -->
-    <HomeHeroSection :stats="stats" @start="handleStart" />
+    <HomeHeroSection @start="handleStart" />
 
     <!-- About Section -->
     <HomeAboutSection />
@@ -143,6 +183,9 @@ const whyBest = [
 
     <!-- Why We're the Best Section -->
     <HomeWhyBestSection :items="whyBest" />
+
+    <!-- Testimonials Section -->
+    <HomeTestimonialsSection :testimonials="testimonials" />
 
     <!-- Call to Action Section -->
     <HomeCtaSection @start="handleStart" />
