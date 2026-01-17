@@ -7,7 +7,7 @@ from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import Competition
 from dreamteams.entities.competition.milestone import Milestone
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
-from dreamteams.entities.competition.schedule import CompetitionSchedule
+from dreamteams.entities.competition.schedule import ScheduleData
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionVenue
 from dreamteams.entities.errors.base import AccessDeniedError
@@ -18,7 +18,7 @@ from dreamteams.entities.user import User
 def test_update_competition_with_valid_milestones_succeeds(
     competition: Competition,
     organizer_user: User,
-    schedule: CompetitionSchedule,
+    valid_schedule_data: ScheduleData,
     participant_limits: ParticipantLimits,
     domains: list[Domain],
     venue: CompetitionVenue,
@@ -30,7 +30,7 @@ def test_update_competition_with_valid_milestones_succeeds(
         user=organizer_user,
         title="Updated Title",
         description="Updated description",
-        schedule=schedule,
+        schedule=valid_schedule_data,
         participant_limits=participant_limits,
         domains=domains,
         participant_type=ParticipantType.STUDENT,
@@ -46,7 +46,7 @@ def test_update_competition_with_valid_milestones_succeeds(
 def test_duplicate_milestone_timestamps_is_not_allowed(
     competition: Competition,
     organizer_user: User,
-    schedule: CompetitionSchedule,
+    valid_schedule_data: ScheduleData,
     participant_limits: ParticipantLimits,
     domains: list[Domain],
     venue: CompetitionVenue,
@@ -65,7 +65,7 @@ def test_duplicate_milestone_timestamps_is_not_allowed(
             user=organizer_user,
             title="Updated Title",
             description="Updated description",
-            schedule=schedule,
+            schedule=valid_schedule_data,
             participant_limits=participant_limits,
             domains=domains,
             participant_type=ParticipantType.STUDENT,
@@ -87,7 +87,7 @@ def test_duplicate_milestone_timestamps_is_not_allowed(
 def test_update_competition_with_invalid_data_raises_error(
     competition: Competition,
     organizer_user: User,
-    schedule: CompetitionSchedule,
+    valid_schedule_data: ScheduleData,
     participant_limits: ParticipantLimits,
     venue: CompetitionVenue,
     team_size: TeamSizeRange,
@@ -101,7 +101,7 @@ def test_update_competition_with_invalid_data_raises_error(
             user=organizer_user,
             title="Updated Title",
             description=description,
-            schedule=schedule,
+            schedule=valid_schedule_data,
             participant_limits=participant_limits,
             domains=test_domains,
             participant_type=ParticipantType.STUDENT,
@@ -115,7 +115,7 @@ def test_update_competition_with_invalid_data_raises_error(
 def test_cannot_update_competition_by_non_organizer(
     competition: Competition,
     user_without_organizer: User,
-    schedule: CompetitionSchedule,
+    valid_schedule_data: ScheduleData,
     participant_limits: ParticipantLimits,
     domains: list[Domain],
     venue: CompetitionVenue,
@@ -127,7 +127,7 @@ def test_cannot_update_competition_by_non_organizer(
             user=user_without_organizer,
             title="Updated Title",
             description="Updated description",
-            schedule=schedule,
+            schedule=valid_schedule_data,
             participant_limits=participant_limits,
             domains=domains,
             participant_type=ParticipantType.STUDENT,
@@ -141,7 +141,7 @@ def test_cannot_update_competition_by_non_organizer(
 def test_cannot_update_competition_by_different_organizer(
     competition: Competition,
     different_user: User,
-    schedule: CompetitionSchedule,
+    valid_schedule_data: ScheduleData,
     participant_limits: ParticipantLimits,
     domains: list[Domain],
     venue: CompetitionVenue,
@@ -153,7 +153,7 @@ def test_cannot_update_competition_by_different_organizer(
             user=different_user,
             title="Updated Title",
             description="Updated description",
-            schedule=schedule,
+            schedule=valid_schedule_data,
             participant_limits=participant_limits,
             domains=domains,
             participant_type=ParticipantType.STUDENT,
