@@ -117,8 +117,8 @@ src/dreamteams/
 **Всегда** создавайте отдельную ветку для своих изменений:
 
 ```bash
-# Убедитесь, что находитесь на актуальной master
-git checkout master  # перейти в ветку master 
+# Убедитесь, что находитесь на актуальной dev
+git checkout dev  # перейти в ветку dev - тут идет вся работа
 git pull  # подтянуть последние изменения кода из репозитория
 
 # Создайте новую ветку (название описывает задачу)
@@ -239,17 +239,17 @@ git push origin feature/add-user-avatar
 Периодически обновляйте свою ветку:
 
 ```bash
-# Переключитесь на master
-git checkout master
+# Переключитесь на dev
+git checkout dev
 
 # Получите последние изменения
-git pull origin master
+git pull origin
 
 # Вернитесь в свою ветку
 git checkout feature/add-user-avatar
 
 # Влейте изменения из master
-git rebase master
+git rebase dev
 
 # Если есть конфликты - разрешите их и продолжите:
 # 1. Откройте файлы с конфликтами в VS Code
