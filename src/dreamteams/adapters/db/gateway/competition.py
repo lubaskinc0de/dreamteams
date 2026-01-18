@@ -31,9 +31,9 @@ class SACompetitionGateway(CompetitionGateway):
         await self._session.execute(q)
 
     @override
-    async def list_by_organizer(
+    async def list(
         self,
-        organizer_id: OrganizerId,
+        organizer_id: OrganizerId | None = None,
         *,
         page: int,
         page_size: int,
@@ -50,10 +50,13 @@ class SACompetitionGateway(CompetitionGateway):
             CompetitionSortBy.TEAM_FORMATION_START: competition_table.c.team_formation_start,
         }[sort_by]
         order_by = [desc(sort_column) if sort_order == SortOrder.DESC else sort_column]
-        filter_by = [competition_table.c.organizer_id == organizer_id]
+        filter_by = []
 
         if is_archived is not None:
             filter_by.append(competition_table.c.is_archived == is_archived)
+
+        if organizer_id is not None:
+            filter_by.append(competition_table.c.organizer_id == organizer_id)
 
         if search is not None:
             search_vector = func.lower(func.concat(competition_table.c.title, " ", competition_table.c.description))
