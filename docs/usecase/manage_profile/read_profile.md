@@ -27,8 +27,3 @@ No explicit input. Uses `auth_user_id` from identity provider.
 1. Only authenticated users can view profile
 2. User can view only their own profile
 3. User must have assigned role
-
-## Possible Errors
-
-- `UserNotFoundError` — user not found in database
-- `ValueError` — user has no assigned role

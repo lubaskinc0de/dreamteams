@@ -1,12 +1,20 @@
-# ReadCompetition
+# ListCompetitions
 
 ## Input
 
 | Field | Type | Description | Validation |
 |-------|------|-------------|------------|
-| `competition_id` | `CompetitionId` | Competition identifier | UUID format |
+| `page` | `int` | Page number for pagination | Positive integer |
 
 ## Output
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `items` | `list[CompetitionModel]` | List of competitions |
+| `total` | `int` | Total number of competitions |
+| `page` | `int` | Current page number |
+
+### CompetitionModel
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -22,10 +30,11 @@
 | `venue` | `CompetitionVenue` | Format and location |
 | `team_size` | `TeamSizeRange` | Team size range |
 | `milestones` | `list[Milestone]` | Competition milestones |
-| `is_archived` | `bool` | Archive status |
 | `created_at` | `datetime` | Creation timestamp |
-| `updated_at` | `datetime` | Last update timestamp |
 
 ## Business Rules
 
-1. Only organizer who created competition can view it
+1. Only non-archived competitions are visible
+2. Only competitions with active registration are visible
+3. Results are sorted by `created_at` descending
+4. Returns empty list if no competitions match criteria

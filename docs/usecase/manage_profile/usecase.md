@@ -10,3 +10,4 @@ User manages their profile: view information and assigned roles.
 ## Interactors
 
 - [ReadProfile](./read_profile.md) — read current user profile
+- DeleteProfile — delete user profile

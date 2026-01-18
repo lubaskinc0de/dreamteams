@@ -17,10 +17,8 @@ Represents an organization that hosts hackathons and competitions on the platfor
 
 ## Business Rules
 
-1. Combination of `phone_number` and `contact_email` must be unique across all organizers
-2. Each organizer must be linked to exactly one user via `user_id`
-3. Organizer name must not exceed 70 characters
-4. Phone number must follow Russian format
+1. Each organizer must be linked to exactly one user via `user_id`
+2. Combination of `phone_number` and `contact_email` must be unique across all organizers
 
 ## Relationships
 

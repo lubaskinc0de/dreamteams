@@ -19,7 +19,7 @@ Value object (dataclass)
 
 1. Title must not be empty
 2. Timestamp is normalized (seconds and microseconds removed)
-4. Timestamp should not be in past
+3. Timestamp should not be in past
 
 ## Possible Errors
 

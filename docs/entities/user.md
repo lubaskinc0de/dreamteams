@@ -15,7 +15,6 @@ Represents a user in the system. Acts as a container for user roles (organizer, 
 
 1. User can have at most one organizer role
 2. When attaching organizer role, `organizer.user_id` must equal `user.id`
-3. User must have at least one role to be considered active
 
 ## Relationships
 

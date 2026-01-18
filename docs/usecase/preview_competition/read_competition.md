@@ -22,10 +22,9 @@
 | `venue` | `CompetitionVenue` | Format and location |
 | `team_size` | `TeamSizeRange` | Team size range |
 | `milestones` | `list[Milestone]` | Competition milestones |
-| `is_archived` | `bool` | Archive status |
 | `created_at` | `datetime` | Creation timestamp |
-| `updated_at` | `datetime` | Last update timestamp |
 
 ## Business Rules
 
-1. Only organizer who created competition can view it
+1. Competition must not be archived
+2. Competition registration must be active

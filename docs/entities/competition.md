@@ -28,7 +28,10 @@ Represents a hackathon or olympiad event created by an organizer.
 
 1. Domains list must not be empty
 2. Milestone timestamps must be unique within a competition
-3. Archived competitions (`is_archived=True`) are not visible to participants
+3. Description must not be empty or whitespace-only
+4. Only the organizer who created the competition can read, update, or delete it
+5. New competitions are created with `is_archived=True` by default
+6. Archived competitions are not visible to participants
 
 ## Relationships
 

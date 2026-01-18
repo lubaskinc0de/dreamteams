@@ -34,9 +34,3 @@ No output. Operation succeeds or raises error.
 3. All value object validation rules apply
 4. If milestones are provided, existing ones are cleared first, then new ones added
 5. Milestone timestamps must be unique
-
-## Possible Errors
-
-- `AccessDeniedError` — organizer is not competition creator
-- `CompetitionNotFoundError` — competition not found
-- `InvalidCompetitionDataError` — invalid data in updated fields
