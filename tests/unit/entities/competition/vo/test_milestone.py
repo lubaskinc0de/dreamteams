@@ -22,24 +22,24 @@ def test_create_milestone_with_valid_data(clock: Clock) -> None:
 
 
 @pytest.mark.parametrize(
-    ("title", "expected_error"),
+    ("title"),
     [
-        ("", "Milestone title must not be empty"),
-        ("   ", "Milestone title must not be empty"),
-        ("\t\n", "Milestone title must not be empty"),
+        (""),
+        ("   "),
+        ("\t\n"),
     ],
 )
 @freeze_time("2025-01-15 12:00:00")
-def test_create_milestone_with_invalid_title_raises_error(clock: Clock, title: str, expected_error: str) -> None:
-    """Test that empty or whitespace-only titles raise appropriate errors."""
+def test_title_is_not_empty(clock: Clock, title: str) -> None:
+    """Test that empty or whitespace-only titles raise error."""
     timestamp = datetime(year=2026, month=2, day=20, hour=14, minute=30, tzinfo=UTC)
 
-    with pytest.raises(InvalidCompetitionDataError, match=expected_error):
+    with pytest.raises(InvalidCompetitionDataError, match="Milestone title must not be empty"):
         milestone_factory(MilestoneData(timestamp=timestamp, title=title), clock)
 
 
 @freeze_time("2025-01-15 12:00:00")
-def test_cannot_create_milestone_with_timestamp_in_past(clock: Clock, faker: Faker) -> None:
+def test_timestamp_must_be_in_future(clock: Clock, faker: Faker) -> None:
     """Test that milestone with timestamp in past raises error."""
     timestamp = datetime(year=2024, month=12, day=1, hour=10, minute=0, tzinfo=UTC)
 
