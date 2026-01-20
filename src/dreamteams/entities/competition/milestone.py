@@ -35,7 +35,7 @@ def milestone_factory(data: MilestoneData, clock: Clock) -> Milestone:
     now = normalize_datetime(clock.now())
     normalized_ts = normalize_datetime(data.timestamp)
 
-    if normalized_ts < now:
+    if normalized_ts <= now:
         raise InvalidCompetitionDataError(message="Milestone timestamp cannot be in past")
 
     return Milestone(normalized_ts, data.title)

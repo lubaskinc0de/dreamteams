@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC
 
 import pytest
 from faker import Faker
@@ -15,6 +15,7 @@ from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 from dreamteams.entities.user import User
+from tests.unit.entities.competition.conftest import utc
 
 
 @pytest.mark.parametrize(
@@ -41,8 +42,8 @@ from dreamteams.entities.user import User
             10,  # min participants
             5,  # max team size
             1,  # min team size (solo allowed)
-            datetime(year=2026, month=1, day=20, hour=10, minute=0, tzinfo=UTC),
-            datetime(year=2026, month=1, day=30, hour=18, minute=0, tzinfo=UTC),
+            utc("2026-01-20 10:00:00"),
+            utc("2026-01-30 18:00:00"),
         ),
         # Large hybrid competition: 1-month registration
         (
@@ -54,8 +55,8 @@ from dreamteams.entities.user import User
             50,  # min participants
             10,  # max team size
             3,  # min team size (no solo participants)
-            datetime(year=2026, month=2, day=1, hour=10, minute=0, tzinfo=UTC),
-            datetime(year=2026, month=3, day=1, hour=18, minute=0, tzinfo=UTC),
+            utc("2026-02-01 10:00:00"),
+            utc("2026-03-01 18:00:00"),
         ),
         # Small offline competition: 8-day registration
         (
@@ -67,8 +68,8 @@ from dreamteams.entities.user import User
             5,  # min participants
             1,  # max team size (solo only)
             1,  # min team size (solo only)
-            datetime(year=2026, month=1, day=25, hour=10, minute=0, tzinfo=UTC),
-            datetime(year=2026, month=2, day=2, hour=18, minute=0, tzinfo=UTC),
+            utc("2026-01-25 10:00:00"),
+            utc("2026-02-02 18:00:00"),
         ),
     ],
 )
@@ -249,7 +250,7 @@ def test_create_competition_with_duplicate_milestone_timestamps_raises_error(
     clock: Clock,
 ) -> None:
     """Test that duplicate milestone timestamps raise error."""
-    duplicate_timestamp = datetime(year=2026, month=2, day=20, hour=12, minute=0, tzinfo=UTC)
+    duplicate_timestamp = utc("2026-02-20 12:00:00")
     duplicate_milestones = [
         MilestoneData(timestamp=duplicate_timestamp, title="Stage 1"),
         MilestoneData(timestamp=duplicate_timestamp, title="Stage 2"),

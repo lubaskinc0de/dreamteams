@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from faker import Faker
@@ -15,6 +15,11 @@ from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
 from dreamteams.entities.organizer import Organizer
 from dreamteams.entities.user import User
+
+
+def utc(dt_string: str) -> datetime:
+    """Create UTC datetime from string in format 'YYYY-MM-DD HH:MM:SS'."""
+    return datetime.strptime(dt_string, "%Y-%m-%d %H:%M:%S").replace(tzinfo=UTC)
 
 
 @pytest.fixture

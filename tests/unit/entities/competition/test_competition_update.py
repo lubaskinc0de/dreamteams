@@ -1,5 +1,3 @@
-from datetime import UTC, datetime
-
 import pytest
 
 from dreamteams.entities.common.clock import Clock
@@ -14,6 +12,7 @@ from dreamteams.entities.competition.venue import CompetitionVenue
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 from dreamteams.entities.user import User
+from tests.unit.entities.competition.conftest import utc
 
 
 def test_update_competition_with_valid_milestones_succeeds(
@@ -57,7 +56,7 @@ def test_duplicate_milestone_timestamps_is_not_allowed(
     clock: Clock,
 ) -> None:
     """Test that updating competition with duplicate milestone timestamps raises error."""
-    duplicate_timestamp = datetime(year=2026, month=2, day=20, hour=12, minute=0, tzinfo=UTC)
+    duplicate_timestamp = utc("2026-02-20 12:00:00")
     duplicate_milestones = [
         Milestone(timestamp=duplicate_timestamp, title="Stage 1"),
         Milestone(timestamp=duplicate_timestamp, title="Stage 2"),
