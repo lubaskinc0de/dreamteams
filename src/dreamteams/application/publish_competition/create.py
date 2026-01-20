@@ -6,6 +6,7 @@ from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
 from dreamteams.application.common.uow import UoW
+from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import CompetitionId
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
@@ -45,6 +46,7 @@ class CreateCompetition:
 
     uow: UoW
     idp: IdProvider
+    clock: Clock
 
     async def execute(self, data: CompetitionForm) -> CreatedCompetition:
         """Creates a new competition."""
@@ -61,6 +63,7 @@ class CreateCompetition:
             participant_type=data.participant_type,
             venue=data.venue,
             team_size=data.team_size,
+            clock=self.clock,
             milestones=[MilestoneData(milestone.title, milestone.timestamp) for milestone in data.milestones],
         )
 

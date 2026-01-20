@@ -1,7 +1,8 @@
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime
 
-from dreamteams.entities.competition.schedule import normalize_datetime
+from dreamteams.entities.common.clock import Clock
+from dreamteams.entities.common.datetime_utils import normalize_datetime
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 
 
@@ -29,9 +30,9 @@ class MilestoneData:
     timestamp: datetime
 
 
-def milestone_factory(data: MilestoneData) -> Milestone:
+def milestone_factory(data: MilestoneData, clock: Clock) -> Milestone:
     """Create new milestone."""
-    now = normalize_datetime(datetime.now(tz=UTC))
+    now = normalize_datetime(clock.now())
     normalized_ts = normalize_datetime(data.timestamp)
 
     if normalized_ts < now:

@@ -56,6 +56,7 @@ def test_min_greater_than_zero(max_value: int, min_value: int) -> None:
 def test_min_not_exceed_max(max_value: int, min_value: int) -> None:
     """Test that min value <= max value."""
     with pytest.raises(
-        InvalidCompetitionDataError, match="Min participants must be less than or equal to max participants",
+        InvalidCompetitionDataError,
+        match="Min participants must be less than or equal to max participants",
     ):
         ParticipantLimits(max=max_value, min=min_value)

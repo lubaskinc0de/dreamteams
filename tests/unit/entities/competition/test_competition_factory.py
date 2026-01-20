@@ -1,8 +1,10 @@
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 
 import pytest
 from faker import Faker
+from freezegun import freeze_time
 
+from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import Competition, competition_factory
@@ -39,8 +41,8 @@ from dreamteams.entities.user import User
             10,  # min participants
             5,  # max team size
             1,  # min team size (solo allowed)
-            timedelta(days=1),
-            timedelta(days=10),
+            datetime(year=2026, month=1, day=20, hour=10, minute=0, tzinfo=UTC),
+            datetime(year=2026, month=1, day=30, hour=18, minute=0, tzinfo=UTC),
         ),
         # Large hybrid competition: 1-month registration
         (
@@ -52,8 +54,8 @@ from dreamteams.entities.user import User
             50,  # min participants
             10,  # max team size
             3,  # min team size (no solo participants)
-            timedelta(days=7),
-            timedelta(days=37),
+            datetime(year=2026, month=2, day=1, hour=10, minute=0, tzinfo=UTC),
+            datetime(year=2026, month=3, day=1, hour=18, minute=0, tzinfo=UTC),
         ),
         # Small offline competition: 8-day registration
         (
@@ -65,14 +67,15 @@ from dreamteams.entities.user import User
             5,  # min participants
             1,  # max team size (solo only)
             1,  # min team size (solo only)
-            timedelta(days=2),
-            timedelta(days=10),
+            datetime(year=2026, month=1, day=25, hour=10, minute=0, tzinfo=UTC),
+            datetime(year=2026, month=2, day=2, hour=18, minute=0, tzinfo=UTC),
         ),
     ],
 )
 def test_create_competition_with_valid_data(
     faker: Faker,
     organizer_user: User,
+    clock: Clock,
     domains: list[Domain],
     participant_type: ParticipantType,
     venue_format: CompetitionFormat,
@@ -81,16 +84,15 @@ def test_create_competition_with_valid_data(
     participant_min: int,
     team_max: int,
     team_min: int,
-    reg_start: timedelta,
-    reg_end: timedelta,
+    reg_start: datetime,
+    reg_end: datetime,
 ) -> None:
     """Test creating competition with different configurations."""
-    now = datetime.now(tz=UTC)
     title = faker.sentence(nb_words=4)
     description = faker.text(max_nb_chars=200)
     schedule = CompetitionSchedule(
-        registration_start=now + reg_start,
-        registration_end=now + reg_end,
+        registration_start=reg_start,
+        registration_end=reg_end,
         team_formation_end=None,
         team_formation_start=None,
     )
@@ -113,6 +115,7 @@ def test_create_competition_with_valid_data(
         participant_type=participant_type,
         venue=venue,
         team_size=team_size,
+        clock=clock,
     )
 
     assert organizer_user.organizer is not None
@@ -154,6 +157,7 @@ def test_create_competition_with_invalid_data_raises_error(
     participant_limits: ParticipantLimits,
     venue: CompetitionVenue,
     team_size: TeamSizeRange,
+    clock: Clock,
     description: str,
     test_domains: list[Domain],
     expected_error: str,
@@ -170,9 +174,11 @@ def test_create_competition_with_invalid_data_raises_error(
             participant_type=ParticipantType.STUDENT,
             venue=venue,
             team_size=team_size,
+            clock=clock,
         )
 
 
+@freeze_time("2025-01-15 12:00:00")
 def test_competition_created_at_and_updated_at_are_set(
     faker: Faker,
     organizer_user: User,
@@ -181,6 +187,7 @@ def test_competition_created_at_and_updated_at_are_set(
     domains: list[Domain],
     venue: CompetitionVenue,
     team_size: TeamSizeRange,
+    clock: Clock,
 ) -> None:
     """Test that created_at and updated_at are set to current time."""
     competition = competition_factory(
@@ -193,10 +200,11 @@ def test_competition_created_at_and_updated_at_are_set(
         participant_type=ParticipantType.STUDENT,
         venue=venue,
         team_size=team_size,
+        clock=clock,
     )
 
-    time_diff = (datetime.now(tz=UTC) - competition.created_at).total_seconds()
-    assert time_diff < 1
+    assert competition.created_at == clock.now()
+    assert competition.updated_at == clock.now()
     assert competition.created_at.tzinfo == UTC
     assert competition.updated_at.tzinfo == UTC
 
@@ -209,6 +217,7 @@ def test_create_competition_with_valid_milestones(
     domains: list[Domain],
     venue: CompetitionVenue,
     team_size: TeamSizeRange,
+    clock: Clock,
     milestones: list[Milestone],
 ) -> None:
     """Test creating competition with valid milestones."""
@@ -222,6 +231,7 @@ def test_create_competition_with_valid_milestones(
         participant_type=ParticipantType.STUDENT,
         venue=venue,
         team_size=team_size,
+        clock=clock,
         milestones=[MilestoneData(milestone.title, milestone.timestamp) for milestone in milestones],
     )
 
@@ -236,10 +246,10 @@ def test_create_competition_with_duplicate_milestone_timestamps_raises_error(
     domains: list[Domain],
     venue: CompetitionVenue,
     team_size: TeamSizeRange,
+    clock: Clock,
 ) -> None:
     """Test that duplicate milestone timestamps raise error."""
-    now = datetime.now(tz=UTC)
-    duplicate_timestamp = now + timedelta(days=15)
+    duplicate_timestamp = datetime(year=2026, month=2, day=20, hour=12, minute=0, tzinfo=UTC)
     duplicate_milestones = [
         MilestoneData(timestamp=duplicate_timestamp, title="Stage 1"),
         MilestoneData(timestamp=duplicate_timestamp, title="Stage 2"),
@@ -256,5 +266,6 @@ def test_create_competition_with_duplicate_milestone_timestamps_raises_error(
             participant_type=ParticipantType.STUDENT,
             venue=venue,
             team_size=team_size,
+            clock=clock,
             milestones=duplicate_milestones,
         )

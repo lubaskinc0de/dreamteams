@@ -7,6 +7,7 @@ from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
 from dreamteams.application.common.uow import UoW
+from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import CompetitionId
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
@@ -42,6 +43,7 @@ class UpdateCompetition:
     uow: UoW
     idp: IdProvider
     competition_gateway: CompetitionGateway
+    clock: Clock
 
     async def execute(self, competition_id: CompetitionId, data: UpdateCompetitionForm) -> None:
         """Updates competition by organizer who created it."""
@@ -66,8 +68,10 @@ class UpdateCompetition:
             participant_type=data.participant_type,
             venue=data.venue,
             team_size=data.team_size,
+            clock=self.clock,
             milestones=[
-                milestone_factory(MilestoneData(milestone.title, milestone.timestamp)) for milestone in data.milestones
+                milestone_factory(MilestoneData(milestone.title, milestone.timestamp), self.clock)
+                for milestone in data.milestones
             ]
             if data.milestones is not None
             else None,

@@ -1,12 +1,9 @@
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime
 
+from dreamteams.entities.common.clock import Clock
+from dreamteams.entities.common.datetime_utils import normalize_datetime
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
-
-
-def normalize_datetime(dt: datetime) -> datetime:
-    """Normalize datetime by removing seconds and microseconds."""
-    return dt.replace(second=0, microsecond=0)
 
 
 @dataclass(slots=True)
@@ -62,9 +59,9 @@ class CompetitionSchedule:
             if self.team_formation_end <= self.team_formation_start:
                 raise InvalidCompetitionDataError(message="Team formation end must be after start")
 
-    def update(self, data: ScheduleData) -> "CompetitionSchedule":
+    def update(self, data: ScheduleData, clock: Clock) -> "CompetitionSchedule":
         """Update schedule."""
-        now = normalize_datetime(datetime.now(tz=UTC))
+        now = normalize_datetime(clock.now())
 
         tf_start = self.team_formation_start
         tf_end = self.team_formation_end
@@ -104,9 +101,10 @@ def _validate_dates_not_in_past(
 
 def schedule_factory(
     data: ScheduleData,
+    clock: Clock,
 ) -> CompetitionSchedule:
     """Create new schedule."""
-    now = normalize_datetime(datetime.now(tz=UTC))
+    now = normalize_datetime(clock.now())
     _validate_dates_not_in_past(
         data.registration_start,
         data.registration_end,

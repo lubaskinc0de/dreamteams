@@ -1,7 +1,8 @@
-from datetime import UTC, datetime
+from datetime import datetime
 from uuid import uuid4
 
 from dreamteams.entities.base import Entity, model
+from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
@@ -56,6 +57,7 @@ class Competition(Entity):
         participant_type: ParticipantType,
         venue: CompetitionVenue,
         team_size: TeamSizeRange,
+        clock: Clock,
         milestones: list[Milestone] | None = None,
         *,
         is_archived: bool,
@@ -79,7 +81,7 @@ class Competition(Entity):
 
         self.title = title
         self.description = description
-        self.schedule = self.schedule.update(schedule)
+        self.schedule = self.schedule.update(schedule, clock)
         self.participant_limits = participant_limits
         self.domains = domains
         self.participant_type = participant_type
@@ -87,7 +89,7 @@ class Competition(Entity):
         self.team_size = team_size
         self.is_archived = is_archived
         self.milestones = milestones
-        self.updated_at = datetime.now(tz=UTC)
+        self.updated_at = clock.now()
 
 
 def competition_factory(  # noqa: PLR0913
@@ -101,6 +103,7 @@ def competition_factory(  # noqa: PLR0913
     participant_type: ParticipantType,
     venue: CompetitionVenue,
     team_size: TeamSizeRange,
+    clock: Clock,
     milestones: list[MilestoneData] | None = None,
 ) -> Competition:
     """Create a new competition."""
@@ -120,20 +123,20 @@ def competition_factory(  # noqa: PLR0913
     if len(timestamps) != len(set(timestamps)):
         raise InvalidCompetitionDataError(message="Milestone timestamps must be unique")
 
-    now = datetime.now(tz=UTC)
+    now = clock.now()
     return Competition(
         id=uuid4(),
         organizer_id=user.organizer.id,
         title=title,
         banner=None,
         description=description,
-        schedule=schedule_factory(schedule),
+        schedule=schedule_factory(schedule, clock),
         participant_limits=participant_limits,
         domains=domains,
         participant_type=participant_type,
         venue=venue,
         team_size=team_size,
-        milestones=[milestone_factory(milestone) for milestone in milestones],
+        milestones=[milestone_factory(milestone, clock) for milestone in milestones],
         is_archived=True,
         created_at=now,
         updated_at=now,

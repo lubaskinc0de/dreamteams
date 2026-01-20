@@ -1,8 +1,10 @@
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 
 import pytest
 from faker import Faker
 
+from dreamteams.adapters.clock import SystemClock
+from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import Competition, competition_factory
@@ -58,26 +60,31 @@ def user_without_organizer(faker: Faker) -> User:
 
 
 @pytest.fixture
-def valid_schedule_data() -> ScheduleData:
+def clock() -> Clock:
+    """Real system clock for tests."""
+    return SystemClock()
+
+
+@pytest.fixture
+def valid_schedule_data(clock: Clock) -> ScheduleData:
     """Valid schedule data with team formation period."""
-    now = datetime.now(tz=UTC)
+    now = clock.now()
     return ScheduleData(
-        registration_start=now + timedelta(days=1, hours=8),
-        registration_end=now + timedelta(days=10, hours=10),
-        team_formation_start=now + timedelta(days=11, hours=12),
-        team_formation_end=now + timedelta(days=20, hours=14),
+        registration_start=now + timedelta(days=5),
+        registration_end=now + timedelta(days=15),
+        team_formation_start=now + timedelta(days=20),
+        team_formation_end=now + timedelta(days=30),
     )
 
 
 @pytest.fixture
-def schedule() -> CompetitionSchedule:
+def schedule(valid_schedule_data: ScheduleData) -> CompetitionSchedule:
     """Competition schedule for tests."""
-    now = datetime.now(tz=UTC)
     return CompetitionSchedule(
-        registration_start=now + timedelta(days=1),
-        registration_end=now + timedelta(days=10),
-        team_formation_start=None,
-        team_formation_end=None,
+        registration_start=valid_schedule_data.registration_start,
+        registration_end=valid_schedule_data.registration_end,
+        team_formation_start=valid_schedule_data.team_formation_start,
+        team_formation_end=valid_schedule_data.team_formation_end,
     )
 
 
@@ -106,12 +113,12 @@ def team_size() -> TeamSizeRange:
 
 
 @pytest.fixture
-def milestones() -> list[Milestone]:
+def milestones(clock: Clock) -> list[Milestone]:
     """Milestones for tests."""
-    now = datetime.now(tz=UTC)
+    now = clock.now()
     return [
-        Milestone(timestamp=now + timedelta(days=15), title="Stage 1"),
-        Milestone(timestamp=now + timedelta(days=20), title="Stage 2"),
+        Milestone(timestamp=now + timedelta(days=35), title="Stage 1"),
+        Milestone(timestamp=now + timedelta(days=45), title="Stage 2"),
     ]
 
 
@@ -124,6 +131,7 @@ def competition(
     domains: list[Domain],
     venue: CompetitionVenue,
     team_size: TeamSizeRange,
+    clock: Clock,
 ) -> Competition:
     """Competition created by organizer_user."""
     return competition_factory(
@@ -136,4 +144,5 @@ def competition(
         participant_type=ParticipantType.STUDENT,
         venue=venue,
         team_size=team_size,
+        clock=clock,
     )

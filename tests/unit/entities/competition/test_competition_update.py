@@ -1,7 +1,8 @@
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 
 import pytest
 
+from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import Competition
@@ -23,6 +24,7 @@ def test_update_competition_with_valid_milestones_succeeds(
     domains: list[Domain],
     venue: CompetitionVenue,
     team_size: TeamSizeRange,
+    clock: Clock,
     milestones: list[Milestone],
 ) -> None:
     """Test updating competition with valid milestones succeeds."""
@@ -36,6 +38,7 @@ def test_update_competition_with_valid_milestones_succeeds(
         participant_type=ParticipantType.STUDENT,
         venue=venue,
         team_size=team_size,
+        clock=clock,
         milestones=milestones,
         is_archived=False,
     )
@@ -51,10 +54,10 @@ def test_duplicate_milestone_timestamps_is_not_allowed(
     domains: list[Domain],
     venue: CompetitionVenue,
     team_size: TeamSizeRange,
+    clock: Clock,
 ) -> None:
     """Test that updating competition with duplicate milestone timestamps raises error."""
-    now = datetime.now(tz=UTC)
-    duplicate_timestamp = now + timedelta(days=15)
+    duplicate_timestamp = datetime(year=2026, month=2, day=20, hour=12, minute=0, tzinfo=UTC)
     duplicate_milestones = [
         Milestone(timestamp=duplicate_timestamp, title="Stage 1"),
         Milestone(timestamp=duplicate_timestamp, title="Stage 2"),
@@ -71,6 +74,7 @@ def test_duplicate_milestone_timestamps_is_not_allowed(
             participant_type=ParticipantType.STUDENT,
             venue=venue,
             team_size=team_size,
+            clock=clock,
             milestones=duplicate_milestones,
             is_archived=False,
         )
@@ -91,6 +95,7 @@ def test_update_competition_with_invalid_data_raises_error(
     participant_limits: ParticipantLimits,
     venue: CompetitionVenue,
     team_size: TeamSizeRange,
+    clock: Clock,
     description: str,
     test_domains: list[Domain],
     expected_error: str,
@@ -107,6 +112,7 @@ def test_update_competition_with_invalid_data_raises_error(
             participant_type=ParticipantType.STUDENT,
             venue=venue,
             team_size=team_size,
+            clock=clock,
             milestones=[],
             is_archived=False,
         )
@@ -120,6 +126,7 @@ def test_cannot_update_competition_by_non_organizer(
     domains: list[Domain],
     venue: CompetitionVenue,
     team_size: TeamSizeRange,
+    clock: Clock,
 ) -> None:
     """Test that updating competition by non-organizer user raises error."""
     with pytest.raises(AccessDeniedError):
@@ -133,6 +140,7 @@ def test_cannot_update_competition_by_non_organizer(
             participant_type=ParticipantType.STUDENT,
             venue=venue,
             team_size=team_size,
+            clock=clock,
             milestones=[],
             is_archived=False,
         )
@@ -146,6 +154,7 @@ def test_cannot_update_competition_by_different_organizer(
     domains: list[Domain],
     venue: CompetitionVenue,
     team_size: TeamSizeRange,
+    clock: Clock,
 ) -> None:
     """Test that updating competition by different organizer raises error."""
     with pytest.raises(AccessDeniedError):
@@ -159,6 +168,7 @@ def test_cannot_update_competition_by_different_organizer(
             participant_type=ParticipantType.STUDENT,
             venue=venue,
             team_size=team_size,
+            clock=clock,
             milestones=[],
             is_archived=False,
         )
