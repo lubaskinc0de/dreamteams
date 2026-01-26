@@ -1,7 +1,9 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from hypothesis import strategies as st
+
+from tests.unit.entities.competition.conftest import NOW_NAIVE
 
 
 @st.composite
@@ -17,7 +19,7 @@ def dt_past(draw: st.DrawFn) -> datetime:
     """Datetime in past."""
     return draw(
         st.datetimes(
-            max_value=datetime.now(),  # noqa: DTZ005
+            max_value=NOW_NAIVE - timedelta(minutes=1),
             timezones=st.just(ZoneInfo("UTC")),
         ),
     )
@@ -28,7 +30,7 @@ def dt_future(draw: st.DrawFn) -> datetime:
     """Datetime in future."""
     return draw(
         st.datetimes(
-            min_value=datetime.now(),  # noqa: DTZ005
+            min_value=NOW_NAIVE + timedelta(minutes=1),
             timezones=st.just(ZoneInfo("UTC")),
         ),
     )

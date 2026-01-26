@@ -4,7 +4,7 @@ from hypothesis import strategies as st
 
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
-from tests.unit.helpers import ordered_pairs
+from tests.unit.composite import ordered_pairs
 
 
 @given(ordered_pairs().filter(lambda pair: pair[0] > 0 and pair[1] > 0))

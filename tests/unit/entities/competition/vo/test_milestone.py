@@ -7,7 +7,7 @@ from hypothesis import given
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.competition.milestone import MilestoneData, milestone_factory
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
-from tests.unit.helpers import dt_future, dt_past
+from tests.unit.composite import dt_future, dt_past
 
 
 @given(dt_future())
@@ -17,7 +17,6 @@ def test_create_milestone_with_valid_data(
 ) -> None:
     """Test creating Milestone with valid timestamp and title."""
     title = "Stage 1"
-
     milestone = milestone_factory(MilestoneData(timestamp=timestamp, title=title), clock)
 
     assert milestone.timestamp == timestamp.replace(second=0, microsecond=0)
