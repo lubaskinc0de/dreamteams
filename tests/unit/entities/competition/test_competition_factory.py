@@ -1,4 +1,4 @@
-from datetime import UTC
+from datetime import UTC, datetime
 
 import pytest
 from faker import Faker
@@ -73,6 +73,7 @@ from tests.unit.entities.competition.conftest import utc
         ),
     ],
 )
+@freeze_time("2025-01-25 10:00")
 def test_create_competition_with_valid_data(
     faker: Faker,
     organizer_user: User,

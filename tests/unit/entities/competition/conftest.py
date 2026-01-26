@@ -64,7 +64,7 @@ def user_without_organizer(faker: Faker) -> User:
     return User(id=faker.uuid4(cast_to=None), organizer=None)
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def clock() -> Clock:
     """Real system clock for tests."""
     return SystemClock()
@@ -151,3 +151,9 @@ def competition(
         team_size=team_size,
         clock=clock,
     )
+
+
+@pytest.fixture(scope="module")
+def faker() -> Faker:
+    """Provide faker instance."""
+    return Faker()
