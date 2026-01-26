@@ -22,6 +22,7 @@ def test_create_milestone_with_valid_data(
     assert milestone.timestamp == timestamp.replace(second=0, microsecond=0)
     assert milestone.title == title
 
+
 @given(dt_future())
 @pytest.mark.parametrize(
     ("title"),

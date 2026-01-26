@@ -8,7 +8,7 @@ from tests.unit.entities.competition.conftest import NOW_NAIVE
 
 @st.composite
 def ordered_pairs(draw: st.DrawFn) -> tuple[int, int]:
-    """Ordered pairs of positive integers."""
+    """Ordered pairs (min, max) of integers."""
     n1 = draw(st.integers())
     n2 = draw(st.integers(min_value=n1))
     return (n1, n2)
