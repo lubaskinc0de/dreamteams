@@ -1,6 +1,8 @@
 set windows-powershell := true
 
 up:
+    just down
+    just build-frontend
     docker compose -f docker/docker-compose.yml --env-file=./.config/.env up --build
 
 up-silent:
@@ -44,8 +46,3 @@ cookie-secret:
 
 build-frontend:
     cd ./frontend && npm run generate
-
-reload:
-    just down
-    just build-frontend
-    just up
