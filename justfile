@@ -1,3 +1,5 @@
+set windows-powershell := true
+
 up:
     just down
     just build-frontend
