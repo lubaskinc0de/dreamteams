@@ -7,6 +7,7 @@ from faker import Faker
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.publish_competition import CreatedCompetition
 from dreamteams.application.register.register_organizer import CreatedOrganizer
+from dreamteams.entities.common.clock import Clock
 from tests.common.factory.competition import UpdateCompetitionFormFactory
 from tests.common.helpers.competition import (
     INVALID_COMPETITION_DATA_CASES,
@@ -23,6 +24,7 @@ async def test_update_competition_as_owner_succeeds(
     competition: CreatedCompetition,
     update_competition_form_factory: UpdateCompetitionFormFactory,
     request_container: AsyncContainer,
+    clock: Clock,
 ) -> None:
     """Test updating competition as owner."""
     update_form = update_competition_form_factory.build()
@@ -35,6 +37,7 @@ async def test_update_competition_as_owner_succeeds(
         created_at=db_competition.created_at,
         organizer_id=db_competition.organizer_id,
         form=update_form,
+        clock=clock,
     )
 
     with api_client.authenticate(auth_user_id=USER_ID):

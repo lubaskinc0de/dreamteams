@@ -30,9 +30,9 @@ class CompetitionGateway(Protocol):
         raise NotImplementedError
 
     @abstractmethod
-    async def list_by_organizer(  # noqa: PLR0913
+    async def list(  # noqa: PLR0913
         self,
-        organizer_id: OrganizerId,
+        organizer_id: OrganizerId | None = None,
         *,
         page: int,
         page_size: int,

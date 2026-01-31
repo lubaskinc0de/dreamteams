@@ -26,18 +26,3 @@ Creates a new user and attaches organizer role to the user.
 3. If user with given `auth_user_id` exists, use existing user
 4. Logo is set to `None` on registration
 5. User can have only one organizer role
-
-## Flow
-
-1. Check uniqueness of phone number and email via `OrganizerGateway`
-2. Get or create user via `UserFactory`
-3. Generate new `organizer_id`
-4. Create `Organizer` entity
-5. Attach organizer to user via `user.attach_organizer()`
-6. Save organizer via `UoW`
-7. Return created organizer and user identifiers
-
-## Error Cases
-
-- `OrganizerAlreadyExistsError` — phone or email already registered
-- `UserAlreadyOrganizerError` — user already has organizer role

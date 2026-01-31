@@ -41,7 +41,4 @@
 ## Business Rules
 
 1. Only competitions created by organizer are visible
-
-## Possible Errors
-
-No specific errors. Returns empty list if organizer has no competitions.
+2. Returns empty list if organizer has no competitions

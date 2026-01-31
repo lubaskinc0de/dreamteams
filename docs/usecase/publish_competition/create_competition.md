@@ -36,8 +36,3 @@
 5. `organizer_id` is set from current authenticated user
 6. All value object validation rules apply
 7. If milestones are provided, their timestamps must be unique
-
-## Possible Errors
-
-- `AccessDeniedError` — user does not have organizer role
-- `InvalidCompetitionDataError` — invalid data for schedule, venue, limits or team size

@@ -29,8 +29,3 @@
 ## Business Rules
 
 1. Only organizer who created competition can view it
-
-## Possible Errors
-
-- `AccessDeniedError` — organizer is not competition creator
-- `CompetitionNotFoundError` — competition not found

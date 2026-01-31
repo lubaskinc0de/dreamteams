@@ -7,9 +7,11 @@ from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
 from dreamteams.application.common.uow import UoW
+from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import CompetitionId
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.competition.entity import UpdateCompetitionData
 from dreamteams.entities.competition.milestone import MilestoneData, milestone_factory
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import ScheduleData
@@ -42,6 +44,7 @@ class UpdateCompetition:
     uow: UoW
     idp: IdProvider
     competition_gateway: CompetitionGateway
+    clock: Clock
 
     async def execute(self, competition_id: CompetitionId, data: UpdateCompetitionForm) -> None:
         """Updates competition by organizer who created it."""
@@ -58,20 +61,24 @@ class UpdateCompetition:
 
         competition.update(
             user=user,
-            title=data.title,
-            description=data.description,
-            schedule=data.schedule,
-            participant_limits=data.participant_limits,
-            domains=data.domains,
-            participant_type=data.participant_type,
-            venue=data.venue,
-            team_size=data.team_size,
-            milestones=[
-                milestone_factory(MilestoneData(milestone.title, milestone.timestamp)) for milestone in data.milestones
-            ]
-            if data.milestones is not None
-            else None,
-            is_archived=data.is_archived,
+            clock=self.clock,
+            data=UpdateCompetitionData(
+                title=data.title,
+                description=data.description,
+                schedule=data.schedule,
+                participant_limits=data.participant_limits,
+                domains=data.domains,
+                participant_type=data.participant_type,
+                venue=data.venue,
+                team_size=data.team_size,
+                milestones=[
+                    milestone_factory(MilestoneData(milestone.title, milestone.timestamp), self.clock)
+                    for milestone in data.milestones
+                ]
+                if data.milestones is not None
+                else None,
+                is_archived=data.is_archived,
+            ),
         )
 
         await self.uow.commit()

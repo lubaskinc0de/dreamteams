@@ -57,7 +57,7 @@ class ListCompetitions:
             logger.warning("User has no organizer role", user_id=user.id)
             raise AccessDeniedError(message="Only organizers can list competitions")
 
-        competitions, total = await self.competition_gateway.list_by_organizer(
+        competitions, total = await self.competition_gateway.list(
             user.organizer.id,
             page=input_data.page,
             page_size=PAGE_SIZE,

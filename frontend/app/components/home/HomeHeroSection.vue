@@ -27,7 +27,7 @@ const { t } = useI18n();
         </p>
 
         <!-- CTA Button -->
-        <div class="fade-in-scroll flex justify-center sm:justify-center">
+        <div class="fade-in-scroll flex justify-start sm:justify-center">
           <UButton
             @click="emit('start')"
             size="xl"
@@ -35,6 +35,7 @@ const { t } = useI18n();
             color="primary"
             variant="solid"
             class="min-w-[200px]"
+            :ui="{ base: 'justify-center' }"
           >
             {{ t('home.startButton') }}
           </UButton>
