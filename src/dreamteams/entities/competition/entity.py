@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime
 from uuid import uuid4
 
@@ -92,32 +93,37 @@ class Competition(Entity):
         self.updated_at = clock.now()
 
 
-def competition_factory(  # noqa: PLR0913
-    *,
+@dataclass(slots=True)
+class CompetitionData:
+    """Data for creating Competition."""
+
+    title: str
+    description: str
+    schedule: ScheduleData
+    participant_limits: ParticipantLimits
+    domains: list[Domain]
+    participant_type: ParticipantType
+    venue: CompetitionVenue
+    team_size: TeamSizeRange
+    milestones: list[MilestoneData] | None = None
+
+
+def competition_factory(
+    data: CompetitionData,
     user: User,
-    title: str,
-    description: str,
-    schedule: ScheduleData,
-    participant_limits: ParticipantLimits,
-    domains: list[Domain],
-    participant_type: ParticipantType,
-    venue: CompetitionVenue,
-    team_size: TeamSizeRange,
     clock: Clock,
-    milestones: list[MilestoneData] | None = None,
 ) -> Competition:
     """Create a new competition."""
     if user.organizer is None:
         raise AccessDeniedError(message="Only organizers can create competitions")
 
-    if not description or not description.strip():
+    if not data.description or not data.description.strip():
         raise InvalidCompetitionDataError(message="Description must not be empty")
 
-    if not domains:
+    if not data.domains:
         raise InvalidCompetitionDataError(message="Domains list must not be empty")
 
-    if milestones is None:
-        milestones = []
+    milestones = [] if data.milestones is None else data.milestones
 
     timestamps = [m.timestamp for m in milestones]
     if len(timestamps) != len(set(timestamps)):
@@ -127,15 +133,15 @@ def competition_factory(  # noqa: PLR0913
     return Competition(
         id=uuid4(),
         organizer_id=user.organizer.id,
-        title=title,
+        title=data.title,
         banner=None,
-        description=description,
-        schedule=schedule_factory(schedule, clock),
-        participant_limits=participant_limits,
-        domains=domains,
-        participant_type=participant_type,
-        venue=venue,
-        team_size=team_size,
+        description=data.description,
+        schedule=schedule_factory(data.schedule, clock),
+        participant_limits=data.participant_limits,
+        domains=data.domains,
+        participant_type=data.participant_type,
+        venue=data.venue,
+        team_size=data.team_size,
         milestones=[milestone_factory(milestone, clock) for milestone in milestones],
         is_archived=True,
         created_at=now,
