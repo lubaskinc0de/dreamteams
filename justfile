@@ -1,5 +1,3 @@
-set windows-powershell := true
-
 up:
     just down
     just build-frontend
@@ -45,4 +43,4 @@ cookie-secret:
     echo "OAUTH2_PROXY_COOKIE_SECRET=$(openssl rand -base64 32)"
 
 build-frontend:
-    cd ./frontend && npm run generate
+    cd ./frontend; npm run generate
