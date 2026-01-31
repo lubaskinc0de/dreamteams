@@ -1,9 +1,9 @@
 from datetime import UTC, datetime, timedelta
+from unittest.mock import Mock
 
 import pytest
 from faker import Faker
 
-from dreamteams.adapters.clock import SystemClock
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
@@ -15,6 +15,9 @@ from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
 from dreamteams.entities.organizer import Organizer
 from dreamteams.entities.user import User
+
+NOW_NAIVE = datetime(year=2026, month=1, day=25, hour=10, minute=30, second=25, microsecond=3)  # noqa: DTZ001
+NOW = NOW_NAIVE.replace(tzinfo=UTC)
 
 
 def utc(dt_string: str) -> datetime:
@@ -64,10 +67,12 @@ def user_without_organizer(faker: Faker) -> User:
     return User(id=faker.uuid4(cast_to=None), organizer=None)
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def clock() -> Clock:
     """Real system clock for tests."""
-    return SystemClock()
+    mock_clock = Mock()
+    mock_clock.now.return_value = NOW
+    return mock_clock
 
 
 @pytest.fixture
@@ -151,3 +156,9 @@ def competition(
         team_size=team_size,
         clock=clock,
     )
+
+
+@pytest.fixture(scope="module")
+def faker() -> Faker:
+    """Provide faker instance."""
+    return Faker()
