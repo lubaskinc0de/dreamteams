@@ -1,4 +1,4 @@
-from datetime import UTC
+from datetime import datetime, UTC
 
 import pytest
 from faker import Faker
