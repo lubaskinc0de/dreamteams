@@ -17,7 +17,7 @@ class User(Entity):
     id: UserId
     organizer: Organizer | None
 
-    def attach_organizer(self, organizer: Organizer) -> None:
+    def make_organizer(self, organizer: Organizer) -> None:
         """Attach ``Organizer`` role to user."""
         if self.organizer is not None:
             raise UserAlreadyOrganizerError
@@ -35,6 +35,6 @@ class User(Entity):
         raise ValueError(msg)
 
 
-def create_new_user(user_id: UserId) -> User:
-    """Create new user in the system."""
+def user_factory(user_id: UserId) -> User:
+    """``User`` entity factory (user created without roles)."""
     return User(user_id, organizer=None)
