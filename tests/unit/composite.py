@@ -83,16 +83,13 @@ def valid_schedule_data(draw: st.DrawFn, min_dt: datetime | None = None) -> Sche
 @st.composite
 def past_schedule(draw: st.DrawFn) -> CompetitionSchedule:
     """CompetitionSchedule with team formation period with dates in past."""
-    tf_end = draw(dt_past())
-    tf_start = draw(dt_past(max_dt=tf_end.replace(tzinfo=None) - timedelta(minutes=1)))
-    r_end = draw(dt_past(max_dt=tf_start.replace(tzinfo=None) - timedelta(minutes=1)))
-    r_start = draw(dt_past(max_dt=r_end.replace(tzinfo=None) - timedelta(minutes=1)))
+    base_date = draw(dt_past(max_dt=NOW_NAIVE - timedelta(minutes=4)))
 
     return CompetitionSchedule(
-        registration_start=r_start,
-        registration_end=r_end,
-        team_formation_start=tf_start,
-        team_formation_end=tf_end,
+        registration_start=base_date,
+        registration_end=base_date + timedelta(minutes=1),
+        team_formation_start=base_date + timedelta(minutes=2),
+        team_formation_end=base_date + timedelta(minutes=3),
     )
 
 

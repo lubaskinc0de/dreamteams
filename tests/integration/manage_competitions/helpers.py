@@ -7,6 +7,7 @@ from dreamteams.application.manage_competitions.list import PAGE_SIZE, Competiti
 from dreamteams.application.manage_competitions.read import CompetitionModel
 from dreamteams.application.manage_competitions.update import UpdateCompetitionForm
 from dreamteams.application.publish_competition.create import CompetitionForm
+from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
 from dreamteams.entities.competition.milestone import Milestone
 from dreamteams.entities.competition.schedule import schedule_factory
@@ -69,6 +70,7 @@ def competition_form_to_model(
     created_at: datetime,
     updated_at: datetime,
     form: CompetitionForm,
+    clock: Clock,
 ) -> CompetitionModel:
     """Transform competition form and additional data to CompetitionModel."""
     return CompetitionModel(
@@ -77,7 +79,7 @@ def competition_form_to_model(
         title=form.title,
         banner=None,
         description=form.description,
-        schedule=schedule_factory(form.schedule),
+        schedule=schedule_factory(form.schedule, clock),
         participant_limits=form.participant_limits,
         domains=form.domains,
         participant_type=form.participant_type,
@@ -99,6 +101,7 @@ def competition_update_form_to_model(
     created_at: datetime,
     updated_at: datetime,
     form: UpdateCompetitionForm,
+    clock: Clock,
 ) -> CompetitionModel:
     """Transform competition form and additional data to CompetitionModel."""
     return CompetitionModel(
@@ -107,7 +110,7 @@ def competition_update_form_to_model(
         title=form.title,
         banner=None,
         description=form.description,
-        schedule=schedule_factory(form.schedule),
+        schedule=schedule_factory(form.schedule, clock),
         participant_limits=form.participant_limits,
         domains=form.domains,
         participant_type=form.participant_type,
