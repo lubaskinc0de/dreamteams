@@ -47,48 +47,37 @@ class Competition(Entity):
         """Check if user can delete this competition."""
         return user.organizer is not None and self.organizer_id == user.organizer.id
 
-    def update(  # noqa: PLR0913
+    def update(
         self,
+        data: "UpdateCompetitionData",
         user: User,
-        title: str,
-        description: str,
-        schedule: ScheduleData,
-        participant_limits: ParticipantLimits,
-        domains: list[Domain],
-        participant_type: ParticipantType,
-        venue: CompetitionVenue,
-        team_size: TeamSizeRange,
         clock: Clock,
-        milestones: list[Milestone] | None = None,
-        *,
-        is_archived: bool,
     ) -> None:
         """Update competition fields."""
         if user.organizer is None or self.organizer_id != user.organizer.id:
             raise AccessDeniedError(message="Only the organizer who created this competition can update it")
 
-        if not description or not description.strip():
+        if not data.description or not data.description.strip():
             raise InvalidCompetitionDataError(message="Description must not be empty")
 
-        if not domains:
+        if not data.domains:
             raise InvalidCompetitionDataError(message="Domains list must not be empty")
 
-        if milestones is None:
-            milestones = []
+        milestones = [] if data.milestones is None else data.milestones
 
         timestamps = [m.timestamp for m in milestones]
         if len(timestamps) != len(set(timestamps)):
             raise InvalidCompetitionDataError(message="Milestone timestamps must be unique")
 
-        self.title = title
-        self.description = description
-        self.schedule = self.schedule.update(schedule, clock)
-        self.participant_limits = participant_limits
-        self.domains = domains
-        self.participant_type = participant_type
-        self.venue = venue
-        self.team_size = team_size
-        self.is_archived = is_archived
+        self.title = data.title
+        self.description = data.description
+        self.schedule = self.schedule.update(data.schedule, clock)
+        self.participant_limits = data.participant_limits
+        self.domains = data.domains
+        self.participant_type = data.participant_type
+        self.venue = data.venue
+        self.team_size = data.team_size
+        self.is_archived = data.is_archived
         self.milestones = milestones
         self.updated_at = clock.now()
 
@@ -106,6 +95,22 @@ class CompetitionData:
     venue: CompetitionVenue
     team_size: TeamSizeRange
     milestones: list[MilestoneData] | None = None
+
+
+@dataclass(slots=True)
+class UpdateCompetitionData:
+    """Data for updating a Competition."""
+
+    title: str
+    description: str
+    schedule: ScheduleData
+    participant_limits: ParticipantLimits
+    domains: list[Domain]
+    participant_type: ParticipantType
+    venue: CompetitionVenue
+    team_size: TeamSizeRange
+    is_archived: bool
+    milestones: list[Milestone] | None = None
 
 
 def competition_factory(

@@ -1,5 +1,6 @@
 import pytest
-from hypothesis import HealthCheck, assume, given, settings
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
 
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.competition.entity import Competition, CompetitionData, competition_factory
@@ -7,7 +8,7 @@ from dreamteams.entities.competition.milestone import milestone_factory
 from dreamteams.entities.competition.schedule import CompetitionSchedule
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 from dreamteams.entities.user import User
-from tests.unit.composite import valid_competition_data
+from tests.unit.composite import milestone_data, valid_competition_data
 
 
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
@@ -53,21 +54,20 @@ def test_create_competition_with_valid_data(
 
 
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-@given(valid_competition_data())
+@given(valid_competition_data(), st.data())
 def test_competition_milestones_are_unique(
     organizer_user: User,
     clock: Clock,
-    data: CompetitionData,
+    competition_data: CompetitionData,
+    data: st.DataObject,
 ) -> None:
     """Test cannot create competition with duplicate milestones."""
-    assume(data.milestones and len(data.milestones) > 1)
-    first_element = data.milestones[0]  # type: ignore[index]
-    data.milestones = [first_element for _ in data.milestones]  # type: ignore[union-attr]
+    competition_data.milestones = [data.draw(milestone_data())] * 2
 
     with pytest.raises(InvalidCompetitionDataError, match="Milestone timestamps must be unique"):
         competition_factory(
             user=organizer_user,
-            data=data,
+            data=competition_data,
             clock=clock,
         )
 
