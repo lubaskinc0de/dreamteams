@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import pytest
 from freezegun import freeze_time
@@ -79,7 +79,8 @@ def test_schedule_factory_normalizes_datetime(clock: Clock) -> None:
 
 @freeze_time("2025-01-15 12:00:00")
 def test_cannot_create_schedule_with_registration_start_in_past(
-    valid_schedule_data: ScheduleData, clock: Clock,
+    valid_schedule_data: ScheduleData,
+    clock: Clock,
 ) -> None:
     """Factory rejects registration start date in the past."""
     valid_schedule_data.registration_start = utc("2024-12-01 10:00:00")
@@ -99,7 +100,8 @@ def test_cannot_create_schedule_with_registration_end_in_past(valid_schedule_dat
 
 @freeze_time("2025-01-15 12:00:00")
 def test_cannot_create_schedule_with_registration_start_after_end(
-    valid_schedule_data: ScheduleData, clock: Clock,
+    valid_schedule_data: ScheduleData,
+    clock: Clock,
 ) -> None:
     """Factory rejects registration start after end date."""
     valid_schedule_data.registration_start = valid_schedule_data.registration_end + timedelta(days=1)
@@ -110,7 +112,8 @@ def test_cannot_create_schedule_with_registration_start_after_end(
 
 @freeze_time("2025-01-15 12:00:00")
 def test_cannot_create_schedule_with_registration_start_equal_end(
-    valid_schedule_data: ScheduleData, clock: Clock,
+    valid_schedule_data: ScheduleData,
+    clock: Clock,
 ) -> None:
     """Factory rejects registration start equal to end date."""
     same_time = utc("2026-01-25 10:00:00")
@@ -123,7 +126,8 @@ def test_cannot_create_schedule_with_registration_start_equal_end(
 
 @freeze_time("2025-01-15 12:00:00")
 def test_cannot_create_schedule_with_partial_team_formation_start(
-    valid_schedule_data: ScheduleData, clock: Clock,
+    valid_schedule_data: ScheduleData,
+    clock: Clock,
 ) -> None:
     """Factory rejects schedule with only team formation start."""
     valid_schedule_data.team_formation_end = None
@@ -137,7 +141,8 @@ def test_cannot_create_schedule_with_partial_team_formation_start(
 
 @freeze_time("2025-01-15 12:00:00")
 def test_cannot_create_schedule_with_partial_team_formation_end(
-    valid_schedule_data: ScheduleData, clock: Clock,
+    valid_schedule_data: ScheduleData,
+    clock: Clock,
 ) -> None:
     """Factory rejects schedule with only team formation end."""
     valid_schedule_data.team_formation_start = None
@@ -151,7 +156,8 @@ def test_cannot_create_schedule_with_partial_team_formation_end(
 
 @freeze_time("2025-01-15 12:00:00")
 def test_cannot_create_schedule_with_team_formation_start_in_past(
-    valid_schedule_data: ScheduleData, clock: Clock,
+    valid_schedule_data: ScheduleData,
+    clock: Clock,
 ) -> None:
     """Factory rejects team formation start date in the past."""
     valid_schedule_data.team_formation_start = utc("2024-12-01 10:00:00")
@@ -162,7 +168,8 @@ def test_cannot_create_schedule_with_team_formation_start_in_past(
 
 @freeze_time("2025-01-15 12:00:00")
 def test_cannot_create_schedule_with_team_formation_end_in_past(
-    valid_schedule_data: ScheduleData, clock: Clock,
+    valid_schedule_data: ScheduleData,
+    clock: Clock,
 ) -> None:
     """Factory rejects team formation end date in the past."""
     valid_schedule_data.team_formation_end = utc("2024-12-01 10:00:00")
@@ -173,7 +180,8 @@ def test_cannot_create_schedule_with_team_formation_end_in_past(
 
 @freeze_time("2025-01-15 12:00:00")
 def test_cannot_create_schedule_with_team_formation_before_registration_end(
-    valid_schedule_data: ScheduleData, clock: Clock,
+    valid_schedule_data: ScheduleData,
+    clock: Clock,
 ) -> None:
     """Factory rejects team formation start before registration end."""
     valid_schedule_data.team_formation_start = valid_schedule_data.registration_end - timedelta(days=1)
@@ -187,7 +195,8 @@ def test_cannot_create_schedule_with_team_formation_before_registration_end(
 
 @freeze_time("2025-01-15 12:00:00")
 def test_cannot_create_schedule_with_team_formation_start_equal_end(
-    valid_schedule_data: ScheduleData, clock: Clock,
+    valid_schedule_data: ScheduleData,
+    clock: Clock,
 ) -> None:
     """Factory rejects team formation start equal to end."""
     same_time = utc("2026-02-10 10:00:00")
