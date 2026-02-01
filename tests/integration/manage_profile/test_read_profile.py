@@ -24,7 +24,6 @@ async def test_view_organizer_profile(
             organizer_name=organizer_form.organizer_name,
             phone_number=organizer_form.phone_number,
             contact_email=email,
-            avatar=None,
         ),
     )
 

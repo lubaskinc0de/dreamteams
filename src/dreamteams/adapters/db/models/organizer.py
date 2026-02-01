@@ -11,7 +11,6 @@ organizer_table = Table(
     Column("organizer_name", String(150), nullable=False),
     Column("phone_number", String(100), nullable=False, unique=True),
     Column("contact_email", Text, nullable=False, unique=True),
-    Column("logo", Text, nullable=True),
 )
 
 

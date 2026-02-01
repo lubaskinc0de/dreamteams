@@ -1,4 +1,4 @@
-from sqlalchemy import UUID, Column, Table
+from sqlalchemy import UUID, Column, Table, Text
 from sqlalchemy.orm import relationship
 
 from dreamteams.adapters.db.models.base import mapper_registry
@@ -8,6 +8,7 @@ user_table = Table(
     "users",
     mapper_registry.metadata,
     Column("id", UUID(as_uuid=True), primary_key=True),
+    Column("avatar", Text, nullable=True),
 )
 
 

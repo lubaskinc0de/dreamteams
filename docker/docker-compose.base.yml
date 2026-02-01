@@ -117,3 +117,11 @@ services:
         expose:
             - "3100"
         restart: unless-stopped
+    
+    rustfs:
+        image: rustfs/rustfs:1.0.0-alpha.82
+        container_name: rustfs
+        ports:
+            - 9000:9000
+            - 9001:9001
+        

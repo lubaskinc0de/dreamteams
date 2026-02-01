@@ -6,6 +6,8 @@ from dreamteams.entities.errors.organizer import (
 )
 from dreamteams.entities.organizer import Organizer
 
+type Avatar = str
+
 
 @model
 class User(Entity):
@@ -16,6 +18,7 @@ class User(Entity):
 
     id: UserId
     organizer: Organizer | None
+    avatar: Avatar | None = None
 
     def make_organizer(self, organizer: Organizer) -> None:
         """Attach ``Organizer`` role to user."""
