@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from pydantic import BaseModel, Field
 
 from dreamteams.application.common.gateway.competition import CompetitionGateway, CompetitionSortBy
@@ -29,7 +31,14 @@ class ListPreviewCompetitions:
     competition_gateway: CompetitionGateway
 
     async def execute(self, input_data: ListPreviewCompetitionsInput) -> PreviewCompetitionsList:
-        """List competitions for an unauthorized user."""
+        """
+        List competitions for unauthorized users.
+        Returns only non-archived competitions with active registration,
+        sorted by creation date descending.
+        """
+        
+        now = datetime.now(UTC)
+        
         competitions, total = await self.competition_gateway.list(
             organizer_id=None,
             page=input_data.page,
@@ -38,6 +47,7 @@ class ListPreviewCompetitions:
             sort_order=SortOrder.DESC,
             is_archived=False,
             search=None,
+            registration_active_at=now,
         )
 
         items = [
@@ -56,7 +66,7 @@ class ListPreviewCompetitions:
                 milestones=competition.milestones,
                 is_archived=competition.is_archived,
                 created_at=competition.created_at,
-                update_at=competition.update_at,
+                updated_at=competition.updated_at,
             )
             for competition in competitions
         ]
