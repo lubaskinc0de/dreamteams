@@ -6,7 +6,7 @@ from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
 from dreamteams.application.common.uow import UoW
 from dreamteams.entities.common.identifiers import OrganizerId, UserId
-from dreamteams.entities.organizer import Logo
+from dreamteams.entities.organizer import Avatar
 
 logger: Logger = structlog.get_logger(__name__)
 
@@ -19,7 +19,7 @@ class OrganizerModel(BaseModel):
     organizer_name: str
     phone_number: str
     contact_email: str
-    logo: Logo | None
+    avatar: Avatar | None
 
 
 class ProfileModel(BaseModel):
@@ -48,7 +48,7 @@ class ReadProfile:
             organizer_name=organizer.organizer_name,
             phone_number=organizer.phone_number,
             contact_email=organizer.contact_email,
-            logo=organizer.logo,
+            avatar=organizer.avatar,
         )
 
         return ProfileModel(user_id=user.id, organizer=organizer_model)

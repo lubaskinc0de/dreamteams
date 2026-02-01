@@ -61,7 +61,7 @@ class RegisterOrganizer:
             organizer_name=data.organizer_name,
             phone_number=data.phone_number,
             contact_email=data.contact_email,
-            logo=None,
+            avatar=None,
         )
         logger.debug("Creating role 'Organizer' for user", user_id=user.id)
         user.make_organizer(organizer)
