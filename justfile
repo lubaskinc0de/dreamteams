@@ -34,7 +34,6 @@ lint:
 
 dev-environment:
     uv pip install -e ".[dev]"
-    cd ./frontend; npm install; npm install @nuxt/vite-builder
 
 generate-migration NAME:
     just up-db
