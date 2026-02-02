@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel, Field
 
 from dreamteams.application.common.gateway.competition import CompetitionGateway, CompetitionSortBy
@@ -30,7 +29,7 @@ class PreviewCompetitions:
     competition_gateway: CompetitionGateway
 
     async def execute(self, input_data: PreviewCompetitionsInput) -> PreviewCompetitionsList:
-        """Interactor for viewing competitions as anonymous user"""
+        """Interactor for viewing competitions as anonymous user."""
         competitions, total = await self.competition_gateway.list(
             organizer_id=None,
             page=input_data.page,
