@@ -6,7 +6,7 @@ from dreamteams.application.common.auth_provider import AuthProvider
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
 from dreamteams.application.common.uow import UoW
-from dreamteams.entities.user import User, create_new_user
+from dreamteams.entities.user import User, user_factory
 
 logger: Logger = structlog.get_logger(__name__)
 
@@ -23,7 +23,7 @@ class UserFactory:
         logger.debug("Creating new user")
         user_id = uuid4()
         logger.debug("Generated new user id", user_id=user_id)
-        user = create_new_user(user_id)
+        user = user_factory(user_id)
 
         self.uow.add(user)
         await self.uow.flush([user])

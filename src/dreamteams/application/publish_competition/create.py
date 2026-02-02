@@ -10,7 +10,7 @@ from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import CompetitionId
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
-from dreamteams.entities.competition.entity import competition_factory
+from dreamteams.entities.competition.entity import CompetitionData, competition_factory
 from dreamteams.entities.competition.milestone import MilestoneData
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import ScheduleData
@@ -54,17 +54,19 @@ class CreateCompetition:
         logger.debug("Creating competition", title=data.title, user_id=user.id)
 
         competition = competition_factory(
-            user=user,
-            title=data.title,
-            description=data.description,
-            schedule=data.schedule,
-            participant_limits=data.participant_limits,
-            domains=data.domains,
-            participant_type=data.participant_type,
-            venue=data.venue,
-            team_size=data.team_size,
-            clock=self.clock,
-            milestones=[MilestoneData(milestone.title, milestone.timestamp) for milestone in data.milestones],
+            CompetitionData(
+                title=data.title,
+                description=data.description,
+                schedule=data.schedule,
+                participant_limits=data.participant_limits,
+                domains=data.domains,
+                participant_type=data.participant_type,
+                venue=data.venue,
+                team_size=data.team_size,
+                milestones=[MilestoneData(milestone.title, milestone.timestamp) for milestone in data.milestones],
+            ),
+            user,
+            self.clock,
         )
 
         logger.debug(

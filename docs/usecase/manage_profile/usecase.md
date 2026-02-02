@@ -10,4 +10,5 @@ User manages their profile: view information and assigned roles.
 ## Interactors
 
 - [ReadProfile](./read_profile.md) — read current user profile
-- DeleteProfile — delete user profile
+- [UpdateOrganizer](./update_organizer.md) — update organizer profile
+- [DeleteProfile](./delete_profile.md) — delete user profile

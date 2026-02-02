@@ -1,173 +1,157 @@
 import pytest
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
 
 from dreamteams.entities.common.clock import Clock
-from dreamteams.entities.common.vo.domain import Domain
-from dreamteams.entities.common.vo.participant_type import ParticipantType
-from dreamteams.entities.competition.entity import Competition
-from dreamteams.entities.competition.milestone import Milestone
-from dreamteams.entities.competition.participant_limits import ParticipantLimits
-from dreamteams.entities.competition.schedule import ScheduleData
-from dreamteams.entities.competition.team_size_range import TeamSizeRange
-from dreamteams.entities.competition.venue import CompetitionVenue
+from dreamteams.entities.competition.entity import Competition, UpdateCompetitionData
+from dreamteams.entities.competition.schedule import CompetitionSchedule
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 from dreamteams.entities.user import User
-from tests.unit.entities.competition.conftest import utc
+from tests.unit.composite import milestone, valid_competition, valid_competition_update_data
 
 
-def test_update_competition_with_valid_milestones_succeeds(
-    competition: Competition,
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(st.data(), valid_competition_update_data())
+def test_update_competition_succeeds(
     organizer_user: User,
-    valid_schedule_data: ScheduleData,
-    participant_limits: ParticipantLimits,
-    domains: list[Domain],
-    venue: CompetitionVenue,
-    team_size: TeamSizeRange,
     clock: Clock,
-    milestones: list[Milestone],
+    data: st.DataObject,
+    valid_competition_update_data: UpdateCompetitionData,
 ) -> None:
-    """Test updating competition with valid milestones succeeds."""
+    """Test updating competition succeeds."""
+    competition = data.draw(valid_competition(organizer_user, clock))
+
     competition.update(
-        user=organizer_user,
-        title="Updated Title",
-        description="Updated description",
-        schedule=valid_schedule_data,
-        participant_limits=participant_limits,
-        domains=domains,
-        participant_type=ParticipantType.STUDENT,
-        venue=venue,
-        team_size=team_size,
-        clock=clock,
-        milestones=milestones,
-        is_archived=False,
+        valid_competition_update_data,
+        organizer_user,
+        clock,
     )
 
-    assert competition.milestones == milestones
+    assert organizer_user.organizer is not None
+    assert competition == Competition(
+        id=competition.id,
+        organizer_id=organizer_user.organizer.id,
+        title=valid_competition_update_data.title,
+        description=valid_competition_update_data.description,
+        schedule=CompetitionSchedule(
+            valid_competition_update_data.schedule.registration_start,
+            valid_competition_update_data.schedule.registration_end,
+            valid_competition_update_data.schedule.team_formation_start,
+            valid_competition_update_data.schedule.team_formation_end,
+        ),
+        participant_limits=valid_competition_update_data.participant_limits,
+        domains=valid_competition_update_data.domains,
+        participant_type=valid_competition_update_data.participant_type,
+        venue=valid_competition_update_data.venue,
+        team_size=valid_competition_update_data.team_size,
+        banner=None,
+        is_archived=valid_competition_update_data.is_archived,
+        milestones=valid_competition_update_data.milestones
+        if valid_competition_update_data.milestones is not None
+        else [],
+        created_at=competition.created_at,
+        updated_at=competition.updated_at,
+    )
 
 
-def test_duplicate_milestone_timestamps_is_not_allowed(
-    competition: Competition,
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(st.data(), valid_competition_update_data())
+def test_competition_milestones_are_unique(
     organizer_user: User,
-    valid_schedule_data: ScheduleData,
-    participant_limits: ParticipantLimits,
-    domains: list[Domain],
-    venue: CompetitionVenue,
-    team_size: TeamSizeRange,
     clock: Clock,
+    data: st.DataObject,
+    valid_competition_update_data: UpdateCompetitionData,
 ) -> None:
-    """Test that updating competition with duplicate milestone timestamps raises error."""
-    duplicate_timestamp = utc("2026-02-20 12:00:00")
-    duplicate_milestones = [
-        Milestone(timestamp=duplicate_timestamp, title="Stage 1"),
-        Milestone(timestamp=duplicate_timestamp, title="Stage 2"),
-    ]
+    """Test cannot create competition with duplicate milestones."""
+    competition = data.draw(valid_competition(organizer_user, clock))
+    valid_competition_update_data.milestones = [data.draw(milestone())] * 2
 
     with pytest.raises(InvalidCompetitionDataError, match="Milestone timestamps must be unique"):
         competition.update(
-            user=organizer_user,
-            title="Updated Title",
-            description="Updated description",
-            schedule=valid_schedule_data,
-            participant_limits=participant_limits,
-            domains=domains,
-            participant_type=ParticipantType.STUDENT,
-            venue=venue,
-            team_size=team_size,
-            clock=clock,
-            milestones=duplicate_milestones,
-            is_archived=False,
+            valid_competition_update_data,
+            organizer_user,
+            clock,
         )
 
 
-@pytest.mark.parametrize(
-    ("description", "test_domains", "expected_error"),
-    [
-        ("", [Domain.AI], "Description must not be empty"),
-        ("   ", [Domain.AI], "Description must not be empty"),
-        ("Valid description", [], "Domains list must not be empty"),
-    ],
-)
-def test_update_competition_with_invalid_data_raises_error(
-    competition: Competition,
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(st.data(), valid_competition_update_data())
+def test_only_owner_can_update_competition(
     organizer_user: User,
-    valid_schedule_data: ScheduleData,
-    participant_limits: ParticipantLimits,
-    venue: CompetitionVenue,
-    team_size: TeamSizeRange,
-    clock: Clock,
-    description: str,
-    test_domains: list[Domain],
-    expected_error: str,
-) -> None:
-    """Test that updating with invalid data raises appropriate errors."""
-    with pytest.raises(InvalidCompetitionDataError, match=expected_error):
-        competition.update(
-            user=organizer_user,
-            title="Updated Title",
-            description=description,
-            schedule=valid_schedule_data,
-            participant_limits=participant_limits,
-            domains=test_domains,
-            participant_type=ParticipantType.STUDENT,
-            venue=venue,
-            team_size=team_size,
-            clock=clock,
-            milestones=[],
-            is_archived=False,
-        )
-
-
-def test_cannot_update_competition_by_non_organizer(
-    competition: Competition,
-    user_without_organizer: User,
-    valid_schedule_data: ScheduleData,
-    participant_limits: ParticipantLimits,
-    domains: list[Domain],
-    venue: CompetitionVenue,
-    team_size: TeamSizeRange,
-    clock: Clock,
-) -> None:
-    """Test that updating competition by non-organizer user raises error."""
-    with pytest.raises(AccessDeniedError):
-        competition.update(
-            user=user_without_organizer,
-            title="Updated Title",
-            description="Updated description",
-            schedule=valid_schedule_data,
-            participant_limits=participant_limits,
-            domains=domains,
-            participant_type=ParticipantType.STUDENT,
-            venue=venue,
-            team_size=team_size,
-            clock=clock,
-            milestones=[],
-            is_archived=False,
-        )
-
-
-def test_cannot_update_competition_by_different_organizer(
-    competition: Competition,
     different_user: User,
-    valid_schedule_data: ScheduleData,
-    participant_limits: ParticipantLimits,
-    domains: list[Domain],
-    venue: CompetitionVenue,
-    team_size: TeamSizeRange,
     clock: Clock,
+    data: st.DataObject,
+    valid_competition_update_data: UpdateCompetitionData,
 ) -> None:
-    """Test that updating competition by different organizer raises error."""
+    """Test only owner of this competition can update it."""
+    competition = data.draw(valid_competition(organizer_user, clock))
+
     with pytest.raises(AccessDeniedError):
         competition.update(
-            user=different_user,
-            title="Updated Title",
-            description="Updated description",
-            schedule=valid_schedule_data,
-            participant_limits=participant_limits,
-            domains=domains,
-            participant_type=ParticipantType.STUDENT,
-            venue=venue,
-            team_size=team_size,
-            clock=clock,
-            milestones=[],
-            is_archived=False,
+            valid_competition_update_data,
+            different_user,
+            clock,
+        )
+
+
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(st.data(), valid_competition_update_data())
+def test_only_organizer_can_update_competition(
+    organizer_user: User,
+    user_without_organizer: User,
+    clock: Clock,
+    data: st.DataObject,
+    valid_competition_update_data: UpdateCompetitionData,
+) -> None:
+    """Test only organizer can update competition."""
+    competition = data.draw(valid_competition(organizer_user, clock))
+
+    with pytest.raises(AccessDeniedError):
+        competition.update(
+            valid_competition_update_data,
+            user_without_organizer,
+            clock,
+        )
+
+
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(st.data(), valid_competition_update_data())
+def test_competition_domains_are_not_empty(
+    organizer_user: User,
+    clock: Clock,
+    data: st.DataObject,
+    valid_competition_update_data: UpdateCompetitionData,
+) -> None:
+    """Test cannot update competition with empty domains."""
+    competition = data.draw(valid_competition(organizer_user, clock))
+    valid_competition_update_data.domains = []
+
+    with pytest.raises(InvalidCompetitionDataError, match="Domains list must not be empty"):
+        competition.update(
+            valid_competition_update_data,
+            organizer_user,
+            clock,
+        )
+
+
+@pytest.mark.parametrize("empty_string", ["", " ", "   "])
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(st.data(), valid_competition_update_data())
+def test_competition_descriptions_are_not_empty(
+    empty_string: str,
+    organizer_user: User,
+    clock: Clock,
+    data: st.DataObject,
+    valid_competition_update_data: UpdateCompetitionData,
+) -> None:
+    """Test cannot update competition with empty description."""
+    competition = data.draw(valid_competition(organizer_user, clock))
+    valid_competition_update_data.description = empty_string
+
+    with pytest.raises(InvalidCompetitionDataError, match="Description must not be empty"):
+        competition.update(
+            valid_competition_update_data,
+            organizer_user,
+            clock,
         )

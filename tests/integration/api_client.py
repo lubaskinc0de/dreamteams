@@ -256,7 +256,7 @@ class ApiClient:
             "page": page,
         }
 
-        async with self.session.get("competitions/preview", headers=self._headers, params=params) as response:
+        async with self.session.get(f"{COMPETITIONS_URL}/preview/", headers=self._headers, params=params) as response:
             return await self._load_response(response, response_type=PreviewCompetitionsList)
 
     async def read_competition(self, competition_id: CompetitionId) -> APIResponse[CompetitionModel]:

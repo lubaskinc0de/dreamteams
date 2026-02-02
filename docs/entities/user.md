@@ -13,8 +13,8 @@ Represents a user in the system. Acts as a container for user roles (organizer, 
 
 ## Business Rules
 
-1. User can have at most one organizer role
-2. When attaching organizer role, `organizer.user_id` must equal `user.id`
+1. User SHOLD have `Organizer` OR `Participant` role
+2. When attaching organizer role, `<role>.user_id` must equal `user.id`
 
 ## Relationships
 
