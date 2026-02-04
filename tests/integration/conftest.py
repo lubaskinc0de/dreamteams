@@ -1,6 +1,8 @@
 import asyncio
 import os
 from collections.abc import AsyncIterable, AsyncIterator
+from importlib.resources import files
+from importlib.resources.abc import Traversable
 from uuid import uuid4
 
 import aiohttp
@@ -13,6 +15,7 @@ from polyfactory.pytest_plugin import register_fixture
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import tests.assets
 from dreamteams.adapters.clock import SystemClock
 from dreamteams.adapters.tracing import TraceId
 from dreamteams.application.manage_competitions.read import CompetitionModel
@@ -273,3 +276,9 @@ async def create_competition(
         .competition_id
     )
     return (await api_client.read_competition(competition_id)).assert_status(200).ensure_content()
+
+
+@pytest.fixture
+def assets() -> Traversable:
+    """File assets for tests."""
+    return files(tests.assets)
