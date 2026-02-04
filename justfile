@@ -34,6 +34,7 @@ lint:
 
 dev-environment:
     uv pip install -e ".[dev]"
+    cd ./frontend; npm install
 
 generate-migration NAME:
     just up-db

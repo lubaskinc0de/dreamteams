@@ -61,8 +61,14 @@ def test_schedule_factory_normalizes_datetime(clock: Clock, valid_schedule_data:
 
 @given(valid_schedule_data(), dt_past())
 def test_cannot_create_schedule_with_registration_start_in_past(
+<<<<<<< HEAD
     valid_schedule_data: ScheduleData,
     clock: Clock,
+=======
+    clock: Clock,
+    valid_schedule_data: ScheduleData,
+    dt_past: datetime,
+>>>>>>> dev
 ) -> None:
     """Factory rejects registration start date in the past."""
     valid_schedule_data.registration_start = dt_past
@@ -86,8 +92,13 @@ def test_cannot_create_schedule_with_registration_end_in_past(
 
 @given(valid_schedule_data())
 def test_cannot_create_schedule_with_registration_start_after_end(
+<<<<<<< HEAD
     valid_schedule_data: ScheduleData,
     clock: Clock,
+=======
+    clock: Clock,
+    valid_schedule_data: ScheduleData,
+>>>>>>> dev
 ) -> None:
     """Factory rejects registration start after end date."""
     reg_end = valid_schedule_data.registration_end
@@ -100,8 +111,13 @@ def test_cannot_create_schedule_with_registration_start_after_end(
 
 @given(valid_schedule_data())
 def test_cannot_create_schedule_with_registration_start_equal_end(
+<<<<<<< HEAD
     valid_schedule_data: ScheduleData,
     clock: Clock,
+=======
+    clock: Clock,
+    valid_schedule_data: ScheduleData,
+>>>>>>> dev
 ) -> None:
     """Factory rejects registration start equal to end date."""
     valid_schedule_data.registration_end = valid_schedule_data.registration_start
@@ -112,8 +128,13 @@ def test_cannot_create_schedule_with_registration_start_equal_end(
 
 @given(valid_schedule_data())
 def test_cannot_create_schedule_with_partial_team_formation_start(
+<<<<<<< HEAD
     valid_schedule_data: ScheduleData,
     clock: Clock,
+=======
+    clock: Clock,
+    valid_schedule_data: ScheduleData,
+>>>>>>> dev
 ) -> None:
     """Factory rejects schedule with only team formation start."""
     valid_schedule_data.team_formation_end = None
@@ -127,8 +148,8 @@ def test_cannot_create_schedule_with_partial_team_formation_start(
 
 @given(valid_schedule_data())
 def test_cannot_create_schedule_with_partial_team_formation_end(
-    valid_schedule_data: ScheduleData,
     clock: Clock,
+    valid_schedule_data: ScheduleData,
 ) -> None:
     """Factory rejects schedule with only team formation end."""
     valid_schedule_data.team_formation_start = None
@@ -142,8 +163,9 @@ def test_cannot_create_schedule_with_partial_team_formation_end(
 
 @given(valid_schedule_data(), dt_past())
 def test_cannot_create_schedule_with_team_formation_start_in_past(
-    valid_schedule_data: ScheduleData,
     clock: Clock,
+    valid_schedule_data: ScheduleData,
+    dt_past: datetime,
 ) -> None:
     """Factory rejects team formation start date in the past."""
     valid_schedule_data.team_formation_start = dt_past
@@ -154,8 +176,9 @@ def test_cannot_create_schedule_with_team_formation_start_in_past(
 
 @given(valid_schedule_data(), dt_past())
 def test_cannot_create_schedule_with_team_formation_end_in_past(
-    valid_schedule_data: ScheduleData,
     clock: Clock,
+    valid_schedule_data: ScheduleData,
+    dt_past: datetime,
 ) -> None:
     """Factory rejects team formation end date in the past."""
     valid_schedule_data.team_formation_end = dt_past
@@ -166,8 +189,8 @@ def test_cannot_create_schedule_with_team_formation_end_in_past(
 
 @given(valid_schedule_data())
 def test_cannot_create_schedule_with_team_formation_before_registration_end(
-    valid_schedule_data: ScheduleData,
     clock: Clock,
+    valid_schedule_data: ScheduleData,
 ) -> None:
     """Factory rejects team formation start before registration end."""
     valid_schedule_data.team_formation_start = valid_schedule_data.registration_start
@@ -181,8 +204,8 @@ def test_cannot_create_schedule_with_team_formation_before_registration_end(
 
 @given(valid_schedule_data())
 def test_cannot_create_schedule_with_team_formation_start_equal_end(
-    valid_schedule_data: ScheduleData,
     clock: Clock,
+    valid_schedule_data: ScheduleData,
 ) -> None:
     """Factory rejects team formation start equal to end."""
     valid_schedule_data.team_formation_start = valid_schedule_data.team_formation_end
