@@ -1,5 +1,3 @@
-from datetime import UTC, datetime
-
 from pydantic import BaseModel, Field
 
 from dreamteams.application.common.gateway.competition import CompetitionGateway, CompetitionSortBy
@@ -40,13 +38,14 @@ class PreviewCompetitions:
             sort_order=SortOrder.DESC,
             is_archived=False,
             search=None,
+            active=True,
         )
 
-        active_competitions = [
-            active
-            for active in competitions
-            if active.schedule.registration_start <= datetime.now(tz=UTC) <= active.schedule.registration_end
-        ]
+        # active_competitions = [
+        #     active
+        #     for active in competitions
+        #     if active.schedule.registration_start <= datetime.now(tz=UTC) <= active.schedule.registration_end
+        # ]
 
         items = [
             CompetitionModel(
@@ -66,9 +65,9 @@ class PreviewCompetitions:
                 created_at=competition.created_at,
                 updated_at=competition.updated_at,
             )
-            for competition in active_competitions
+            for competition in competitions
         ]
 
-        return PreviewCompetitionsList(items=items, total=len(items), page=input_data.page)
+        return PreviewCompetitionsList(items=items, total=total, page=input_data.page)
 
 

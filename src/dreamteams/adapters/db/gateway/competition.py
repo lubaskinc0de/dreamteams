@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from typing import override
 
 from sqlalchemy import delete, desc, func, select
@@ -41,6 +42,7 @@ class SACompetitionGateway(CompetitionGateway):
         sort_order: SortOrder,
         is_archived: bool | None,
         search: str | None,
+        active: bool = False,
     ) -> tuple[list[Competition], int]:
         """List competitions by organizer with pagination and sorting."""
         sort_column = {
@@ -57,6 +59,10 @@ class SACompetitionGateway(CompetitionGateway):
 
         if organizer_id is not None:
             filter_by.append(competition_table.c.organizer_id == organizer_id)
+
+        if active:
+            filter_by.append(competition_table.c.registration_start <= datetime.now(tz=UTC))
+            filter_by.append(competition_table.c.registration_end >= datetime.now(tz=UTC))
 
         if search is not None:
             search_vector = func.lower(func.concat(competition_table.c.title, " ", competition_table.c.description))

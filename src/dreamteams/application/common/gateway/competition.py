@@ -40,6 +40,7 @@ class CompetitionGateway(Protocol):
         sort_order: SortOrder,
         is_archived: bool | None,
         search: str | None,
+        active: bool = False,
     ) -> tuple[list[Competition], int]:
         """List competitions by organizer with pagination and sorting.
 
