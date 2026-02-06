@@ -1,4 +1,5 @@
 from datetime import UTC, datetime, timedelta
+import pytest
 
 from dreamteams.application.common.dto.milestone import MilestoneForm
 from dreamteams.application.common.gateway.competition import CompetitionSortBy
@@ -71,9 +72,6 @@ async def make_all_active(api_client: ApiClient, competitions: list[CompetitionM
     ]
 
 
-
-
-
 async def test_preview_competitions_lists_active_competitions(
     api_client: ApiClient,
     competitions: list[CompetitionModel],
@@ -110,8 +108,10 @@ async def test_preview_competitions_does_not_shows_competitions_which_not_begin(
     competitions: list[CompetitionModel],
 ) -> None:
     """Test listing competitions as unauthorized user does not show competitions with reg start in future."""
-    competitions = (await make_all_active(api_client, competitions[:len(competitions) // 2]) +
-                    competitions[len(competitions) // 2:])
+    competitions = (
+        await make_all_active(api_client, competitions[: len(competitions) // 2])
+        + competitions[len(competitions) // 2 :]
+    )
 
     competitions_model = [
         comp
@@ -133,11 +133,11 @@ async def test_preview_competitions_does_not_shows_competitions_which_not_begin(
     assert result == expected_model
 
 
-
-
+@pytest.mark.parametrize("page", [1, 2, 3])
 async def test_preview_competitions_pagination(
     api_client: ApiClient,
     competitions: list[CompetitionModel],
+    page: int,
 ) -> None:
     """Preview competitions pagination must return correct items per page."""
     competitions = await make_all_active(api_client, competitions)
@@ -150,11 +150,10 @@ async def test_preview_competitions_pagination(
         ),
     )
 
-    response1 = await api_client.list_preview_competitions(page=1)
+    response1 = await api_client.list_preview_competitions(page)
     page1 = response1.assert_status(200).ensure_content()
-    assert page1 == PreviewCompetitionsList(items=expected_model.items[:10], total=expected_model.total, page=1)
-
-    response2 = await api_client.list_preview_competitions(page=2)
-    page2 = response2.assert_status(200).ensure_content()
-    assert page2 == PreviewCompetitionsList(items=expected_model.items[10:20], total=expected_model.total, page=2)
-
+    assert page1 == PreviewCompetitionsList(
+            items=expected_model.items[(page - 1) * 10:page * 10],
+            total=expected_model.total,
+            page=1,
+        )
