@@ -65,6 +65,7 @@ class ListCompetitions:
             sort_order=input_data.sort_order,
             is_archived=input_data.is_archived,
             search=input_data.search,
+            active=False,
         )
 
         items = [

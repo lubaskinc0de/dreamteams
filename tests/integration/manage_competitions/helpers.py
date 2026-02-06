@@ -6,6 +6,7 @@ from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.manage_competitions.list import PAGE_SIZE, CompetitionsList
 from dreamteams.application.manage_competitions.read import CompetitionModel
 from dreamteams.application.manage_competitions.update import UpdateCompetitionForm
+from dreamteams.application.preview_competition.list import PreviewCompetitionsList
 from dreamteams.application.publish_competition.create import CompetitionForm
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
@@ -126,3 +127,8 @@ def competition_update_form_to_model(
         created_at=created_at,
         updated_at=updated_at,
     )
+
+
+def competitions_list_to_preview_list(lst: CompetitionsList) -> PreviewCompetitionsList:
+    """Transform CompetitionsList to PreviewCompetitionsList."""
+    return PreviewCompetitionsList(total=lst.total, page=lst.page, items=lst.items)

@@ -12,6 +12,7 @@ from dreamteams.application.common.gateway.competition import CompetitionSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.manage_competitions import CompetitionModel, CompetitionsList
 from dreamteams.application.manage_profile import ProfileModel
+from dreamteams.application.preview_competition.list import PreviewCompetitionsList
 from dreamteams.application.publish_competition import CreatedCompetition
 from dreamteams.application.register.register_organizer import CreatedOrganizer
 from dreamteams.entities.common.identifiers import CompetitionId
@@ -248,6 +249,15 @@ class ApiClient:
                 response,
                 response_type=CompetitionsList,
             )
+
+    async def list_preview_competitions(self, page: int = 1) -> APIResponse[PreviewCompetitionsList]:
+        """Call GET /preview/competitions endpoint."""
+        params = {
+            "page": page,
+        }
+
+        async with self.session.get(f"{COMPETITIONS_URL}/preview/", headers=self._headers, params=params) as response:
+            return await self._load_response(response, response_type=PreviewCompetitionsList)
 
     async def read_competition(self, competition_id: CompetitionId) -> APIResponse[CompetitionModel]:
         """Read competition via GET /competitions/{competition_id}."""

@@ -273,3 +273,15 @@ async def create_competition(
         .competition_id
     )
     return (await api_client.read_competition(competition_id)).assert_status(200).ensure_content()
+
+
+@pytest.fixture(params=[0, 1, 5, 10])
+async def competitions(
+    api_client: ApiClient,
+    competition_form_factory: CompetitionFormFactory,
+    request: pytest.FixtureRequest,
+    organizer: CreatedOrganizer,  # noqa: ARG001
+) -> list[CompetitionModel]:
+    """Create and read competitions."""
+    num_competitions = request.param
+    return await create_competitions(num_competitions, competition_form_factory, api_client)
