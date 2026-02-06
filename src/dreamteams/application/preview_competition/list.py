@@ -41,12 +41,6 @@ class PreviewCompetitions:
             active=True,
         )
 
-        # active_competitions = [
-        #     active
-        #     for active in competitions
-        #     if active.schedule.registration_start <= datetime.now(tz=UTC) <= active.schedule.registration_end
-        # ]
-
         items = [
             CompetitionModel(
                 id=competition.id,
@@ -69,5 +63,3 @@ class PreviewCompetitions:
         ]
 
         return PreviewCompetitionsList(items=items, total=total, page=input_data.page)
-
-
