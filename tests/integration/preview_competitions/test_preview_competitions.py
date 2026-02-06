@@ -154,10 +154,10 @@ async def test_preview_competitions_pagination(
     response = await api_client.list_preview_competitions(page)
     result = response.assert_status(200).ensure_content()
     assert result == PreviewCompetitionsList(
-            items=expected_model.items[(page - 1) * 10:page * 10],
-            total=expected_model.total,
-            page=page,
-        )
+        items=expected_model.items[(page - 1) * 10 : page * 10],
+        total=expected_model.total,
+        page=page,
+    )
 
 
 @pytest.mark.parametrize("page", [-2, -1, 0])
@@ -170,5 +170,4 @@ async def test_list_competitions_with_invalid_pagination_fails(
     competitions = await make_all_active(api_client, competitions)
 
     response = await api_client.list_preview_competitions(page)
-    response.assert_error(422, 'VALIDATION_ERROR')
-
+    response.assert_error(422, "VALIDATION__ERROR")
