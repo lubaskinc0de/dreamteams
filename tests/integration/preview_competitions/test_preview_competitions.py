@@ -100,9 +100,7 @@ async def test_preview_competitions_does_not_shows_archived_competitions(
     """Test listing competitions as unauthorized user does not show archived competitions."""
     list_response = await api_client.list_preview_competitions()
 
-
     result = list_response.assert_status(200).ensure_content()
-
 
     assert result == PreviewCompetitionsList(items=[], total=0, page=1)  # all archived
 
@@ -112,30 +110,18 @@ async def test_preview_competitions_does_not_shows_competitions_which_not_begin(
     competitions: list[CompetitionModel],
 ) -> None:
     """Test listing competitions as unauthorized user does not show competitions with reg start in future."""
-    competitions = (
-        await make_all_active(api_client, competitions[: len(competitions) // 2])
-        + competitions[len(competitions) // 2 :]
-    )
-
-    competitions_model = [
-        comp
-        for comp in competitions
-        if comp.schedule.registration_start <= datetime.now(tz=UTC) <= comp.schedule.registration_end
-    ]
-
+    competitions = await make_all_active(api_client, competitions[: len(competitions) // 2])
     expected_model = competitions_list_to_preview_list(
         create_competitions_list(
-            competitions_model,
+            competitions,
             sort_by=CompetitionSortBy.CREATED_AT,
             sort_order=SortOrder.DESC,
         ),
     )
 
-
     list_response = await api_client.list_preview_competitions()
+
     result = list_response.assert_status(200).ensure_content()
-
-
     assert result == expected_model
 
 
@@ -147,7 +133,6 @@ async def test_preview_competitions_pagination(
 ) -> None:
     """Preview competitions pagination must return correct items per page."""
     competitions = await make_all_active(api_client, competitions)
-
     expected_model = competitions_list_to_preview_list(
         create_competitions_list(
             competitions,
@@ -156,12 +141,9 @@ async def test_preview_competitions_pagination(
         ),
     )
 
-
     response = await api_client.list_preview_competitions(page)
+
     result = response.assert_status(200).ensure_content()
-
-
-
     assert result == PreviewCompetitionsList(
         items=expected_model.items[(page - 1) * 10 : page * 10],
         total=expected_model.total,
@@ -178,6 +160,6 @@ async def test_list_competitions_with_invalid_pagination_fails(
     """Test listing competitions with invalid pagination fails."""
     competitions = await make_all_active(api_client, competitions)
 
-
     response = await api_client.list_preview_competitions(page)
+
     response.assert_error(422, "VALIDATION_ERROR")
