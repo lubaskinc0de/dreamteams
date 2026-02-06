@@ -42,7 +42,7 @@ class SACompetitionGateway(CompetitionGateway):
         sort_order: SortOrder,
         is_archived: bool | None,
         search: str | None,
-        active: bool = False,
+        active: bool,
     ) -> tuple[list[Competition], int]:
         """List competitions by organizer with pagination and sorting."""
         sort_column = {
@@ -62,7 +62,6 @@ class SACompetitionGateway(CompetitionGateway):
 
         if active:
             filter_by.append(competition_table.c.registration_start <= datetime.now(tz=UTC))
-            filter_by.append(competition_table.c.registration_end >= datetime.now(tz=UTC))
 
         if search is not None:
             search_vector = func.lower(func.concat(competition_table.c.title, " ", competition_table.c.description))
