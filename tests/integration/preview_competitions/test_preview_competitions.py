@@ -110,22 +110,51 @@ async def test_preview_competitions_does_not_shows_competitions_which_not_begin(
     competitions: list[CompetitionModel],
 ) -> None:
     """Test listing competitions as unauthorized user does not show competitions with reg start in future."""
-    await make_all_not_archived(api_client, competitions)
+    competitions = (await make_all_active(api_client, competitions[:len(competitions) // 2]) +
+                    competitions[len(competitions) // 2:])
+
+    competitions_model = [
+        comp
+        for comp in competitions
+        if comp.schedule.registration_start <= datetime.now(tz=UTC) <= comp.schedule.registration_end
+    ]
+
+    expected_model = competitions_list_to_preview_list(
+        create_competitions_list(
+            competitions_model,
+            sort_by=CompetitionSortBy.CREATED_AT,
+            sort_order=SortOrder.DESC,
+        ),
+    )
 
     list_response = await api_client.list_preview_competitions()
 
     result = list_response.assert_status(200).ensure_content()
-    assert result == PreviewCompetitionsList(items=[], total=0, page=1)  # all archived
+    assert result == expected_model
 
 
 
 
-# async def test_preview_competitions_sorted_by_created_at_desc(
-#     api_client: ApiClient,
-#     competitions: list[CompetitionModel],
-# ) -> None:
-#     """Preview competitions must be sorted by created_at DESC."""
-#     competitions = await make_all_active()
-    
-#     li
-    
+async def test_preview_competitions_pagination(
+    api_client: ApiClient,
+    competitions: list[CompetitionModel],
+) -> None:
+    """Preview competitions pagination must return correct items per page."""
+    competitions = await make_all_active(api_client, competitions)
+
+    expected_model = competitions_list_to_preview_list(
+        create_competitions_list(
+            competitions,
+            sort_by=CompetitionSortBy.CREATED_AT,
+            sort_order=SortOrder.DESC,
+        ),
+    )
+
+    response1 = await api_client.list_preview_competitions(page=1)
+    page1 = response1.assert_status(200).ensure_content()
+    assert page1 == PreviewCompetitionsList(items=expected_model.items[:10], total=expected_model.total, page=1)
+
+    response2 = await api_client.list_preview_competitions(page=2)
+    page2 = response2.assert_status(200).ensure_content()
+    assert page2 == PreviewCompetitionsList(items=expected_model.items[10:20], total=expected_model.total, page=2)
+
