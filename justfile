@@ -33,6 +33,7 @@ lint:
     typos
 
 dev-environment:
+    pip install uv
     uv pip install -e ".[dev]"
     cd ./frontend; npm install
 
