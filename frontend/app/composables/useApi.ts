@@ -17,10 +17,10 @@ export const useApi = () => {
   const apiBase = config.public.apiBase;
   const useMock = config.public.useMock;
 
-  // // If mock mode is enabled, use mock API
-  // if (useMock === "true" || useMock.toString() === "true") {
-  //   return useMockApi();
-  // }
+  // If mock mode is enabled, use mock API
+  if (useMock === "true" || useMock.toString() === "true") {
+    return useMockApi();
+  }
 
   const handleApiError = (error: any): ApiError => {
     if (error.data && typeof error.data === "object") {

@@ -14,8 +14,8 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || "http://localhost:8000",
-      useMock: process.env.NUXT_PUBLIC_USE_MOCK || "true",
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || "http://localhost",
+      useMock: process.env.NUXT_PUBLIC_USE_MOCK || "false",
     },
   },
 
