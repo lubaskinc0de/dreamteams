@@ -91,6 +91,10 @@ just dev-environment  # устанавливаем пакеты
    just down
    ```
 
+5. **npm** (менеджер пакетов JavaScript)
+   - Cкачайте https://www.npmjs.com/
+   - Установите **npm**
+
 ## Шаг 6. Структура проекта
 
 ### Backend (Python)
