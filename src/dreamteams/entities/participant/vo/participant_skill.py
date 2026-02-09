@@ -4,6 +4,7 @@ from enum import Enum
 
 class SkillLevel(Enum):
     """Skill proficiency level."""
+
     BEGINNER = "beginner"
     INTERMEDIATE = "intermediate"
     ADVANCED = "advanced"
@@ -21,6 +22,7 @@ class ParticipantSkill:
         """Validate skill name."""
         cleaned = self.name.strip()
         if not cleaned:
-            raise ValueError("Skill name must not be empty")
+            error_message = "Skill name must not be empty"
+            raise ValueError(error_message)
 
         object.__setattr__(self, "name", cleaned)

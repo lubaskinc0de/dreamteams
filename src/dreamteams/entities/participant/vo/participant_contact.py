@@ -12,4 +12,5 @@ class ParticipantContact:
         """Validate contact URL format."""
         parsed = urlparse(self.url)
         if not parsed.scheme or not parsed.netloc:
-            raise ValueError("Invalid URL")
+            error_message = "Invalid URL"
+            raise ValueError(error_message)
