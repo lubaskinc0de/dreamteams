@@ -78,43 +78,6 @@ class S3Client(ABC):  # noqa: B024
                 logger.exception("Failed to access bucket", bucket=self.bucket)
                 raise
 
-    async def _make_bucket_public(self) -> None:
-        """Configure bucket for public read access."""
-        try:
-            async with self._get_s3_client() as s3:
-                public_policy = {
-                    "Version": "2012-10-17",
-                    "Statement": [
-                        {
-                            "Sid": "PublicReadGetObject",
-                            "Effect": "Allow",
-                            "Principal": "*",
-                            "Action": ["s3:GetObject"],
-                            "Resource": [f"arn:aws:s3:::{self.bucket}/*"],
-                        },
-                    ],
-                }
-
-                await s3.put_bucket_policy(Bucket=self.bucket, Policy=json.dumps(public_policy))
-
-                await s3.put_public_access_block(
-                    Bucket=self.bucket,
-                    PublicAccessBlockConfiguration={
-                        "BlockPublicAcls": True,
-                        "IgnorePublicAcls": True,
-                        "BlockPublicPolicy": False,
-                        "RestrictPublicBuckets": False,
-                    },
-                )
-
-                logger.info("Bucket configured for public read", bucket=self.bucket)
-        except Exception as e:
-            logger.exception(
-                "Failed to set bucket public policy (may not be supported by provider)",
-                bucket=self.bucket,
-                error=str(e),
-            )
-
     def _generate_public_url(self, object_key: str) -> str:
         """Generate public URL for object."""
         encoded_key = quote(object_key, safe="")
@@ -131,7 +94,25 @@ class S3AvatarStorage(AvatarStorage, S3Client):
     @override
     async def ensure_bucket_exists(self) -> None:
         await super().ensure_bucket_exists()
-        await self._make_bucket_public()
+
+        # make bucket public
+        policy_json = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": "*",
+                    "Action": ["s3:GetObject"],
+                    "Resource": [f"arn:aws:s3:::{self.bucket}/*"],
+                },
+            ],
+        }
+        async with self._get_s3_client() as s3:
+            await s3.put_bucket_policy(
+                Bucket=self.bucket,
+                Policy=json.dumps(policy_json),
+            )
+        logger.info("Bucket policy set to public-read", bucket=self.bucket)
 
     @override
     async def upload_avatar(
@@ -150,6 +131,7 @@ class S3AvatarStorage(AvatarStorage, S3Client):
                     Key=object_key,
                     Body=file_data,
                     ContentType=content_type,
+                    ACL="public-read",
                 )
         except Exception:
             logger.exception("Failed to upload avatar for user", user_id=user_id)
@@ -160,13 +142,9 @@ class S3AvatarStorage(AvatarStorage, S3Client):
     @override
     async def delete_avatar(self, user_id: UserId) -> None:
         """Delete user avatar from storage."""
-        try:
-            object_key = self._get_avatar_key(user_id)
-            await self._delete_object(object_key)
-            logger.info("Avatar deleted for user", user_id=user_id)
-        except Exception:
-            logger.exception("Failed to delete avatars for user", user_id=user_id)
-            raise
+        object_key = self._get_avatar_key(user_id)
+        await self._delete_object(object_key)
+        logger.info("Avatar deleted for user", user_id=user_id)
 
     async def _delete_object(self, object_key: str) -> None:
         """Delete single object from storage."""

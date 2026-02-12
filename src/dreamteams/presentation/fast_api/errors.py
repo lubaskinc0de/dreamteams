@@ -15,5 +15,5 @@ class InvalidAvatarError(AppError):
     @override
     def meta(self) -> dict[str, Any]:
         return {
-            "reason": str,
+            "reason": self.reason,
         }

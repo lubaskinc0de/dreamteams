@@ -33,10 +33,9 @@ class AdapterProvider(Provider):
     )
     auth_provider = provide(WithParents[SimpleAuthProvider], scope=Scope.REQUEST)
     clock = provide(WithParents[SystemClock], scope=Scope.APP)
-    s3 = provide(WithParents[S3AvatarStorage], scope=Scope.APP)
 
     @provide(scope=Scope.APP)
-    async def get_avatar_storage(self, config: S3Config) -> S3AvatarStorage:
+    async def get_avatar_storage(self, config: S3Config) -> WithParents[S3AvatarStorage]:
         """Get S3 avatar storage."""
         storage = S3AvatarStorage(config)
         await storage.ensure_bucket_exists()

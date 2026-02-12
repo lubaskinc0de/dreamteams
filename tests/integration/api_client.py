@@ -169,6 +169,11 @@ class ApiClient:
         """Set auth user ID for requests."""
         return AuthContext(self, auth_user_id, auth_user_email, self._config, self._access_token)
 
+    @property
+    def headers(self) -> dict[str, str]:
+        """API client headers."""
+        return self._headers
+
     async def readiness(self) -> APIResponse[EmptyResponse]:
         """GET /internal/ready."""
         url = "/internal/ready"
