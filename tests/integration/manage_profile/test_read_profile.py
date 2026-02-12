@@ -25,6 +25,7 @@ async def test_view_organizer_profile(
             phone_number=organizer_form.phone_number,
             contact_email=email,
         ),
+        avatar_url=None,
     )
 
 

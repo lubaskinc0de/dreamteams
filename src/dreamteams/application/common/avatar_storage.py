@@ -14,8 +14,12 @@ class AvatarStorage(Protocol):
         file_data: BinaryIO,
         content_type: str,
     ) -> str:
-        """Upload user avatar to storage."""
+        """Upload user avatar to storage and return it's key."""
 
     @abstractmethod
     async def delete_avatar(self, user_id: UserId) -> None:
         """Delete user avatar from storage."""
+
+    @abstractmethod
+    def get_url(self, key: str) -> str:
+        """Get URL to user avatar in storage."""

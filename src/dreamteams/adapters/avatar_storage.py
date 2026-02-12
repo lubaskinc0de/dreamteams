@@ -1,11 +1,14 @@
+import json
 from abc import ABC
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import Any, BinaryIO, override
+from urllib.parse import quote
 
 import aioboto3
 import structlog
+from botocore.exceptions import ClientError
 
 from dreamteams.application.common.avatar_storage import AvatarStorage
 from dreamteams.application.common.logger import Logger
@@ -23,6 +26,7 @@ class S3Config:
     access_key: str
     secret_key: str
     region: str
+    public_url: str
 
 
 class S3Client(ABC):  # noqa: B024
@@ -35,6 +39,7 @@ class S3Client(ABC):  # noqa: B024
         self.bucket = config.bucket_name
         self.endpoint = config.endpoint_url
         self.region = config.region
+        self.public_url = config.public_url
 
         self.session = aioboto3.Session(
             aws_access_key_id=config.access_key,
@@ -51,12 +56,82 @@ class S3Client(ABC):  # noqa: B024
         ) as s3_client:
             yield s3_client
 
+    async def ensure_bucket_exists(self) -> None:
+        """Create bucket if it doesn't exist."""
+        try:
+            async with self._get_s3_client() as s3:
+                await s3.head_bucket(Bucket=self.bucket)
+                logger.debug("Bucket already exists", bucket=self.bucket)
+        except ClientError as e:
+            error_code = e.response.get("Error", {}).get("Code")
+            if error_code in ("404", "NoSuchBucket", "403"):
+                try:
+                    async with self._get_s3_client() as s3:
+                        create_bucket_config = {"Bucket": self.bucket}
+                        await s3.create_bucket(**create_bucket_config)
+
+                        logger.info("Bucket created and configured", bucket=self.bucket)
+                except Exception:
+                    logger.exception("Failed to create bucket", bucket=self.bucket)
+                    raise
+            else:
+                logger.exception("Failed to access bucket", bucket=self.bucket)
+                raise
+
+    async def _make_bucket_public(self) -> None:
+        """Configure bucket for public read access."""
+        try:
+            async with self._get_s3_client() as s3:
+                public_policy = {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Sid": "PublicReadGetObject",
+                            "Effect": "Allow",
+                            "Principal": "*",
+                            "Action": ["s3:GetObject"],
+                            "Resource": [f"arn:aws:s3:::{self.bucket}/*"],
+                        },
+                    ],
+                }
+
+                await s3.put_bucket_policy(Bucket=self.bucket, Policy=json.dumps(public_policy))
+
+                await s3.put_public_access_block(
+                    Bucket=self.bucket,
+                    PublicAccessBlockConfiguration={
+                        "BlockPublicAcls": True,
+                        "IgnorePublicAcls": True,
+                        "BlockPublicPolicy": False,
+                        "RestrictPublicBuckets": False,
+                    },
+                )
+
+                logger.info("Bucket configured for public read", bucket=self.bucket)
+        except Exception as e:
+            logger.exception(
+                "Failed to set bucket public policy (may not be supported by provider)",
+                bucket=self.bucket,
+                error=str(e),
+            )
+
+    def _generate_public_url(self, object_key: str) -> str:
+        """Generate public URL for object."""
+        encoded_key = quote(object_key, safe="")
+
+        return f"{self.public_url.rstrip('/')}/{self.bucket}/{encoded_key}"
+
 
 class S3AvatarStorage(AvatarStorage, S3Client):
     """Async client for user avatar management using aioboto3.
 
     Stores avatars in S3-compatible storage.
     """
+
+    @override
+    async def ensure_bucket_exists(self) -> None:
+        await super().ensure_bucket_exists()
+        await self._make_bucket_public()
 
     @override
     async def upload_avatar(
@@ -97,6 +172,10 @@ class S3AvatarStorage(AvatarStorage, S3Client):
         """Delete single object from storage."""
         async with self._get_s3_client() as s3:
             await s3.delete_object(Bucket=self.bucket, Key=object_key)
+
+    @override
+    def get_url(self, key: str) -> str:
+        return self._generate_public_url(key)
 
     def _get_avatar_key(self, user_id: UserId) -> str:
         return f"avatars/{user_id}"

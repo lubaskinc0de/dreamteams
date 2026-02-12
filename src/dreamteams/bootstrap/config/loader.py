@@ -56,6 +56,7 @@ class Config:
             access_key=env("S3_ACCESS_KEY"),
             secret_key=env("S3_SECRET_KEY"),
             region=env("S3_REGION"),
+            public_url=env("S3_PUBLIC_URL"),
         )
         return cls(
             db=db,
