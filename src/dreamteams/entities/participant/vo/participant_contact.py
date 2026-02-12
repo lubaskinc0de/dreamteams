@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from dreamteams.entities.errors.participant import InvalidParticipantContactError
+from dreamteams.entities.errors.participant import InvalidParticipantDataError
 
 
 @dataclass(frozen=True)
@@ -12,5 +12,5 @@ class ParticipantContact:
 
     def __post_init__(self) -> None:
         """Validate title."""
-        if not self.title:
-            raise InvalidParticipantContactError(message="Contact title not must be empty")
+        if not self.title or self.title.isspace():
+            raise InvalidParticipantDataError(message="Contact title not must be empty")

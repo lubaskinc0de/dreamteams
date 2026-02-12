@@ -13,6 +13,5 @@ Represents a contact link or external profile associated with a participant.
 
 ## Business Rules
 
-1. `title` not must be empty
-2. `url` must be a valid URL.
-3. The contact list must not contain duplicate URLs.
+1. `title` must not be empty
+2. The contact list must not contain duplicate URLs.
