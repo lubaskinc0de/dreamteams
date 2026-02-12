@@ -8,7 +8,7 @@ class InvalidParticipantContactError(AppError):
     """Participant contact data is invalid."""
 
     message: str
-    code: str[ClassVar] = "INVALID_PARTICIPANT_CONTACT"
+    code: ClassVar[str] = "INVALID_PARTICIPANT_CONTACT"
 
 
 @app_error
@@ -16,4 +16,5 @@ class InvalidParticipantSkillError(AppError):
     """Participant skill data is invalid."""
 
     message: str
-    code: str[ClassVar] = "INVALID_PARTICIPANT_SKILL"
+    code: ClassVar[str] = "INVALID_PARTICIPANT_SKILL"
+
