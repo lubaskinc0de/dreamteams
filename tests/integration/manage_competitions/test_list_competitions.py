@@ -13,25 +13,13 @@ from tests.integration.conftest import DIFFERENT_USER_ID, USER_ID, create_compet
 from tests.integration.manage_competitions.helpers import create_competitions_list, update_competition
 
 
-@pytest.fixture(params=[0, 1, 5, 10])
-async def created_competitions(
-    api_client: ApiClient,
-    competition_form_factory: CompetitionFormFactory,
-    request: pytest.FixtureRequest,
-    organizer: CreatedOrganizer,  # noqa: ARG001
-) -> list[CompetitionModel]:
-    """Create and read competitions."""
-    num_competitions = request.param
-    return await create_competitions(num_competitions, competition_form_factory, api_client)
-
-
 async def test_list_competitions_succeeds(
     api_client: ApiClient,
-    created_competitions: list[CompetitionModel],
+    competitions: list[CompetitionModel],
 ) -> None:
     """Test listing competitions."""
     expected_model = create_competitions_list(
-        created_competitions,
+        competitions,
         sort_by=CompetitionSortBy.CREATED_AT,
         sort_order=SortOrder.DESC,
     )
@@ -46,12 +34,12 @@ async def test_list_competitions_succeeds(
 @pytest.mark.parametrize("sort_order", [SortOrder.ASC, SortOrder.DESC])
 async def test_list_competitions_sorted_by_created_at(
     api_client: ApiClient,
-    created_competitions: list[CompetitionModel],
+    competitions: list[CompetitionModel],
     sort_order: SortOrder,
 ) -> None:
     """Test sorting competitions by created_at in different orders."""
     expected_model = create_competitions_list(
-        created_competitions,
+        competitions,
         sort_by=CompetitionSortBy.CREATED_AT,
         sort_order=sort_order,
     )
@@ -69,12 +57,12 @@ async def test_list_competitions_sorted_by_created_at(
 @pytest.mark.parametrize("sort_order", [SortOrder.ASC, SortOrder.DESC])
 async def test_list_competitions_sorted_by_title(
     api_client: ApiClient,
-    created_competitions: list[CompetitionModel],
+    competitions: list[CompetitionModel],
     sort_order: SortOrder,
 ) -> None:
     """Test sorting competitions by title in different orders."""
     expected_model = create_competitions_list(
-        created_competitions,
+        competitions,
         sort_by=CompetitionSortBy.TITLE,
         sort_order=sort_order,
     )
@@ -92,12 +80,12 @@ async def test_list_competitions_sorted_by_title(
 @pytest.mark.parametrize("sort_order", [SortOrder.ASC, SortOrder.DESC])
 async def test_list_competitions_sorted_by_registration_start(
     api_client: ApiClient,
-    created_competitions: list[CompetitionModel],
+    competitions: list[CompetitionModel],
     sort_order: SortOrder,
 ) -> None:
     """Test sorting competitions by registration_start in different orders."""
     expected_model = create_competitions_list(
-        created_competitions,
+        competitions,
         sort_by=CompetitionSortBy.REGISTRATION_START,
         sort_order=sort_order,
     )
@@ -116,7 +104,7 @@ async def test_list_competitions_sorted_by_registration_start(
 @pytest.mark.parametrize("is_archived", [True, False])
 async def test_list_competitions_filtered_by_is_archived(
     api_client: ApiClient,
-    created_competitions: list[CompetitionModel],
+    competitions: list[CompetitionModel],
     sort_order: SortOrder,
     competition_form_factory: CompetitionFormFactory,
     update_competition_form_factory: UpdateCompetitionFormFactory,
@@ -138,7 +126,7 @@ async def test_list_competitions_filtered_by_is_archived(
     assert (
         result
         == create_competitions_list(
-            created_competitions,
+            competitions,
             sort_by=CompetitionSortBy.CREATED_AT,
             sort_order=sort_order,
         )

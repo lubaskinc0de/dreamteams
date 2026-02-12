@@ -31,10 +31,6 @@
    - Скачайте: https://code.visualstudio.com/
    - Установите необходимые расширения для упрощения работы с кодом: Python, Ruff, GitLens, Mypy, Python, Pylance, Yaml
 
-5. **npm** (менеджер пакетов JavaScript)
-   - Cкачайте https://www.npmjs.com/
-   - Установите **npm**
-
 ## Шаг 3. Изучение основ Git
 
 **Обязательно** ознакомьтесь с главами 1-3 Pro Git Book на русском:
@@ -58,7 +54,7 @@
 
 3. Клонируйте репозиторий:
    ```bash
-   git clone https://github.com/lubaskinc0de/dreamteams.git
+   git clone https://github.com/USERNAME/dreamteams.git
    cd dreamteams
    ```
 
@@ -94,6 +90,10 @@ just dev-environment  # устанавливаем пакеты
    ```bash
    just down
    ```
+
+5. **npm** (менеджер пакетов JavaScript)
+   - Cкачайте https://www.npmjs.com/
+   - Установите **npm**
 
 ## Шаг 6. Структура проекта
 
@@ -231,7 +231,7 @@ git push origin feature/add-user-avatar
 
 ### 7.7. Создание Pull Request
 
-1. Откройте GitHub в браузере: https://github.com/lubaskinc0de/dreamteams
+1. Откройте GitHub в браузере: https://github.com/USERNAME/dreamteams
 2. Появится уведомление "Compare & pull request" - нажмите
 3. Заполните описание PR
 4. Нажмите "Create pull request"
@@ -300,6 +300,10 @@ git rebase dev
 - [ ] Коммит имеет понятное сообщение
 - [ ] PR имеет описание изменений
 
-## Upd
-01.02 - поправил ссылку для клонирования репозитория, добавил ссылку на скачивание **npm**, поправил ссылку для создания PR
-
+## Основные команды
+1. ``just lint`` - проверка кода на корректность
+2. ``just test`` - запуск тестов кода
+3. ``just up`` - запустить проект
+4. ``just down`` - остановить проект
+5. ``git pull`` - подтянуть изменения с репозитория
+6. ``git checkout <имя>`` - сменить ветку

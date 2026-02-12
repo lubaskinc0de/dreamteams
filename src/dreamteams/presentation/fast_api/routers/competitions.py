@@ -14,6 +14,11 @@ from dreamteams.application.manage_competitions import (
     UpdateCompetition,
     UpdateCompetitionForm,
 )
+from dreamteams.application.preview_competition.list import (
+    PreviewCompetitions,
+    PreviewCompetitionsInput,
+    PreviewCompetitionsList,
+)
 from dreamteams.application.publish_competition import CompetitionForm, CreateCompetition, CreatedCompetition
 from dreamteams.entities.common.identifiers import CompetitionId
 
@@ -22,6 +27,15 @@ router = APIRouter(
     route_class=DishkaRoute,
     prefix="/competitions",
 )
+
+
+@router.get("/preview")
+async def preview_competitions(
+    interactor: FromDishka[PreviewCompetitions],
+    input_data: Annotated[PreviewCompetitionsInput, Query()],
+) -> PreviewCompetitionsList:
+    """HTTP endpoint for preview listing competitions."""
+    return await interactor.execute(input_data)
 
 
 @router.get("/")

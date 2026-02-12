@@ -282,3 +282,15 @@ async def create_competition(
 def assets() -> Traversable:
     """File assets for tests."""
     return files(tests.assets)
+
+
+@pytest.fixture(params=[0, 1, 5, 10])
+async def competitions(
+    api_client: ApiClient,
+    competition_form_factory: CompetitionFormFactory,
+    request: pytest.FixtureRequest,
+    organizer: CreatedOrganizer,  # noqa: ARG001
+) -> list[CompetitionModel]:
+    """Create and read competitions."""
+    num_competitions = request.param
+    return await create_competitions(num_competitions, competition_form_factory, api_client)
