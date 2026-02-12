@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum
 
+from dreamteams.entities.errors.participant import InvalidParticipantSkillError
+
 
 class SkillLevel(Enum):
     """Skill proficiency level."""
@@ -20,9 +22,5 @@ class ParticipantSkill:
 
     def __post_init__(self) -> None:
         """Validate skill name."""
-        cleaned = self.name.strip()
-        if not cleaned:
-            error_message = "Skill name must not be empty"
-            raise ValueError(error_message)
-
-        object.__setattr__(self, "name", cleaned)
+        if not self.name:
+            raise InvalidParticipantSkillError(message="Skill name must not be empty")
