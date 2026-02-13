@@ -5,7 +5,7 @@ from dreamteams.entities.participant.vo.participant_skill import ParticipantSkil
 
 
 @pytest.mark.parametrize(
-    "title",
+    "name",
     [
         "",
         " ",
