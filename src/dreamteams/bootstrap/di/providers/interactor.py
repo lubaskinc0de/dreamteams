@@ -10,6 +10,7 @@ from dreamteams.application.manage_profile import ReadProfile
 from dreamteams.application.manage_profile.attach_avatar import AttachAvatar
 from dreamteams.application.manage_profile.delete import DeleteProfile
 from dreamteams.application.manage_profile.detach_avatar import DetachAvatar
+from dreamteams.application.manage_profile.update_organizer import UpdateOrganizer
 from dreamteams.application.preview_competition.list import PreviewCompetitions
 from dreamteams.application.publish_competition import CreateCompetition
 from dreamteams.application.register.register_organizer import RegisterOrganizer
@@ -33,5 +34,7 @@ class InteractorProvider(Provider):
         DetachAvatar,
         PreviewCompetitions,
         DeleteProfile,
+        UpdateOrganizer,
     )
     user_factory = provide(UserFactory)
+

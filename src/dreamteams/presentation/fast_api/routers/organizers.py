@@ -1,7 +1,7 @@
 from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 
 from dreamteams.adapters.auth.idp.auth_user import WebAuthUserIdProvider
 from dreamteams.application.common.phone_number import RussianPhoneNumber
@@ -41,3 +41,11 @@ async def register_organizer(
             contact_email=auth_user_idp.get_auth_user_email(),
         ),
     )
+
+
+class UpdateOrganizerRequest(BaseModel):
+    """Request schema for updating organizer profile."""
+
+    organizer_name: str = Field(max_length=70)
+    phone_number: str
+    contact_email: EmailStr
