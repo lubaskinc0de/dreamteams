@@ -32,7 +32,6 @@ def organizer_user(faker: Faker) -> User:
         organizer_name=faker.company(),
         phone_number=faker.phone_number(),
         contact_email=faker.email(),
-        logo=None,
     )
 
     return User(id=user_id, organizer=organizer)
@@ -50,7 +49,6 @@ def different_user(faker: Faker) -> User:
         organizer_name=faker.company(),
         phone_number=faker.phone_number(),
         contact_email=faker.email(),
-        logo=None,
     )
 
     return User(id=user_id, organizer=organizer)

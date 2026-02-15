@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 from dreamteams.adapters.auth.auth_provider import SimpleAuthProvider
 from dreamteams.adapters.auth.idp.auth_user import WebAuthUserIdProvider
 from dreamteams.adapters.auth.idp.user import IdProviderImpl
+from dreamteams.adapters.avatar_storage import S3AvatarStorage, S3Config
 from dreamteams.adapters.clock import SystemClock
 from dreamteams.adapters.db.config import DbConfig
 from dreamteams.adapters.db.gateway.auth_user import SAAuthUserGateway
@@ -32,6 +33,13 @@ class AdapterProvider(Provider):
     )
     auth_provider = provide(WithParents[SimpleAuthProvider], scope=Scope.REQUEST)
     clock = provide(WithParents[SystemClock], scope=Scope.APP)
+
+    @provide(scope=Scope.APP)
+    async def get_avatar_storage(self, config: S3Config) -> WithParents[S3AvatarStorage]:
+        """Get S3 avatar storage."""
+        storage = S3AvatarStorage(config)
+        await storage.ensure_bucket_exists()
+        return storage
 
     @provide(scope=Scope.APP)
     async def get_engine(self, config: DbConfig) -> AsyncIterator[AsyncEngine]:

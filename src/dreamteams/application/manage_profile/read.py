@@ -1,12 +1,12 @@
 import structlog
 from pydantic import BaseModel
 
+from dreamteams.application.common.avatar_storage import AvatarStorage
 from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
 from dreamteams.application.common.uow import UoW
 from dreamteams.entities.common.identifiers import OrganizerId, UserId
-from dreamteams.entities.organizer import Logo
 
 logger: Logger = structlog.get_logger(__name__)
 
@@ -19,7 +19,6 @@ class OrganizerModel(BaseModel):
     organizer_name: str
     phone_number: str
     contact_email: str
-    logo: Logo | None
 
 
 class ProfileModel(BaseModel):
@@ -27,6 +26,7 @@ class ProfileModel(BaseModel):
 
     user_id: UserId
     organizer: OrganizerModel | None
+    avatar_url: str | None
 
 
 @interactor
@@ -35,6 +35,7 @@ class ReadProfile:
 
     uow: UoW
     idp: IdProvider
+    avatar_storage: AvatarStorage
 
     async def execute(self) -> ProfileModel:
         """Read user profile."""
@@ -48,7 +49,10 @@ class ReadProfile:
             organizer_name=organizer.organizer_name,
             phone_number=organizer.phone_number,
             contact_email=organizer.contact_email,
-            logo=organizer.logo,
         )
 
-        return ProfileModel(user_id=user.id, organizer=organizer_model)
+        return ProfileModel(
+            user_id=user.id,
+            organizer=organizer_model,
+            avatar_url=self.avatar_storage.get_url(user.avatar) if user.avatar is not None else None,
+        )

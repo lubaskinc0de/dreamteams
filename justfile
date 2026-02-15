@@ -12,6 +12,7 @@ up-db:
     docker compose -f docker/docker-compose.yml --env-file=./.config/.env up db -d
 
 test:
+    just down
     docker compose -f docker/docker-compose.tests.yml --env-file=./.config/.env up --build --abort-on-container-exit tests
     just down
 

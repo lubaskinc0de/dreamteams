@@ -1,9 +1,10 @@
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Self
 
 from adaptix import Retort
 from adaptix.load_error import LoadError
-from aiohttp import ClientResponse, ClientResponseError, ClientSession
+from aiohttp import ClientResponse, ClientResponseError, ClientSession, FormData
 
 from dreamteams.adapters.auth.model import AuthUserId
 from dreamteams.adapters.errors.http.response import ErrorResponse
@@ -168,6 +169,11 @@ class ApiClient:
         """Set auth user ID for requests."""
         return AuthContext(self, auth_user_id, auth_user_email, self._config, self._access_token)
 
+    @property
+    def headers(self) -> dict[str, str]:
+        """API client headers."""
+        return self._headers
+
     async def readiness(self) -> APIResponse[EmptyResponse]:
         """GET /internal/ready."""
         url = "/internal/ready"
@@ -212,6 +218,37 @@ class ApiClient:
                 response,
                 response_type=None,
             )
+
+    async def detach_avatar(self) -> APIResponse[None]:
+        """Detach user avatar via DELETE /users/me/avatar."""
+        url = f"{USERS_URL}/me/avatar"
+        async with self.session.delete(url, headers=self._headers) as response:
+            return await self._load_response(
+                response,
+                response_type=None,
+            )
+
+    async def attach_avatar(
+        self,
+        image_path: Path,
+        filename: str = "image.jpg",
+        content_type: str = "image/jpeg",
+    ) -> APIResponse[None]:
+        """Attach user avatar via PUT /users/me/avatar."""
+        with image_path.open("rb") as f:
+            url = f"{USERS_URL}/me/avatar"
+            data = FormData()
+            data.add_field(
+                name="file",
+                value=f,
+                filename=filename,
+                content_type=content_type,
+            )
+            async with self.session.put(url, headers=self._headers, data=data) as response:
+                return await self._load_response(
+                    response,
+                    response_type=None,
+                )
 
     async def create_competition(self, data: dict[str, Any]) -> APIResponse[CreatedCompetition]:
         """Create competition via POST /competitions/."""

@@ -1,5 +1,8 @@
 from typing import Any
 
+import aiobotocore  # noqa: F401
+import botocore  # noqa: F401
+import python_multipart  # noqa: F401
 import structlog
 
 
@@ -61,6 +64,21 @@ def configure_structlog() -> dict[str, Any]:
             },
             "uvicorn.access": {
                 "level": "INFO",
+                "handlers": ["json"],
+                "propagate": False,
+            },
+            "botocore": {
+                "level": "CRITICAL",
+                "handlers": ["json"],
+                "propagate": False,
+            },
+            "aiobotocore": {
+                "level": "CRITICAL",
+                "handlers": ["json"],
+                "propagate": False,
+            },
+            "python_multipart": {
+                "level": "CRITICAL",
                 "handlers": ["json"],
                 "propagate": False,
             },

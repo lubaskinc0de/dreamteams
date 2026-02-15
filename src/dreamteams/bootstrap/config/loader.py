@@ -6,6 +6,7 @@ import toml_rs
 from adaptix import Retort
 
 from dreamteams.adapters.auth.idp.auth_user import WebAuthUserIdProviderConfig
+from dreamteams.adapters.avatar_storage import S3Config
 from dreamteams.adapters.db.config import DbConfig
 from dreamteams.adapters.env_loader import env
 from dreamteams.adapters.tracing import TracingConfig
@@ -34,6 +35,7 @@ class Config:
     server: ServerConfig
     cors: CorsConfig
     api: ApiConfig
+    s3: S3Config
 
     @classmethod
     def load(cls) -> Self:
@@ -48,6 +50,14 @@ class Config:
             server_port=env("SERVER_PORT", int),
             server_host=env("SERVER_HOST"),
         )
+        s3 = S3Config(
+            bucket_name=env("S3_BUCKET_NAME"),
+            endpoint_url=env("S3_ENDPOINT_URL"),
+            access_key=env("S3_ACCESS_KEY"),
+            secret_key=env("S3_SECRET_KEY"),
+            region=env("S3_REGION"),
+            public_url=env("S3_PUBLIC_URL"),
+        )
         return cls(
             db=db,
             web_auth_user_id_provider=toml_config.auth,
@@ -55,4 +65,5 @@ class Config:
             server=server,
             cors=toml_config.cors,
             api=toml_config.api,
+            s3=s3,
         )
