@@ -8,7 +8,9 @@ from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.manage_competitions import CompetitionModel
 from dreamteams.application.manage_competitions.update import UpdateCompetitionForm
 from dreamteams.application.preview_competition.list import PreviewCompetitionsList
+from dreamteams.application.register.register_organizer import CreatedOrganizer
 from dreamteams.entities.competition.schedule import ScheduleData
+from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
 from tests.integration.api_client import ApiClient
 from tests.integration.manage_competitions.helpers import (
     competitions_list_to_preview_list,
@@ -76,6 +78,8 @@ async def make_all_active(api_client: ApiClient, competitions: list[CompetitionM
 async def test_preview_competitions_lists_active_competitions(
     api_client: ApiClient,
     competitions: list[CompetitionModel],
+    organizer_form: OrganizerForm,
+    organizer: CreatedOrganizer,
 ) -> None:
     """Test listing competitions as unauthorized user shows only active competitions."""
     competitions = await make_all_active(api_client, competitions)
@@ -85,6 +89,8 @@ async def test_preview_competitions_lists_active_competitions(
             sort_by=CompetitionSortBy.CREATED_AT,
             sort_order=SortOrder.DESC,
         ),
+        organizer_form,
+        organizer.organizer_id,
     )
 
     list_response = await api_client.list_preview_competitions()
@@ -108,6 +114,8 @@ async def test_preview_competitions_does_not_shows_archived_competitions(
 async def test_preview_competitions_does_not_shows_competitions_which_not_begin(
     api_client: ApiClient,
     competitions: list[CompetitionModel],
+    organizer_form: OrganizerForm,
+    organizer: CreatedOrganizer,
 ) -> None:
     """Test listing competitions as unauthorized user does not show competitions with reg start in future."""
     competitions = await make_all_active(api_client, competitions[: len(competitions) // 2])
@@ -117,6 +125,8 @@ async def test_preview_competitions_does_not_shows_competitions_which_not_begin(
             sort_by=CompetitionSortBy.CREATED_AT,
             sort_order=SortOrder.DESC,
         ),
+        organizer_form,
+        organizer.organizer_id,
     )
 
     list_response = await api_client.list_preview_competitions()
@@ -129,6 +139,8 @@ async def test_preview_competitions_does_not_shows_competitions_which_not_begin(
 async def test_preview_competitions_pagination(
     api_client: ApiClient,
     competitions: list[CompetitionModel],
+    organizer_form: OrganizerForm,
+    organizer: CreatedOrganizer,
     page: int,
 ) -> None:
     """Preview competitions pagination must return correct items per page."""
@@ -139,6 +151,8 @@ async def test_preview_competitions_pagination(
             sort_by=CompetitionSortBy.CREATED_AT,
             sort_order=SortOrder.DESC,
         ),
+        organizer_form,
+        organizer.organizer_id,
     )
 
     response = await api_client.list_preview_competitions(page)

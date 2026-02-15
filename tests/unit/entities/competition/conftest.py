@@ -5,8 +5,7 @@ import pytest
 from faker import Faker
 
 from dreamteams.entities.common.clock import Clock
-from dreamteams.entities.organizer import Organizer
-from dreamteams.entities.user import User
+from dreamteams.entities.user import Organizer, User
 
 NOW_NAIVE = datetime(year=2026, month=1, day=25, hour=10, minute=30, second=25, microsecond=3)  # noqa: DTZ001
 NOW = NOW_NAIVE.replace(tzinfo=UTC)
@@ -26,15 +25,19 @@ def organizer_user(faker: Faker) -> User:
     user_id = faker.uuid4(cast_to=None)
     organizer_id = faker.uuid4(cast_to=None)
 
+    user = User(id=user_id, organizer=None)
+
     organizer = Organizer(
         id=organizer_id,
         user_id=user_id,
+        user=user,
         organizer_name=faker.company(),
         phone_number=faker.phone_number(),
         contact_email=faker.email(),
     )
 
-    return User(id=user_id, organizer=organizer)
+    user.organizer = organizer
+    return user
 
 
 @pytest.fixture
@@ -43,15 +46,19 @@ def different_user(faker: Faker) -> User:
     user_id = faker.uuid4(cast_to=None)
     organizer_id = faker.uuid4(cast_to=None)
 
+    user = User(id=user_id, organizer=None)
+
     organizer = Organizer(
         id=organizer_id,
         user_id=user_id,
+        user=user,
         organizer_name=faker.company(),
         phone_number=faker.phone_number(),
         contact_email=faker.email(),
     )
 
-    return User(id=user_id, organizer=organizer)
+    user.organizer = organizer
+    return user
 
 
 @pytest.fixture

@@ -32,6 +32,7 @@ def test_update_competition_succeeds(
     assert competition == Competition(
         id=competition.id,
         organizer_id=organizer_user.organizer.id,
+        organizer=organizer_user.organizer,
         title=valid_competition_update_data.title,
         description=valid_competition_update_data.description,
         schedule=CompetitionSchedule(
