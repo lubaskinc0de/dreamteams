@@ -11,7 +11,7 @@ from dreamteams.application.common.uow import UoW
 from dreamteams.application.errors.organizer import OrganizerAlreadyExistsError
 from dreamteams.application.register.shared.user_factory import UserFactory
 from dreamteams.entities.common.identifiers import OrganizerId, UserId
-from dreamteams.entities.organizer import Organizer
+from dreamteams.entities.user import Organizer
 
 logger: Logger = structlog.get_logger(__name__)
 
@@ -58,6 +58,7 @@ class RegisterOrganizer:
         organizer = Organizer(
             id=organizer_id,
             user_id=user.id,
+            user=user,
             organizer_name=data.organizer_name,
             phone_number=data.phone_number,
             contact_email=data.contact_email,

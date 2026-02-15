@@ -14,7 +14,7 @@ from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionVenue
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
-from dreamteams.entities.user import User
+from dreamteams.entities.user import Organizer, User
 
 type Banner = str
 
@@ -25,6 +25,7 @@ class Competition(Entity):
 
     id: CompetitionId
     organizer_id: OrganizerId
+    organizer: Organizer
     title: str
     banner: Banner | None
     description: str
@@ -138,6 +139,7 @@ def competition_factory(
     return Competition(
         id=uuid4(),
         organizer_id=user.organizer.id,
+        organizer=user.organizer,
         title=data.title,
         banner=None,
         description=data.description,
