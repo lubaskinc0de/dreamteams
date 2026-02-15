@@ -137,6 +137,7 @@ class S3AvatarStorage(AvatarStorage, S3Client):
             logger.exception("Failed to upload avatar for user", user_id=user_id)
             raise
         else:
+            logger.debug("Avatar uploaded for user", user_id=user_id)
             return object_key
 
     @override

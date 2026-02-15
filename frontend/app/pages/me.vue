@@ -4,6 +4,8 @@ const { navigateTo } = useNavigation();
 const { getErrorMessage } = useErrorHandler();
 const { t } = useI18n();
 const config = useRuntimeConfig();
+const api = useApi();
+const toast = useToast();
 
 // SEO Meta tags
 useSeoMeta({
@@ -16,6 +18,63 @@ const errorMessage = computed(() => getErrorMessage(userStore.error));
 
 const goToRegistration = () => {
   navigateTo("/onboarding");
+};
+
+// Avatar modal state
+const isAvatarModalOpen = ref(false);
+const isUploadingAvatar = ref(false);
+
+// Handle avatar upload
+const handleAvatarUpload = async (file: File) => {
+  isUploadingAvatar.value = true;
+  const { error } = await api.attachAvatar(file);
+
+  if (error) {
+    isUploadingAvatar.value = false;
+    toast.add({
+      title: t("apiErrors." + error.code),
+      color: "error",
+      icon: "i-heroicons-exclamation-triangle",
+    });
+  } else {
+    // Refresh user profile to get updated avatar URL
+    await userStore.fetchProfile();
+    isUploadingAvatar.value = false;
+
+    toast.add({
+      title: t("toast.avatarUploaded.title"),
+      description: t("toast.avatarUploaded.description"),
+      color: "success",
+      icon: "i-heroicons-check-circle",
+    });
+    isAvatarModalOpen.value = false;
+  }
+};
+
+// Handle avatar delete
+const handleAvatarDelete = async () => {
+  isUploadingAvatar.value = true;
+  const { error } = await api.detachAvatar();
+
+  if (error) {
+    isUploadingAvatar.value = false;
+    toast.add({
+      title: t("apiErrors." + error.code),
+      color: "error",
+      icon: "i-heroicons-exclamation-triangle",
+    });
+  } else {
+    // Refresh user profile to clear avatar URL
+    await userStore.fetchProfile();
+    isUploadingAvatar.value = false;
+
+    toast.add({
+      title: t("toast.avatarDeleted.title"),
+      description: t("toast.avatarDeleted.description"),
+      color: "success",
+      icon: "i-heroicons-check-circle",
+    });
+  }
 };
 
 // Tabs configuration
@@ -56,14 +115,6 @@ const handleLogout = () => {
   <UPage>
     <UPageBody>
       <UContainer class="!max-w-6xl">
-        <div class="mb-8">
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {{ t('profile.title') }}
-          </h1>
-          <p class="text-gray-600 dark:text-gray-400">
-            {{ t('profile.description') }}
-          </p>
-        </div>
         <UAlert v-if="errorMessage" color="error" variant="soft" :title="errorMessage"
           icon="i-heroicons-exclamation-triangle" :close-button="{
             icon: 'i-heroicons-x-mark-20-solid',
@@ -97,82 +148,71 @@ const handleLogout = () => {
             <!-- Information Tab -->
             <template #information>
               <UCard>
-                <template #header>
-                  <div class="flex items-start justify-between">
-                    <div class="flex items-center gap-4">
-                      <UAvatar :src="userStore.organizer?.logo || undefined" :alt="userStore.organizer?.organizer_name ||
-                        t('profile.userBadge')
-                        " size="2xl" />
-                      <div>
-                        <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
-                          {{
-                            userStore.organizer?.organizer_name ||
-                            t("profile.userBadge")
-                          }}
-                        </h2>
+                <div class="flex flex-col lg:flex-row gap-6 lg:gap-8 items-center lg:items-start">
+                  <!-- Avatar Section -->
+                  <div class="flex-shrink-0">
+                    <div
+                      class="relative group cursor-pointer w-20 h-20"
+                      @click="isAvatarModalOpen = true"
+                    >
+                      <UAvatar
+                        :src="userStore.profile?.avatar_url || undefined"
+                        :alt="userStore.organizer?.organizer_name || t('profile.userBadge')"
+                        size="3xl"
+                        :ui="{ root: 'w-full h-full' }"
+                        class="ring-2 ring-gray-200 dark:ring-gray-700 transition-all group-hover:ring-primary-500"
+                      />
+                      <div
+                        class="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                      >
+                        <UIcon
+                          name="i-heroicons-camera"
+                          class="text-white text-3xl"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- User Info -->
+                  <div class="flex-1 w-full text-center lg:text-left">
+                    <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+                      {{ userStore.organizer?.organizer_name || t("profile.userBadge") }}
+                    </h2>
+
+                    <div v-if="userStore.isOrganizer && userStore.organizer" class="space-y-2">
+                      <!-- Phone -->
+                      <div class="flex justify-center lg:justify-start">
                         <div class="flex items-center gap-2">
-                          <UBadge v-if="userStore.isOrganizer" color="success" variant="subtle" size="sm"
-                            :aria-label="t('profile.organizerBadge')">
-                            <template #leading>
-                              <UIcon name="i-heroicons-check-circle" />
-                            </template>
-                            {{ t("profile.organizerBadge") }}
-                          </UBadge>
-                          <UBadge v-else color="neutral" variant="subtle" size="sm"
-                            :aria-label="t('profile.userBadge')">
-                            {{ t("profile.userBadge") }}
-                          </UBadge>
+                          <UIcon name="i-heroicons-phone" class="text-lg text-gray-600 dark:text-gray-400" />
+                          <p class="text-sm text-gray-900 dark:text-gray-100">
+                            {{ userStore.organizer.phone_number }}
+                          </p>
+                        </div>
+                      </div>
+
+                      <!-- Email -->
+                      <div class="flex justify-center lg:justify-start">
+                        <div class="flex items-center gap-2">
+                          <UIcon name="i-heroicons-envelope" class="text-lg text-gray-600 dark:text-gray-400" />
+                          <p class="text-sm text-gray-900 dark:text-gray-100">
+                            {{ userStore.organizer.contact_email }}
+                          </p>
                         </div>
                       </div>
                     </div>
+
+                    <div v-else>
+                      <UEmpty icon="i-heroicons-trophy" :title="t('profile.notRegistered.title')"
+                        :description="t('profile.notRegistered.description')">
+                        <template #actions>
+                          <UButton size="lg" icon="i-heroicons-user-plus" @click="goToRegistration"
+                            :aria-label="t('profile.notRegistered.button')">
+                            {{ t("profile.notRegistered.button") }}
+                          </UButton>
+                        </template>
+                      </UEmpty>
+                    </div>
                   </div>
-                </template>
-
-                <div v-if="userStore.isOrganizer && userStore.organizer">
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="space-y-1">
-                      <div class="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
-                        <UIcon name="i-heroicons-building-office" class="text-base" />
-                        <span>{{ t("profile.fields.organizerName") }}</span>
-                      </div>
-                      <p class="text-lg text-gray-900 dark:text-gray-100 pl-6">
-                        {{ userStore.organizer.organizer_name }}
-                      </p>
-                    </div>
-
-                    <div class="space-y-1">
-                      <div class="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
-                        <UIcon name="i-heroicons-phone" class="text-base" />
-                        <span>{{ t("profile.fields.phoneNumber") }}</span>
-                      </div>
-                      <p class="text-lg text-gray-900 dark:text-gray-100 pl-6">
-                        {{ userStore.organizer.phone_number }}
-                      </p>
-                    </div>
-
-                    <div class="space-y-1">
-                      <div class="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
-                        <UIcon name="i-heroicons-envelope" class="text-base" />
-                        <span>{{ t("profile.fields.contactEmail") }}</span>
-                      </div>
-                      <p class="text-lg text-gray-900 dark:text-gray-100 pl-6">
-                        {{ userStore.organizer.contact_email }}
-                      </p>
-                    </div>
-
-                  </div>
-                </div>
-
-                <div v-else>
-                  <UEmpty icon="i-heroicons-trophy" :title="t('profile.notRegistered.title')"
-                    :description="t('profile.notRegistered.description')">
-                    <template #actions>
-                      <UButton size="lg" icon="i-heroicons-user-plus" @click="goToRegistration"
-                        :aria-label="t('profile.notRegistered.button')">
-                        {{ t("profile.notRegistered.button") }}
-                      </UButton>
-                    </template>
-                  </UEmpty>
                 </div>
               </UCard>
             </template>
@@ -253,6 +293,15 @@ const handleLogout = () => {
         :cancel-label="t('common.cancel')"
         :is-deleting="isDeleting"
         @confirm="handleDelete"
+      />
+
+      <!-- Avatar Edit Modal -->
+      <AvatarEditModal
+        v-if="isAvatarModalOpen"
+        v-model:open="isAvatarModalOpen"
+        :current-avatar-url="userStore.profile?.avatar_url"
+        @upload="handleAvatarUpload"
+        @delete="handleAvatarDelete"
       />
     </UPageBody>
   </UPage>

@@ -206,6 +206,37 @@ export const useApi = () => {
     }
   };
 
+  const attachAvatar = async (
+    file: File,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const data = await $fetch<{}>(`${apiBase}/api/users/me/avatar`, {
+        method: "PUT",
+        body: formData,
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const detachAvatar = async (): Promise<{
+    data: {} | null;
+    error: ApiError | null;
+  }> => {
+    try {
+      const data = await $fetch<{}>(`${apiBase}/api/users/me/avatar`, {
+        method: "DELETE",
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
   return {
     checkAuth,
     registerOrganizer,
@@ -216,5 +247,7 @@ export const useApi = () => {
     updateCompetition,
     deleteCompetition,
     deleteUserProfile,
+    attachAvatar,
+    detachAvatar,
   };
 };

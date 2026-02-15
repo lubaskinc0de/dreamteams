@@ -26,6 +26,7 @@ export interface OrganizerModel {
 export interface ProfileModel {
   user_id: string;
   organizer: OrganizerModel | null;
+  avatar_url: string | null;
 }
 
 export type ErrorCode =
@@ -36,7 +37,8 @@ export type ErrorCode =
   | "USER_NOT_FOUND"
   | "USER_HAS_NO_ROLE"
   | "ACCESS_DENIED"
-  | "INTERNAL_SERVER_ERROR";
+  | "INTERNAL_SERVER_ERROR"
+  | "INVALID_AVATAR_ERROR";
 
 // Competition types
 export type Domain = "frontend" | "mobile" | "backend" | "ai" | "devops";

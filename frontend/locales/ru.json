@@ -245,7 +245,24 @@
     "ACCESS_DENIED": "Доступ запрещен",
     "INTERNAL_SERVER_ERROR": "Внутренняя ошибка сервера. Попробуйте позже",
     "NETWORK_ERROR": "Ошибка сети. Проверьте интернет-соединение",
-    "UNKNOWN_ERROR": "Произошла неизвестная ошибка"
+    "UNKNOWN_ERROR": "Произошла неизвестная ошибка",
+    "INVALID_AVATAR_ERROR": "Неверный файл аватара. Проверьте формат и размер"
+  },
+  "avatar": {
+    "uploadButton": "Загрузить аватар",
+    "changeButton": "Изменить аватар",
+    "deleteButton": "Удалить аватар",
+    "selectButton": "Выбрать файл",
+    "preview": "Предпросмотр аватара",
+    "hint": "JPEG, PNG, GIF или WEBP. Макс. 5МБ",
+    "clickToEdit": "Нажмите для редактирования",
+    "modal": {
+      "title": "Редактировать аватар"
+    },
+    "errors": {
+      "invalidFormat": "Неверный формат файла. Допустимы только JPEG, PNG, GIF, WEBP",
+      "tooLarge": "Размер файла не должен превышать 5 МБ"
+    }
   },
   "toast": {
     "registrationSuccess": {
@@ -255,6 +272,14 @@
     "profileUpdated": {
       "title": "Профиль обновлен",
       "description": "Ваши данные успешно сохранены"
+    },
+    "avatarUploaded": {
+      "title": "Аватар загружен!",
+      "description": "Ваш аватар успешно обновлен"
+    },
+    "avatarDeleted": {
+      "title": "Аватар удален",
+      "description": "Ваш аватар успешно удален"
     },
     "competitionCreated": {
       "title": "Соревнование создано!",

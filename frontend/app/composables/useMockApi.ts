@@ -24,15 +24,18 @@ const mockUser: ProfileModel = {
     contact_email: "ivan@example.com",
     logo: null,
   },
+  avatar_url: null,
 };
 
 const mockUserWithoutOrganizer: ProfileModel = {
   user_id: "123e4567-e89b-12d3-a456-426614174000",
   organizer: null,
+  avatar_url: null,
 };
 
 // Storage for current state
 let isRegistered = false;
+let currentAvatarUrl: string | null = null;
 
 // Mock competitions data
 const mockCompetitions: CompetitionModel[] = [
@@ -200,8 +203,12 @@ export const useMockApi = () => {
     // Simulate network delay
     await delay(300);
 
+    const profile = isRegistered ? mockUser : mockUserWithoutOrganizer;
     return {
-      data: isRegistered ? mockUser : mockUserWithoutOrganizer,
+      data: {
+        ...profile,
+        avatar_url: currentAvatarUrl,
+      },
       error: null,
     };
   };
@@ -429,6 +436,60 @@ export const useMockApi = () => {
     };
   };
 
+  const attachAvatar = async (
+    file: File,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    await delay(500);
+
+    // Validate file type
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      return {
+        data: null,
+        error: {
+          code: "INVALID_AVATAR_ERROR",
+          message: "Неверный формат файла. Допустимы только JPEG, PNG, GIF, WEBP",
+          meta: { reason: "Invalid file format" },
+        },
+      };
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      return {
+        data: null,
+        error: {
+          code: "INVALID_AVATAR_ERROR",
+          message: "Размер файла не должен превышать 5 МБ",
+          meta: { reason: "File too large" },
+        },
+      };
+    }
+
+    // Simulate successful upload by creating a temporary URL
+    currentAvatarUrl = URL.createObjectURL(file);
+
+    return {
+      data: {},
+      error: null,
+    };
+  };
+
+  const detachAvatar = async (): Promise<{
+    data: {} | null;
+    error: ApiError | null;
+  }> => {
+    await delay(300);
+
+    currentAvatarUrl = null;
+
+    return {
+      data: {},
+      error: null,
+    };
+  };
+
   return {
     checkAuth,
     registerOrganizer,
@@ -439,5 +500,7 @@ export const useMockApi = () => {
     updateCompetition,
     deleteCompetition,
     deleteUserProfile,
+    attachAvatar,
+    detachAvatar,
   };
 };

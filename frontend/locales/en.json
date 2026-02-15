@@ -245,7 +245,24 @@
     "ACCESS_DENIED": "Access denied",
     "INTERNAL_SERVER_ERROR": "Internal server error. Please try again later",
     "NETWORK_ERROR": "Network error. Please check your internet connection",
-    "UNKNOWN_ERROR": "An unknown error occurred"
+    "UNKNOWN_ERROR": "An unknown error occurred",
+    "INVALID_AVATAR_ERROR": "Invalid avatar file. Please check the format and size"
+  },
+  "avatar": {
+    "uploadButton": "Upload Avatar",
+    "changeButton": "Change Avatar",
+    "deleteButton": "Remove Avatar",
+    "selectButton": "Select File",
+    "preview": "Avatar preview",
+    "hint": "JPEG, PNG, GIF or WEBP. Max 5MB",
+    "clickToEdit": "Click to edit",
+    "modal": {
+      "title": "Edit Avatar"
+    },
+    "errors": {
+      "invalidFormat": "Invalid file format. Only JPEG, PNG, GIF, WEBP are allowed",
+      "tooLarge": "File size must not exceed 5 MB"
+    }
   },
   "toast": {
     "registrationSuccess": {
@@ -255,6 +272,14 @@
     "profileUpdated": {
       "title": "Profile Updated",
       "description": "Your data has been saved successfully"
+    },
+    "avatarUploaded": {
+      "title": "Avatar Uploaded!",
+      "description": "Your avatar has been updated successfully"
+    },
+    "avatarDeleted": {
+      "title": "Avatar Removed",
+      "description": "Your avatar has been removed successfully"
     },
     "competitionCreated": {
       "title": "Competition Created!",

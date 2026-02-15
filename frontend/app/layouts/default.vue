@@ -58,9 +58,12 @@ const handleLogin = async () => {
         <!-- Show avatar for authenticated users -->
         <template v-if="showAvatar">
           <NuxtLink to="/me" :aria-label="t('nav.profile')">
-            <UAvatar :src="userStore.organizer?.logo || undefined"
-              :alt="userStore.organizer?.organizer_name || t('profile.userBadge')" size="md"
-              class="hover:ring-2 hover:ring-primary-500 transition-all cursor-pointer" />
+            <UAvatar
+              :src="userStore.profile?.avatar_url || undefined"
+              :alt="userStore.organizer?.organizer_name || t('profile.userBadge')"
+              size="md"
+              class="hover:ring-2 hover:ring-primary-500 transition-all cursor-pointer"
+            />
           </NuxtLink>
         </template>
         <!-- Login button (desktop only) and settings menu for unauthenticated users -->
