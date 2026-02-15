@@ -24,11 +24,11 @@ async def test_attach_avatar_to_organizer_succeeds(
         attach_resp = await api_client.attach_avatar(
             path,
         )
-        read_resp = await api_client.view_profile()
 
-    attach_resp.assert_status(200)
-    profile = read_resp.ensure_content()
-    assert profile.avatar_url is not None
+        attach_resp.assert_status(200)
+        read_resp = await api_client.view_profile()
+        profile = read_resp.ensure_content()
+        assert profile.avatar_url is not None
 
 
 @pytest.mark.parametrize(
@@ -43,22 +43,22 @@ async def test_view_organizer_avatar_succeeds(
     file_path: str,
 ) -> None:
     """Test view avatar attached to organizer."""
-    with as_file(assets.joinpath(file_path)) as avatar_path:
+    with as_file(assets.joinpath(file_path)) as avatar_path, api_client.authenticate(auth_user_id=USER_ID):
         # Arrange
-        with api_client.authenticate(auth_user_id=USER_ID):
-            (
-                await api_client.attach_avatar(
-                    avatar_path,
-                )
-            ).assert_status(200)
-            avatar_url = (await api_client.view_profile()).ensure_content().avatar_url
-            assert avatar_url is not None
+        (
+            await api_client.attach_avatar(
+                avatar_path,
+            )
+        ).assert_status(200)
+        avatar_url = (await api_client.view_profile()).ensure_content().avatar_url
+        assert avatar_url is not None
 
         # Act
-        with api_client.authenticate(auth_user_id=USER_ID):
-            async with http_session.get(avatar_url) as resp:
-                # Assert
-                assert resp.status == 200  # noqa: PLR2004
+        async with http_session.get(avatar_url) as resp:
+            ...
+
+        # Assert
+        assert resp.status == 200  # noqa: PLR2004
 
 
 @pytest.mark.parametrize(
@@ -80,7 +80,7 @@ async def test_cannot_attach_invalid_avatar(
             path,
         )
 
-    attach_resp.assert_error(422, "INVALID_AVATAR_ERROR")
+        attach_resp.assert_error(422, "INVALID_AVATAR_ERROR")
 
 
 @pytest.mark.parametrize(
@@ -98,4 +98,4 @@ async def test_cannot_attach_avatar_when_unauthorized(
             path,
         )
 
-    attach_resp.assert_error(401, "UNAUTHORIZED")
+        attach_resp.assert_error(401, "UNAUTHORIZED")
