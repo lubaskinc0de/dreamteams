@@ -172,7 +172,7 @@ const handleSubmit = async () => {
 
     if (competitionStore.creationSuccess) {
       // Redirect to competitions list
-      router.push('/competitions');
+      router.push('/me/competitions');
     } else if (competitionStore.error) {
       toast.add({
         title: t('errors.default.title'),
@@ -217,7 +217,7 @@ const handleError = async (event: any) => {
 };
 
 const goBack = () => {
-  router.push('/competitions');
+  router.push('/me/competitions');
 };
 </script>
 

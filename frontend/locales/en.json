@@ -38,6 +38,7 @@
     "register": "Register",
     "login": "Sign In",
     "competitions": "My Competitions",
+    "browseCompetitions": "Competitions",
     "brand": "DreamTeams",
     "brandSubtitle": "IT Competition Aggregator",
     "settings": "Settings",
@@ -50,6 +51,7 @@
     "heroDescription": "Innovative service for team formation at IT competitions. All current events aggregated in one place.",
     "ctaText": "All IT hackathons in one place. Find a team or post your event in 5 minutes",
     "startButton": "Start Now",
+    "findHackathonButton": "Find Competitions",
     "registerButton": "Become an Organizer",
     "profileButton": "Go to Profile",
     "findEvents": "Find Events",
@@ -344,6 +346,10 @@
     "competitionEdit": {
       "title": "Edit Competition - DreamTeams",
       "description": "Edit competition information"
+    },
+    "competitionsPreview": {
+      "title": "Competitions - DreamTeams",
+      "description": "Find IT competitions. All current events in one place."
     }
   },
   "competitions": {
@@ -387,6 +393,55 @@
       "title": "Delete Competition",
       "description": "Are you sure you want to delete this competition? This action cannot be undone.",
       "confirm": "Delete"
+    }
+  },
+  "competitionsPreview": {
+    "found": "We {found} {total} {declension} for you",
+    "foundLink": "found",
+    "foundDeclension": {
+      "one": "competition",
+      "few": "competitions",
+      "many": "competitions"
+    },
+    "placeButton": "Post Competition",
+    "scrollHint": "Browse competitions",
+    "card": {
+      "organizer": "Organizer",
+      "registration": "Registration",
+      "participants": "Participants",
+      "registerButton": "Register",
+      "participantsSuffix": "participants"
+    },
+    "detail": {
+      "title": "Competition Details",
+      "description": "Description",
+      "schedule": "Schedule",
+      "registration": "Registration",
+      "teamFormation": "Team Formation",
+      "participants": "Participants",
+      "participantType": "Participant Type",
+      "teamSize": "Team Size",
+      "venue": "Venue",
+      "milestones": "Milestones",
+      "domains": "Domains",
+      "organizer": "Organizer",
+      "registerButton": "Register for Competition",
+      "closeButton": "Close"
+    },
+    "empty": {
+      "title": "No competitions yet",
+      "description": "Be the first organizer and post your event",
+      "placeButton": "Post first competition"
+    },
+    "toast": {
+      "onboardingRequired": {
+        "title": "Registration required",
+        "description": "Please complete platform registration first"
+      },
+      "registerSuccess": {
+        "title": "Registration coming soon",
+        "description": "Competition registration feature is under development"
+      }
     }
   },
   "competition": {

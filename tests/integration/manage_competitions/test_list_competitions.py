@@ -9,7 +9,8 @@ from dreamteams.application.manage_competitions.list import PAGE_SIZE
 from dreamteams.application.register.register_organizer import CreatedOrganizer
 from tests.common.factory.competition import CompetitionFormFactory, UpdateCompetitionFormFactory
 from tests.integration.api_client import ApiClient
-from tests.integration.conftest import DIFFERENT_USER_ID, USER_ID, create_competition, create_competitions
+from tests.integration.conftest import create_competition, create_competitions
+from tests.integration.constants import DIFFERENT_USER_ID, USER_ID
 from tests.integration.manage_competitions.helpers import create_competitions_list, update_competition
 
 

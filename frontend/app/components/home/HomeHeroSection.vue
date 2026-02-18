@@ -2,7 +2,6 @@
 /**
  * Hero section with brand name and CTA
  */
-const emit = defineEmits(['start']);
 const { t } = useI18n();
 </script>
 
@@ -29,15 +28,15 @@ const { t } = useI18n();
         <!-- CTA Button -->
         <div class="fade-in-scroll flex justify-start sm:justify-center">
           <UButton
-            @click="emit('start')"
+            @click="navigateTo('/competitions')"
             size="xl"
-            icon="i-heroicons-rocket-launch"
+            icon="i-heroicons-magnifying-glass"
             color="primary"
             variant="solid"
             class="min-w-[200px]"
             :ui="{ base: 'justify-center' }"
           >
-            {{ t('home.startButton') }}
+            {{ t('home.findHackathonButton') }}
           </UButton>
         </div>
       </div>

@@ -72,7 +72,7 @@ const handleLoadMore = () => {
 
 // Navigate to create page
 const goToCreate = () => {
-  router.push('/competitions/create');
+  router.push('/me/competitions/create');
 };
 
 
@@ -144,7 +144,7 @@ const handleDelete = async () => {
             :competitions="competitionStore.competitions"
             :loading="competitionStore.loading"
             :has-more="competitionStore.hasMorePages"
-            @click="router.push(`/competitions/${$event}`)"
+            @click="router.push(`/me/competitions/${$event}`)"
             @delete="openDeleteModal"
             @load-more="handleLoadMore"
           />

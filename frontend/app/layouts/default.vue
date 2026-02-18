@@ -13,17 +13,27 @@ const brandLink = computed(() => {
 // Show avatar for authenticated users with profile
 const showAvatar = computed(() => isAuthenticated.value && hasProfile.value);
 
+// Public navigation items (visible to everyone)
+const publicNavItems = computed<NavigationMenuItem[]>(() => [
+  {
+    label: t('nav.browseCompetitions'),
+    icon: 'i-heroicons-magnifying-glass',
+    to: '/competitions',
+  },
+]);
+
 // Navigation items for organizers
 const navItems = computed<NavigationMenuItem[]>(() => {
   if (!isAuthenticated.value || !hasProfile.value || !userStore.isOrganizer) {
-    return [];
+    return publicNavItems.value;
   }
 
   return [
+    ...publicNavItems.value,
     {
       label: t('nav.competitions'),
       icon: 'i-heroicons-trophy',
-      to: '/competitions',
+      to: '/me/competitions',
     },
   ];
 });
@@ -51,7 +61,7 @@ const handleLogin = async () => {
 
       <template #default>
         <!-- Navigation for organizers -->
-        <UNavigationMenu v-if="navItems.length > 0" :items="navItems" variant="link" class="hidden md:flex" />
+        <UNavigationMenu :items="navItems" variant="link" class="hidden md:flex" />
       </template>
 
       <template #right>
@@ -108,10 +118,8 @@ const handleLogin = async () => {
       </template>
 
       <template #body>
-        <!-- Mobile menu for authenticated organizers -->
-        <template v-if="showAvatar && navItems.length > 0">
-          <UNavigationMenu :items="navItems" orientation="vertical" class="-mx-2.5" />
-        </template>
+        <!-- Mobile menu -->
+        <UNavigationMenu :items="navItems" orientation="vertical" class="-mx-2.5" />
       </template>
     </UHeader>
 

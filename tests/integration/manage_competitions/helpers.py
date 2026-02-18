@@ -6,19 +6,13 @@ from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.manage_competitions.list import PAGE_SIZE, CompetitionsList
 from dreamteams.application.manage_competitions.read import CompetitionModel
 from dreamteams.application.manage_competitions.update import UpdateCompetitionForm
-from dreamteams.application.preview_competition.list import (
-    PreviewCompetitionModel,
-    PreviewCompetitionsList,
-    PreviewOrganizerModel,
-)
 from dreamteams.application.publish_competition.create import CompetitionForm
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
 from dreamteams.entities.competition.milestone import Milestone
 from dreamteams.entities.competition.schedule import schedule_factory
-from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
 from tests.integration.api_client import ApiClient
-from tests.integration.conftest import USER_ID
+from tests.integration.constants import USER_ID
 
 
 def create_competitions_list(
@@ -134,37 +128,7 @@ def competition_update_form_to_model(
     )
 
 
-def competitions_list_to_preview_list(
-    lst: CompetitionsList,
-    organizer_form: OrganizerForm,
-    organizer_id: OrganizerId,
-) -> PreviewCompetitionsList:
-    """Transform CompetitionsList to PreviewCompetitionsList with organizer info."""
-    organizer_model = PreviewOrganizerModel(
-        id=organizer_id,
-        name=organizer_form.organizer_name,
-        avatar_url=None,
-    )
-
-    preview_items = [
-        PreviewCompetitionModel(
-            id=comp.id,
-            organizer=organizer_model,
-            title=comp.title,
-            banner=comp.banner,
-            description=comp.description,
-            schedule=comp.schedule,
-            participant_limits=comp.participant_limits,
-            domains=comp.domains,
-            participant_type=comp.participant_type,
-            venue=comp.venue,
-            team_size=comp.team_size,
-            milestones=comp.milestones,
-            is_archived=comp.is_archived,
-            created_at=comp.created_at,
-            updated_at=comp.updated_at,
-        )
-        for comp in lst.items
-    ]
-
-    return PreviewCompetitionsList(total=lst.total, page=lst.page, items=preview_items)
+async def read_competition(api_client: ApiClient, competition_id: CompetitionId) -> CompetitionModel:
+    """Read a competition via API."""
+    with api_client.authenticate(auth_user_id=USER_ID):
+        return (await api_client.read_competition(competition_id)).assert_status(200).ensure_content()

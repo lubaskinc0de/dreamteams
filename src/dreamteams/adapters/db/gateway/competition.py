@@ -61,7 +61,8 @@ class SACompetitionGateway(CompetitionGateway):
             filter_by.append(competition_table.c.organizer_id == organizer_id)
 
         if active:
-            filter_by.append(competition_table.c.registration_start <= datetime.now(tz=UTC))
+            filter_by.append(competition_table.c.registration_start < datetime.now(tz=UTC))
+            filter_by.append(competition_table.c.registration_end > datetime.now(tz=UTC))
 
         if search is not None:
             search_vector = func.lower(func.concat(competition_table.c.title, " ", competition_table.c.description))

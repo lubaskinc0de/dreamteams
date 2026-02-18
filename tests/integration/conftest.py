@@ -28,10 +28,8 @@ from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
 from tests.common.factory.competition import CompetitionFormFactory, UpdateCompetitionFormFactory
 from tests.common.factory.organizer import OrganizerFormFactory
 from tests.integration.api_client import ApiClient, APIClientConfig
-
-USER_ID = "1"
-DIFFERENT_USER_ID = "2"
-
+from tests.integration.constants import DIFFERENT_USER_ID, USER_ID
+from tests.integration.preview_competitions.helpers import create_mixed_competitions
 
 # This is a fake private key used only to sign fake access token for tests
 DUMMY_PRIVATE_KEY = """
@@ -290,7 +288,9 @@ async def competitions(
     competition_form_factory: CompetitionFormFactory,
     request: pytest.FixtureRequest,
     organizer: CreatedOrganizer,  # noqa: ARG001
+    session: AsyncSession,
 ) -> list[CompetitionModel]:
-    """Create and read competitions."""
+    """Create and read competitions with mixed states (active, inactive, archived, passed)."""
     num_competitions = request.param
-    return await create_competitions(num_competitions, competition_form_factory, api_client)
+    base_competitions = await create_competitions(num_competitions, competition_form_factory, api_client)
+    return await create_mixed_competitions(session, api_client, base_competitions)

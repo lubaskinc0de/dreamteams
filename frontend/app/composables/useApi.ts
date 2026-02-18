@@ -10,6 +10,7 @@ import type {
   CompetitionsList,
   CompetitionSortBy,
   SortOrder,
+  PreviewCompetitionsList,
 } from "~/types/api";
 
 export const useApi = () => {
@@ -133,6 +134,23 @@ export const useApi = () => {
     }
   };
 
+  const getPreviewCompetitions = async (
+    page: number = 1,
+  ): Promise<{ data: PreviewCompetitionsList | null; error: ApiError | null }> => {
+    try {
+      const data = await $fetch<PreviewCompetitionsList>(
+        `${apiBase}/api/competitions/preview`,
+        {
+          method: "GET",
+          params: { page },
+        },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
   const createCompetition = async (
     form: CompetitionForm,
   ): Promise<{ data: CreatedCompetition | null; error: ApiError | null }> => {
@@ -242,6 +260,7 @@ export const useApi = () => {
     registerOrganizer,
     getUserProfile,
     listCompetitions,
+    getPreviewCompetitions,
     createCompetition,
     getCompetition,
     updateCompetition,

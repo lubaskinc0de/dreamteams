@@ -6,7 +6,7 @@ from aiohttp import ClientSession
 
 from dreamteams.application.register.register_organizer import CreatedOrganizer
 from tests.integration.api_client import ApiClient
-from tests.integration.conftest import USER_ID
+from tests.integration.constants import USER_ID
 
 
 @pytest.mark.parametrize(

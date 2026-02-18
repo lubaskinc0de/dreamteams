@@ -38,6 +38,7 @@
     "register": "Регистрация",
     "login": "Войти",
     "competitions": "Мои соревнования",
+    "browseCompetitions": "Соревнования",
     "brand": "DreamTeams",
     "brandSubtitle": "Агрегатор IT-соревнований",
     "settings": "Настройки",
@@ -50,6 +51,7 @@
     "heroDescription": "Инновационный сервис для подбора команд на IT-соревнования. Агрегатор всех актуальных мероприятий в одном месте.",
     "ctaText": "Все IT-хакатоны в одном месте. Найди команду или размести своё соревнование за 5 минут",
     "startButton": "Начать сейчас",
+    "findHackathonButton": "Найти соревнования",
     "registerButton": "Стать организатором",
     "profileButton": "Перейти в профиль",
     "findEvents": "Найти мероприятия",
@@ -344,6 +346,10 @@
     "competitionEdit": {
       "title": "Редактирование соревнования - DreamTeams",
       "description": "Редактирование информации о соревновании"
+    },
+    "competitionsPreview": {
+      "title": "Соревнования - DreamTeams",
+      "description": "Найдите IT-соревнования. Все актуальные мероприятия в одном месте."
     }
   },
   "competitions": {
@@ -387,6 +393,55 @@
       "title": "Удалить соревнование",
       "description": "Вы уверены, что хотите удалить это соревнование? Это действие нельзя отменить.",
       "confirm": "Удалить"
+    }
+  },
+  "competitionsPreview": {
+    "found": "Мы {found} для вас {total} {declension}",
+    "foundLink": "нашли",
+    "foundDeclension": {
+      "one": "соревнование",
+      "few": "соревнования",
+      "many": "соревнований"
+    },
+    "placeButton": "Разместить соревнование",
+    "scrollHint": "Смотреть соревнования",
+    "card": {
+      "organizer": "Организатор",
+      "registration": "Регистрация",
+      "participants": "Участники",
+      "registerButton": "Зарегистрироваться",
+      "participantsSuffix": "участников"
+    },
+    "detail": {
+      "title": "Детали соревнования",
+      "description": "Описание",
+      "schedule": "Расписание",
+      "registration": "Регистрация",
+      "teamFormation": "Формирование команд",
+      "participants": "Участники",
+      "participantType": "Тип участников",
+      "teamSize": "Размер команды",
+      "venue": "Место проведения",
+      "milestones": "Вехи",
+      "domains": "Направления",
+      "organizer": "Организатор",
+      "registerButton": "Зарегистрироваться на соревнование",
+      "closeButton": "Закрыть"
+    },
+    "empty": {
+      "title": "Соревнований пока нет",
+      "description": "Станьте первым организатором и разместите своё мероприятие",
+      "placeButton": "Разместить первое соревнование"
+    },
+    "toast": {
+      "onboardingRequired": {
+        "title": "Требуется регистрация",
+        "description": "Сначала завершите регистрацию на платформе"
+      },
+      "registerSuccess": {
+        "title": "Скоро здесь будет регистрация",
+        "description": "Функция регистрации на соревнования в разработке"
+      }
     }
   },
   "competition": {

@@ -34,7 +34,7 @@ const competition = computed(() => competitionStore.currentCompetition);
 
 // Navigate back to detail page
 const goBack = () => {
-  router.push(`/competitions/${competitionId.value}`);
+  router.push(`/me/competitions/${competitionId.value}`);
 };
 
 // ===== FORM STATE =====
@@ -362,7 +362,7 @@ const handleSubmit = async () => {
         icon: 'i-heroicons-check-circle',
         color: 'success',
       });
-      router.push(`/competitions/${competitionId.value}`);
+      router.push(`/me/competitions/${competitionId.value}`);
     } else if (result.error) {
       toast.add({
         title: t('errors.default.title'),

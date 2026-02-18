@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { CompetitionModel } from '~/types/api';
+import type { CompetitionModel, PreviewCompetitionModel } from '~/types/api';
 
 /**
  * Компонент для отображения статуса соревнования (Архив / Открыта регистрация / и т.д.)
  */
 
 interface Props {
-  competition: CompetitionModel;
+  competition: CompetitionModel | PreviewCompetitionModel;
   size?: 'sm' | 'md' | 'lg';
 }
 

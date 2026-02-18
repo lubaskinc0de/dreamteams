@@ -54,6 +54,14 @@ The `UNAUTHORIZED` error includes a `reason` field in metadata with one of the f
 | `ORGANIZER_ALREADY_EXISTS`     | 409         | An organizer with the same phone number or email already exists                 | None     |
 | `ORGANIZER_USER_ID_MISMATCH`   | 400         | Attempting to attach an organizer to user B with a user ID of user A            | None     |
 
+### Invite Management
+
+| Code                           | HTTP Status | Description                                                                      | Metadata |
+| ------------------------------ | ----------- | -------------------------------------------------------------------------------- | -------- |
+| `INVITE_NOT_FOUND`             | 404         | Invite with given ID or code does not exist                                     | None     |
+| `INVITE_ALREADY_REVOKED`       | 403/409     | Invite has been revoked and cannot be used (403) or revoked again (409)         | None     |
+| `INVITE_ALREADY_USED`          | 409         | Invite has already been used for registration                                    | None     |
+
 ### Competition Management
 
 | Code                          | HTTP Status | Description                          | Metadata |

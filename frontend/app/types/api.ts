@@ -139,3 +139,34 @@ export interface CompetitionsList {
 export interface CreatedCompetition {
   competition_id: string;
 }
+
+// Preview types for public competition browsing
+export interface PreviewOrganizerModel {
+  id: string;
+  name: string;
+  avatar_url: string | null;
+}
+
+export interface PreviewCompetitionModel {
+  id: string;
+  organizer: PreviewOrganizerModel;
+  title: string;
+  banner: string | null;
+  description: string;
+  schedule: CompetitionSchedule;
+  participant_limits: ParticipantLimits;
+  domains: Domain[];
+  participant_type: ParticipantType;
+  venue: CompetitionVenue;
+  team_size: TeamSizeRange;
+  milestones: Milestone[];
+  is_archived: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PreviewCompetitionsList {
+  items: PreviewCompetitionModel[];
+  total: number;
+  page: number;
+}

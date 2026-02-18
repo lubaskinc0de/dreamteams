@@ -10,7 +10,7 @@ from tests.common.helpers.competition import (
     schedule_from_deltas,
 )
 from tests.integration.api_client import ApiClient
-from tests.integration.conftest import USER_ID
+from tests.integration.constants import USER_ID
 
 
 async def test_create_competition_as_organizer_succeeds(

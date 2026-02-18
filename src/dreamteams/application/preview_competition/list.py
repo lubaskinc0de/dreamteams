@@ -1,11 +1,13 @@
 from datetime import datetime
 
+import structlog
 from pydantic import BaseModel, Field
 
 from dreamteams.application.common.avatar_storage import AvatarStorage
 from dreamteams.application.common.gateway.competition import CompetitionGateway, CompetitionSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.common.interactor import interactor
+from dreamteams.application.common.logger import Logger
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
@@ -16,6 +18,7 @@ from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionVenue
 
 PAGE_SIZE = 10
+logger: Logger = structlog.get_logger(__name__)
 
 
 class PreviewCompetitionsInput(BaseModel):
@@ -69,6 +72,7 @@ class PreviewCompetitions:
 
     async def execute(self, input_data: PreviewCompetitionsInput) -> PreviewCompetitionsList:
         """Interactor for viewing competitions as anonymous user."""
+        logger.info("Preview competitions called", page_size=PAGE_SIZE, page=input_data.page)
         competitions, total = await self.competition_gateway.list(
             organizer_id=None,
             page=input_data.page,
