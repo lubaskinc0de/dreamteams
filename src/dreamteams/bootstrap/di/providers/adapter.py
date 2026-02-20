@@ -12,6 +12,7 @@ from dreamteams.adapters.db.config import DbConfig
 from dreamteams.adapters.db.gateway.auth_user import SAAuthUserGateway
 from dreamteams.adapters.db.gateway.competition import SACompetitionGateway
 from dreamteams.adapters.db.gateway.organizer import SAOrganizerGateway
+from dreamteams.adapters.db.gateway.organizer_invite import SAOrganizerInviteGateway
 from dreamteams.adapters.db.gateway.user import SAUserGateway
 from dreamteams.application.common.uow import UoW
 
@@ -29,6 +30,7 @@ class AdapterProvider(Provider):
         WithParents[SAAuthUserGateway],
         WithParents[SAOrganizerGateway],
         WithParents[SACompetitionGateway],
+        WithParents[SAOrganizerInviteGateway],
         scope=Scope.REQUEST,
     )
     auth_provider = provide(WithParents[SimpleAuthProvider], scope=Scope.REQUEST)

@@ -12,23 +12,27 @@ from aiohttp import ClientSession
 from dishka import AsyncContainer
 from faker import Faker
 from polyfactory.pytest_plugin import register_fixture
-from sqlalchemy import text
+from sqlalchemy import insert, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import tests.assets
 from dreamteams.adapters.clock import SystemClock
+from dreamteams.adapters.db.models.auth_user import auth_user_table
+from dreamteams.adapters.db.models.user import user_table
 from dreamteams.adapters.tracing import TraceId
 from dreamteams.application.manage_competitions.read import CompetitionModel
+from dreamteams.application.manage_invites import InviteIssued
 from dreamteams.application.publish_competition import CompetitionForm, CreatedCompetition
 from dreamteams.application.register.register_organizer import CreatedOrganizer
 from dreamteams.bootstrap.config.loader import Config
 from dreamteams.bootstrap.di.container import get_async_container
 from dreamteams.entities.common.clock import Clock
+from dreamteams.entities.common.identifiers import UserId
 from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
 from tests.common.factory.competition import CompetitionFormFactory, UpdateCompetitionFormFactory
 from tests.common.factory.organizer import OrganizerFormFactory
 from tests.integration.api_client import ApiClient, APIClientConfig
-from tests.integration.constants import DIFFERENT_USER_ID, USER_ID
+from tests.integration.constants import ADMIN_USER_ID, DIFFERENT_USER_ID, USER_ID
 from tests.integration.preview_competitions.helpers import create_mixed_competitions
 
 # This is a fake private key used only to sign fake access token for tests
@@ -204,14 +208,37 @@ def competition_form(
 
 # Entities
 @pytest.fixture
+async def admin_user_id(session: AsyncSession) -> UserId:
+    """Insert an admin user directly into the DB and return their UserId."""
+    admin_id = uuid4()
+    await session.execute(insert(user_table).values(id=admin_id, avatar=None, is_admin=True))
+    await session.execute(insert(auth_user_table).values(auth_user_id=ADMIN_USER_ID, user_id=admin_id))
+    await session.commit()
+    return admin_id
+
+
+@pytest.fixture
+async def issued_invite(
+    api_client: ApiClient,
+    admin_user_id: UserId,  # noqa: ARG001
+) -> InviteIssued:
+    """Issue an organizer invite as the admin user."""
+    with api_client.authenticate(auth_user_id=ADMIN_USER_ID):
+        response = await api_client.issue_invite({})
+    return response.assert_status(200).ensure_content()
+
+
+@pytest.fixture
 async def organizer(
     api_client: ApiClient,
     organizer_form: OrganizerForm,
     email: str,
+    issued_invite: InviteIssued,
 ) -> CreatedOrganizer:
     """Created organizer entity."""
+    data = {**organizer_form.model_dump(), "invite_code": issued_invite.code}
     with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=email):
-        response = await api_client.register_organizer(organizer_form.model_dump())
+        response = await api_client.register_organizer(data)
 
     return response.assert_status(200).ensure_content()
 
@@ -221,13 +248,18 @@ async def different_organizer(
     api_client: ApiClient,
     organizer_form_factory: OrganizerFormFactory,
     faker: Faker,
+    admin_user_id: UserId,  # noqa: ARG001
 ) -> CreatedOrganizer:
     """Created different organizer entity."""
+    with api_client.authenticate(auth_user_id=ADMIN_USER_ID):
+        invite_response = await api_client.issue_invite({})
+    invite = invite_response.assert_status(200).ensure_content()
+
     organizer_data = organizer_form_factory.build()
     different_email = faker.email()
 
     with api_client.authenticate(auth_user_id=DIFFERENT_USER_ID, auth_user_email=different_email):
-        response = await api_client.register_organizer(organizer_data.model_dump())
+        response = await api_client.register_organizer({**organizer_data.model_dump(), "invite_code": invite.code})
 
     return response.assert_status(200).ensure_content()
 

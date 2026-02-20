@@ -29,6 +29,7 @@ class User(Entity):
     id: UserId
     organizer: Organizer | None
     avatar: Avatar | None = None
+    is_admin: bool = False
 
     def make_organizer(self, organizer: Organizer) -> None:
         """Attach ``Organizer`` role to user."""

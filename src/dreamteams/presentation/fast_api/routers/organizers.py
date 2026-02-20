@@ -25,6 +25,7 @@ class OrganizerForm(BaseModel):
 
     organizer_name: str = Field(max_length=70)
     phone_number: RussianPhoneNumber
+    invite_code: str
 
 
 @router.post("/")
@@ -39,5 +40,6 @@ async def register_organizer(
             organizer_name=data.organizer_name,
             phone_number=data.phone_number,
             contact_email=auth_user_idp.get_auth_user_email(),
+            invite_code=data.invite_code,
         ),
     )
