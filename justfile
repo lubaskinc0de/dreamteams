@@ -5,6 +5,10 @@ up:
     just build-frontend
     docker compose -f docker/docker-compose.yml --env-file=./.config/.env up --build
 
+up-server:
+    just down
+    docker compose -f docker/docker-compose.yml --env-file=./.config/.env up --build
+
 up-silent:
     docker compose -f docker/docker-compose.yml --env-file=./.config/.env up --build -d
 

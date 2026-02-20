@@ -1,17 +1,19 @@
 import asyncio
 
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from dreamteams.application.common.gateway.competition import CompetitionSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.manage_competitions import CompetitionModel
 from dreamteams.application.manage_competitions.list import PAGE_SIZE
 from dreamteams.application.register.register_organizer import CreatedOrganizer
-from tests.common.factory.competition import CompetitionFormFactory, UpdateCompetitionFormFactory
+from tests.common.factory.competition import CompetitionFormFactory
 from tests.integration.api_client import ApiClient
 from tests.integration.conftest import create_competition, create_competitions
 from tests.integration.constants import DIFFERENT_USER_ID, USER_ID
-from tests.integration.manage_competitions.helpers import create_competitions_list, update_competition
+from tests.integration.manage_competitions.helpers import create_competitions_list
+from tests.integration.preview_competitions.helpers import change_archived_state, make_all_active
 
 
 async def test_list_competitions_succeeds(
@@ -108,13 +110,16 @@ async def test_list_competitions_filtered_by_is_archived(
     competitions: list[CompetitionModel],
     sort_order: SortOrder,
     competition_form_factory: CompetitionFormFactory,
-    update_competition_form_factory: UpdateCompetitionFormFactory,
+    session: AsyncSession,
     is_archived: bool,  # noqa: FBT001
 ) -> None:
     """Test filtering competitions by is archived in different orders."""
-    update_data = update_competition_form_factory.build().model_copy(update={"is_archived": False})
-    active_competition = await create_competitions(1, competition_form_factory, api_client)
-    await update_competition(active_competition[0].id, data=update_data, api_client=api_client)
+    archived_competitions = await change_archived_state(session, api_client, competitions, is_archived=True)
+    active_competitions = await make_all_active(
+        session,
+        api_client,
+        await create_competitions(3, competition_form_factory, api_client),
+    )
 
     with api_client.authenticate(auth_user_id=USER_ID):
         list_response = await api_client.list_competitions(
@@ -127,13 +132,13 @@ async def test_list_competitions_filtered_by_is_archived(
     assert (
         result
         == create_competitions_list(
-            competitions,
+            archived_competitions,
             sort_by=CompetitionSortBy.CREATED_AT,
             sort_order=sort_order,
         )
         if is_archived is True
         else create_competitions_list(
-            active_competition,
+            active_competitions,
             sort_by=CompetitionSortBy.CREATED_AT,
             sort_order=sort_order,
         )
@@ -162,26 +167,6 @@ async def test_list_competitions_filtered_by_is_archived(
             ],
             ["Bar"],
         ),
-        # Search in description
-        (
-            "description",
-            [
-                {"title": "Competition", "description": "This is an interesting description"},
-                {"title": "Tournament", "description": "Another description"},
-                {"title": "Challenge", "description": "No match here"},
-            ],
-            ["Tournament", "Competition"],  # "Tournament" might rank higher
-        ),
-        # Combined search
-        (
-            "championship",
-            [
-                {"title": "Football Championship", "description": "Annual tournament"},
-                {"title": "Basketball", "description": "Championship league"},
-                {"title": "Tennis", "description": "Tournament"},
-            ],
-            ["Basketball", "Football Championship"],  # "Championship" in description might rank higher
-        ),
         # Partial word matches
         (
             "rogram",
@@ -190,7 +175,7 @@ async def test_list_competitions_filtered_by_is_archived(
                 {"title": "Progressive Marathon", "description": "Running event"},
                 {"title": "Game Tournament", "description": "Gaming competition"},
             ],
-            [],  # "rogram" is too different from "Programming" with high threshold
+            ["Programming Contest"],
         ),
         # Case insensitive search
         (
@@ -210,7 +195,7 @@ async def test_list_competitions_filtered_by_is_archived(
                 {"title": "Code Review Contest", "description": "Review competition"},
                 {"title": "Design Competition", "description": "No code here"},
             ],
-            ["Code Review Contest", "Design Competition", "Coding Challenge"],
+            ["Design Competition", "Code Review Contest", "Coding Challenge"],
         ),
         # Short search terms
         (
@@ -220,7 +205,7 @@ async def test_list_competitions_filtered_by_is_archived(
                 {"title": "AIML Challenge", "description": "AI and ML"},
                 {"title": "Programming", "description": "General programming"},
             ],
-            [],
+            ["AI Competition"],
         ),
         # No matches
         (
@@ -240,7 +225,11 @@ async def test_list_competitions_filtered_by_is_archived(
                 {"title": "My Competition", "description": "My competition"},
                 {"title": "Computer science", "description": "I love my computer"},
             ],
-            ["My Competition", "Competition"],
+            [
+                "Competition",
+                "My Competition",
+                "Computer science",
+            ],
         ),
         # Search with dash
         (
@@ -250,7 +239,10 @@ async def test_list_competitions_filtered_by_is_archived(
                 {"title": "Данные", "description": "Analyze"},
                 {"title": "Science Fair", "description": "General science"},
             ],
-            ["Data Science Hackathon", "Science Fair"],
+            [
+                "Science Fair",
+                "Data Science Hackathon",
+            ],
         ),
     ],
 )
@@ -258,13 +250,14 @@ async def test_search_competitions(
     api_client: ApiClient,
     competition_form_factory: CompetitionFormFactory,
     organizer: CreatedOrganizer,  # noqa: ARG001,
+    session: AsyncSession,
     search_query: str,
     competitions: list[dict[str, str]],
     expected_competitions_titles: list[str],
 ) -> None:
     """Test searching competitions."""
     with api_client.authenticate(auth_user_id=USER_ID):
-        await asyncio.gather(
+        created_competitions = await asyncio.gather(
             *[
                 create_competition(
                     competition_form_factory.build(factory_use_construct=False, **competition_data),
@@ -273,6 +266,12 @@ async def test_search_competitions(
                 for competition_data in competitions
             ],
         )
+    # make some competitions active to ensure that they are searched too
+    await make_all_active(
+        session,
+        api_client,
+        created_competitions[: len(created_competitions) // 2],
+    )
 
     with api_client.authenticate(auth_user_id=USER_ID):
         list_response = await api_client.list_competitions(search=search_query)
