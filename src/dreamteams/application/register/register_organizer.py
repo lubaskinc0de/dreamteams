@@ -52,8 +52,6 @@ class RegisterOrganizer:
             logger.warning("Invite not found during organizer registration")
             raise InviteNotFoundError
 
-        invite.use()
-
         # Check if organizer with same phone number or email already exists
         is_unique = await self.organizer_gateway.is_unique(data.phone_number, data.contact_email)
         if not is_unique:
@@ -77,6 +75,7 @@ class RegisterOrganizer:
         )
         logger.debug("Creating role 'Organizer' for user", user_id=user.id)
         user.make_organizer(organizer)
+        invite.use(user)
 
         self.uow.add(organizer)
         await self.uow.commit()

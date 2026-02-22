@@ -10,7 +10,7 @@ from dreamteams.entities.errors.invite import (
     InviteAlreadyUsedError,
     InviteRevokedError,
 )
-from dreamteams.entities.user import User
+from dreamteams.entities.user import Organizer, User
 
 
 @model
@@ -23,6 +23,7 @@ class OrganizerInvite(Entity):
     created_by: UserId
     is_revoked: bool = False
     is_used: bool = False
+    used_by: Organizer | None = None
     created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     def revoke(self, user: User) -> None:
@@ -56,19 +57,23 @@ class OrganizerInvite(Entity):
         if self.created_by != user.id:
             raise AccessDeniedError(message="You can only read invites you created")
 
-    def use(self) -> None:
+    def use(self, user: User) -> None:
         """Mark this invite as used during organizer registration.
 
         Raises:
             InviteRevokedError: If the invite has been revoked.
             InviteAlreadyUsedError: If the invite has already been used.
+            AccessDeniedError: If the user does not have an organizer role.
 
         """
         if self.is_revoked:
             raise InviteRevokedError
         if self.is_used:
             raise InviteAlreadyUsedError
+        if user.organizer is None:
+            raise AccessDeniedError(message="User must be registered as an organizer to use an invite")
         self.is_used = True
+        self.used_by = user.organizer
 
 
 def ensure_can_list_invites(user: User) -> None:

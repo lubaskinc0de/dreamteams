@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from dreamteams.application.manage_invites import InviteIssued
+from dreamteams.application.manage_invites import InviteIssued, InviteModel
 from dreamteams.application.register.register_organizer import CreatedOrganizer
 from dreamteams.entities.common.identifiers import UserId
 from tests.integration.api_client import ApiClient
@@ -10,7 +10,7 @@ from tests.integration.constants import ADMIN_USER_ID, USER_ID
 async def test_admin_can_revoke_own_invite(
     api_client: ApiClient,
     issued_invite: InviteIssued,
-    admin_user_id: UserId,  # noqa: ARG001
+    admin_user_id: UserId,
 ) -> None:
     """Admin can revoke their own invite."""
     with api_client.authenticate(auth_user_id=ADMIN_USER_ID):
@@ -20,7 +20,16 @@ async def test_admin_can_revoke_own_invite(
     with api_client.authenticate(auth_user_id=ADMIN_USER_ID):
         read_response = await api_client.read_invite(issued_invite.invite_id)
     result = read_response.assert_status(200).ensure_content()
-    assert result.is_revoked is True
+    assert result == InviteModel(
+        id=issued_invite.invite_id,
+        code=issued_invite.code,
+        display_name=None,
+        created_by=admin_user_id,
+        is_revoked=True,
+        is_used=False,
+        used_by=None,
+        created_at=result.created_at,
+    )
 
 
 async def test_cannot_revoke_already_revoked_invite(

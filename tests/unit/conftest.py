@@ -19,6 +19,12 @@ def clock() -> Clock:
     return mock_clock
 
 
+@pytest.fixture(scope="module")
+def faker() -> Faker:
+    """Provide faker instance."""
+    return Faker()
+
+
 @pytest.fixture
 def organizer_user(faker: Faker) -> User:
     """User with organizer role attached."""
@@ -65,9 +71,3 @@ def different_user(faker: Faker) -> User:
 def user_without_organizer(faker: Faker) -> User:
     """User without organizer role."""
     return User(id=faker.uuid4(cast_to=None), organizer=None)
-
-
-@pytest.fixture(scope="module")
-def faker() -> Faker:
-    """Provide faker instance."""
-    return Faker()

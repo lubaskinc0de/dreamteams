@@ -18,7 +18,7 @@ from dreamteams.entities.competition.schedule import CompetitionSchedule, Schedu
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
 from dreamteams.entities.user import User
-from tests.unit.entities.competition.conftest import NOW_NAIVE
+from tests.unit.conftest import NOW_NAIVE
 
 
 @st.composite
