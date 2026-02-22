@@ -62,12 +62,11 @@ async def test_cannot_register_as_organizer_twice(
     with api_client.authenticate(auth_user_id=ADMIN_USER_ID):
         invite1_resp = await api_client.issue_invite({})
         invite2_resp = await api_client.issue_invite({})
-    invite1 = invite1_resp.assert_status(200).ensure_content()
-    invite2 = invite2_resp.assert_status(200).ensure_content()
-
-    email = faker.email()
-    data1 = {**organizer_form_factory.build().model_dump(mode="json"), "invite_code": invite1.code}
-    data2 = {**organizer_form_factory.build().model_dump(mode="json"), "invite_code": invite2.code}
+        invite1 = invite1_resp.assert_status(200).ensure_content()
+        invite2 = invite2_resp.assert_status(200).ensure_content()
+        email = faker.email()
+        data1 = {**organizer_form_factory.build().model_dump(mode="json"), "invite_code": invite1.code}
+        data2 = {**organizer_form_factory.build().model_dump(mode="json"), "invite_code": invite2.code}
 
     with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=email):
         first_response = await api_client.register_organizer(data1)
@@ -113,15 +112,14 @@ async def test_cannot_register_organizer_with_duplicate_contact_info(
     with api_client.authenticate(auth_user_id=ADMIN_USER_ID):
         invite1_resp = await api_client.issue_invite({})
         invite2_resp = await api_client.issue_invite({})
-    invite1 = invite1_resp.assert_status(200).ensure_content()
-    invite2 = invite2_resp.assert_status(200).ensure_content()
-
-    first_data = organizer_form_factory.build()
-    second_data = organizer_form_factory.build()
-    if use_same_phone:
-        second_data = second_data.model_copy(update={"phone_number": first_data.phone_number})
-    first_email = email if use_same_email else faker.email()
-    second_email = email if use_same_email else faker.email()
+        invite1 = invite1_resp.assert_status(200).ensure_content()
+        invite2 = invite2_resp.assert_status(200).ensure_content()
+        first_data = organizer_form_factory.build()
+        second_data = organizer_form_factory.build()
+        if use_same_phone:
+            second_data = second_data.model_copy(update={"phone_number": first_data.phone_number})
+        first_email = email if use_same_email else faker.email()
+        second_email = email if use_same_email else faker.email()
 
     with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=first_email):
         first_response = await api_client.register_organizer(
@@ -160,8 +158,7 @@ async def test_register_with_revoked_invite_code_fails(
     """Registering with a revoked invite code fails with INVITE_REVOKED."""
     with api_client.authenticate(auth_user_id=ADMIN_USER_ID):
         await api_client.revoke_invite(issued_invite.invite_id)
-
-    data = {**organizer_form_factory.build().model_dump(mode="json"), "invite_code": issued_invite.code}
+        data = {**organizer_form_factory.build().model_dump(mode="json"), "invite_code": issued_invite.code}
 
     with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=faker.email()):
         response = await api_client.register_organizer(data)
@@ -177,12 +174,10 @@ async def test_register_with_used_invite_code_fails(
     admin_user_id: UserId,  # noqa: ARG001
 ) -> None:
     """Registering with an already-used invite code fails with INVITE_ALREADY_USED."""
-    data = {**organizer_form_factory.build().model_dump(mode="json"), "invite_code": issued_invite.code}
-
     with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=faker.email()):
+        data = {**organizer_form_factory.build().model_dump(mode="json"), "invite_code": issued_invite.code}
+        second_data = {**organizer_form_factory.build().model_dump(mode="json"), "invite_code": issued_invite.code}
         await api_client.register_organizer(data)
-
-    second_data = {**organizer_form_factory.build().model_dump(mode="json"), "invite_code": issued_invite.code}
 
     with api_client.authenticate(auth_user_id=DIFFERENT_USER_ID, auth_user_email=faker.email()):
         response = await api_client.register_organizer(second_data)
