@@ -6,6 +6,7 @@ from dreamteams.application.manage_competitions import (
     ReadCompetition,
     UpdateCompetition,
 )
+from dreamteams.application.manage_invites import IssueInvite, ListInvites, ReadInvite, RevokeInvite
 from dreamteams.application.manage_profile import ReadProfile
 from dreamteams.application.manage_profile.attach_avatar import AttachAvatar
 from dreamteams.application.manage_profile.delete import DeleteProfile
@@ -33,5 +34,9 @@ class InteractorProvider(Provider):
         DetachAvatar,
         PreviewCompetitions,
         DeleteProfile,
+        IssueInvite,
+        ListInvites,
+        ReadInvite,
+        RevokeInvite,
     )
     user_factory = provide(UserFactory)

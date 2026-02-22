@@ -27,6 +27,7 @@ class ProfileModel(BaseModel):
     user_id: UserId
     organizer: OrganizerModel | None
     avatar_url: str | None
+    is_admin: bool
 
 
 @interactor
@@ -55,4 +56,5 @@ class ReadProfile:
             user_id=user.id,
             organizer=organizer_model,
             avatar_url=self.avatar_storage.get_url(user.avatar) if user.avatar is not None else None,
+            is_admin=user.is_admin,
         )

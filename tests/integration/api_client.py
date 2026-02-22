@@ -12,17 +12,19 @@ from dreamteams.adapters.tracing import TraceId, TracingConfig
 from dreamteams.application.common.gateway.competition import CompetitionSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.manage_competitions import CompetitionModel, CompetitionsList
+from dreamteams.application.manage_invites import InviteIssued, InviteModel, InvitesList
 from dreamteams.application.manage_profile import ProfileModel
 from dreamteams.application.preview_competition.list import PreviewCompetitionsList
 from dreamteams.application.publish_competition import CreatedCompetition
 from dreamteams.application.register.register_organizer import CreatedOrganizer
-from dreamteams.entities.common.identifiers import CompetitionId
+from dreamteams.entities.common.identifiers import CompetitionId, OrganizerInviteId
 
 retort = Retort()
 
 ORGANIZER_URL = "/organizers"
 USERS_URL = "/users"
 COMPETITIONS_URL = "/competitions"
+INVITES_URL = "/invites"
 
 
 @dataclass
@@ -326,3 +328,25 @@ class ApiClient:
                 response,
                 response_type=None,
             )
+
+    async def issue_invite(self, data: dict[str, Any]) -> APIResponse[InviteIssued]:
+        """Issue an organizer invite via POST /invites/."""
+        async with self.session.post(INVITES_URL, headers=self._headers, json=data) as response:
+            return await self._load_response(response, response_type=InviteIssued)
+
+    async def list_invites(self, page: int = 1) -> APIResponse[InvitesList]:
+        """List organizer invites via GET /invites/."""
+        async with self.session.get(INVITES_URL, headers=self._headers, params={"page": page}) as response:
+            return await self._load_response(response, response_type=InvitesList)
+
+    async def read_invite(self, invite_id: OrganizerInviteId) -> APIResponse[InviteModel]:
+        """Read a single organizer invite via GET /invites/{invite_id}."""
+        url = f"{INVITES_URL}/{invite_id}"
+        async with self.session.get(url, headers=self._headers) as response:
+            return await self._load_response(response, response_type=InviteModel)
+
+    async def revoke_invite(self, invite_id: OrganizerInviteId) -> APIResponse[None]:
+        """Revoke an organizer invite via DELETE /invites/{invite_id}."""
+        url = f"{INVITES_URL}/{invite_id}"
+        async with self.session.delete(url, headers=self._headers) as response:
+            return await self._load_response(response, response_type=None)

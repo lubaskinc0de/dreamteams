@@ -4,10 +4,12 @@ import structlog
 from pydantic import BaseModel, EmailStr, Field
 
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
+from dreamteams.application.common.gateway.organizer_invite import OrganizerInviteGateway
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
 from dreamteams.application.common.phone_number import RussianPhoneNumber
 from dreamteams.application.common.uow import UoW
+from dreamteams.application.errors.invite import InviteNotFoundError
 from dreamteams.application.errors.organizer import OrganizerAlreadyExistsError
 from dreamteams.application.register.shared.user_factory import UserFactory
 from dreamteams.entities.common.identifiers import OrganizerId, UserId
@@ -29,6 +31,7 @@ class OrganizerForm(BaseModel):
     organizer_name: str = Field(max_length=70)
     phone_number: RussianPhoneNumber
     contact_email: EmailStr
+    invite_code: str
 
 
 @interactor
@@ -38,10 +41,17 @@ class RegisterOrganizer:
     uow: UoW
     user_factory: UserFactory
     organizer_gateway: OrganizerGateway
+    organizer_invite_gateway: OrganizerInviteGateway
 
     async def execute(self, data: OrganizerForm) -> CreatedOrganizer:
         """Creates a new ``User`` and ``Organizer`` role."""
-        logger.debug("Registering as organizer", **data.model_dump())
+        logger.debug("Registering as organizer", **data.model_dump(exclude={"invite_code"}))
+
+        invite = await self.organizer_invite_gateway.get_by_code(data.invite_code)
+        if invite is None:
+            logger.warning("Invite not found during organizer registration")
+            raise InviteNotFoundError
+
         # Check if organizer with same phone number or email already exists
         is_unique = await self.organizer_gateway.is_unique(data.phone_number, data.contact_email)
         if not is_unique:
@@ -65,6 +75,7 @@ class RegisterOrganizer:
         )
         logger.debug("Creating role 'Organizer' for user", user_id=user.id)
         user.make_organizer(organizer)
+        invite.use(user)
 
         self.uow.add(organizer)
         await self.uow.commit()
