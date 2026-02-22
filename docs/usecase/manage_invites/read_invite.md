@@ -20,7 +20,16 @@ Retrieves a single organizer invite by its ID. Only admin users can read invites
 | `created_by` | `UserId` | ID of the admin who created the invite |
 | `is_revoked` | `bool` | Whether the invite has been revoked |
 | `is_used` | `bool` | Whether the invite has been used |
+| `used_by` | `OrganizerInfo \| None` | Organizer who used the invite, or `None` |
 | `created_at` | `datetime` | When the invite was created |
+
+### OrganizerInfo
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `OrganizerId` | Organizer identifier |
+| `name` | `str` | Organizer display name |
+| `avatar_url` | `str \| None` | URL of the organizer's avatar, or `None` |
 
 ## Business Rules
 

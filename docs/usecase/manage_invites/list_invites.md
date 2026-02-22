@@ -28,7 +28,16 @@ Returns a paginated list of all organizer invites created by the current admin u
 | `created_by` | `UserId` | Admin user who created the invite |
 | `is_revoked` | `bool` | Whether invite is revoked |
 | `is_used` | `bool` | Whether invite is used |
+| `used_by` | `OrganizerInfo \| None` | Organizer who used the invite, or `None` |
 | `created_at` | `datetime` | Creation timestamp |
+
+### OrganizerInfo
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `OrganizerId` | Organizer identifier |
+| `name` | `str` | Organizer display name |
+| `avatar_url` | `str \| None` | URL of the organizer's avatar, or `None` |
 
 ## Business Rules
 

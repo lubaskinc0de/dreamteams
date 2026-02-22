@@ -26,6 +26,7 @@ async def test_view_organizer_profile(
             contact_email=email,
         ),
         avatar_url=None,
+        is_admin=False,
     )
 
 
