@@ -81,7 +81,7 @@ const handleCardClick = () => {
       <!-- Organizer -->
       <div class="flex items-center gap-2.5 min-w-0 pt-1">
         <UAvatar
-          :src="competition.organizer.avatar_url || undefined"
+          :src="competition.organizer.avatar_url || '/no-photo.png'"
           :alt="competition.organizer.name"
           size="xs"
         />

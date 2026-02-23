@@ -91,7 +91,7 @@ const handleCancel = () => {
         <div class="flex justify-center">
           <div class="w-20 h-20">
             <UAvatar
-              :src="previewUrl || undefined"
+              :src="previewUrl || '/no-photo.png'"
               :alt="t('avatar.preview')"
               size="3xl"
               :ui="{ root: 'w-full h-full' }"

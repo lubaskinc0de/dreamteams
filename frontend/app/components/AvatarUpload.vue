@@ -76,11 +76,12 @@ const handleDelete = () => {
   <div class="space-y-4">
     <div class="flex flex-col items-center gap-4">
       <!-- Avatar Preview -->
-      <div class="relative">
+      <div class="relative w-20 h-20">
         <UAvatar
-          :src="previewUrl || undefined"
+          :src="previewUrl || '/no-photo.png'"
           :alt="t('avatar.preview')"
-          size="2xl"
+          size="3xl"
+          :ui="{ root: 'w-full h-full' }"
           class="ring-2 ring-gray-200 dark:ring-gray-700"
         />
         <UButton
@@ -118,9 +119,6 @@ const handleDelete = () => {
           </template>
         </UFileUpload>
 
-        <p class="text-xs text-gray-500 dark:text-gray-400 text-center">
-          {{ t("avatar.hint") }}
-        </p>
       </div>
 
       <!-- Error Message -->

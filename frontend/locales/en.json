@@ -43,7 +43,8 @@
     "brandSubtitle": "IT Competition Aggregator",
     "settings": "Settings",
     "theme": "Theme",
-    "language": "Language"
+    "language": "Language",
+    "adminPanel": "Admin Panel"
   },
   "home": {
     "title": "DreamTeams",
@@ -166,6 +167,11 @@
     "loadingProfile": "Loading profile...",
     "organizerBadge": "Organizer",
     "userBadge": "User",
+    "adminBadge": "Administrator",
+    "adminInfo": {
+      "title": "Administrator account",
+      "description": "You are signed in as a platform administrator. Manage invites and system settings via the admin panel."
+    },
     "tabs": {
       "information": "Information",
       "settings": "Settings"
@@ -235,6 +241,12 @@
       "register": "Register",
       "registering": "Registering..."
     },
+    "inviteCode": {
+      "label": "Invite Code",
+      "placeholder": "Enter your invite code",
+      "required": "Invite code is required",
+      "hint": "Contact an administrator to get an invite code"
+    },
     "dataProtection": "All data is protected and not shared with third parties"
   },
   "apiErrors": {
@@ -248,7 +260,23 @@
     "INTERNAL_SERVER_ERROR": "Internal server error. Please try again later",
     "NETWORK_ERROR": "Network error. Please check your internet connection",
     "UNKNOWN_ERROR": "An unknown error occurred",
-    "INVALID_AVATAR_ERROR": "Invalid avatar file. Please check the format and size"
+    "INVALID_AVATAR_ERROR": "Invalid avatar file. Please check the format and size",
+    "INVITE_NOT_FOUND": "Invite code not found. Please check and try again",
+    "INVITE_ALREADY_REVOKED": "This invite has already been revoked",
+    "INVITE_ALREADY_USED": "This invite has already been used",
+    "INVITE_REVOKED": "This invite has been revoked and cannot be used",
+    "INVALID_SUPERUSER_PASSWORD": "Invalid password. Access denied"
+  },
+  "superuserRegister": {
+    "title": "Superuser Registration",
+    "passwordLabel": "Admin password",
+    "passwordPlaceholder": "Enter password",
+    "submitButton": "Register",
+    "success": {
+      "title": "Superuser created",
+      "description": "The superuser account has been successfully registered.",
+      "userId": "User ID"
+    }
   },
   "avatar": {
     "uploadButton": "Upload Avatar",
@@ -298,6 +326,54 @@
     "competitionDeleteError": {
       "title": "Delete Failed",
       "description": "Failed to delete the competition. Please try again"
+    },
+    "inviteCreated": {
+      "title": "Invite Created!",
+      "description": "Share the code with the new organizer"
+    },
+    "inviteRevoked": {
+      "title": "Invite Revoked",
+      "description": "The invite code has been revoked successfully"
+    },
+    "inviteCopyFailed": {
+      "title": "Failed to copy code"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications yet",
+    "clearAll": "Clear all",
+    "justNow": "Just now",
+    "minutesAgo": "{n}m ago",
+    "hoursAgo": "{n}h ago"
+  },
+  "admin": {
+    "invites": {
+      "title": "Invite Management",
+      "subtitle": "{total} invites total",
+      "createButton": "Create Invite",
+      "empty": "No invites yet. Create one to allow organizer registration.",
+      "copyButton": "Copy code",
+      "codeCopied": "Code copied to clipboard!",
+      "revokeButton": "Revoke",
+      "status": {
+        "active": "Active",
+        "used": "Used",
+        "revoked": "Revoked"
+      },
+      "createModal": {
+        "title": "Create Invite",
+        "displayName": "Label (optional)",
+        "displayNameHint": "A note to help you identify this invite",
+        "displayNamePlaceholder": "e.g. For Acme Corp",
+        "submit": "Create",
+        "successTitle": "Invite created!",
+        "shareHint": "Share this code with the organizer. It can only be used once."
+      },
+      "revokeModal": {
+        "title": "Revoke Invite",
+        "description": "Are you sure you want to revoke this invite? The code will no longer be usable."
+      }
     }
   },
   "footer": {

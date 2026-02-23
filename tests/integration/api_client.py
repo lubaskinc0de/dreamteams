@@ -17,12 +17,14 @@ from dreamteams.application.manage_profile import ProfileModel
 from dreamteams.application.preview_competition.list import PreviewCompetitionsList
 from dreamteams.application.publish_competition import CreatedCompetition
 from dreamteams.application.register.register_organizer import CreatedOrganizer
+from dreamteams.application.register.register_superuser import CreatedSuperuser
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerInviteId
 
 retort = Retort()
 
 ORGANIZER_URL = "/organizers"
 USERS_URL = "/users"
+SUPERUSER_URL = f"{USERS_URL}/superuser/"
 COMPETITIONS_URL = "/competitions"
 INVITES_URL = "/invites"
 
@@ -193,6 +195,11 @@ class ApiClient:
                 response,
                 response_type=EmptyResponse,
             )
+
+    async def register_superuser(self, data: dict[str, Any]) -> APIResponse[CreatedSuperuser]:
+        """Register as superuser via POST /users/superuser/."""
+        async with self.session.post(SUPERUSER_URL, headers=self._headers, json=data) as response:
+            return await self._load_response(response, response_type=CreatedSuperuser)
 
     async def register_organizer(self, data: dict[str, Any]) -> APIResponse[CreatedOrganizer]:
         """Register as organizer via POST /organizers/."""

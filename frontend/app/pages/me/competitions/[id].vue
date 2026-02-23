@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { useCompetitionStore } from '~/stores/competition';
+import { useNotificationsStore } from '~/stores/notifications';
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const competitionStore = useCompetitionStore();
-const toast = useToast();
+const notifications = useNotificationsStore();
 const { getDomainLabel } = useCompetitionFormatters();
 const { getRegistrationStatus } = useCompetitionStatus();
 
@@ -46,7 +47,7 @@ const handleDelete = async () => {
   isDeleting.value = false;
 
   if (result.success) {
-    toast.add({
+    notifications.add({
       title: t('toast.competitionDeleted.title'),
       description: t('toast.competitionDeleted.description'),
       icon: 'i-heroicons-check-circle',
@@ -54,7 +55,7 @@ const handleDelete = async () => {
     });
     router.push('/me/competitions');
   } else {
-    toast.add({
+    notifications.add({
       title: t('toast.competitionDeleteError.title'),
       description: t('toast.competitionDeleteError.description'),
       icon: 'i-heroicons-exclamation-triangle',

@@ -3,6 +3,7 @@ from collections.abc import AsyncIterator
 from dishka import AnyOf, Provider, Scope, WithParents, provide, provide_all
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
+from dreamteams.adapters.argon2_password_hasher import Argon2PasswordHasher
 from dreamteams.adapters.auth.auth_provider import SimpleAuthProvider
 from dreamteams.adapters.auth.idp.auth_user import WebAuthUserIdProvider
 from dreamteams.adapters.auth.idp.user import IdProviderImpl
@@ -35,6 +36,7 @@ class AdapterProvider(Provider):
     )
     auth_provider = provide(WithParents[SimpleAuthProvider], scope=Scope.REQUEST)
     clock = provide(WithParents[SystemClock], scope=Scope.APP)
+    password_hasher = provide(WithParents[Argon2PasswordHasher], scope=Scope.APP)
 
     @provide(scope=Scope.APP)
     async def get_avatar_storage(self, config: S3Config) -> WithParents[S3AvatarStorage]:

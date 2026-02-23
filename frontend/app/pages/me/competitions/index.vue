@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { CompetitionSortBy, SortOrder } from '~/types/api';
 import { useCompetitionStore } from '~/stores/competition';
+import { useNotificationsStore } from '~/stores/notifications';
 import { useDebounceFn } from '@vueuse/core';
 
 const { t } = useI18n();
@@ -77,7 +78,7 @@ const goToCreate = () => {
 
 
 // Delete competition handlers
-const toast = useToast();
+const notifications = useNotificationsStore();
 
 const openDeleteModal = (competitionId: string) => {
   competitionToDelete.value = competitionId;
@@ -90,14 +91,14 @@ const handleDelete = async () => {
   const result = await competitionStore.deleteCompetition(competitionToDelete.value);
 
   if (result.success) {
-    toast.add({
+    notifications.add({
       title: t('toast.competitionDeleted.title'),
       description: t('toast.competitionDeleted.description'),
       icon: 'i-heroicons-check-circle',
       color: 'success',
     });
   } else {
-    toast.add({
+    notifications.add({
       title: t('toast.competitionDeleteError.title'),
       description: t('toast.competitionDeleteError.description'),
       icon: 'i-heroicons-exclamation-circle',

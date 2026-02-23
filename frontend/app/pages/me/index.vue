@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import { useNotificationsStore } from "~/stores/notifications";
+
 const userStore = useUserStore();
 const { navigateTo } = useNavigation();
 const { getErrorMessage } = useErrorHandler();
 const { t } = useI18n();
 const config = useRuntimeConfig();
 const api = useApi();
-const toast = useToast();
+const notifications = useNotificationsStore();
 
 // SEO Meta tags
 useSeoMeta({
@@ -31,7 +33,7 @@ const handleAvatarUpload = async (file: File) => {
 
   if (error) {
     isUploadingAvatar.value = false;
-    toast.add({
+    notifications.add({
       title: t("apiErrors." + error.code),
       color: "error",
       icon: "i-heroicons-exclamation-triangle",
@@ -41,7 +43,7 @@ const handleAvatarUpload = async (file: File) => {
     await userStore.fetchProfile();
     isUploadingAvatar.value = false;
 
-    toast.add({
+    notifications.add({
       title: t("toast.avatarUploaded.title"),
       description: t("toast.avatarUploaded.description"),
       color: "success",
@@ -58,7 +60,7 @@ const handleAvatarDelete = async () => {
 
   if (error) {
     isUploadingAvatar.value = false;
-    toast.add({
+    notifications.add({
       title: t("apiErrors." + error.code),
       color: "error",
       icon: "i-heroicons-exclamation-triangle",
@@ -68,7 +70,7 @@ const handleAvatarDelete = async () => {
     await userStore.fetchProfile();
     isUploadingAvatar.value = false;
 
-    toast.add({
+    notifications.add({
       title: t("toast.avatarDeleted.title"),
       description: t("toast.avatarDeleted.description"),
       color: "success",
@@ -109,6 +111,10 @@ const handleDelete = async () => {
 const handleLogout = () => {
   window.location.href = `${config.public.apiBase}/oauth2/sign_out?rd=/`;
 };
+
+onMounted(async () => {
+  await userStore.fetchProfile();
+});
 </script>
 
 <template>
@@ -156,7 +162,7 @@ const handleLogout = () => {
                       @click="isAvatarModalOpen = true"
                     >
                       <UAvatar
-                        :src="userStore.profile?.avatar_url || undefined"
+                        :src="userStore.profile?.avatar_url || '/no-photo.png'"
                         :alt="userStore.organizer?.organizer_name || t('profile.userBadge')"
                         size="3xl"
                         :ui="{ root: 'w-full h-full' }"
@@ -175,9 +181,18 @@ const handleLogout = () => {
 
                   <!-- User Info -->
                   <div class="flex-1 w-full text-center lg:text-left">
-                    <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-                      {{ userStore.organizer?.organizer_name || t("profile.userBadge") }}
-                    </h2>
+                    <div class="flex items-center justify-center lg:justify-start gap-3 mb-4">
+                      <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100">
+                        {{ userStore.organizer?.organizer_name || t("profile.userBadge") }}
+                      </h2>
+                      <UBadge
+                        v-if="userStore.isAdmin"
+                        color="warning"
+                        variant="subtle"
+                        :label="t('profile.adminBadge')"
+                        icon="i-heroicons-shield-check"
+                      />
+                    </div>
 
                     <div v-if="userStore.isOrganizer && userStore.organizer" class="space-y-2">
                       <!-- Phone -->
@@ -199,6 +214,20 @@ const handleLogout = () => {
                           </p>
                         </div>
                       </div>
+                    </div>
+
+                    <div v-else-if="userStore.isAdmin">
+                      <UEmpty
+                        icon="i-heroicons-shield-check"
+                        :title="t('profile.adminInfo.title')"
+                        :description="t('profile.adminInfo.description')"
+                      >
+                        <template #actions>
+                          <UButton size="lg" icon="i-heroicons-cog-6-tooth" to="/admin/invites">
+                            {{ t('nav.adminPanel') }}
+                          </UButton>
+                        </template>
+                      </UEmpty>
                     </div>
 
                     <div v-else>

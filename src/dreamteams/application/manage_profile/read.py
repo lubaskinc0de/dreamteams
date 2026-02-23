@@ -43,14 +43,17 @@ class ReadProfile:
         user = await self.idp.get_user()
         logger.debug("Reading user profile", user_id=user.id)
 
-        organizer = user.get_role()
-        organizer_model = OrganizerModel(
-            id=organizer.id,
-            user_id=organizer.user_id,
-            organizer_name=organizer.organizer_name,
-            phone_number=organizer.phone_number,
-            contact_email=organizer.contact_email,
-        )
+        if not user.is_admin:
+            organizer = user.get_role()
+            organizer_model = OrganizerModel(
+                id=organizer.id,
+                user_id=organizer.user_id,
+                organizer_name=organizer.organizer_name,
+                phone_number=organizer.phone_number,
+                contact_email=organizer.contact_email,
+            )
+        else:
+            organizer_model = None
 
         return ProfileModel(
             user_id=user.id,

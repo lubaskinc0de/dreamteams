@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import type { OrganizerForm, CreatedOrganizer, ApiError } from "~/types/api";
+import { useNotificationsStore } from "~/stores/notifications";
 
 export const useOrganizerStore = defineStore("organizer", {
   state: () => ({
@@ -12,7 +13,7 @@ export const useOrganizerStore = defineStore("organizer", {
   actions: {
     async registerOrganizer(form: OrganizerForm) {
       const { $i18n } = useNuxtApp();
-      const toast = useToast();
+      const notifications = useNotificationsStore();
       const api = useApi();
 
       this.loading = true;
@@ -27,12 +28,11 @@ export const useOrganizerStore = defineStore("organizer", {
         this.createdOrganizer = data;
         this.registrationSuccess = true;
 
-        toast.add({
+        notifications.add({
           title: $i18n.t("toast.registrationSuccess.title"),
           description: $i18n.t("toast.registrationSuccess.description"),
           icon: "i-heroicons-check-circle",
           color: "success",
-          duration: 5000,
         });
 
         const userStore = useUserStore();
