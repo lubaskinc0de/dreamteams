@@ -1,16 +1,20 @@
+from datetime import UTC, datetime
 from typing import override
 
+import structlog
 from sqlalchemy import delete, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dreamteams.adapters.db.models import competition_table, milestone_table
 from dreamteams.application.common.gateway.competition import CompetitionGateway, CompetitionSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
+from dreamteams.application.common.logger import Logger
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
 from dreamteams.entities.competition.entity import Competition
 from dreamteams.entities.competition.milestone import Milestone
 
 SIMILARITY_THRESHOLD = 0.15
+logger: Logger = structlog.get_logger(__name__)
 
 
 class SACompetitionGateway(CompetitionGateway):
@@ -41,6 +45,7 @@ class SACompetitionGateway(CompetitionGateway):
         sort_order: SortOrder,
         is_archived: bool | None,
         search: str | None,
+        active: bool | None,
     ) -> tuple[list[Competition], int]:
         """List competitions by organizer with pagination and sorting."""
         sort_column = {
@@ -58,8 +63,12 @@ class SACompetitionGateway(CompetitionGateway):
         if organizer_id is not None:
             filter_by.append(competition_table.c.organizer_id == organizer_id)
 
+        if active is not None:
+            filter_by.append(competition_table.c.registration_start < datetime.now(tz=UTC))
+            filter_by.append(competition_table.c.registration_end > datetime.now(tz=UTC))
+
         if search is not None:
-            search_vector = func.lower(func.concat(competition_table.c.title, " ", competition_table.c.description))
+            search_vector = func.lower(competition_table.c.title)
             similarity = func.word_similarity(search_vector, search.lower())
 
             filter_by.append(similarity > SIMILARITY_THRESHOLD)

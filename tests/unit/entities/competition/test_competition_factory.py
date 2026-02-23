@@ -30,6 +30,7 @@ def test_create_competition_with_valid_data(
     assert competition == Competition(
         id=competition.id,
         organizer_id=organizer_user.organizer.id,
+        organizer=organizer_user.organizer,
         title=data.title,
         description=data.description,
         schedule=CompetitionSchedule(

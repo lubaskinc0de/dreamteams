@@ -3,11 +3,6 @@
  * Final call-to-action section
  */
 
-interface Emits {
-  'start': [];
-}
-
-const emit = defineEmits(['start']);
 const { t } = useI18n();
 </script>
 
@@ -29,15 +24,15 @@ const { t } = useI18n();
         </p>
         <div class="flex justify-center">
           <UButton
-            @click="emit('start')"
+            @click="navigateTo('/competitions')"
             color="primary"
             variant="solid"
             size="xl"
-            icon="i-heroicons-rocket-launch"
+            icon="i-heroicons-magnifying-glass"
             class="shadow-xl hover:scale-105 transition-all duration-300 min-w-[200px]"
             :ui="{ base: 'justify-center' }"
           >
-            {{ t('home.startButton') }}
+            {{ t('home.findHackathonButton') }}
           </UButton>
         </div>
       </div>

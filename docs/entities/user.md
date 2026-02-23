@@ -9,12 +9,15 @@ Represents a user in the system. Acts as a container for user roles (organizer, 
 | Attribute | Type | Description |
 |-----------|------|-------------|
 | `id` | `UserId` (UUID) | User identifier |
+| `is_admin` | `bool` | Whether user has admin privileges |
 | `organizer` | `Organizer \| None` | Organizer role attached to user |
 
 ## Business Rules
 
-1. User can have at most one organizer role
-2. When attaching organizer role, `organizer.user_id` must equal `user.id`
+1. User SHOULD have `Organizer` OR `Participant` role
+2. When attaching organizer role, `<role>.user_id` must equal `user.id`
+3. Admin users (`is_admin = True`) have elevated privileges for managing invites and system administration
+4. Regular users have `is_admin = False` by default
 
 ## Relationships
 

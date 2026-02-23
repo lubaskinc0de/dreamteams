@@ -15,6 +15,8 @@ services:
                 condition: service_healthy
             oauth2-proxy:
                 condition: service_healthy
+            rustfs:
+                condition: service_started
 
     oauth2-proxy:
         extends:
@@ -48,6 +50,8 @@ services:
                 condition: service_healthy
             migrations:
                 condition: service_completed_successfully
+            rustfs:
+                condition: service_started
 
     db:
         extends:
@@ -68,8 +72,16 @@ services:
         volumes:
             - loki_data:/loki
 
+    rustfs:
+        extends:
+            file: docker-compose.base.yml
+            service: rustfs
+        volumes:
+            - rustfs_data:/data
+
 volumes:
     pg_data:
     grafana_data:
     loki_data:
     redis_data:
+    rustfs_data:

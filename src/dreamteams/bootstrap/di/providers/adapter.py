@@ -3,14 +3,17 @@ from collections.abc import AsyncIterator
 from dishka import AnyOf, Provider, Scope, WithParents, provide, provide_all
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
+from dreamteams.adapters.argon2_password_hasher import Argon2PasswordHasher
 from dreamteams.adapters.auth.auth_provider import SimpleAuthProvider
 from dreamteams.adapters.auth.idp.auth_user import WebAuthUserIdProvider
 from dreamteams.adapters.auth.idp.user import IdProviderImpl
+from dreamteams.adapters.avatar_storage import S3AvatarStorage, S3Config
 from dreamteams.adapters.clock import SystemClock
 from dreamteams.adapters.db.config import DbConfig
 from dreamteams.adapters.db.gateway.auth_user import SAAuthUserGateway
 from dreamteams.adapters.db.gateway.competition import SACompetitionGateway
 from dreamteams.adapters.db.gateway.organizer import SAOrganizerGateway
+from dreamteams.adapters.db.gateway.organizer_invite import SAOrganizerInviteGateway
 from dreamteams.adapters.db.gateway.user import SAUserGateway
 from dreamteams.application.common.uow import UoW
 
@@ -28,10 +31,19 @@ class AdapterProvider(Provider):
         WithParents[SAAuthUserGateway],
         WithParents[SAOrganizerGateway],
         WithParents[SACompetitionGateway],
+        WithParents[SAOrganizerInviteGateway],
         scope=Scope.REQUEST,
     )
     auth_provider = provide(WithParents[SimpleAuthProvider], scope=Scope.REQUEST)
     clock = provide(WithParents[SystemClock], scope=Scope.APP)
+    password_hasher = provide(WithParents[Argon2PasswordHasher], scope=Scope.APP)
+
+    @provide(scope=Scope.APP)
+    async def get_avatar_storage(self, config: S3Config) -> WithParents[S3AvatarStorage]:
+        """Get S3 avatar storage."""
+        storage = S3AvatarStorage(config)
+        await storage.ensure_bucket_exists()
+        return storage
 
     @provide(scope=Scope.APP)
     async def get_engine(self, config: DbConfig) -> AsyncIterator[AsyncEngine]:

@@ -42,6 +42,10 @@ class ListCompetitions:
     async def execute(self, input_data: ListCompetitionsInput) -> CompetitionsList:
         """List competitions for current organizer."""
         user = await self.idp.get_user()
+        if user.organizer is None:
+            logger.warning("User has no organizer role", user_id=user.id)
+            raise AccessDeniedError(message="Only organizers can list competitions")
+
         logger.debug(
             "Listing competitions",
             user_id=user.id,
@@ -51,12 +55,8 @@ class ListCompetitions:
             is_archived=input_data.is_archived,
             search=input_data.search,
             page_size=PAGE_SIZE,
+            organizer_id=user.organizer.id,
         )
-
-        if user.organizer is None:
-            logger.warning("User has no organizer role", user_id=user.id)
-            raise AccessDeniedError(message="Only organizers can list competitions")
-
         competitions, total = await self.competition_gateway.list(
             user.organizer.id,
             page=input_data.page,
@@ -65,6 +65,7 @@ class ListCompetitions:
             sort_order=input_data.sort_order,
             is_archived=input_data.is_archived,
             search=input_data.search,
+            active=None,
         )
 
         items = [

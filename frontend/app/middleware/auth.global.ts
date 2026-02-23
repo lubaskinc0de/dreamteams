@@ -24,11 +24,13 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   // Define protected routes that require authentication
-  const protectedRoutes = ['/me', '/onboarding', '/competitions'];
+  const protectedRoutes = ['/me', '/onboarding', '/admin'];
   const isProtectedRoute = protectedRoutes.some(route => to.path.startsWith(route));
 
   const isHomeRoute = to.path === '/';
   const isOnboardingRoute = to.path === '/onboarding';
+  const isAdminRoute = to.path.startsWith('/admin');
+  const isSuperuserRegisterRoute = to.path.startsWith('/register-superuser');
 
   // If not authenticated and trying to access protected route, throw 401 error
   if (!isAuthenticated.value && isProtectedRoute) {
@@ -39,8 +41,20 @@ export default defineNuxtRouteMiddleware(async (to) => {
     });
   }
 
+  // If authenticated but not admin, deny access to admin routes
+  if (isAuthenticated.value && isAdminRoute) {
+    const userStore = useUserStore();
+    if (!userStore.isAdmin) {
+      throw createError({
+        statusCode: 403,
+        statusMessage: 'Forbidden',
+        fatal: true,
+      });
+    }
+  }
+
   // If authenticated but needs onboarding, redirect to onboarding flow
-  if (isAuthenticated.value && needsOnboarding.value && !isOnboardingRoute) {
+  if (isAuthenticated.value && needsOnboarding.value && !isOnboardingRoute && !isSuperuserRegisterRoute) {
     return navigateTo('/onboarding', { replace: true });
   }
 

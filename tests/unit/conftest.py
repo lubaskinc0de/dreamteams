@@ -5,8 +5,7 @@ import pytest
 from faker import Faker
 
 from dreamteams.entities.common.clock import Clock
-from dreamteams.entities.organizer import Organizer
-from dreamteams.entities.user import User
+from dreamteams.entities.user import Organizer, User
 
 NOW_NAIVE = datetime(year=2026, month=1, day=25, hour=10, minute=30, second=25, microsecond=3)  # noqa: DTZ001
 NOW = NOW_NAIVE.replace(tzinfo=UTC)
@@ -20,22 +19,31 @@ def clock() -> Clock:
     return mock_clock
 
 
+@pytest.fixture(scope="module")
+def faker() -> Faker:
+    """Provide faker instance."""
+    return Faker()
+
+
 @pytest.fixture
 def organizer_user(faker: Faker) -> User:
     """User with organizer role attached."""
     user_id = faker.uuid4(cast_to=None)
     organizer_id = faker.uuid4(cast_to=None)
 
+    user = User(id=user_id, organizer=None)
+
     organizer = Organizer(
         id=organizer_id,
         user_id=user_id,
+        user=user,
         organizer_name=faker.company(),
         phone_number=faker.phone_number(),
         contact_email=faker.email(),
-        logo=None,
     )
 
-    return User(id=user_id, organizer=organizer)
+    user.organizer = organizer
+    return user
 
 
 @pytest.fixture
@@ -44,25 +52,22 @@ def different_user(faker: Faker) -> User:
     user_id = faker.uuid4(cast_to=None)
     organizer_id = faker.uuid4(cast_to=None)
 
+    user = User(id=user_id, organizer=None)
+
     organizer = Organizer(
         id=organizer_id,
         user_id=user_id,
+        user=user,
         organizer_name=faker.company(),
         phone_number=faker.phone_number(),
         contact_email=faker.email(),
-        logo=None,
     )
 
-    return User(id=user_id, organizer=organizer)
+    user.organizer = organizer
+    return user
 
 
 @pytest.fixture
 def user_without_organizer(faker: Faker) -> User:
     """User without organizer role."""
     return User(id=faker.uuid4(cast_to=None), organizer=None)
-
-
-@pytest.fixture(scope="module")
-def faker() -> Faker:
-    """Provide faker instance."""
-    return Faker()

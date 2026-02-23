@@ -7,6 +7,7 @@ export interface ApiError {
 export interface OrganizerForm {
   organizer_name: string;
   phone_number: string;
+  invite_code: string;
 }
 
 export interface CreatedOrganizer {
@@ -26,6 +27,40 @@ export interface OrganizerModel {
 export interface ProfileModel {
   user_id: string;
   organizer: OrganizerModel | null;
+  avatar_url: string | null;
+  is_admin: boolean;
+}
+
+export interface InviteForm {
+  display_name: string | null;
+}
+
+export interface CreatedInvite {
+  invite_id: string;
+  code: string;
+}
+
+export interface InviteUsedBy {
+  id: string;
+  name: string;
+  avatar_url: string | null;
+}
+
+export interface InviteModel {
+  id: string;
+  code: string;
+  display_name: string | null;
+  created_by: string;
+  is_revoked: boolean;
+  is_used: boolean;
+  used_by: InviteUsedBy | null;
+  created_at: string;
+}
+
+export interface InvitesList {
+  items: InviteModel[];
+  total: number;
+  page: number;
 }
 
 export type ErrorCode =
@@ -36,7 +71,17 @@ export type ErrorCode =
   | "USER_NOT_FOUND"
   | "USER_HAS_NO_ROLE"
   | "ACCESS_DENIED"
-  | "INTERNAL_SERVER_ERROR";
+  | "INTERNAL_SERVER_ERROR"
+  | "INVALID_AVATAR_ERROR"
+  | "INVITE_NOT_FOUND"
+  | "INVITE_ALREADY_REVOKED"
+  | "INVITE_ALREADY_USED"
+  | "INVITE_REVOKED"
+  | "INVALID_SUPERUSER_PASSWORD";
+
+export interface CreatedSuperuser {
+  user_id: string;
+}
 
 // Competition types
 export type Domain = "frontend" | "mobile" | "backend" | "ai" | "devops";
@@ -136,4 +181,35 @@ export interface CompetitionsList {
 
 export interface CreatedCompetition {
   competition_id: string;
+}
+
+// Preview types for public competition browsing
+export interface PreviewOrganizerModel {
+  id: string;
+  name: string;
+  avatar_url: string | null;
+}
+
+export interface PreviewCompetitionModel {
+  id: string;
+  organizer: PreviewOrganizerModel;
+  title: string;
+  banner: string | null;
+  description: string;
+  schedule: CompetitionSchedule;
+  participant_limits: ParticipantLimits;
+  domains: Domain[];
+  participant_type: ParticipantType;
+  venue: CompetitionVenue;
+  team_size: TeamSizeRange;
+  milestones: Milestone[];
+  is_archived: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PreviewCompetitionsList {
+  items: PreviewCompetitionModel[];
+  total: number;
+  page: number;
 }

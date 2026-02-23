@@ -24,6 +24,7 @@ from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import CompetitionSchedule
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
+from dreamteams.entities.user import Organizer
 
 competition_table = Table(
     "competitions",
@@ -96,6 +97,10 @@ mapper_registry.map_imperatively(
             cascade="all, delete-orphan",
             lazy="selectin",
             order_by=asc(milestone_table.c.timestamp),
+        ),
+        "organizer": relationship(
+            Organizer,
+            lazy="selectin",
         ),
     },
 )

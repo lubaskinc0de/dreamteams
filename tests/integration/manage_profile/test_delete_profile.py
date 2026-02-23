@@ -1,7 +1,7 @@
 from dreamteams.application.publish_competition.create import CreatedCompetition
 from dreamteams.application.register.register_organizer import CreatedOrganizer
 from tests.integration.api_client import ApiClient
-from tests.integration.conftest import USER_ID
+from tests.integration.constants import USER_ID
 
 
 async def test_delete_profile(

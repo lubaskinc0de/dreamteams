@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const { t } = useI18n();
 const { isLoading } = useAuth();
+const isSettingsOpen = ref(false);
 </script>
 
 <template>
@@ -13,31 +14,40 @@ const { isLoading } = useAuth();
 
   <!-- Main Layout -->
   <div v-show="!isLoading" class="min-h-screen bg-white dark:bg-gray-900 flex flex-col">
-    <UHeader>
+    <UHeader :ui="{ toggle: 'hidden', center: 'flex' }">
+      <!-- Spacer mirrors the settings button width to keep the brand centered -->
       <template #left>
-        <ThemeToggle size="lg" />
+        <div class="w-10 h-10" aria-hidden="true" />
       </template>
 
-      <template #title>
-        <div class="flex items-center gap-3">
-          <img
-            src="/logo.png"
-            alt="DreamTeams Logo"
-            class="h-16 w-16 object-contain"
-          />
-          <div>
-            <span class="text-xl font-bold text-gray-900 dark:text-gray-100 block">
-              {{ t("nav.brand") }}
-            </span>
-            <span class="text-xs text-gray-600 dark:text-gray-400 hidden sm:block">
-              {{ t("nav.brandSubtitle") }}
-            </span>
-          </div>
-        </div>
-      </template>
+      <!-- Center: brand title -->
+      <span class="text-xl font-bold text-gray-900 dark:text-gray-100">
+        {{ t("nav.brand") }}
+      </span>
 
       <template #right>
-        <LanguageSwitcher size="lg" />
+        <UPopover v-model:open="isSettingsOpen" :ui="{ content: 'p-3 min-w-[180px]' }">
+          <UButton
+            icon="i-heroicons-cog-6-tooth"
+            color="neutral"
+            variant="ghost"
+            size="lg"
+            :aria-label="t('nav.settings')"
+          />
+          <template #content>
+            <div class="flex flex-col gap-3">
+              <div class="flex items-center justify-between gap-3">
+                <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('theme.toggle') }}</span>
+                <ThemeToggle />
+              </div>
+              <USeparator />
+              <div class="flex items-center justify-between gap-3">
+                <span class="text-sm text-gray-700 dark:text-gray-300">{{ t('nav.language') }}</span>
+                <LanguageSwitcher />
+              </div>
+            </div>
+          </template>
+        </UPopover>
       </template>
     </UHeader>
 

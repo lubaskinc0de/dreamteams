@@ -203,6 +203,9 @@ const isAuthenticated = useState<boolean>('auth-isAuthenticated', () => false);
 ### Toast Notifications
 Use `useToast()` from NuxtUI for user feedback. Example in `organizer.ts` store after registration success.
 
+### Build
+always run build after new changes to ensure they work correctly
+
 ## When Adding Features
 
 1. **New API endpoint**: Add to `useApi()` and `useMockApi()`, define types in `app/types/api.ts`

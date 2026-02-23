@@ -13,14 +13,20 @@ export const createOrganizerSchemas = (t: (key: string) => string) => {
     .max(70, t("form.organizerName.maxLength"))
     .transform((val) => val.trim());
 
+  const inviteCodeSchema = z
+    .string()
+    .min(1, t("form.inviteCode.required"));
+
   const organizerRegistrationSchema = z.object({
     organizer_name: organizerNameSchema,
     phone_number: phoneSchema,
+    invite_code: inviteCodeSchema,
   });
 
   return {
     phoneSchema,
     organizerNameSchema,
+    inviteCodeSchema,
     organizerRegistrationSchema,
   };
 };

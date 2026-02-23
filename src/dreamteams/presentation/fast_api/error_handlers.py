@@ -9,10 +9,13 @@ from dreamteams.adapters.auth.errors.base import UnauthorizedError
 from dreamteams.adapters.errors.http.response import ErrorResponse, InternalServerError, ValidationError
 from dreamteams.adapters.tracing import MissingTraceIdError
 from dreamteams.application.common.logger import Logger
+from dreamteams.application.errors.invite import InviteNotFoundError
 from dreamteams.application.errors.organizer import OrganizerAlreadyExistsError
-from dreamteams.application.errors.user import UserNotFoundError
+from dreamteams.application.errors.user import InvalidSuperuserPasswordError, UserNotFoundError
 from dreamteams.entities.errors.base import AccessDeniedError, AppError
 from dreamteams.entities.errors.competition import CompetitionNotFoundError, InvalidCompetitionDataError
+from dreamteams.entities.errors.invite import InviteAlreadyRevokedError, InviteAlreadyUsedError, InviteRevokedError
+from dreamteams.presentation.fast_api.errors import InvalidAvatarError
 
 SERVER_ERROR = 500
 logger: Logger = structlog.get_logger(__name__)
@@ -28,6 +31,12 @@ error_to_http_status: dict[type[AppError], int] = {
     OrganizerAlreadyExistsError: 409,
     InvalidCompetitionDataError: 422,
     CompetitionNotFoundError: 404,
+    InvalidAvatarError: 422,
+    InviteNotFoundError: 404,
+    InviteAlreadyRevokedError: 409,
+    InviteAlreadyUsedError: 409,
+    InviteRevokedError: 403,
+    InvalidSuperuserPasswordError: 403,
 }
 
 

@@ -1,6 +1,12 @@
 set windows-powershell := true
 
 up:
+    just down
+    just build-frontend
+    docker compose -f docker/docker-compose.yml --env-file=./.config/.env up --build
+
+up-server:
+    just down
     docker compose -f docker/docker-compose.yml --env-file=./.config/.env up --build
 
 up-silent:
@@ -10,6 +16,7 @@ up-db:
     docker compose -f docker/docker-compose.yml --env-file=./.config/.env up db -d
 
 test:
+    just down
     docker compose -f docker/docker-compose.tests.yml --env-file=./.config/.env up --build --abort-on-container-exit tests
     just down
 
@@ -31,7 +38,9 @@ lint:
     typos
 
 dev-environment:
+    pip install uv
     uv pip install -e ".[dev]"
+    cd ./frontend; npm install
 
 generate-migration NAME:
     just up-db
@@ -43,9 +52,4 @@ cookie-secret:
     echo "OAUTH2_PROXY_COOKIE_SECRET=$(openssl rand -base64 32)"
 
 build-frontend:
-    cd ./frontend && npm run generate
-
-reload:
-    just down
-    just build-frontend
-    just up
+    cd ./frontend; npm run generate

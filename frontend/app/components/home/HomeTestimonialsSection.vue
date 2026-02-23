@@ -37,7 +37,6 @@ const { t } = useI18n();
     <div class="relative z-10">
       <div class="flex flex-col gap-4 w-full">
         <UMarquee
-          pause-on-hover
           :overlay="false"
           :repeat="3"
           :ui="{ root: '[--gap:--spacing(4)]', content: 'w-auto py-1 will-change-transform' }"
@@ -81,7 +80,6 @@ const { t } = useI18n();
         </UMarquee>
 
         <UMarquee
-          pause-on-hover
           reverse
           :overlay="false"
           :repeat="3"

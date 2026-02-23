@@ -3,7 +3,7 @@ from faker import Faker
 from dreamteams.application.publish_competition import CreatedCompetition
 from dreamteams.application.register.register_organizer import CreatedOrganizer
 from tests.integration.api_client import ApiClient
-from tests.integration.conftest import DIFFERENT_USER_ID, USER_ID
+from tests.integration.constants import DIFFERENT_USER_ID, USER_ID
 
 
 async def test_delete_competition_as_owner_succeeds(

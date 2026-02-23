@@ -38,11 +38,13 @@
     "register": "Регистрация",
     "login": "Войти",
     "competitions": "Мои соревнования",
+    "browseCompetitions": "Соревнования",
     "brand": "DreamTeams",
     "brandSubtitle": "Агрегатор IT-соревнований",
     "settings": "Настройки",
     "theme": "Тема",
-    "language": "Язык"
+    "language": "Язык",
+    "adminPanel": "Панель администратора"
   },
   "home": {
     "title": "DreamTeams",
@@ -50,6 +52,7 @@
     "heroDescription": "Инновационный сервис для подбора команд на IT-соревнования. Агрегатор всех актуальных мероприятий в одном месте.",
     "ctaText": "Все IT-хакатоны в одном месте. Найди команду или размести своё соревнование за 5 минут",
     "startButton": "Начать сейчас",
+    "findHackathonButton": "Найти соревнования",
     "registerButton": "Стать организатором",
     "profileButton": "Перейти в профиль",
     "findEvents": "Найти мероприятия",
@@ -164,6 +167,11 @@
       "loadingProfile": "Загрузка профиля...",
       "organizerBadge": "Организатор",
       "userBadge": "Пользователь",
+      "adminBadge": "Администратор",
+      "adminInfo": {
+        "title": "Аккаунт администратора",
+        "description": "Вы вошли как администратор платформы. Управляйте инвайтами и системными настройками через панель администратора."
+      },
       "tabs": {
           "information": "Информация",
           "settings": "Настройки"
@@ -233,6 +241,12 @@
       "register": "Зарегистрироваться",
       "registering": "Регистрация..."
     },
+    "inviteCode": {
+      "label": "Инвайт-код",
+      "placeholder": "Введите ваш инвайт-код",
+      "required": "Инвайт-код обязателен",
+      "hint": "Обратитесь к администратору, чтобы получить инвайт-код"
+    },
     "dataProtection": "Все данные защищены и не передаются третьим лицам"
   },
   "apiErrors": {
@@ -245,7 +259,40 @@
     "ACCESS_DENIED": "Доступ запрещен",
     "INTERNAL_SERVER_ERROR": "Внутренняя ошибка сервера. Попробуйте позже",
     "NETWORK_ERROR": "Ошибка сети. Проверьте интернет-соединение",
-    "UNKNOWN_ERROR": "Произошла неизвестная ошибка"
+    "UNKNOWN_ERROR": "Произошла неизвестная ошибка",
+    "INVALID_AVATAR_ERROR": "Неверный файл аватара. Проверьте формат и размер",
+    "INVITE_NOT_FOUND": "Инвайт-код не найден. Проверьте и попробуйте снова",
+    "INVITE_ALREADY_REVOKED": "Этот инвайт уже отозван",
+    "INVITE_ALREADY_USED": "Этот инвайт уже использован",
+    "INVITE_REVOKED": "Этот инвайт был отозван и не может быть использован",
+    "INVALID_SUPERUSER_PASSWORD": "Неверный пароль. Доступ запрещён"
+  },
+  "superuserRegister": {
+    "title": "Регистрация суперпользователя",
+    "passwordLabel": "Пароль администратора",
+    "passwordPlaceholder": "Введите пароль",
+    "submitButton": "Зарегистрироваться",
+    "success": {
+      "title": "Суперпользователь создан",
+      "description": "Аккаунт суперпользователя успешно зарегистрирован.",
+      "userId": "ID пользователя"
+    }
+  },
+  "avatar": {
+    "uploadButton": "Загрузить аватар",
+    "changeButton": "Изменить аватар",
+    "deleteButton": "Удалить аватар",
+    "selectButton": "Выбрать файл",
+    "preview": "Предпросмотр аватара",
+    "hint": "JPEG, PNG, GIF или WEBP. Макс. 5МБ",
+    "clickToEdit": "Нажмите для редактирования",
+    "modal": {
+      "title": "Редактировать аватар"
+    },
+    "errors": {
+      "invalidFormat": "Неверный формат файла. Допустимы только JPEG, PNG, GIF, WEBP",
+      "tooLarge": "Размер файла не должен превышать 5 МБ"
+    }
   },
   "toast": {
     "registrationSuccess": {
@@ -255,6 +302,14 @@
     "profileUpdated": {
       "title": "Профиль обновлен",
       "description": "Ваши данные успешно сохранены"
+    },
+    "avatarUploaded": {
+      "title": "Аватар загружен!",
+      "description": "Ваш аватар успешно обновлен"
+    },
+    "avatarDeleted": {
+      "title": "Аватар удален",
+      "description": "Ваш аватар успешно удален"
     },
     "competitionCreated": {
       "title": "Соревнование создано!",
@@ -271,6 +326,54 @@
     "competitionDeleteError": {
       "title": "Ошибка удаления",
       "description": "Не удалось удалить соревнование. Попробуйте снова"
+    },
+    "inviteCreated": {
+      "title": "Инвайт создан!",
+      "description": "Передайте код новому организатору"
+    },
+    "inviteRevoked": {
+      "title": "Инвайт отозван",
+      "description": "Инвайт-код успешно отозван"
+    },
+    "inviteCopyFailed": {
+      "title": "Не удалось скопировать код"
+    }
+  },
+  "notifications": {
+    "title": "Уведомления",
+    "empty": "Нет уведомлений",
+    "clearAll": "Очистить",
+    "justNow": "Только что",
+    "minutesAgo": "{n} мин. назад",
+    "hoursAgo": "{n} ч. назад"
+  },
+  "admin": {
+    "invites": {
+      "title": "Управление инвайтами",
+      "subtitle": "Всего инвайтов: {total}",
+      "createButton": "Создать инвайт",
+      "empty": "Инвайтов ещё нет. Создайте первый, чтобы разрешить регистрацию организаторов.",
+      "copyButton": "Скопировать код",
+      "codeCopied": "Код скопирован в буфер обмена!",
+      "revokeButton": "Отозвать",
+      "status": {
+        "active": "Активный",
+        "used": "Использован",
+        "revoked": "Отозван"
+      },
+      "createModal": {
+        "title": "Создать инвайт",
+        "displayName": "Метка (необязательно)",
+        "displayNameHint": "Заметка, чтобы вы могли идентифицировать этот инвайт",
+        "displayNamePlaceholder": "Например, для Рога и Копыта",
+        "submit": "Создать",
+        "successTitle": "Инвайт создан!",
+        "shareHint": "Передайте этот код организатору. Он может быть использован только один раз."
+      },
+      "revokeModal": {
+        "title": "Отозвать инвайт",
+        "description": "Вы уверены, что хотите отозвать этот инвайт? Код больше не будет действителен."
+      }
     }
   },
   "footer": {
@@ -319,6 +422,10 @@
     "competitionEdit": {
       "title": "Редактирование соревнования - DreamTeams",
       "description": "Редактирование информации о соревновании"
+    },
+    "competitionsPreview": {
+      "title": "Соревнования - DreamTeams",
+      "description": "Найдите IT-соревнования. Все актуальные мероприятия в одном месте."
     }
   },
   "competitions": {
@@ -362,6 +469,55 @@
       "title": "Удалить соревнование",
       "description": "Вы уверены, что хотите удалить это соревнование? Это действие нельзя отменить.",
       "confirm": "Удалить"
+    }
+  },
+  "competitionsPreview": {
+    "found": "Мы {found} для вас {total} {declension}",
+    "foundLink": "нашли",
+    "foundDeclension": {
+      "one": "соревнование",
+      "few": "соревнования",
+      "many": "соревнований"
+    },
+    "placeButton": "Разместить соревнование",
+    "scrollHint": "Смотреть соревнования",
+    "card": {
+      "organizer": "Организатор",
+      "registration": "Регистрация",
+      "participants": "Участники",
+      "registerButton": "Зарегистрироваться",
+      "participantsSuffix": "участников"
+    },
+    "detail": {
+      "title": "Детали соревнования",
+      "description": "Описание",
+      "schedule": "Расписание",
+      "registration": "Регистрация",
+      "teamFormation": "Формирование команд",
+      "participants": "Участники",
+      "participantType": "Тип участников",
+      "teamSize": "Размер команды",
+      "venue": "Место проведения",
+      "milestones": "Вехи",
+      "domains": "Направления",
+      "organizer": "Организатор",
+      "registerButton": "Зарегистрироваться на соревнование",
+      "closeButton": "Закрыть"
+    },
+    "empty": {
+      "title": "Соревнований пока нет",
+      "description": "Станьте первым организатором и разместите своё мероприятие",
+      "placeButton": "Разместить первое соревнование"
+    },
+    "toast": {
+      "onboardingRequired": {
+        "title": "Требуется регистрация",
+        "description": "Сначала завершите регистрацию на платформе"
+      },
+      "registerSuccess": {
+        "title": "Скоро здесь будет регистрация",
+        "description": "Функция регистрации на соревнования в разработке"
+      }
     }
   },
   "competition": {

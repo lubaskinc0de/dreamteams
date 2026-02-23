@@ -13,17 +13,42 @@ const brandLink = computed(() => {
 // Show avatar for authenticated users with profile
 const showAvatar = computed(() => isAuthenticated.value && hasProfile.value);
 
-// Navigation items for organizers
+// Public navigation items (visible to everyone)
+const publicNavItems = computed<NavigationMenuItem[]>(() => [
+  {
+    label: t('nav.browseCompetitions'),
+    icon: 'i-heroicons-magnifying-glass',
+    to: '/competitions',
+  },
+]);
+
+// Navigation items
 const navItems = computed<NavigationMenuItem[]>(() => {
-  if (!isAuthenticated.value || !hasProfile.value || !userStore.isOrganizer) {
-    return [];
+  if (!isAuthenticated.value || !hasProfile.value) {
+    return publicNavItems.value;
+  }
+
+  if (userStore.isAdmin) {
+    return [
+      ...publicNavItems.value,
+      {
+        label: t('nav.adminPanel'),
+        icon: 'i-heroicons-shield-check',
+        to: '/admin/invites',
+      },
+    ];
+  }
+
+  if (!userStore.isOrganizer) {
+    return publicNavItems.value;
   }
 
   return [
+    ...publicNavItems.value,
     {
       label: t('nav.competitions'),
       icon: 'i-heroicons-trophy',
-      to: '/competitions',
+      to: '/me/competitions',
     },
   ];
 });
@@ -51,16 +76,20 @@ const handleLogin = async () => {
 
       <template #default>
         <!-- Navigation for organizers -->
-        <UNavigationMenu v-if="navItems.length > 0" :items="navItems" variant="link" class="hidden md:flex" />
+        <UNavigationMenu :items="navItems" variant="link" class="hidden md:flex" />
       </template>
 
       <template #right>
         <!-- Show avatar for authenticated users -->
         <template v-if="showAvatar">
+          <NotificationBell />
           <NuxtLink to="/me" :aria-label="t('nav.profile')">
-            <UAvatar :src="userStore.organizer?.logo || undefined"
-              :alt="userStore.organizer?.organizer_name || t('profile.userBadge')" size="md"
-              class="hover:ring-2 hover:ring-primary-500 transition-all cursor-pointer" />
+            <UAvatar
+              :src="userStore.profile?.avatar_url || '/no-photo.png'"
+              :alt="userStore.organizer?.organizer_name || t('profile.userBadge')"
+              size="md"
+              class="hover:ring-2 hover:ring-primary-500 transition-all cursor-pointer"
+            />
           </NuxtLink>
         </template>
         <!-- Login button (desktop only) and settings menu for unauthenticated users -->
@@ -105,10 +134,8 @@ const handleLogin = async () => {
       </template>
 
       <template #body>
-        <!-- Mobile menu for authenticated organizers -->
-        <template v-if="showAvatar && navItems.length > 0">
-          <UNavigationMenu :items="navItems" orientation="vertical" class="-mx-2.5" />
-        </template>
+        <!-- Mobile menu -->
+        <UNavigationMenu :items="navItems" orientation="vertical" class="-mx-2.5" />
       </template>
     </UHeader>
 

@@ -5,6 +5,14 @@ from dreamteams.entities.errors.base import AppError, app_error
 
 
 @app_error
+class InvalidSuperuserPasswordError(AppError):
+    """Raised when the supplied password does not match the configured superuser hash."""
+
+    code: ClassVar[str] = "INVALID_SUPERUSER_PASSWORD"
+    message: str = "Invalid superuser password"
+
+
+@app_error
 class UserNotFoundError(AppError):
     """Error raised when attempting to access a user that does not exist in the system."""
 

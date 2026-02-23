@@ -1,2 +1,6 @@
 [default.extend-words]
 selectin = "selectin"
+
+[type.jpg]
+extend-glob = ["*.jpg"]
+check-file = false

@@ -10,6 +10,11 @@ import type {
   CompetitionsList,
   CompetitionSortBy,
   SortOrder,
+  PreviewCompetitionsList,
+  InviteForm,
+  CreatedInvite,
+  InvitesList,
+  CreatedSuperuser,
 } from "~/types/api";
 
 export const useApi = () => {
@@ -23,14 +28,26 @@ export const useApi = () => {
   }
 
   const handleApiError = (error: any): ApiError => {
-    if (error.data && typeof error.data === "object") {
+    // Structured API error response with a known error code
+    if (error.data && typeof error.data === "object" && error.data.code) {
       return {
-        code: error.data.code || "UNKNOWN_ERROR",
+        code: error.data.code,
         message: error.data.message || "An unexpected error occurred",
         meta: error.data.meta || null,
       };
     }
 
+    // Server responded but without a structured body (e.g. 500 plain-text)
+    const statusCode: number = error.status ?? error.statusCode ?? 0;
+    if (statusCode >= 500) {
+      return {
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Internal server error",
+        meta: null,
+      };
+    }
+
+    // Network-level failure: server unreachable, DNS failure, timeout, etc.
     return {
       code: "NETWORK_ERROR",
       message: error.message || "Network error occurred",
@@ -133,6 +150,23 @@ export const useApi = () => {
     }
   };
 
+  const getPreviewCompetitions = async (
+    page: number = 1,
+  ): Promise<{ data: PreviewCompetitionsList | null; error: ApiError | null }> => {
+    try {
+      const data = await $fetch<PreviewCompetitionsList>(
+        `${apiBase}/api/competitions/preview`,
+        {
+          method: "GET",
+          params: { page },
+        },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
   const createCompetition = async (
     form: CompetitionForm,
   ): Promise<{ data: CreatedCompetition | null; error: ApiError | null }> => {
@@ -206,15 +240,112 @@ export const useApi = () => {
     }
   };
 
+  const attachAvatar = async (
+    file: File,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const data = await $fetch<{}>(`${apiBase}/api/users/me/avatar`, {
+        method: "PUT",
+        body: formData,
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const detachAvatar = async (): Promise<{
+    data: {} | null;
+    error: ApiError | null;
+  }> => {
+    try {
+      const data = await $fetch<{}>(`${apiBase}/api/users/me/avatar`, {
+        method: "DELETE",
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const issueInvite = async (
+    form: InviteForm,
+  ): Promise<{ data: CreatedInvite | null; error: ApiError | null }> => {
+    try {
+      const data = await $fetch<CreatedInvite>(`${apiBase}/api/invites/`, {
+        method: "POST",
+        body: form,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const listInvites = async (
+    page: number = 1,
+  ): Promise<{ data: InvitesList | null; error: ApiError | null }> => {
+    try {
+      const data = await $fetch<InvitesList>(`${apiBase}/api/invites/`, {
+        method: "GET",
+        params: { page },
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const revokeInvite = async (
+    inviteId: string,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await $fetch<{}>(`${apiBase}/api/invites/${inviteId}`, {
+        method: "DELETE",
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const registerSuperuser = async (
+    password: string,
+  ): Promise<{ data: CreatedSuperuser | null; error: ApiError | null }> => {
+    try {
+      const data = await $fetch<CreatedSuperuser>(`${apiBase}/api/users/superuser/`, {
+        method: "POST",
+        body: { password },
+        headers: { "Content-Type": "application/json" },
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
   return {
     checkAuth,
     registerOrganizer,
     getUserProfile,
     listCompetitions,
+    getPreviewCompetitions,
     createCompetition,
     getCompetition,
     updateCompetition,
     deleteCompetition,
     deleteUserProfile,
+    attachAvatar,
+    detachAvatar,
+    issueInvite,
+    listInvites,
+    revokeInvite,
+    registerSuperuser,
   };
 };
