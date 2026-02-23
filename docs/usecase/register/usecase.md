@@ -5,8 +5,10 @@
 
 ## Goal
 
-Visitor registers in the system as organizer to create competitions.
+Visitors register in the system. Organizers register to create competitions;
+superusers register to gain admin access.
 
 ## Interactors
 
 - [RegisterOrganizer](./register_organizer.md) — register new organizer
+- [RegisterSuperuser](./register_superuser.md) — register new superuser (admin)

@@ -2,6 +2,7 @@
 import type { UpdateCompetitionForm } from '~/types/api';
 import type { MilestoneInput } from '~/components/competition/form/MilestonesFormSection.vue';
 import { useCompetitionStore } from '~/stores/competition';
+import { useNotificationsStore } from '~/stores/notifications';
 import { CalendarDate, Time, parseAbsoluteToLocal, today, getLocalTimeZone } from '@internationalized/date';
 import { createCompetitionSchemas } from '~/schemas/competition';
 
@@ -9,7 +10,7 @@ const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const competitionStore = useCompetitionStore();
-const toast = useToast();
+const notifications = useNotificationsStore();
 
 // SEO Meta tags
 useSeoMeta({
@@ -356,7 +357,7 @@ const handleSubmit = async () => {
     );
 
     if (result.success) {
-      toast.add({
+      notifications.add({
         title: t('toast.competitionUpdated.title'),
         description: t('toast.competitionUpdated.description'),
         icon: 'i-heroicons-check-circle',
@@ -364,7 +365,7 @@ const handleSubmit = async () => {
       });
       router.push(`/me/competitions/${competitionId.value}`);
     } else if (result.error) {
-      toast.add({
+      notifications.add({
         title: t('errors.default.title'),
         description: result.error.message,
         icon: 'i-heroicons-exclamation-triangle',
@@ -372,7 +373,7 @@ const handleSubmit = async () => {
       });
     }
   } catch (error: any) {
-    toast.add({
+    notifications.add({
       title: t('errors.default.title'),
       description: error.message || t('errors.default.description'),
       icon: 'i-heroicons-exclamation-triangle',
@@ -387,7 +388,7 @@ const handleSubmit = async () => {
 const handleError = async (event: any) => {
   const errors = event.errors || [];
   if (errors.length > 0) {
-    toast.add({
+    notifications.add({
       title: t('competition.create.validation.errorsFound', { count: errors.length }),
       description: t('competition.create.validation.scrollToErrors'),
       icon: 'i-heroicons-exclamation-circle',

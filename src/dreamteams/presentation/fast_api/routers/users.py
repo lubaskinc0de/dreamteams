@@ -11,6 +11,7 @@ from dreamteams.application.manage_profile import ProfileModel, ReadProfile
 from dreamteams.application.manage_profile.attach_avatar import AttachAvatar, AvatarForm
 from dreamteams.application.manage_profile.delete import DeleteProfile
 from dreamteams.application.manage_profile.detach_avatar import DetachAvatar
+from dreamteams.application.register.register_superuser import CreatedSuperuser, RegisterSuperuser, SuperuserForm
 from dreamteams.presentation.fast_api.errors import InvalidAvatarError
 
 logger: Logger = structlog.get_logger(__name__)
@@ -28,6 +29,15 @@ def is_valid_image(file_stream: BinaryIO) -> bool:
     kind = filetype.guess(file_stream)
     file_stream.seek(position)
     return kind is not None and kind.mime.startswith("image/")
+
+
+@router.post("/superuser/")
+async def register_superuser(
+    interactor: FromDishka[RegisterSuperuser],
+    data: SuperuserForm,
+) -> CreatedSuperuser:
+    """HTTP endpoint for registering a new superuser."""
+    return await interactor.execute(data)
 
 
 @router.get("/me")

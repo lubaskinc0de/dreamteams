@@ -24,6 +24,7 @@ dependencies = [
     "aioboto3==15.5.0",
     "python-multipart==0.0.20",
     "filetype==1.2.0",
+    "argon2-cffi==25.1.0",
 ]
 [project.optional-dependencies]
 lint = ['ruff==0.14.8', 'mypy==1.19.0', 'import-linter==2.7', 'typos==1.41.0']

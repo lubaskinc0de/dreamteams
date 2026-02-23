@@ -11,7 +11,7 @@ from dreamteams.adapters.tracing import MissingTraceIdError
 from dreamteams.application.common.logger import Logger
 from dreamteams.application.errors.invite import InviteNotFoundError
 from dreamteams.application.errors.organizer import OrganizerAlreadyExistsError
-from dreamteams.application.errors.user import UserNotFoundError
+from dreamteams.application.errors.user import InvalidSuperuserPasswordError, UserNotFoundError
 from dreamteams.entities.errors.base import AccessDeniedError, AppError
 from dreamteams.entities.errors.competition import CompetitionNotFoundError, InvalidCompetitionDataError
 from dreamteams.entities.errors.invite import InviteAlreadyRevokedError, InviteAlreadyUsedError, InviteRevokedError
@@ -36,6 +36,7 @@ error_to_http_status: dict[type[AppError], int] = {
     InviteAlreadyRevokedError: 409,
     InviteAlreadyUsedError: 409,
     InviteRevokedError: 403,
+    InvalidSuperuserPasswordError: 403,
 }
 
 

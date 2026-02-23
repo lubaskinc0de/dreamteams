@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { useNotificationsStore } from "~/stores/notifications";
 import type {
   CompetitionForm,
   UpdateCompetitionForm,
@@ -74,7 +75,7 @@ export const useCompetitionStore = defineStore("competition", {
 
     async updateCompetition(competitionId: string, form: UpdateCompetitionForm) {
       const { $i18n } = useNuxtApp();
-      const toast = useToast();
+      const notifications = useNotificationsStore();
       const api = useApi();
 
       this.loading = true;
@@ -88,12 +89,11 @@ export const useCompetitionStore = defineStore("competition", {
         return { success: false, error };
       }
 
-      toast.add({
+      notifications.add({
         title: $i18n.t("toast.competitionUpdated.title"),
         description: $i18n.t("toast.competitionUpdated.description"),
         icon: "i-heroicons-check-circle",
         color: "success",
-        duration: 5000,
       });
 
       // Refresh the competition
@@ -126,7 +126,7 @@ export const useCompetitionStore = defineStore("competition", {
 
     async createCompetition(form: CompetitionForm) {
       const { $i18n } = useNuxtApp();
-      const toast = useToast();
+      const notifications = useNotificationsStore();
       const api = useApi();
 
       this.loading = true;
@@ -141,12 +141,11 @@ export const useCompetitionStore = defineStore("competition", {
         this.createdCompetition = data;
         this.creationSuccess = true;
 
-        toast.add({
+        notifications.add({
           title: $i18n.t("toast.competitionCreated.title"),
           description: $i18n.t("toast.competitionCreated.description"),
           icon: "i-heroicons-check-circle",
           color: "success",
-          duration: 5000,
         });
 
         // Refresh the list

@@ -6,15 +6,18 @@ import {
   type OrganizerRegistrationSchema,
 } from "~/schemas/organizer";
 
+import { useNotificationsStore } from "~/stores/notifications";
+
 const organizerStore = useOrganizerStore();
 const { getErrorMessage, isErrorCode } = useErrorHandler();
 const { t } = useI18n();
 const api = useApi();
-const toast = useToast();
+const notifications = useNotificationsStore();
 
 const state = reactive({
   organizer_name: "",
   phone_number: "+7",
+  invite_code: "",
 });
 
 const {
@@ -43,6 +46,7 @@ const onSubmit = async (event: FormSubmitEvent<OrganizerRegistrationSchema>) => 
   const formData: OrganizerForm = {
     organizer_name: event.data.organizer_name,
     phone_number: event.data.phone_number,
+    invite_code: event.data.invite_code,
   };
 
   await organizerStore.registerOrganizer(formData);
@@ -55,13 +59,13 @@ const onSubmit = async (event: FormSubmitEvent<OrganizerRegistrationSchema>) => 
 
     if (error) {
       avatarUploadError.value = getErrorMessage(error);
-      toast.add({
+      notifications.add({
         title: t("apiErrors." + error.code),
         color: "error",
         icon: "i-heroicons-exclamation-triangle",
       });
     } else {
-      toast.add({
+      notifications.add({
         title: t("toast.avatarUploaded.title"),
         description: t("toast.avatarUploaded.description"),
         color: "success",
@@ -123,6 +127,15 @@ const isLoading = computed(() => organizerStore.loading || isUploadingAvatar.val
         class="w-full">
         <UInput v-model="state.phone_number" :placeholder="t('form.phoneNumber.placeholder')" icon="i-heroicons-phone"
           size="xl" type="tel" :aria-label="t('form.phoneNumber.label')" class="w-full" />
+      </UFormField>
+
+      <UFormField :label="t('form.inviteCode.label')" name="invite_code" required :aria-required="true"
+        class="w-full">
+        <UInput v-model="state.invite_code" :placeholder="t('form.inviteCode.placeholder')"
+          icon="i-heroicons-key" size="xl" :aria-label="t('form.inviteCode.label')" class="w-full" />
+        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+          {{ t("form.inviteCode.hint") }}
+        </p>
       </UFormField>
 
       <div class="pt-2">

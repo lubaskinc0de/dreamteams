@@ -1,4 +1,3 @@
-import { success } from "zod";
 import type {
   ApiError,
   OrganizerForm,
@@ -13,7 +12,15 @@ import type {
   SortOrder,
   PreviewCompetitionModel,
   PreviewCompetitionsList,
+  InviteForm,
+  CreatedInvite,
+  InviteModel,
+  InvitesList,
+  CreatedSuperuser,
 } from "~/types/api";
+
+// Mock invite code accepted in mock mode
+const MOCK_INVITE_CODE = "MOCK-INVITE-2026";
 
 // Mock data
 const mockUser: ProfileModel = {
@@ -27,17 +34,58 @@ const mockUser: ProfileModel = {
     logo: null,
   },
   avatar_url: null,
+  is_admin: false,
 };
 
 const mockUserWithoutOrganizer: ProfileModel = {
   user_id: "123e4567-e89b-12d3-a456-426614174000",
   organizer: null,
   avatar_url: null,
+  is_admin: false,
 };
 
 // Storage for current state
 let isRegistered = false;
 let currentAvatarUrl: string | null = null;
+
+// Mock invite state
+let mockInvites: InviteModel[] = [
+  {
+    id: "invite-1",
+    code: MOCK_INVITE_CODE,
+    display_name: "Test invite",
+    created_by: "123e4567-e89b-12d3-a456-426614174000",
+    is_revoked: false,
+    is_used: false,
+    used_by: null,
+    created_at: "2026-02-20T10:00:00Z",
+  },
+  {
+    id: "invite-2",
+    code: "USED-INVITE-CODE",
+    display_name: "Used invite",
+    created_by: "123e4567-e89b-12d3-a456-426614174000",
+    is_revoked: false,
+    is_used: true,
+    used_by: {
+      id: "org-used-1",
+      name: "Иванов Иван",
+      avatar_url: null,
+    },
+    created_at: "2026-02-19T09:00:00Z",
+  },
+  {
+    id: "invite-3",
+    code: "REVOKED-INVITE-CODE",
+    display_name: null,
+    created_by: "123e4567-e89b-12d3-a456-426614174000",
+    is_revoked: true,
+    is_used: false,
+    used_by: null,
+    created_at: "2026-02-18T08:00:00Z",
+  },
+];
+let mockInviteCounter = 4;
 
 // Mock preview competitions data
 const mockPreviewCompetitions: PreviewCompetitionModel[] = [
@@ -491,6 +539,47 @@ export const useMockApi = () => {
       };
     }
 
+    // Validate invite code
+    const invite = mockInvites.find((i) => i.code === form.invite_code);
+    if (!invite) {
+      return {
+        data: null,
+        error: {
+          code: "INVITE_NOT_FOUND",
+          message: "Invite not found",
+          meta: null,
+        },
+      };
+    }
+    if (invite.is_revoked) {
+      return {
+        data: null,
+        error: {
+          code: "INVITE_REVOKED",
+          message: "This invite has been revoked",
+          meta: null,
+        },
+      };
+    }
+    if (invite.is_used) {
+      return {
+        data: null,
+        error: {
+          code: "INVITE_ALREADY_USED",
+          message: "This invite has already been used",
+          meta: null,
+        },
+      };
+    }
+
+    // Mark invite as used
+    invite.is_used = true;
+    invite.used_by = {
+      id: "123e4567-e89b-12d3-a456-426614174001",
+      name: form.organizer_name,
+      avatar_url: null,
+    };
+
     // Check if already registered
     if (isRegistered) {
       return {
@@ -827,6 +916,137 @@ export const useMockApi = () => {
     };
   };
 
+  const issueInvite = async (
+    form: InviteForm,
+  ): Promise<{ data: CreatedInvite | null; error: ApiError | null }> => {
+    await delay(400);
+
+    const newInvite: InviteModel = {
+      id: `invite-${mockInviteCounter++}`,
+      code: `MOCK-CODE-${Math.random().toString(36).slice(2, 10).toUpperCase()}`,
+      display_name: form.display_name,
+      created_by: "123e4567-e89b-12d3-a456-426614174000",
+      is_revoked: false,
+      is_used: false,
+      used_by: null,
+      created_at: new Date().toISOString(),
+    };
+
+    mockInvites.unshift(newInvite);
+
+    return {
+      data: {
+        invite_id: newInvite.id,
+        code: newInvite.code,
+      },
+      error: null,
+    };
+  };
+
+  const listInvites = async (
+    page: number = 1,
+  ): Promise<{ data: InvitesList | null; error: ApiError | null }> => {
+    await delay(300);
+
+    const pageSize = 20;
+    const start = (page - 1) * pageSize;
+    const items = mockInvites.slice(start, start + pageSize);
+
+    return {
+      data: {
+        items,
+        total: mockInvites.length,
+        page,
+      },
+      error: null,
+    };
+  };
+
+  const revokeInvite = async (
+    inviteId: string,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    await delay(400);
+
+    const invite = mockInvites.find((i) => i.id === inviteId);
+
+    if (!invite) {
+      return {
+        data: null,
+        error: {
+          code: "INVITE_NOT_FOUND",
+          message: "Invite not found",
+          meta: null,
+        },
+      };
+    }
+
+    if (invite.is_revoked) {
+      return {
+        data: null,
+        error: {
+          code: "INVITE_ALREADY_REVOKED",
+          message: "Invite is already revoked",
+          meta: null,
+        },
+      };
+    }
+
+    if (invite.is_used) {
+      return {
+        data: null,
+        error: {
+          code: "INVITE_ALREADY_USED",
+          message: "Cannot revoke a used invite",
+          meta: null,
+        },
+      };
+    }
+
+    invite.is_revoked = true;
+
+    return {
+      data: {},
+      error: null,
+    };
+  };
+
+  const MOCK_SUPERUSER_PASSWORD = "superuser123";
+  let mockSuperuserCreated = false;
+
+  const registerSuperuser = async (
+    password: string,
+  ): Promise<{ data: CreatedSuperuser | null; error: ApiError | null }> => {
+    await delay(500);
+
+    if (password !== MOCK_SUPERUSER_PASSWORD) {
+      return {
+        data: null,
+        error: {
+          code: "INVALID_SUPERUSER_PASSWORD",
+          message: "Неверный пароль суперпользователя",
+          meta: null,
+        },
+      };
+    }
+
+    if (mockSuperuserCreated) {
+      return {
+        data: null,
+        error: {
+          code: "AUTH_USER_ALREADY_EXISTS",
+          message: "Суперпользователь уже зарегистрирован",
+          meta: null,
+        },
+      };
+    }
+
+    mockSuperuserCreated = true;
+    return {
+      data: { user_id: crypto.randomUUID() },
+      error: null,
+    };
+  };
+
   return {
     checkAuth,
     registerOrganizer,
@@ -840,5 +1060,9 @@ export const useMockApi = () => {
     deleteUserProfile,
     attachAvatar,
     detachAvatar,
+    issueInvite,
+    listInvites,
+    revokeInvite,
+    registerSuperuser,
   };
 };

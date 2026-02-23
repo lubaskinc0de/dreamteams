@@ -218,7 +218,7 @@ const handleClose = () => {
               </h3>
               <div class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
                 <UAvatar
-                  :src="competition.organizer.avatar_url || undefined"
+                  :src="competition.organizer.avatar_url || '/no-photo.png'"
                   :alt="competition.organizer.name"
                   size="lg"
                 />
@@ -458,7 +458,7 @@ const handleClose = () => {
           </h3>
           <div class="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
             <UAvatar
-              :src="competition.organizer.avatar_url || undefined"
+              :src="competition.organizer.avatar_url || '/no-photo.png'"
               :alt="competition.organizer.name"
               size="md"
             />

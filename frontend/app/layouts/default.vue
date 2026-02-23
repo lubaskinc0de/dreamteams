@@ -22,9 +22,24 @@ const publicNavItems = computed<NavigationMenuItem[]>(() => [
   },
 ]);
 
-// Navigation items for organizers
+// Navigation items
 const navItems = computed<NavigationMenuItem[]>(() => {
-  if (!isAuthenticated.value || !hasProfile.value || !userStore.isOrganizer) {
+  if (!isAuthenticated.value || !hasProfile.value) {
+    return publicNavItems.value;
+  }
+
+  if (userStore.isAdmin) {
+    return [
+      ...publicNavItems.value,
+      {
+        label: t('nav.adminPanel'),
+        icon: 'i-heroicons-shield-check',
+        to: '/admin/invites',
+      },
+    ];
+  }
+
+  if (!userStore.isOrganizer) {
     return publicNavItems.value;
   }
 
@@ -67,9 +82,10 @@ const handleLogin = async () => {
       <template #right>
         <!-- Show avatar for authenticated users -->
         <template v-if="showAvatar">
+          <NotificationBell />
           <NuxtLink to="/me" :aria-label="t('nav.profile')">
             <UAvatar
-              :src="userStore.profile?.avatar_url || undefined"
+              :src="userStore.profile?.avatar_url || '/no-photo.png'"
               :alt="userStore.organizer?.organizer_name || t('profile.userBadge')"
               size="md"
               class="hover:ring-2 hover:ring-primary-500 transition-all cursor-pointer"
