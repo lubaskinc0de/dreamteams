@@ -1,20 +1,20 @@
 from dataclasses import dataclass
 from datetime import datetime
-from uuid import uuid4
 from enum import Enum
+from uuid import uuid4
 
 from dreamteams.entities.base import Entity, model
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import ParticipantId, UserId
-from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
 from dreamteams.entities.common.vo.domain import Domain
-from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
 from dreamteams.entities.errors.participant import InvalidParticipantDataError
+from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
+from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
 from dreamteams.entities.user import User
 
 
 class ExperienceLevel(Enum):
-    "Level of experience"
+    """Level of experience."""
 
     JUNIOR = "JUNIOR"
     MID = "MID"
