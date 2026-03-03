@@ -4,14 +4,6 @@ import type { Feature, Stat } from "~/types/ui";
 // Get i18n
 const { t } = useI18n();
 
-// Auth composable
-const { login } = useAuth();
-
-// Start button handler
-const handleStart = async () => {
-  await login();
-};
-
 // Scroll animations - only for landing page
 onMounted(() => {
   if (!import.meta.client) return;
@@ -173,7 +165,7 @@ const testimonials = [
 <template>
   <div>
     <!-- Hero Section -->
-    <HomeHeroSection @start="handleStart" />
+    <HomeHeroSection />
 
     <!-- About Section -->
     <HomeAboutSection />
@@ -188,6 +180,6 @@ const testimonials = [
     <HomeTestimonialsSection :testimonials="testimonials" />
 
     <!-- Call to Action Section -->
-    <HomeCtaSection @start="handleStart" />
+    <HomeCtaSection />
   </div>
 </template>

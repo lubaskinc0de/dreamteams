@@ -6,27 +6,73 @@ import {
   type OrganizerRegistrationSchema,
 } from "~/schemas/organizer";
 
+import { useNotificationsStore } from "~/stores/notifications";
+
 const organizerStore = useOrganizerStore();
 const { getErrorMessage, isErrorCode } = useErrorHandler();
 const { t } = useI18n();
+const api = useApi();
+const notifications = useNotificationsStore();
 
 const state = reactive({
   organizer_name: "",
   phone_number: "+7",
+  invite_code: "",
 });
 
 const {
   organizerRegistrationSchema
 } = createOrganizerSchemas(t);
 
+// Avatar upload state
+const selectedAvatar = ref<File | null>(null);
+const isUploadingAvatar = ref(false);
+const avatarUploadError = ref<string | null>(null);
+
+// Handle avatar upload
+const handleAvatarUpload = async (file: File) => {
+  selectedAvatar.value = file;
+  avatarUploadError.value = null;
+};
+
+// Handle avatar delete
+const handleAvatarDelete = () => {
+  selectedAvatar.value = null;
+  avatarUploadError.value = null;
+};
+
 // Form submission handler
 const onSubmit = async (event: FormSubmitEvent<OrganizerRegistrationSchema>) => {
   const formData: OrganizerForm = {
     organizer_name: event.data.organizer_name,
     phone_number: event.data.phone_number,
+    invite_code: event.data.invite_code,
   };
 
   await organizerStore.registerOrganizer(formData);
+
+  // If registration is successful and avatar is selected, upload it
+  if (organizerStore.registrationSuccess && selectedAvatar.value) {
+    isUploadingAvatar.value = true;
+    const { error } = await api.attachAvatar(selectedAvatar.value);
+    isUploadingAvatar.value = false;
+
+    if (error) {
+      avatarUploadError.value = getErrorMessage(error);
+      notifications.add({
+        title: t("apiErrors." + error.code),
+        color: "error",
+        icon: "i-heroicons-exclamation-triangle",
+      });
+    } else {
+      notifications.add({
+        title: t("toast.avatarUploaded.title"),
+        description: t("toast.avatarUploaded.description"),
+        color: "success",
+        icon: "i-heroicons-check-circle",
+      });
+    }
+  }
   // Parent component (onboarding page) will handle redirect on success
 };
 
@@ -36,6 +82,8 @@ const apiErrorMessage = computed(() => getErrorMessage(organizerStore.error));
 const showProfileLink = computed(() =>
   isErrorCode(organizerStore.error, "AUTH_USER_ALREADY_EXISTS"),
 );
+
+const isLoading = computed(() => organizerStore.loading || isUploadingAvatar.value);
 </script>
 
 <template>
@@ -58,6 +106,16 @@ const showProfileLink = computed(() =>
     <UForm :schema="organizerRegistrationSchema" :state="state" @submit="onSubmit"
       :validate-on="['input', 'change']"
       class="space-y-5 w-full">
+      <!-- Avatar Upload Section -->
+      <div class="flex justify-center py-2">
+        <AvatarUpload
+          :loading="isUploadingAvatar"
+          :show-delete="!!selectedAvatar"
+          @upload="handleAvatarUpload"
+          @delete="handleAvatarDelete"
+        />
+      </div>
+
       <UFormField :label="t('form.organizerName.label')" name="organizer_name" required :aria-required="true"
         class="w-full">
         <UInput v-model="state.organizer_name" :placeholder="t('form.organizerName.placeholder')"
@@ -71,11 +129,20 @@ const showProfileLink = computed(() =>
           size="xl" type="tel" :aria-label="t('form.phoneNumber.label')" class="w-full" />
       </UFormField>
 
+      <UFormField :label="t('form.inviteCode.label')" name="invite_code" required :aria-required="true"
+        class="w-full">
+        <UInput v-model="state.invite_code" :placeholder="t('form.inviteCode.placeholder')"
+          icon="i-heroicons-key" size="xl" :aria-label="t('form.inviteCode.label')" class="w-full" />
+        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+          {{ t("form.inviteCode.hint") }}
+        </p>
+      </UFormField>
+
       <div class="pt-2">
-        <UButton type="submit" :loading="organizerStore.loading" :disabled="organizerStore.loading"
-          :aria-busy="organizerStore.loading" block size="xl" icon="i-heroicons-check-circle" :trailing="false">
+        <UButton type="submit" :loading="isLoading" :disabled="isLoading"
+          :aria-busy="isLoading" block size="xl" icon="i-heroicons-check-circle" :trailing="false">
           {{
-            organizerStore.loading
+            isLoading
               ? t("form.submitButton.registering")
               : t("form.submitButton.register")
           }}

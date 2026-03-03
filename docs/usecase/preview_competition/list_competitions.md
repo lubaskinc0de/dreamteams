@@ -19,7 +19,7 @@
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | `CompetitionId` | Competition identifier |
-| `organizer_id` | `OrganizerId` | Organizer identifier |
+| `organizer` | `PreviewOrganizerModel` | Organizer information |
 | `title` | `str` | Competition title |
 | `banner` | `Banner \| None` | Competition banner |
 | `description` | `str` | Competition description |
@@ -31,6 +31,14 @@
 | `team_size` | `TeamSizeRange` | Team size range |
 | `milestones` | `list[Milestone]` | Competition milestones |
 | `created_at` | `datetime` | Creation timestamp |
+
+### PreviewOrganizerModel
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `OrganizerId` | Organizer identifier |
+| `name` | `str` | Organizer name |
+| `avatar_url` | `str \| None` | Organizer avatar URL |
 
 ## Business Rules
 

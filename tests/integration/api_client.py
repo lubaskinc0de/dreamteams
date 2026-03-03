@@ -1,9 +1,10 @@
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Self
 
 from adaptix import Retort
 from adaptix.load_error import LoadError
-from aiohttp import ClientResponse, ClientResponseError, ClientSession
+from aiohttp import ClientResponse, ClientResponseError, ClientSession, FormData
 
 from dreamteams.adapters.auth.model import AuthUserId
 from dreamteams.adapters.errors.http.response import ErrorResponse
@@ -11,17 +12,21 @@ from dreamteams.adapters.tracing import TraceId, TracingConfig
 from dreamteams.application.common.gateway.competition import CompetitionSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.manage_competitions import CompetitionModel, CompetitionsList
+from dreamteams.application.manage_invites import InviteIssued, InviteModel, InvitesList
 from dreamteams.application.manage_profile import ProfileModel
 from dreamteams.application.preview_competition.list import PreviewCompetitionsList
 from dreamteams.application.publish_competition import CreatedCompetition
 from dreamteams.application.register.register_organizer import CreatedOrganizer
-from dreamteams.entities.common.identifiers import CompetitionId
+from dreamteams.application.register.register_superuser import CreatedSuperuser
+from dreamteams.entities.common.identifiers import CompetitionId, OrganizerInviteId
 
 retort = Retort()
 
 ORGANIZER_URL = "/organizers"
 USERS_URL = "/users"
+SUPERUSER_URL = f"{USERS_URL}/superuser/"
 COMPETITIONS_URL = "/competitions"
+INVITES_URL = "/invites"
 
 
 @dataclass
@@ -168,6 +173,11 @@ class ApiClient:
         """Set auth user ID for requests."""
         return AuthContext(self, auth_user_id, auth_user_email, self._config, self._access_token)
 
+    @property
+    def headers(self) -> dict[str, str]:
+        """API client headers."""
+        return self._headers
+
     async def readiness(self) -> APIResponse[EmptyResponse]:
         """GET /internal/ready."""
         url = "/internal/ready"
@@ -185,6 +195,11 @@ class ApiClient:
                 response,
                 response_type=EmptyResponse,
             )
+
+    async def register_superuser(self, data: dict[str, Any]) -> APIResponse[CreatedSuperuser]:
+        """Register as superuser via POST /users/superuser/."""
+        async with self.session.post(SUPERUSER_URL, headers=self._headers, json=data) as response:
+            return await self._load_response(response, response_type=CreatedSuperuser)
 
     async def register_organizer(self, data: dict[str, Any]) -> APIResponse[CreatedOrganizer]:
         """Register as organizer via POST /organizers/."""
@@ -212,6 +227,37 @@ class ApiClient:
                 response,
                 response_type=None,
             )
+
+    async def detach_avatar(self) -> APIResponse[None]:
+        """Detach user avatar via DELETE /users/me/avatar."""
+        url = f"{USERS_URL}/me/avatar"
+        async with self.session.delete(url, headers=self._headers) as response:
+            return await self._load_response(
+                response,
+                response_type=None,
+            )
+
+    async def attach_avatar(
+        self,
+        image_path: Path,
+        filename: str = "image.jpg",
+        content_type: str = "image/jpeg",
+    ) -> APIResponse[None]:
+        """Attach user avatar via PUT /users/me/avatar."""
+        with image_path.open("rb") as f:
+            url = f"{USERS_URL}/me/avatar"
+            data = FormData()
+            data.add_field(
+                name="file",
+                value=f,
+                filename=filename,
+                content_type=content_type,
+            )
+            async with self.session.put(url, headers=self._headers, data=data) as response:
+                return await self._load_response(
+                    response,
+                    response_type=None,
+                )
 
     async def create_competition(self, data: dict[str, Any]) -> APIResponse[CreatedCompetition]:
         """Create competition via POST /competitions/."""
@@ -289,3 +335,25 @@ class ApiClient:
                 response,
                 response_type=None,
             )
+
+    async def issue_invite(self, data: dict[str, Any]) -> APIResponse[InviteIssued]:
+        """Issue an organizer invite via POST /invites/."""
+        async with self.session.post(INVITES_URL, headers=self._headers, json=data) as response:
+            return await self._load_response(response, response_type=InviteIssued)
+
+    async def list_invites(self, page: int = 1) -> APIResponse[InvitesList]:
+        """List organizer invites via GET /invites/."""
+        async with self.session.get(INVITES_URL, headers=self._headers, params={"page": page}) as response:
+            return await self._load_response(response, response_type=InvitesList)
+
+    async def read_invite(self, invite_id: OrganizerInviteId) -> APIResponse[InviteModel]:
+        """Read a single organizer invite via GET /invites/{invite_id}."""
+        url = f"{INVITES_URL}/{invite_id}"
+        async with self.session.get(url, headers=self._headers) as response:
+            return await self._load_response(response, response_type=InviteModel)
+
+    async def revoke_invite(self, invite_id: OrganizerInviteId) -> APIResponse[None]:
+        """Revoke an organizer invite via DELETE /invites/{invite_id}."""
+        url = f"{INVITES_URL}/{invite_id}"
+        async with self.session.delete(url, headers=self._headers) as response:
+            return await self._load_response(response, response_type=None)

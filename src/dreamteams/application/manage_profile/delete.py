@@ -1,6 +1,5 @@
 import structlog
 
-from dreamteams.application.common.auth_provider import AuthProvider
 from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
@@ -15,10 +14,9 @@ class DeleteProfile:
 
     uow: UoW
     idp: IdProvider
-    auth_provider: AuthProvider
 
     async def execute(self) -> None:
-        """Read user profile."""
+        """Delete user profile."""
         user = await self.idp.get_user()
         logger.debug("Removing user profile", user_id=user.id)
 

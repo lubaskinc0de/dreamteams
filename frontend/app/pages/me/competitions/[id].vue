@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { useCompetitionStore } from '~/stores/competition';
+import { useNotificationsStore } from '~/stores/notifications';
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const competitionStore = useCompetitionStore();
-const toast = useToast();
+const notifications = useNotificationsStore();
 const { getDomainLabel } = useCompetitionFormatters();
 const { getRegistrationStatus } = useCompetitionStatus();
 
@@ -28,12 +29,12 @@ const competition = computed(() => competitionStore.currentCompetition);
 
 // Navigate back
 const goBack = () => {
-  router.push('/competitions');
+  router.push('/me/competitions');
 };
 
 // Navigate to edit page
 const goToEdit = () => {
-  router.push(`/competitions/edit/${competitionId.value}`);
+  router.push(`/me/competitions/edit/${competitionId.value}`);
 };
 
 // Delete competition
@@ -46,15 +47,15 @@ const handleDelete = async () => {
   isDeleting.value = false;
 
   if (result.success) {
-    toast.add({
+    notifications.add({
       title: t('toast.competitionDeleted.title'),
       description: t('toast.competitionDeleted.description'),
       icon: 'i-heroicons-check-circle',
       color: 'success',
     });
-    router.push('/competitions');
+    router.push('/me/competitions');
   } else {
-    toast.add({
+    notifications.add({
       title: t('toast.competitionDeleteError.title'),
       description: t('toast.competitionDeleteError.description'),
       icon: 'i-heroicons-exclamation-triangle',

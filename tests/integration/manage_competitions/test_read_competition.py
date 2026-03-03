@@ -7,7 +7,7 @@ from dreamteams.application.publish_competition import CompetitionForm, CreatedC
 from dreamteams.application.register.register_organizer import CreatedOrganizer
 from dreamteams.entities.common.clock import Clock
 from tests.integration.api_client import ApiClient
-from tests.integration.conftest import DIFFERENT_USER_ID, USER_ID
+from tests.integration.constants import DIFFERENT_USER_ID, USER_ID
 from tests.integration.manage_competitions.helpers import competition_form_to_model
 
 

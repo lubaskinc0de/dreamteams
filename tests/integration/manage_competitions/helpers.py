@@ -6,14 +6,13 @@ from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.manage_competitions.list import PAGE_SIZE, CompetitionsList
 from dreamteams.application.manage_competitions.read import CompetitionModel
 from dreamteams.application.manage_competitions.update import UpdateCompetitionForm
-from dreamteams.application.preview_competition.list import PreviewCompetitionsList
 from dreamteams.application.publish_competition.create import CompetitionForm
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
 from dreamteams.entities.competition.milestone import Milestone
 from dreamteams.entities.competition.schedule import schedule_factory
 from tests.integration.api_client import ApiClient
-from tests.integration.conftest import USER_ID
+from tests.integration.constants import USER_ID
 
 
 def create_competitions_list(
@@ -129,6 +128,7 @@ def competition_update_form_to_model(
     )
 
 
-def competitions_list_to_preview_list(lst: CompetitionsList) -> PreviewCompetitionsList:
-    """Transform CompetitionsList to PreviewCompetitionsList."""
-    return PreviewCompetitionsList(total=lst.total, page=lst.page, items=lst.items)
+async def read_competition(api_client: ApiClient, competition_id: CompetitionId) -> CompetitionModel:
+    """Read a competition via API."""
+    with api_client.authenticate(auth_user_id=USER_ID):
+        return (await api_client.read_competition(competition_id)).assert_status(200).ensure_content()

@@ -38,11 +38,13 @@
     "register": "Register",
     "login": "Sign In",
     "competitions": "My Competitions",
+    "browseCompetitions": "Competitions",
     "brand": "DreamTeams",
     "brandSubtitle": "IT Competition Aggregator",
     "settings": "Settings",
     "theme": "Theme",
-    "language": "Language"
+    "language": "Language",
+    "adminPanel": "Admin Panel"
   },
   "home": {
     "title": "DreamTeams",
@@ -50,6 +52,7 @@
     "heroDescription": "Innovative service for team formation at IT competitions. All current events aggregated in one place.",
     "ctaText": "All IT hackathons in one place. Find a team or post your event in 5 minutes",
     "startButton": "Start Now",
+    "findHackathonButton": "Find Competitions",
     "registerButton": "Become an Organizer",
     "profileButton": "Go to Profile",
     "findEvents": "Find Events",
@@ -164,6 +167,11 @@
     "loadingProfile": "Loading profile...",
     "organizerBadge": "Organizer",
     "userBadge": "User",
+    "adminBadge": "Administrator",
+    "adminInfo": {
+      "title": "Administrator account",
+      "description": "You are signed in as a platform administrator. Manage invites and system settings via the admin panel."
+    },
     "tabs": {
       "information": "Information",
       "settings": "Settings"
@@ -233,6 +241,12 @@
       "register": "Register",
       "registering": "Registering..."
     },
+    "inviteCode": {
+      "label": "Invite Code",
+      "placeholder": "Enter your invite code",
+      "required": "Invite code is required",
+      "hint": "Contact an administrator to get an invite code"
+    },
     "dataProtection": "All data is protected and not shared with third parties"
   },
   "apiErrors": {
@@ -245,7 +259,40 @@
     "ACCESS_DENIED": "Access denied",
     "INTERNAL_SERVER_ERROR": "Internal server error. Please try again later",
     "NETWORK_ERROR": "Network error. Please check your internet connection",
-    "UNKNOWN_ERROR": "An unknown error occurred"
+    "UNKNOWN_ERROR": "An unknown error occurred",
+    "INVALID_AVATAR_ERROR": "Invalid avatar file. Please check the format and size",
+    "INVITE_NOT_FOUND": "Invite code not found. Please check and try again",
+    "INVITE_ALREADY_REVOKED": "This invite has already been revoked",
+    "INVITE_ALREADY_USED": "This invite has already been used",
+    "INVITE_REVOKED": "This invite has been revoked and cannot be used",
+    "INVALID_SUPERUSER_PASSWORD": "Invalid password. Access denied"
+  },
+  "superuserRegister": {
+    "title": "Superuser Registration",
+    "passwordLabel": "Admin password",
+    "passwordPlaceholder": "Enter password",
+    "submitButton": "Register",
+    "success": {
+      "title": "Superuser created",
+      "description": "The superuser account has been successfully registered.",
+      "userId": "User ID"
+    }
+  },
+  "avatar": {
+    "uploadButton": "Upload Avatar",
+    "changeButton": "Change Avatar",
+    "deleteButton": "Remove Avatar",
+    "selectButton": "Select File",
+    "preview": "Avatar preview",
+    "hint": "JPEG, PNG, GIF or WEBP. Max 5MB",
+    "clickToEdit": "Click to edit",
+    "modal": {
+      "title": "Edit Avatar"
+    },
+    "errors": {
+      "invalidFormat": "Invalid file format. Only JPEG, PNG, GIF, WEBP are allowed",
+      "tooLarge": "File size must not exceed 5 MB"
+    }
   },
   "toast": {
     "registrationSuccess": {
@@ -255,6 +302,14 @@
     "profileUpdated": {
       "title": "Profile Updated",
       "description": "Your data has been saved successfully"
+    },
+    "avatarUploaded": {
+      "title": "Avatar Uploaded!",
+      "description": "Your avatar has been updated successfully"
+    },
+    "avatarDeleted": {
+      "title": "Avatar Removed",
+      "description": "Your avatar has been removed successfully"
     },
     "competitionCreated": {
       "title": "Competition Created!",
@@ -271,6 +326,54 @@
     "competitionDeleteError": {
       "title": "Delete Failed",
       "description": "Failed to delete the competition. Please try again"
+    },
+    "inviteCreated": {
+      "title": "Invite Created!",
+      "description": "Share the code with the new organizer"
+    },
+    "inviteRevoked": {
+      "title": "Invite Revoked",
+      "description": "The invite code has been revoked successfully"
+    },
+    "inviteCopyFailed": {
+      "title": "Failed to copy code"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications yet",
+    "clearAll": "Clear all",
+    "justNow": "Just now",
+    "minutesAgo": "{n}m ago",
+    "hoursAgo": "{n}h ago"
+  },
+  "admin": {
+    "invites": {
+      "title": "Invite Management",
+      "subtitle": "{total} invites total",
+      "createButton": "Create Invite",
+      "empty": "No invites yet. Create one to allow organizer registration.",
+      "copyButton": "Copy code",
+      "codeCopied": "Code copied to clipboard!",
+      "revokeButton": "Revoke",
+      "status": {
+        "active": "Active",
+        "used": "Used",
+        "revoked": "Revoked"
+      },
+      "createModal": {
+        "title": "Create Invite",
+        "displayName": "Label (optional)",
+        "displayNameHint": "A note to help you identify this invite",
+        "displayNamePlaceholder": "e.g. For Acme Corp",
+        "submit": "Create",
+        "successTitle": "Invite created!",
+        "shareHint": "Share this code with the organizer. It can only be used once."
+      },
+      "revokeModal": {
+        "title": "Revoke Invite",
+        "description": "Are you sure you want to revoke this invite? The code will no longer be usable."
+      }
     }
   },
   "footer": {
@@ -319,6 +422,10 @@
     "competitionEdit": {
       "title": "Edit Competition - DreamTeams",
       "description": "Edit competition information"
+    },
+    "competitionsPreview": {
+      "title": "Competitions - DreamTeams",
+      "description": "Find IT competitions. All current events in one place."
     }
   },
   "competitions": {
@@ -362,6 +469,55 @@
       "title": "Delete Competition",
       "description": "Are you sure you want to delete this competition? This action cannot be undone.",
       "confirm": "Delete"
+    }
+  },
+  "competitionsPreview": {
+    "found": "We {found} {total} {declension} for you",
+    "foundLink": "found",
+    "foundDeclension": {
+      "one": "competition",
+      "few": "competitions",
+      "many": "competitions"
+    },
+    "placeButton": "Post Competition",
+    "scrollHint": "Browse competitions",
+    "card": {
+      "organizer": "Organizer",
+      "registration": "Registration",
+      "participants": "Participants",
+      "registerButton": "Register",
+      "participantsSuffix": "participants"
+    },
+    "detail": {
+      "title": "Competition Details",
+      "description": "Description",
+      "schedule": "Schedule",
+      "registration": "Registration",
+      "teamFormation": "Team Formation",
+      "participants": "Participants",
+      "participantType": "Participant Type",
+      "teamSize": "Team Size",
+      "venue": "Venue",
+      "milestones": "Milestones",
+      "domains": "Domains",
+      "organizer": "Organizer",
+      "registerButton": "Register for Competition",
+      "closeButton": "Close"
+    },
+    "empty": {
+      "title": "No competitions yet",
+      "description": "Be the first organizer and post your event",
+      "placeButton": "Post first competition"
+    },
+    "toast": {
+      "onboardingRequired": {
+        "title": "Registration required",
+        "description": "Please complete platform registration first"
+      },
+      "registerSuccess": {
+        "title": "Registration coming soon",
+        "description": "Competition registration feature is under development"
+      }
     }
   },
   "competition": {

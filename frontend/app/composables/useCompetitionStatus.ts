@@ -1,4 +1,4 @@
-import type { CompetitionModel } from '~/types/api';
+import type { CompetitionModel, PreviewCompetitionModel } from '~/types/api';
 
 /**
  * Composable для определения статуса соревнования
@@ -10,7 +10,7 @@ export const useCompetitionStatus = () => {
    * Определяет статус регистрации на соревнование
    * @returns объект с label (текст статуса) и color (цвет бейджа)
    */
-  const getRegistrationStatus = (competition: CompetitionModel) => {
+  const getRegistrationStatus = (competition: CompetitionModel | PreviewCompetitionModel) => {
     const now = new Date();
     const regStart = new Date(competition.schedule.registration_start);
     const regEnd = new Date(competition.schedule.registration_end);
@@ -36,14 +36,14 @@ export const useCompetitionStatus = () => {
   /**
    * Проверяет, архивировано ли соревнование
    */
-  const isArchived = (competition: CompetitionModel) => {
+  const isArchived = (competition: CompetitionModel | PreviewCompetitionModel) => {
     return competition.is_archived;
   };
 
   /**
    * Проверяет, является ли соревнование командным
    */
-  const isTeamCompetition = (competition: CompetitionModel) => {
+  const isTeamCompetition = (competition: CompetitionModel | PreviewCompetitionModel) => {
     return !(competition.team_size.min === 1 && competition.team_size.max === 1);
   };
 

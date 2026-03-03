@@ -117,3 +117,13 @@ services:
         expose:
             - "3100"
         restart: unless-stopped
+    
+    rustfs:
+        image: rustfs/rustfs:1.0.0-alpha.82
+        container_name: rustfs
+        ports:
+            - 9000:9000
+            - 9001:9001
+        environment:
+            - RUSTFS_ACCESS_KEY=${APP_S3_ACCESS_KEY}
+            - RUSTFS_SECRET_KEY=${APP_S3_SECRET_KEY}

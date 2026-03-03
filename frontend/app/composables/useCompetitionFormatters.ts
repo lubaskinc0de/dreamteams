@@ -9,8 +9,10 @@ export const useCompetitionFormatters = () => {
    * Форматирует дату в локализованный формат
    */
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ru-RU', {
-      year: 'numeric',
+    const date = new Date(dateString);
+    const isCurrentYear = date.getFullYear() === new Date().getFullYear();
+    return date.toLocaleDateString('ru-RU', {
+      year: isCurrentYear ? undefined : 'numeric',
       month: 'long',
       day: 'numeric',
     });
@@ -28,8 +30,13 @@ export const useCompetitionFormatters = () => {
 
   /**
    * Форматирует дату и время вместе
+   * Если время 00:00 — показывает только дату
    */
   const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    if (date.getHours() === 0 && date.getMinutes() === 0) {
+      return formatDate(dateString);
+    }
     return `${formatDate(dateString)} ${formatTime(dateString)}`;
   };
 

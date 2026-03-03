@@ -11,6 +11,7 @@ export const useUserStore = defineStore("user", {
   getters: {
     isOrganizer: (state) => state.profile?.organizer !== null,
     organizer: (state) => state.profile?.organizer,
+    isAdmin: (state) => state.profile?.is_admin ?? false,
   },
 
   actions: {

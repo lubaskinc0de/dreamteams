@@ -1,10 +1,22 @@
 from dreamteams.entities.base import Entity, model
-from dreamteams.entities.common.identifiers import UserId
+from dreamteams.entities.common.identifiers import OrganizerId, UserId
 from dreamteams.entities.errors.organizer import (
     OrganizerUserIdMismatchError,
-    UserAlreadyOrganizerError,
 )
-from dreamteams.entities.organizer import Organizer
+
+type Avatar = str
+
+
+@model
+class Organizer(Entity):
+    """The organization that hosts competitions."""
+
+    id: OrganizerId
+    user_id: UserId
+    user: "User"
+    organizer_name: str
+    phone_number: str
+    contact_email: str
 
 
 @model
@@ -16,12 +28,11 @@ class User(Entity):
 
     id: UserId
     organizer: Organizer | None
+    avatar: Avatar | None = None
+    is_admin: bool = False
 
     def make_organizer(self, organizer: Organizer) -> None:
         """Attach ``Organizer`` role to user."""
-        if self.organizer is not None:
-            raise UserAlreadyOrganizerError
-
         if organizer.user_id != self.id:
             raise OrganizerUserIdMismatchError
 

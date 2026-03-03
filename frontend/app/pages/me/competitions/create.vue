@@ -3,12 +3,13 @@ import type { CompetitionForm } from '~/types/api';
 import type { MilestoneInput } from '~/components/competition/form/MilestonesFormSection.vue';
 import { createCompetitionSchemas } from '~/schemas/competition';
 import { useCompetitionStore } from '~/stores/competition';
+import { useNotificationsStore } from '~/stores/notifications';
 import { CalendarDate, Time, today, getLocalTimeZone } from '@internationalized/date';
 
 const { t } = useI18n();
 const router = useRouter();
 const competitionStore = useCompetitionStore();
-const toast = useToast();
+const notifications = useNotificationsStore();
 
 // SEO Meta tags
 useSeoMeta({
@@ -172,9 +173,9 @@ const handleSubmit = async () => {
 
     if (competitionStore.creationSuccess) {
       // Redirect to competitions list
-      router.push('/competitions');
+      router.push('/me/competitions');
     } else if (competitionStore.error) {
-      toast.add({
+      notifications.add({
         title: t('errors.default.title'),
         description: competitionStore.error.message,
         icon: 'i-heroicons-exclamation-triangle',
@@ -183,7 +184,7 @@ const handleSubmit = async () => {
     }
   } catch (error: any) {
     // API errors (not validation errors)
-    toast.add({
+    notifications.add({
       title: t('errors.default.title'),
       description: error.message || t('errors.default.description'),
       icon: 'i-heroicons-exclamation-triangle',
@@ -199,7 +200,7 @@ const handleError = async (event: any) => {
 
   if (errors.length > 0) {
     // Show toast notification with error count
-    toast.add({
+    notifications.add({
       title: t('competition.create.validation.errorsFound', { count: errors.length }),
       description: t('competition.create.validation.scrollToErrors'),
       icon: 'i-heroicons-exclamation-circle',
@@ -217,7 +218,7 @@ const handleError = async (event: any) => {
 };
 
 const goBack = () => {
-  router.push('/competitions');
+  router.push('/me/competitions');
 };
 </script>
 
