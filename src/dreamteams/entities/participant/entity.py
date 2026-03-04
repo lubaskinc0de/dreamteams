@@ -79,6 +79,7 @@ class ParticipantData:
     contact: list[ParticipantContact]
 
 
+@dataclass(slots=True)
 class UpdateParticipantData:
     """Data for updating Participant."""
 
