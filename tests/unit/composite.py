@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
+from hypothesis import provisional
 from hypothesis import strategies as st
 
 from dreamteams.entities.common.clock import Clock
@@ -202,28 +203,6 @@ def domain_data(draw: st.DrawFn) -> Domain:
 
 
 @st.composite
-def url_data(draw: st.DrawFn) -> str:
-    """Random valid url."""
-    scheme = draw(st.sampled_from(["https", "http"]))
-    host = draw(
-        st.text(
-            alphabet="abcdefghijklmnopqrstuvwxyz0123456789-",
-            min_size=3,
-            max_size=15,
-        ),
-    )
-    tld = draw(st.sampled_from(["com", "net", "org", "io", "ru"]))
-    path = draw(
-        st.text(
-            alphabet="abcdefghijklmnopqrstuvwxyz0123456789-_/",
-            min_size=0,
-            max_size=20,
-        ),
-    )
-    return f"{scheme}://{host}.{tld}/{path}"
-
-
-@st.composite
 def participant_skill_data(draw: st.DrawFn) -> ParticipantSkill:
     """Valid ParticipantSkill."""
     return ParticipantSkill(
@@ -237,7 +216,7 @@ def participant_contact_data(draw: st.DrawFn) -> ParticipantContact:
     """Valid ParticipantContact."""
     return ParticipantContact(
         title=draw(valid_text()),
-        url=draw(url_data()),
+        url=draw(provisional.urls()),
     )
 
 
@@ -247,13 +226,13 @@ def valid_participant_data(draw: st.DrawFn) -> ParticipantData:
     full_name = draw(valid_text())
     bio = draw(valid_text())
 
-    skills = draw(st.lists(participant_skill_data(), min_size=1, max_size=5))
+    skills = draw(st.lists(participant_skill_data(), min_size=1))
 
     experience_level = draw(st.sampled_from(list(ExperienceLevel)))
 
-    preferred_domains = draw(st.lists(domain_data(), min_size=1, max_size=5))
+    preferred_domains = draw(st.lists(domain_data(), min_size=1))
 
-    contacts = draw(st.lists(participant_contact_data(), min_size=1, max_size=5))
+    contacts = draw(st.lists(participant_contact_data(), min_size=1))
     contacts_unique = {c.url: c for c in contacts}
 
     return ParticipantData(
