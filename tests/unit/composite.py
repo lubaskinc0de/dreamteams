@@ -19,9 +19,7 @@ from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
 from dreamteams.entities.participant.entity import (
     ExperienceLevel,
-    Participant,
     ParticipantData,
-    UpdateParticipantData,
 )
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill, SkillLevel
@@ -207,17 +205,21 @@ def domain_data(draw: st.DrawFn) -> Domain:
 def url_data(draw: st.DrawFn) -> str:
     """Random valid url."""
     scheme = draw(st.sampled_from(["https", "http"]))
-    host = draw(st.text(
-        alphabet="abcdefghijklmnopqrstuvwxyz0123456789-",
-        min_size=3,
-        max_size=15,
-    ))
+    host = draw(
+        st.text(
+            alphabet="abcdefghijklmnopqrstuvwxyz0123456789-",
+            min_size=3,
+            max_size=15,
+        ),
+    )
     tld = draw(st.sampled_from(["com", "net", "org", "io", "ru"]))
-    path = draw(st.text(
-        alphabet="abcdefghijklmnopqrstuvwxyz0123456789-_/",
-        min_size=0,
-        max_size=20,
-    ))
+    path = draw(
+        st.text(
+            alphabet="abcdefghijklmnopqrstuvwxyz0123456789-_/",
+            min_size=0,
+            max_size=20,
+        ),
+    )
     return f"{scheme}://{host}.{tld}/{path}"
 
 
