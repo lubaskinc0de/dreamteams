@@ -263,5 +263,5 @@ def valid_participant_data(draw: st.DrawFn) -> ParticipantData:
         skills=skills,
         experience_level=experience_level,
         preferred_domains=preferred_domains,
-        contacts=contacts_unique.values(),
+        contacts=list(contacts_unique.values()),
     )
