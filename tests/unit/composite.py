@@ -17,6 +17,14 @@ from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import CompetitionSchedule, ScheduleData
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
+from dreamteams.entities.participant.entity import (
+    ExperienceLevel,
+    Participant,
+    ParticipantData,
+    UpdateParticipantData,
+)
+from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
+from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill, SkillLevel
 from dreamteams.entities.user import User
 from tests.unit.conftest import NOW_NAIVE
 
@@ -186,4 +194,72 @@ def valid_competition_update_data(draw: st.DrawFn) -> UpdateCompetitionData:
             ),
         ),
         is_archived=draw(st.booleans()),
+    )
+
+
+@st.composite
+def domain_data(draw: st.DrawFn) -> Domain:
+    """Random Domain enum value."""
+    return draw(st.sampled_from(list(Domain)))
+
+
+@st.composite
+def url_data(draw: st.DrawFn) -> str:
+    """Random valid url."""
+    scheme = draw(st.sampled_from(["https", "http"]))
+    host = draw(st.text(
+        alphabet="abcdefghijklmnopqrstuvwxyz0123456789-",
+        min_size=3,
+        max_size=15,
+    ))
+    tld = draw(st.sampled_from(["com", "net", "org", "io", "ru"]))
+    path = draw(st.text(
+        alphabet="abcdefghijklmnopqrstuvwxyz0123456789-_/",
+        min_size=0,
+        max_size=20,
+    ))
+    return f"{scheme}://{host}.{tld}/{path}"
+
+
+@st.composite
+def participant_skill_data(draw: st.DrawFn) -> ParticipantSkill:
+    """Valid ParticipantSkill."""
+    return ParticipantSkill(
+        name=draw(valid_text()),
+        level=draw(st.sampled_from(list(SkillLevel))),
+    )
+
+
+@st.composite
+def participant_contact_data(draw: st.DrawFn) -> ParticipantContact:
+    """Valid ParticipantContact."""
+    return ParticipantContact(
+        title=draw(valid_text()),
+        url=draw(url_data()),
+    )
+
+
+@st.composite
+def valid_participant_data(draw: st.DrawFn) -> ParticipantData:
+    """Valid participant data."""
+    full_name = draw(valid_text())
+    bio = draw(valid_text())
+
+    skills = draw(st.lists(participant_skill_data(), min_size=1, max_size=5))
+
+    experience_level = draw(st.sampled_from(list(ExperienceLevel)))
+
+    preferred_domains = draw(st.lists(domain_data(), min_size=1, max_size=5))
+
+    contacts = draw(st.lists(participant_contact_data(), min_size=1, max_size=5))
+    contacts_unique = {c.url: c for c in contacts}.values()
+
+    return ParticipantData(
+        full_name=full_name,
+        avatar_url=None,
+        bio=bio,
+        skills=skills,
+        experience_level=experience_level,
+        preferred_domains=preferred_domains,
+        contacts=contacts_unique,
     )

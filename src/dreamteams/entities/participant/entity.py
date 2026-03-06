@@ -76,7 +76,7 @@ class ParticipantData:
     skills: list[ParticipantSkill]
     experience_level: ExperienceLevel
     preferred_domains: list[Domain]
-    contact: list[ParticipantContact]
+    contacts: list[ParticipantContact]
 
 
 @dataclass(slots=True)
@@ -107,8 +107,8 @@ def participant_factory(
     if not data.preferred_domains:
         raise InvalidParticipantDataError(message="Preferred domains list not be empty")
 
-    urls = [c.url for c in data.contact]
-    if len(urls) == len(set(urls)):
+    urls = [c.url for c in data.contacts]
+    if len(urls) != len(set(urls)):
         raise InvalidParticipantDataError(message="Contact URLs must be unique")
 
     now = clock.now()
@@ -121,12 +121,7 @@ def participant_factory(
         skills=data.skills,
         experience_level=data.experience_level,
         preferred_domains=data.preferred_domains,
-        contacts=data.contact,
+        contacts=data.contacts,
         created_at=now,
         updated_at=now,
     )
-
-
-
-
-
