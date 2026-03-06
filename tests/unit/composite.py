@@ -254,7 +254,7 @@ def valid_participant_data(draw: st.DrawFn) -> ParticipantData:
     preferred_domains = draw(st.lists(domain_data(), min_size=1, max_size=5))
 
     contacts = draw(st.lists(participant_contact_data(), min_size=1, max_size=5))
-    contacts_unique = {c.url: c for c in contacts}.values()
+    contacts_unique = {c.url: c for c in contacts}
 
     return ParticipantData(
         full_name=full_name,
@@ -263,5 +263,5 @@ def valid_participant_data(draw: st.DrawFn) -> ParticipantData:
         skills=skills,
         experience_level=experience_level,
         preferred_domains=preferred_domains,
-        contacts=contacts_unique,
+        contacts=contacts_unique.values(),
     )
