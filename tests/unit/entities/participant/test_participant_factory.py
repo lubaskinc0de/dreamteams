@@ -60,7 +60,7 @@ def test_participant_contacts_are_unique(
 @pytest.mark.parametrize("empty_string", ["", " ", "   "])
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 @given(valid_participant_data())
-def test_paticipant_full_name_is_not_empty(
+def test_participant_full_name_is_not_empty(
     empty_string: str,
     user_without_organizer: User,
     clock: Clock,
