@@ -20,7 +20,7 @@ def test_create_participant_with_valid_data(
     clock: Clock,
     data: ParticipantData,
 ) -> None:
-    """Test creating competition succeeds."""
+    """Test creating participant succeeds."""
     participant = participant_factory(data=data, user=user_without_organizer, clock=clock)
 
     assert participant == Participant(
@@ -46,7 +46,7 @@ def test_participant_contacts_are_unique(
     participant_data: ParticipantData,
     data: st.DataObject,
 ) -> None:
-    """Test cannot create competition with duplicate contacts."""
+    """Test cannot create participant with duplicate contacts."""
     participant_data.contacts = [data.draw(participant_contact_data())] * 2
 
     with pytest.raises(InvalidParticipantDataError, match="Contact URLs must be unique"):
