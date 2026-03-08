@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { CompetitionForm } from '~/types/api';
-import type { MilestoneInput } from '~/components/competition/form/MilestonesFormSection.vue';
 import { createCompetitionSchemas } from '~/schemas/competition';
 import { useCompetitionStore } from '~/stores/competition';
 import { useNotificationsStore } from '~/stores/notifications';
 import { CalendarDate, Time, today, getLocalTimeZone } from '@internationalized/date';
+import { combineDateTime } from '~/utils/dateTime';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -88,14 +88,6 @@ watch(isTeamCompetition, (isTeam) => {
   }
 });
 
-// Helper function to combine date and time into ISO string
-const combineDateTime = (date: any, time: any): string => {
-  if (!date) return '';
-  const hour = time?.hour ?? 0;
-  const minute = time?.minute ?? 0;
-  return new Date(date.year, date.month - 1, date.day, hour, minute).toISOString();
-};
-
 // Watch date range and time changes for registration
 watch([registrationDateRange, registrationStartTime, registrationEndTime], () => {
   if (registrationDateRange.value?.start) {
@@ -125,34 +117,12 @@ watch([teamFormationDateRange, teamFormationStartTime, teamFormationEndTime], ()
 const schemas = createCompetitionSchemas(t);
 
 // Milestones
-const milestones = ref<MilestoneInput[]>([]);
+const { milestones, addMilestone, removeMilestone, getMilestonesForSubmit } = useMilestones(combineDateTime);
 
 // Sync milestones into formState for validation
 watch(milestones, () => {
   formState.milestones = getMilestonesForSubmit();
 }, { deep: true });
-
-const addMilestone = () => {
-  milestones.value.push({
-    title: '',
-    date: undefined,
-    time: new Time(0, 0)
-  });
-};
-
-const removeMilestone = (index: number) => {
-  milestones.value.splice(index, 1);
-};
-
-// Convert milestones to the format expected by the API
-const getMilestonesForSubmit = (): Array<{ title: string; timestamp: string }> => {
-  return milestones.value
-    .filter(m => m.title && m.date)
-    .map(m => ({
-      title: m.title,
-      timestamp: combineDateTime(m.date, m.time)
-    })) as Array<{ title: string; timestamp: string }>;
-};
 
 // Form submission
 const isSubmitting = ref(false);
@@ -195,27 +165,7 @@ const handleSubmit = async () => {
   }
 };
 
-const handleError = async (event: any) => {
-  const errors = event.errors || [];
-
-  if (errors.length > 0) {
-    // Show toast notification with error count
-    notifications.add({
-      title: t('competition.create.validation.errorsFound', { count: errors.length }),
-      description: t('competition.create.validation.scrollToErrors'),
-      icon: 'i-heroicons-exclamation-circle',
-      color: 'error',
-    });
-
-    // Scroll to first error field
-    await nextTick();
-    const firstErrorElement = document.getElementById(errors[0].id);
-    if (firstErrorElement) {
-      firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      firstErrorElement.focus();
-    }
-  }
-};
+const { handleFormError: handleError } = useFormErrorScroll();
 
 const goBack = () => {
   router.push('/me/competitions');

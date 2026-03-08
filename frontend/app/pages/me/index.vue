@@ -120,7 +120,7 @@ onMounted(async () => {
 <template>
   <UPage>
     <UPageBody>
-      <UContainer class="!max-w-6xl">
+      <UContainer class="!max-w-7xl">
         <UAlert v-if="errorMessage" color="error" variant="soft" :title="errorMessage"
           icon="i-heroicons-exclamation-triangle" :close-button="{
             icon: 'i-heroicons-x-mark-20-solid',
@@ -160,6 +160,7 @@ onMounted(async () => {
                     <div
                       class="relative group cursor-pointer w-20 h-20"
                       @click="isAvatarModalOpen = true"
+                      :title="t('avatar.clickToEdit')"
                     >
                       <UAvatar
                         :src="userStore.profile?.avatar_url || '/no-photo.png'"
@@ -217,24 +218,21 @@ onMounted(async () => {
                     </div>
 
                     <div v-else-if="userStore.isAdmin">
-                      <UEmpty
-                        icon="i-heroicons-shield-check"
-                        :title="t('profile.adminInfo.title')"
-                        :description="t('profile.adminInfo.description')"
-                      >
-                        <template #actions>
-                          <UButton size="lg" icon="i-heroicons-cog-6-tooth" to="/admin/invites">
-                            {{ t('nav.adminPanel') }}
-                          </UButton>
-                        </template>
-                      </UEmpty>
+                      <div class="p-6 rounded-xl border border-primary-200 dark:border-primary-800 bg-primary-50/50 dark:bg-primary-950/30 text-center space-y-3">
+                        <UIcon name="i-heroicons-shield-check" class="text-4xl text-primary-500" />
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('profile.adminInfo.title') }}</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('profile.adminInfo.description') }}</p>
+                        <UButton size="xl" icon="i-heroicons-cog-6-tooth" to="/admin/invites">
+                          {{ t('nav.adminPanel') }}
+                        </UButton>
+                      </div>
                     </div>
 
                     <div v-else>
                       <UEmpty icon="i-heroicons-trophy" :title="t('profile.notRegistered.title')"
                         :description="t('profile.notRegistered.description')">
                         <template #actions>
-                          <UButton size="lg" icon="i-heroicons-user-plus" @click="goToRegistration"
+                          <UButton size="xl" color="primary" icon="i-heroicons-user-plus" @click="goToRegistration"
                             :aria-label="t('profile.notRegistered.button')">
                             {{ t("profile.notRegistered.button") }}
                           </UButton>

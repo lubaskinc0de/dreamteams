@@ -264,7 +264,7 @@ const handleClose = () => {
             :label="t('competitionsPreview.detail.closeButton')"
             color="neutral"
             variant="ghost"
-            size="xl"
+            size="lg"
             class="flex-1"
             @click="handleClose"
           />
@@ -273,7 +273,7 @@ const handleClose = () => {
             icon="i-heroicons-bolt"
             trailing
             color="primary"
-            size="xl"
+            size="lg"
             class="flex-1"
             @click="handleRegister"
           />
@@ -478,7 +478,7 @@ const handleClose = () => {
           :label="t('competitionsPreview.detail.closeButton')"
           color="neutral"
           variant="ghost"
-          size="lg"
+          size="md"
           class="flex-1"
           @click="handleClose"
         />
@@ -487,7 +487,7 @@ const handleClose = () => {
           icon="i-heroicons-bolt"
           trailing
           color="primary"
-          size="lg"
+          size="md"
           class="flex-1"
           @click="handleRegister"
         />

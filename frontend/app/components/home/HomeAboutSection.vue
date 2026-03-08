@@ -83,7 +83,7 @@ const column3 = [17, 18, 19, 20, 21, 22, 23, 24];
       <UContainer>
         <div class="max-w-3xl mx-auto text-center fade-in-scroll">
           <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 sm:mb-6">
-            <span class="bg-gradient-to-r from-success-600 via-primary-600 to-primary-500 dark:from-success-400 dark:via-primary-400 dark:to-primary-300 bg-clip-text text-transparent">
+            <span class="text-primary-600 dark:text-primary-400">
               {{ t('home.about.title') }}
             </span>
           </h2>

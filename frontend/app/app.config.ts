@@ -1,7 +1,9 @@
 export default defineAppConfig({
   ui: {
-    primary: "blue",
-    gray: "slate",
+    colors: {
+      primary: "lavender",
+      neutral: "neutral",
+    },
 
     // Page components configuration
     pageHeader: {

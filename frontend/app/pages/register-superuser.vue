@@ -43,10 +43,10 @@ const submit = async () => {
         <div class="w-full max-w-sm mx-auto">
           <!-- Success state -->
           <div v-if="createdUserId" class="text-center">
-            <div class="inline-flex p-4 rounded-2xl bg-green-500/10 mb-6">
+            <div class="inline-flex p-4 rounded-2xl bg-primary-500/10 mb-6">
               <UIcon
                 name="i-heroicons-check-circle"
-                class="text-6xl text-green-500"
+                class="text-6xl text-primary-500"
               />
             </div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">

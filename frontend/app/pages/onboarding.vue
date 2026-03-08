@@ -48,9 +48,21 @@ watch(
             </div>
 
             <!-- Title -->
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               {{ t('onboarding.roleSelection.title') }}
             </h1>
+
+            <p class="text-muted mb-4 text-sm">
+              {{ t('onboarding.roleSelection.description') }}
+            </p>
+            <div class="bg-primary-50 dark:bg-primary-950/30 rounded-lg p-4 mb-6 text-left">
+              <div class="flex items-start gap-3">
+                <UIcon name="i-heroicons-information-circle" class="text-primary-500 text-lg mt-0.5 shrink-0" />
+                <p class="text-sm text-toned">
+                  {{ t('onboarding.roleSelection.inviteHint') }}
+                </p>
+              </div>
+            </div>
 
             <!-- Button -->
             <UButton

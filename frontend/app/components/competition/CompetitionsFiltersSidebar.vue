@@ -21,7 +21,7 @@ const filterOptions = [
 </script>
 
 <template>
-  <aside class="hidden md:block w-64 shrink-0">
+  <aside class="hidden lg:block w-64 shrink-0">
     <UCard>
       <template #header>
         <h3 class="font-semibold text-gray-900 dark:text-white">

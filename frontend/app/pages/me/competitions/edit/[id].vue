@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { UpdateCompetitionForm } from '~/types/api';
-import type { MilestoneInput } from '~/components/competition/form/MilestonesFormSection.vue';
 import { useCompetitionStore } from '~/stores/competition';
 import { useNotificationsStore } from '~/stores/notifications';
 import { CalendarDate, Time, parseAbsoluteToLocal, today, getLocalTimeZone } from '@internationalized/date';
 import { createCompetitionSchemas } from '~/schemas/competition';
+import { combineDateTime } from '~/utils/dateTime';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -98,7 +98,7 @@ const teamFormationStartTime = ref<Time | undefined>(new Time(0, 0));
 const teamFormationEndTime = ref<Time | undefined>(new Time(0, 0));
 
 // Milestones
-const milestones = ref<MilestoneInput[]>([]);
+const { milestones, addMilestone, removeMilestone, getMilestonesForSubmit } = useMilestones(combineDateTime);
 
 // Min values for date pickers
 // Registration: must be today or later
@@ -112,14 +112,6 @@ const teamFormationMinValue = computed(() => {
   }
   return today(getLocalTimeZone());
 });
-
-// Helper function to combine date and time into ISO string
-const combineDateTime = (date: any, time: any): string => {
-  if (!date) return '';
-  const hour = time?.hour ?? 0;
-  const minute = time?.minute ?? 0;
-  return new Date(date.year, date.month - 1, date.day, hour, minute).toISOString();
-};
 
 // Watch date range and time changes for registration
 watch([registrationDateRange, registrationStartTime, registrationEndTime], () => {
@@ -301,29 +293,6 @@ const initializeForm = (comp: any) => {
   });
 };
 
-// Milestone management
-const addMilestone = () => {
-  milestones.value.push({
-    title: '',
-    date: undefined,
-    time: new Time(0, 0)
-  });
-};
-
-const removeMilestone = (index: number) => {
-  milestones.value.splice(index, 1);
-};
-
-// Convert milestones to the format expected by the API
-const getMilestonesForSubmit = (): Array<{ title: string; timestamp: string }> => {
-  return milestones.value
-    .filter(m => m.title && m.date)
-    .map(m => ({
-      title: m.title,
-      timestamp: combineDateTime(m.date, m.time)
-    })) as Array<{ title: string; timestamp: string }>;
-};
-
 // Prepare form data with locked dates replaced by originals
 const prepareFormDataForSubmit = (): UpdateCompetitionForm => {
   const data = { ...formState.value };
@@ -385,23 +354,7 @@ const handleSubmit = async () => {
 };
 
 // Handle form error
-const handleError = async (event: any) => {
-  const errors = event.errors || [];
-  if (errors.length > 0) {
-    notifications.add({
-      title: t('competition.create.validation.errorsFound', { count: errors.length }),
-      description: t('competition.create.validation.scrollToErrors'),
-      icon: 'i-heroicons-exclamation-circle',
-      color: 'error',
-    });
-    await nextTick();
-    const firstErrorElement = document.getElementById(errors[0].id);
-    if (firstErrorElement) {
-      firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      firstErrorElement.focus();
-    }
-  }
-};
+const { handleFormError: handleError } = useFormErrorScroll();
 </script>
 
 <template>
@@ -428,8 +381,14 @@ const handleError = async (event: any) => {
         </div>
 
         <!-- Loading state -->
-        <div v-if="competitionStore.loading && !competition" class="flex justify-center py-12">
-          <UProgress indeterminate size="md" />
+        <div v-if="competitionStore.loading && !competition" class="space-y-6">
+          <div class="flex items-start gap-4">
+            <USkeleton class="h-10 w-3/4" />
+            <USkeleton class="h-8 w-24 rounded-full" />
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <USkeleton v-for="i in 4" :key="i" class="h-48 w-full rounded-lg" />
+          </div>
         </div>
 
         <!-- Edit Form -->

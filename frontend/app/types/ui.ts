@@ -62,19 +62,6 @@ export interface HeroLink {
 }
 
 /**
- * Available theme names
- */
-export type ThemeName = "default" | "ocean" | "forest" | "sunset";
-
-/**
- * Theme configuration
- */
-export interface ThemeConfig {
-  primary: string;
-  gray: string;
-}
-
-/**
  * Available color modes
  */
 export type ColorMode = "light" | "dark" | "system";

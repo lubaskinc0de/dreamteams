@@ -51,6 +51,7 @@ const handleDelete = () => {
             variant="ghost"
             size="sm"
             square
+            :title="t('common.delete')"
             @click.stop="handleDelete"
           />
         </div>

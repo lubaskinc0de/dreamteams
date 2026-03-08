@@ -94,9 +94,9 @@ useHead({
     <section class="relative overflow-hidden bg-gray-900">
       <!-- Animated pulsating blurs — brighter green/primary tones -->
       <div class="absolute -top-32 -left-32 w-125 h-125 bg-primary-500/40 rounded-full blur-[140px] animate-pulse" />
-      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-100 bg-emerald-500/30 rounded-full blur-[160px] animate-[pulse_4s_ease-in-out_infinite]" />
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-100 bg-primary-500/30 rounded-full blur-[160px] animate-[pulse_4s_ease-in-out_infinite]" />
       <div class="absolute -bottom-32 -right-32 w-112.5 h-112.5 bg-primary-400/35 rounded-full blur-[120px] animate-[pulse_3s_ease-in-out_infinite_0.5s]" />
-      <div class="absolute top-0 right-1/4 w-64 h-64 bg-emerald-400/20 rounded-full blur-[100px] animate-[pulse_5s_ease-in-out_infinite_1s]" />
+      <div class="absolute top-0 right-1/4 w-64 h-64 bg-primary-400/20 rounded-full blur-[100px] animate-[pulse_5s_ease-in-out_infinite_1s]" />
 
       <div class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
         <div class="text-center">
@@ -104,16 +104,21 @@ useHead({
             DreamTeams
           </p>
           <h1 class="text-white text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight mb-6">
-            <i18n-t keypath="competitionsPreview.found" tag="span">
-              <template #found>
-                <span
-                  class="underline decoration-primary-400 decoration-2 underline-offset-4 cursor-pointer hover:text-primary-300 transition-colors"
-                  @click="scrollToContent"
-                >{{ t("competitionsPreview.foundLink") }}</span>
-              </template>
-              <template #total>{{ total }}</template>
-              <template #declension>{{ getDeclension(total) }}</template>
-            </i18n-t>
+            <template v-if="!loading || competitions.length > 0">
+              <i18n-t keypath="competitionsPreview.found" tag="span">
+                <template #found>
+                  <span
+                    class="underline decoration-primary-400 decoration-2 underline-offset-4 cursor-pointer hover:text-primary-300 transition-colors"
+                    @click="scrollToContent"
+                  >{{ t("competitionsPreview.foundLink") }}</span>
+                </template>
+                <template #total>{{ total }}</template>
+                <template #declension>{{ getDeclension(total) }}</template>
+              </i18n-t>
+            </template>
+            <template v-else>
+              <span>{{ t('common.loading') }}</span>
+            </template>
           </h1>
           <UButton
             :label="t('competitionsPreview.placeButton')"
@@ -133,7 +138,7 @@ useHead({
       <!-- Geometric grid background -->
       <div class="absolute inset-0 opacity-[0.04] dark:opacity-[0.06]" style="background-image: url(&quot;data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0z' fill='none' stroke='%2394a3b8' stroke-width='0.5'/%3E%3C/svg%3E&quot;);" />
       <!-- Hex dots accent -->
-      <div class="absolute inset-0 opacity-[0.03] dark:opacity-[0.04]" style="background-image: url(&quot;data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='12' cy='12' r='1.5' fill='%2322c55e'/%3E%3C/svg%3E&quot;);" />
+      <div class="absolute inset-0 opacity-[0.03] dark:opacity-[0.04]" style="background-image: url(&quot;data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='12' cy='12' r='1.5' fill='%238B5CF6'/%3E%3C/svg%3E&quot;);" />
       <!-- Soft radial glow -->
       <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary-500/5 dark:bg-primary-500/8 rounded-full blur-[120px]" />
 
@@ -141,9 +146,20 @@ useHead({
         <!-- Error State -->
         <div v-if="error" class="text-center py-16">
           <UIcon name="i-heroicons-exclamation-triangle" class="size-12 text-red-400 mb-4" />
-          <p class="text-red-600 dark:text-red-400 text-lg">
+          <p class="text-red-600 dark:text-red-400 text-lg mb-4">
             {{ error.message }}
           </p>
+          <UButton
+            variant="soft"
+            icon="i-heroicons-arrow-path"
+            :label="t('common.retry')"
+            @click="reset"
+          />
+        </div>
+
+        <!-- Loading skeleton -->
+        <div v-else-if="loading && competitions.length === 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <USkeleton v-for="i in 6" :key="i" class="h-64 w-full rounded-xl" />
         </div>
 
         <!-- Empty State -->
