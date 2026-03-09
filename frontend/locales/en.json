@@ -12,7 +12,9 @@
     "next": "Next",
     "confirm": "Confirm",
     "personalAccount": "Personal Account",
-    "backToHome": "Back to Home"
+    "backToHome": "Back to Home",
+    "retry": "Retry",
+    "creating": "Creating..."
   },
   "errors": {
     "unauthorized": {
@@ -44,7 +46,8 @@
     "settings": "Settings",
     "theme": "Theme",
     "language": "Language",
-    "adminPanel": "Admin Panel"
+    "adminPanel": "Admin Panel",
+    "logout": "Sign Out"
   },
   "home": {
     "title": "DreamTeams",
@@ -220,7 +223,9 @@
   "onboarding": {
     "roleSelection": {
       "title": "Tell us about yourself",
-      "organizerButton": "I'm an organizer"
+      "organizerButton": "I'm an organizer",
+      "description": "To register as an organizer, you'll need an invite code from a platform administrator.",
+      "inviteHint": "Don't have an invite code? Contact the platform administrator to request one."
     }
   },
   "form": {
@@ -353,6 +358,7 @@
       "subtitle": "{total} invites total",
       "createButton": "Create Invite",
       "empty": "No invites yet. Create one to allow organizer registration.",
+      "emptyTitle": "No invites yet",
       "copyButton": "Copy code",
       "codeCopied": "Code copied to clipboard!",
       "revokeButton": "Revoke",

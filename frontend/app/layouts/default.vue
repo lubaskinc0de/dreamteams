@@ -4,6 +4,11 @@ import type { NavigationMenuItem } from '@nuxt/ui';
 const { t } = useI18n();
 const { isAuthenticated, hasProfile, login } = useAuth();
 const userStore = useUserStore();
+const config = useRuntimeConfig();
+
+const handleLogout = () => {
+  window.location.href = `${config.public.apiBase}/oauth2/sign_out?rd=/`;
+};
 
 // Brand link destination depends on auth state
 const brandLink = computed(() => {
@@ -91,6 +96,16 @@ const handleLogin = async () => {
               class="hover:ring-2 hover:ring-primary-500 transition-all cursor-pointer"
             />
           </NuxtLink>
+          <UButton
+            @click="handleLogout"
+            color="neutral"
+            variant="ghost"
+            size="md"
+            icon="i-heroicons-arrow-right-on-rectangle"
+            square
+            :aria-label="t('nav.logout')"
+            class="hidden md:flex"
+          />
         </template>
         <!-- Login button (desktop only) and settings menu for unauthenticated users -->
         <template v-else>
@@ -136,6 +151,15 @@ const handleLogin = async () => {
       <template #body>
         <!-- Mobile menu -->
         <UNavigationMenu :items="navItems" orientation="vertical" class="-mx-2.5" />
+        <USeparator class="my-2" />
+        <div class="flex items-center justify-between px-2.5 py-2">
+          <span class="text-sm font-medium text-default">{{ t('nav.theme') }}</span>
+          <ThemeToggle size="sm" />
+        </div>
+        <div class="flex items-center justify-between px-2.5 py-2">
+          <span class="text-sm font-medium text-default">{{ t('nav.language') }}</span>
+          <LanguageSwitcher size="sm" />
+        </div>
       </template>
     </UHeader>
 
@@ -144,32 +168,32 @@ const handleLogin = async () => {
     </UMain>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 dark:bg-gray-950 border-t border-gray-800">
+    <footer class="bg-gray-100 dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800">
       <UContainer class="py-12">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
           <!-- Brand Section -->
           <div class="space-y-4">
             <div class="flex items-center gap-3">
               <img src="/logo.png" alt="DreamTeams Logo" class="h-10 w-10 object-contain" />
-              <span class="text-xl font-bold bg-gradient-to-r from-primary-400 to-success-400 bg-clip-text text-transparent">
+              <span class="text-xl font-bold bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent">
                 {{ t("nav.brand") }}
               </span>
             </div>
-            <p class="text-sm text-gray-400 leading-relaxed max-w-xs">
+            <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed max-w-xs">
               {{ t("footer.platformDescription") }}
             </p>
           </div>
 
           <!-- Links Section -->
           <div class="space-y-4">
-            <h3 class="text-sm font-semibold text-white uppercase tracking-wider">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
               {{ t("footer.quickLinks") }}
             </h3>
             <div class="flex flex-col gap-2">
-              <NuxtLink to="/" class="text-sm text-gray-400 hover:text-primary-400 transition-colors">
+              <NuxtLink to="/" class="text-sm text-gray-600 dark:text-gray-300 hover:text-primary-400 transition-colors">
                 {{ t("nav.home") }}
               </NuxtLink>
-              <a href="mailto:structnull@yandex.ru" class="text-sm text-gray-400 hover:text-primary-400 transition-colors">
+              <a href="mailto:structnull@yandex.ru" class="text-sm text-gray-600 dark:text-gray-300 hover:text-primary-400 transition-colors">
                 {{ t("footer.support") }}
               </a>
             </div>
@@ -177,11 +201,11 @@ const handleLogin = async () => {
 
           <!-- Contact Section -->
           <div class="space-y-2">
-            <h3 class="text-sm font-semibold text-white uppercase tracking-wider">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
               {{ t("footer.contact") }}
             </h3>
             <a href="mailto:structnull@yandex.ru"
-               class="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-primary-400 transition-colors">
+               class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-primary-400 transition-colors">
               <UIcon name="i-heroicons-envelope" class="text-lg" />
               structnull@yandex.ru
             </a>

@@ -117,6 +117,12 @@ const getStatusLabel = (invite: { is_revoked: boolean; is_used: boolean }) => {
   return t("admin.invites.status.active");
 };
 
+const getStatusIcon = (invite: { is_revoked: boolean; is_used: boolean }) => {
+  if (invite.is_revoked) return "i-heroicons-x-circle";
+  if (invite.is_used) return "i-heroicons-user";
+  return "i-heroicons-check-circle";
+};
+
 const totalPages = computed(() =>
   Math.max(1, Math.ceil(invitesStore.total / 20)),
 );
@@ -151,6 +157,16 @@ const totalPages = computed(() =>
       class="mb-4"
     />
 
+    <!-- Retry button -->
+    <UButton
+      v-if="invitesStore.error && !invitesStore.loading"
+      variant="soft"
+      icon="i-heroicons-arrow-path"
+      :label="t('common.retry')"
+      @click="invitesStore.fetchInvites(invitesStore.page)"
+      class="mb-4"
+    />
+
     <!-- Loading skeleton -->
     <div v-if="invitesStore.loading" class="space-y-3">
       <USkeleton v-for="i in 5" :key="i" class="h-16 w-full rounded-lg" />
@@ -165,14 +181,15 @@ const totalPages = computed(() =>
       >
         <div class="flex flex-col sm:flex-row sm:items-center gap-3">
           <!-- Status badge -->
-          <UBadge :color="getStatusColor(invite)" variant="subtle" class="self-start sm:self-auto shrink-0">
+          <UBadge :color="getStatusColor(invite)" variant="subtle" :icon="getStatusIcon(invite)" class="self-start sm:self-auto shrink-0 min-w-24 justify-center">
             {{ getStatusLabel(invite) }}
           </UBadge>
 
           <!-- Invite info -->
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
-              <code class="text-sm font-mono bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded truncate max-w-xs">
+              <code class="text-base font-mono bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded truncate max-w-xs"
+                    :title="invite.code">
                 {{ invite.code }}
               </code>
               <UButton
@@ -181,18 +198,19 @@ const totalPages = computed(() =>
                 size="xs"
                 square
                 :aria-label="t('admin.invites.copyButton')"
+                :title="t('admin.invites.copyButton')"
                 @click="copyCode(invite.code)"
               />
             </div>
             <div class="flex items-center gap-3 mt-1 flex-wrap">
-              <span v-if="invite.display_name" class="text-sm text-gray-600 dark:text-gray-400 font-medium">
+              <span v-if="invite.display_name" class="text-base text-gray-600 dark:text-gray-400 font-medium">
                 {{ invite.display_name }}
               </span>
-              <span v-if="invite.used_by" class="text-xs text-gray-500 dark:text-gray-500 flex items-center gap-1">
+              <span v-if="invite.used_by" class="text-sm text-gray-500 dark:text-gray-500 flex items-center gap-1">
                 <UIcon name="i-heroicons-user" class="text-xs" />
                 {{ invite.used_by.name }}
               </span>
-              <span class="text-xs text-gray-400 dark:text-gray-600">
+              <span class="text-sm text-gray-500 dark:text-gray-400">
                 {{ formatDate(invite.created_at) }}
               </span>
             </div>
@@ -224,12 +242,14 @@ const totalPages = computed(() =>
 
     <!-- Empty state -->
     <div v-else class="text-center py-16">
-      <UIcon name="i-heroicons-ticket" class="text-5xl text-gray-300 dark:text-gray-700 mb-4" />
-      <p class="text-gray-500 dark:text-gray-400">
+      <UIcon name="i-heroicons-ticket" class="text-5xl text-gray-400 dark:text-gray-600 mb-4" />
+      <h3 class="text-lg font-semibold text-default mb-2">
+        {{ t("admin.invites.emptyTitle") }}
+      </h3>
+      <p class="text-muted mb-6">
         {{ t("admin.invites.empty") }}
       </p>
       <UButton
-        class="mt-4"
         icon="i-heroicons-plus"
         :label="t('admin.invites.createButton')"
         @click="openCreateModal"
@@ -262,6 +282,7 @@ const totalPages = computed(() =>
                 variant="ghost"
                 square
                 :aria-label="t('admin.invites.copyButton')"
+                :title="t('admin.invites.copyButton')"
                 @click="copyCode(issuedCode)"
               />
             </div>
@@ -303,7 +324,7 @@ const totalPages = computed(() =>
         <UButton
           v-if="!issuedCode"
           icon="i-heroicons-plus"
-          :label="t('admin.invites.createModal.submit')"
+          :label="invitesStore.issuing ? t('common.creating') : t('admin.invites.createModal.submit')"
           :loading="invitesStore.issuing"
           :disabled="invitesStore.issuing"
           @click="handleCreateInvite"

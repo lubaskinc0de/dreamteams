@@ -81,7 +81,7 @@ const stats: Stat[] = [
     icon: "i-heroicons-trophy",
     value: t("home.stats.competitions.value"),
     label: t("home.stats.competitions.label"),
-    color: "text-success-400",
+    color: "text-primary-400",
   },
   {
     icon: "i-heroicons-user-group",

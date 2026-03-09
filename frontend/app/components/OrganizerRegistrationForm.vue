@@ -127,6 +127,9 @@ const isLoading = computed(() => organizerStore.loading || isUploadingAvatar.val
         class="w-full">
         <UInput v-model="state.phone_number" :placeholder="t('form.phoneNumber.placeholder')" icon="i-heroicons-phone"
           size="xl" type="tel" :aria-label="t('form.phoneNumber.label')" class="w-full" />
+        <p class="mt-1 text-xs text-muted">
+          {{ t("form.phoneNumber.hint") }}
+        </p>
       </UFormField>
 
       <UFormField :label="t('form.inviteCode.label')" name="invite_code" required :aria-required="true"
