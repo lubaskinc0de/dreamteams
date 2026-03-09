@@ -79,7 +79,7 @@ def test_participant_full_name_is_not_empty(
 
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 @given(valid_participant_data())
-def test_participant_skills_is_not_empty(
+def test_participant_skills_are_not_empty(
     user_without_organizer: User,
     clock: Clock,
     data: ParticipantData,
@@ -97,7 +97,7 @@ def test_participant_skills_is_not_empty(
 
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 @given(valid_participant_data())
-def test_participant_preferred_domains_is_not_empty(
+def test_participant_preferred_domains_are_not_empty(
     user_without_organizer: User,
     clock: Clock,
     data: ParticipantData,
