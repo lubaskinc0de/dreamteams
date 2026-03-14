@@ -50,6 +50,7 @@ class PreviewCompetitionModel(BaseModel):
     venue: CompetitionVenue
     team_size: TeamSizeRange
     milestones: list[Milestone]
+    auto_accept: bool
     is_archived: bool
     created_at: datetime
     updated_at: datetime
@@ -106,6 +107,7 @@ class PreviewCompetitions:
                 venue=competition.venue,
                 team_size=competition.team_size,
                 milestones=competition.milestones,
+                auto_accept=competition.auto_accept,
                 is_archived=competition.is_archived,
                 created_at=competition.created_at,
                 updated_at=competition.updated_at,

@@ -14,6 +14,7 @@
 | `venue` | `CompetitionVenue` | New location | Value object validation |
 | `team_size` | `TeamSizeRange` | New team size | Value object validation |
 | `milestones` | `list[MilestoneForm]` | Competition milestones | Can be empty list |
+| `auto_accept` | `bool` | Auto-accept applications | Boolean |
 | `is_archived` | `bool` | Archive status | Boolean |
 
 ### MilestoneForm

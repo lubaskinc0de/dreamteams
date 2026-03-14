@@ -30,6 +30,7 @@
 | `venue` | `CompetitionVenue` | Format and location |
 | `team_size` | `TeamSizeRange` | Team size range |
 | `milestones` | `list[Milestone]` | Competition milestones |
+| `auto_accept` | `bool` | Auto-accept applications |
 | `created_at` | `datetime` | Creation timestamp |
 
 ### PreviewOrganizerModel

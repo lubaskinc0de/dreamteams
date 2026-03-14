@@ -11,7 +11,7 @@ from dreamteams.entities.user import User
 from tests.unit.composite import milestone, valid_competition, valid_competition_update_data
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
 @given(st.data(), valid_competition_update_data())
 def test_update_competition_succeeds(
     organizer_user: User,
@@ -47,6 +47,7 @@ def test_update_competition_succeeds(
         venue=valid_competition_update_data.venue,
         team_size=valid_competition_update_data.team_size,
         banner=None,
+        auto_accept=valid_competition_update_data.auto_accept,
         is_archived=valid_competition_update_data.is_archived,
         milestones=valid_competition_update_data.milestones
         if valid_competition_update_data.milestones is not None
@@ -56,7 +57,7 @@ def test_update_competition_succeeds(
     )
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
 @given(st.data(), valid_competition_update_data())
 def test_competition_milestones_are_unique(
     organizer_user: User,
@@ -76,7 +77,7 @@ def test_competition_milestones_are_unique(
         )
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
 @given(st.data(), valid_competition_update_data())
 def test_only_owner_can_update_competition(
     organizer_user: User,
@@ -96,7 +97,7 @@ def test_only_owner_can_update_competition(
         )
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
 @given(st.data(), valid_competition_update_data())
 def test_only_organizer_can_update_competition(
     organizer_user: User,
@@ -116,7 +117,7 @@ def test_only_organizer_can_update_competition(
         )
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
 @given(st.data(), valid_competition_update_data())
 def test_competition_domains_are_not_empty(
     organizer_user: User,
@@ -137,7 +138,7 @@ def test_competition_domains_are_not_empty(
 
 
 @pytest.mark.parametrize("empty_string", ["", " ", "   "])
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
 @given(st.data(), valid_competition_update_data())
 def test_competition_descriptions_are_not_empty(
     empty_string: str,

@@ -34,6 +34,7 @@ class UpdateCompetitionForm(BaseModel):
     venue: CompetitionVenue
     team_size: TeamSizeRange
     milestones: list[MilestoneForm] | None
+    auto_accept: bool
     is_archived: bool
 
 
@@ -77,6 +78,7 @@ class UpdateCompetition:
                 ]
                 if data.milestones is not None
                 else None,
+                auto_accept=data.auto_accept,
                 is_archived=data.is_archived,
             ),
         )

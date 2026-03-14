@@ -22,6 +22,7 @@
 | `venue` | `CompetitionVenue` | Format and location |
 | `team_size` | `TeamSizeRange` | Team size range |
 | `milestones` | `list[Milestone]` | Competition milestones |
+| `auto_accept` | `bool` | Auto-accept applications |
 | `is_archived` | `bool` | Archive status |
 | `created_at` | `datetime` | Creation timestamp |
 | `updated_at` | `datetime` | Last update timestamp |

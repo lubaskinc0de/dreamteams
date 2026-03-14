@@ -150,6 +150,7 @@ def valid_competition_data(draw: st.DrawFn) -> CompetitionData:
         ),
         team_size=TeamSizeRange(min=min_team, max=max_team),
         participant_type=draw(st.sampled_from(ParticipantType)),
+        auto_accept=draw(st.booleans()),
         milestones=draw(
             st.one_of(st.none(), st.lists(milestone_data(), unique_by=lambda milestone: milestone.timestamp)),
         ),
@@ -195,6 +196,7 @@ def valid_competition_update_data(draw: st.DrawFn) -> UpdateCompetitionData:
                 ),
             ),
         ),
+        auto_accept=draw(st.booleans()),
         is_archived=draw(st.booleans()),
     )
 

@@ -37,6 +37,7 @@ class CompetitionForm(BaseModel):
     participant_type: ParticipantType
     venue: CompetitionVenue
     team_size: TeamSizeRange
+    auto_accept: bool = False
     milestones: list[MilestoneForm] = Field(default_factory=list)
 
 
@@ -63,6 +64,7 @@ class CreateCompetition:
                 participant_type=data.participant_type,
                 venue=data.venue,
                 team_size=data.team_size,
+                auto_accept=data.auto_accept,
                 milestones=[MilestoneData(milestone.title, milestone.timestamp) for milestone in data.milestones],
             ),
             user,

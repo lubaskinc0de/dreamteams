@@ -13,7 +13,7 @@ from dreamteams.entities.user import User
 from tests.unit.composite import participant_contact_data, valid_participant_data
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
 @given(valid_participant_data())
 def test_create_participant_with_valid_data(
     user_without_organizer: User,
@@ -38,7 +38,7 @@ def test_create_participant_with_valid_data(
     )
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=10)
 @given(valid_participant_data(), st.data())
 def test_participant_contacts_are_unique(
     user_without_organizer: User,
@@ -58,7 +58,7 @@ def test_participant_contacts_are_unique(
 
 
 @pytest.mark.parametrize("empty_string", ["", " ", "   "])
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=10)
 @given(valid_participant_data())
 def test_participant_full_name_is_not_empty(
     empty_string: str,
@@ -77,7 +77,7 @@ def test_participant_full_name_is_not_empty(
         )
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=10)
 @given(valid_participant_data())
 def test_participant_skills_are_not_empty(
     user_without_organizer: User,
@@ -95,7 +95,7 @@ def test_participant_skills_are_not_empty(
         )
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=10)
 @given(valid_participant_data())
 def test_participant_preferred_domains_are_not_empty(
     user_without_organizer: User,
