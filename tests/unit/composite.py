@@ -1,9 +1,10 @@
 from datetime import datetime, timedelta
+from typing import Any, overload
 from zoneinfo import ZoneInfo
 
-from hypothesis import provisional
 from hypothesis import strategies as st
 
+from dreamteams.entities.application.entity import ApplicationData
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
@@ -18,16 +19,16 @@ from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import CompetitionSchedule, ScheduleData
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
-from dreamteams.entities.participant.entity import (
+from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
+from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill, SkillLevel
+from dreamteams.entities.user import (
     ExperienceLevel,
     Participant,
     ParticipantData,
     UpdateParticipantData,
+    User,
     participant_factory,
 )
-from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
-from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill, SkillLevel
-from dreamteams.entities.user import User
 from tests.unit.conftest import NOW_NAIVE
 
 
@@ -35,6 +36,14 @@ from tests.unit.conftest import NOW_NAIVE
 def ordered_pairs(draw: st.DrawFn) -> tuple[int, int]:
     """Ordered pairs (min, max) of integers."""
     n1 = draw(st.integers())
+    n2 = draw(st.integers(min_value=n1))
+    return (n1, n2)
+
+
+@st.composite
+def positive_ordered_pairs(draw: st.DrawFn) -> tuple[int, int]:
+    """Ordered pairs (min, max) of positive integers."""
+    n1 = draw(st.integers(min_value=1))
     n2 = draw(st.integers(min_value=n1))
     return (n1, n2)
 
@@ -106,7 +115,7 @@ def past_schedule(draw: st.DrawFn) -> CompetitionSchedule:
 @st.composite
 def valid_text(draw: st.DrawFn) -> str:
     """Valid text with min_length = 1, contains only non-space characters."""
-    return draw(st.text(st.characters().filter(lambda c: c and not c.isspace()), min_size=1))
+    return draw(st.text(st.characters(exclude_categories=("Zs", "Cc", "Cf", "Cs", "Co", "Cn")), min_size=1))
 
 
 @st.composite
@@ -127,11 +136,30 @@ def milestone(draw: st.DrawFn) -> Milestone:
     )
 
 
+@overload
+def _deduplicate_milestones(milestones: None) -> None: ...
+@overload
+def _deduplicate_milestones(milestones: list[Milestone]) -> list[Milestone]: ...
+@overload
+def _deduplicate_milestones(milestones: list[MilestoneData]) -> list[MilestoneData]: ...
+def _deduplicate_milestones(milestones: Any) -> Any:
+    """Deduplicate milestones by timestamp."""
+    if milestones is None:
+        return None
+    seen: set[datetime] = set()
+    result = []
+    for m in milestones:
+        if m.timestamp not in seen:
+            seen.add(m.timestamp)
+            result.append(m)
+    return result
+
+
 @st.composite
 def valid_competition_data(draw: st.DrawFn) -> CompetitionData:
     """Valid competition data."""
-    min_participants, max_participants = draw(ordered_pairs().filter(lambda pair: pair[0] > 0 and pair[1] > 0))
-    min_team, max_team = draw(ordered_pairs().filter(lambda pair: pair[0] > 0 and pair[1] > 0))
+    min_participants, max_participants = draw(positive_ordered_pairs())
+    min_team, max_team = draw(positive_ordered_pairs())
     venue_format = draw(st.sampled_from(CompetitionFormat))
     return CompetitionData(
         title=draw(valid_text()),
@@ -151,9 +179,7 @@ def valid_competition_data(draw: st.DrawFn) -> CompetitionData:
         team_size=TeamSizeRange(min=min_team, max=max_team),
         participant_type=draw(st.sampled_from(ParticipantType)),
         auto_accept=draw(st.booleans()),
-        milestones=draw(
-            st.one_of(st.none(), st.lists(milestone_data(), unique_by=lambda milestone: milestone.timestamp)),
-        ),
+        milestones=_deduplicate_milestones(draw(st.one_of(st.none(), st.lists(milestone_data(), max_size=5)))),
     )
 
 
@@ -167,8 +193,8 @@ def valid_competition(draw: st.DrawFn, user: User, clock: Clock) -> Competition:
 @st.composite
 def valid_competition_update_data(draw: st.DrawFn) -> UpdateCompetitionData:
     """Valid competition update data."""
-    min_participants, max_participants = draw(ordered_pairs().filter(lambda pair: pair[0] > 0 and pair[1] > 0))
-    min_team, max_team = draw(ordered_pairs().filter(lambda pair: pair[0] > 0 and pair[1] > 0))
+    min_participants, max_participants = draw(positive_ordered_pairs())
+    min_team, max_team = draw(positive_ordered_pairs())
     venue_format = draw(st.sampled_from(CompetitionFormat))
     return UpdateCompetitionData(
         title=draw(valid_text()),
@@ -187,15 +213,7 @@ def valid_competition_update_data(draw: st.DrawFn) -> UpdateCompetitionData:
         ),
         team_size=TeamSizeRange(min=min_team, max=max_team),
         participant_type=draw(st.sampled_from(ParticipantType)),
-        milestones=draw(
-            st.one_of(
-                st.none(),
-                st.lists(
-                    milestone(),
-                    unique_by=lambda milestone: milestone.timestamp,
-                ),
-            ),
-        ),
+        milestones=_deduplicate_milestones(draw(st.one_of(st.none(), st.lists(milestone(), max_size=5)))),
         auto_accept=draw(st.booleans()),
         is_archived=draw(st.booleans()),
     )
@@ -219,9 +237,10 @@ def participant_skill_data(draw: st.DrawFn) -> ParticipantSkill:
 @st.composite
 def participant_contact_data(draw: st.DrawFn) -> ParticipantContact:
     """Valid ParticipantContact."""
+    slug = draw(st.text(alphabet="abcdefghijklmnopqrstuvwxyz0123456789", min_size=3, max_size=20))
     return ParticipantContact(
         title=draw(valid_text()),
-        url=draw(provisional.urls()),
+        url=f"https://{slug}.example.com",
     )
 
 
@@ -286,3 +305,13 @@ def valid_participant_update_data(draw: st.DrawFn) -> UpdateParticipantData:
         preferred_domains=preferred_domains,
         contacts=list(contacts_unique.values()),
     )
+
+
+@st.composite
+def valid_application_data(draw: st.DrawFn, domains: list[Domain] | None = None) -> ApplicationData:
+    """Valid application data. If domains is provided, draws a non-empty subset."""
+    if domains is not None:
+        selected = draw(st.lists(st.sampled_from(domains), min_size=1, max_size=len(domains), unique=True))
+    else:
+        selected = draw(st.lists(st.sampled_from(Domain), min_size=1, unique=True))
+    return ApplicationData(domains=selected)

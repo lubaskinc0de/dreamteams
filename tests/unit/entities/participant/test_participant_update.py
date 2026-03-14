@@ -4,12 +4,11 @@ from hypothesis import strategies as st
 
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.errors.participant import InvalidParticipantDataError
-from dreamteams.entities.participant.entity import Participant, UpdateParticipantData
-from dreamteams.entities.user import User
+from dreamteams.entities.user import Participant, UpdateParticipantData, User
 from tests.unit.composite import participant_contact_data, valid_participant, valid_participant_update_data
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture, HealthCheck.too_slow], max_examples=30)
 @given(st.data(), valid_participant_update_data())
 def test_update_participant_succeeds(
     user_without_organizer: User,
