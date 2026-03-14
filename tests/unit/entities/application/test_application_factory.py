@@ -76,11 +76,9 @@ def test_application_domains_must_be_subset_of_competition(
 ) -> None:
     """Test application domains must be a subset of competition domains."""
     competition = data.draw(valid_competition(organizer_user, clock))
-
     all_domains = set(Domain)
     extra_domains = all_domains - set(competition.domains)
     assume(len(extra_domains) > 0)
-
     invalid_domain = data.draw(st.sampled_from(sorted(extra_domains)))
 
     with pytest.raises(
