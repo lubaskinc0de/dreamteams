@@ -7,7 +7,7 @@ Registers a new participant
 | Field               | Type                      | Description |
 |---------------------|---------------------------|-------------|
 | `full_name`         | `str`                     | Full name   |
-| `avatar_url`        | `str \| None`             | Avatar image|
+| `avatar_url`        | `str \| None`             | Avatar url |
 | `bio`               | `str`                     | Short biography or description |
 | `skills`            | `list[ParticipantSkill]`  | List of participant skills |
 | `experience_level`  | `ExperienceLevel`         | Experience level |
@@ -17,7 +17,7 @@ Registers a new participant
 ## Output
 | Field | Type | Description |
 |-------|------|-------------|
-| `id` | `ParticipantId` | Created participant identifier |
+| `participant_id` | `ParticipantId` | Created participant identifier |
 | `user_id` | `UserId` | Created user identifier |
 
 
