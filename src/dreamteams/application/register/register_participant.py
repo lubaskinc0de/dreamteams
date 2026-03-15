@@ -1,5 +1,3 @@
-from uuid import uuid4
-
 import structlog
 from pydantic import BaseModel, Field, HttpUrl
 
@@ -15,7 +13,6 @@ from dreamteams.entities.participant.vo.participant_contact import ParticipantCo
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
 from dreamteams.entities.user import (
     ExperienceLevel,
-    Participant,
     ParticipantData,
     participant_factory,
 )
@@ -79,25 +76,25 @@ class RegisterParticipant:
             data=participant_data,
             user=user,
             clock=self.clock,
-            )
+        )
 
         logger.debug(
-                "Creating role 'Participant' for user",
-                user_id=user.id,
-                participant_id=participant.id,
-            )
+            "Creating role 'Participant' for user",
+            user_id=user.id,
+            participant_id=participant.id,
+        )
         user.make_participant(participant=participant)
 
         self.uow.add(participant)
         await self.uow.commit()
 
         logger.info(
-                "Participant created",
-                user_id=user.id,
-                participant_id=participant.id,
+            "Participant created",
+            user_id=user.id,
+            participant_id=participant.id,
         )
 
         return CreatedParticipant(
-                participant_id=participant.id,
-                user_id=user.id,
+            participant_id=participant.id,
+            user_id=user.id,
         )
