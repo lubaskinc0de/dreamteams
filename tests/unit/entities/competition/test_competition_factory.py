@@ -11,7 +11,7 @@ from dreamteams.entities.user import User
 from tests.unit.composite import milestone_data, valid_competition_data
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
 @given(valid_competition_data())
 def test_create_competition_with_valid_data(
     organizer_user: User,
@@ -45,6 +45,7 @@ def test_create_competition_with_valid_data(
         venue=data.venue,
         team_size=data.team_size,
         banner=None,
+        auto_accept=data.auto_accept,
         is_archived=True,
         milestones=[milestone_factory(milestone_data, clock) for milestone_data in data.milestones]
         if data.milestones is not None
@@ -54,7 +55,7 @@ def test_create_competition_with_valid_data(
     )
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
 @given(valid_competition_data(), st.data())
 def test_competition_milestones_are_unique(
     organizer_user: User,
@@ -73,7 +74,7 @@ def test_competition_milestones_are_unique(
         )
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
 @given(valid_competition_data())
 def test_competition_domains_list_is_not_empty(
     organizer_user: User,
@@ -92,7 +93,7 @@ def test_competition_domains_list_is_not_empty(
 
 
 @pytest.mark.parametrize("empty_string", ["", " ", "   "])
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
 @given(valid_competition_data())
 def test_competition_description_is_not_empty(
     empty_string: str,

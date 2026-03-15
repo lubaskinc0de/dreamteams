@@ -12,6 +12,7 @@
 | `participant_type` | `ParticipantType` | Participant type | Enum value |
 | `venue` | `CompetitionVenue` | Format and location | Value object validation |
 | `team_size` | `TeamSizeRange` | Team size range | Value object validation |
+| `auto_accept` | `bool` | Auto-accept applications | Default `False` |
 | `milestones` | `list[MilestoneForm]` | Competition milestones | Optional, default [] |
 
 ### MilestoneForm
@@ -36,3 +37,4 @@
 5. `organizer_id` is set from current authenticated user
 6. All value object validation rules apply
 7. If milestones are provided, their timestamps must be unique
+8. `auto_accept` defaults to `False`; when `True`, participant applications are accepted immediately

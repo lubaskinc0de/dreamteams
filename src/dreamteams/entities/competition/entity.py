@@ -36,6 +36,7 @@ class Competition(Entity):
     venue: CompetitionVenue
     team_size: TeamSizeRange
     milestones: list[Milestone]
+    auto_accept: bool
     is_archived: bool
     created_at: datetime
     updated_at: datetime
@@ -78,6 +79,7 @@ class Competition(Entity):
         self.participant_type = data.participant_type
         self.venue = data.venue
         self.team_size = data.team_size
+        self.auto_accept = data.auto_accept
         self.is_archived = data.is_archived
         self.milestones = milestones
         self.updated_at = clock.now()
@@ -95,6 +97,7 @@ class CompetitionData:
     participant_type: ParticipantType
     venue: CompetitionVenue
     team_size: TeamSizeRange
+    auto_accept: bool = False
     milestones: list[MilestoneData] | None = None
 
 
@@ -110,6 +113,7 @@ class UpdateCompetitionData:
     participant_type: ParticipantType
     venue: CompetitionVenue
     team_size: TeamSizeRange
+    auto_accept: bool
     is_archived: bool
     milestones: list[Milestone] | None = None
 
@@ -150,6 +154,7 @@ def competition_factory(
         venue=data.venue,
         team_size=data.team_size,
         milestones=[milestone_factory(milestone, clock) for milestone in milestones],
+        auto_accept=data.auto_accept,
         is_archived=True,
         created_at=now,
         updated_at=now,

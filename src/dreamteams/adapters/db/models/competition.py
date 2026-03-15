@@ -46,6 +46,7 @@ competition_table = Table(
     Column("location", Text, nullable=True),
     Column("max_team_size", Integer, nullable=False),
     Column("min_team_size", Integer, nullable=False),
+    Column("auto_accept", Boolean, nullable=False, default=False, server_default="false"),
     Column("is_archived", Boolean, nullable=False, default=False),
     Column("created_at", DateTime(timezone=True), nullable=False),
     Column("updated_at", DateTime(timezone=True), nullable=False),

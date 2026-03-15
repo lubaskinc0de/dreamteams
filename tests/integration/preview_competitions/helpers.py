@@ -201,6 +201,7 @@ def competitions_list_to_preview_list(
             venue=comp.venue,
             team_size=comp.team_size,
             milestones=comp.milestones,
+            auto_accept=comp.auto_accept,
             is_archived=comp.is_archived,
             created_at=comp.created_at,
             updated_at=comp.updated_at,

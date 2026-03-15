@@ -20,6 +20,7 @@ Represents a hackathon or olympiad event created by an organizer.
 | `venue`              | `CompetitionVenue`     | Event format and location                          |
 | `team_size`          | `TeamSizeRange`        | Min and max team size                              |
 | `milestones`         | `list[Milestone]`      | Custom timeline milestones                         |
+| `auto_accept`        | `bool`                 | Auto-accept applications (default: `False`)        |
 | `is_archived`        | `bool`                 | Whether competition is archived                    |
 | `created_at`         | `datetime`             | When competition was created                       |
 | `updated_at`         | `datetime`             | Last update timestamp                              |
