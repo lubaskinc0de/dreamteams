@@ -34,7 +34,7 @@ class ParticipantForm(BaseModel):
     avatar_url: HttpUrl | None = None
     bio: str = Field(max_length=500)
     skills: list[ParticipantSkill]
-    experience_level: list[ExperienceLevel]
+    experience_level: ExperienceLevel
     preferred_domains: list[Domain]
     contacts: list[ParticipantContact]
 
