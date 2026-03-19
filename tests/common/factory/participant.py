@@ -1,14 +1,15 @@
 from polyfactory.factories.pydantic_factory import ModelFactory
+from pydantic import HttpUrl
 
 from dreamteams.application.register.register_participant import ParticipantForm
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill, SkillLevel
 
 
-def _avatar_url() -> str | None:
+def _avatar_url() -> HttpUrl | None:
     """Generate fake participant avatar url."""
     faker = ParticipantFormFactory.__faker__
-    return faker.image_url() if faker.boolean() else None
+    return HttpUrl(faker.image_url()) if faker.boolean() else None
 
 
 def _skills() -> list[ParticipantSkill]:
