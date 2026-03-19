@@ -7,10 +7,10 @@ from dreamteams.entities.errors.participant import InvalidParticipantDataError
 class SkillLevel(Enum):
     """Skill proficiency level."""
 
-    BEGINNER = "beginner"
-    INTERMEDIATE = "intermediate"
-    ADVANCED = "advanced"
-    EXPERT = "expert"
+    BEGINNER = "BEGINNER"
+    INTERMEDIATE = "INTERMEDIATE"
+    ADVANCED = "ADVANCED"
+    EXPERT = "EXPERT"
 
 
 @dataclass(frozen=True)
