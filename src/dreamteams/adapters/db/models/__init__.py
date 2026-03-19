@@ -5,7 +5,6 @@ from .organizer import organizer_table
 from .organizer_invite import organizer_invite_table
 from .participant import (
     participant_contacts_table,
-    participant_domains_table,
     participant_skills_table,
     participant_table,
 )
@@ -19,7 +18,6 @@ __all__ = [
     "organizer_invite_table",
     "organizer_table",
     "participant_contacts_table",
-    "participant_domains_table",
     "participant_skills_table",
     "participant_table",
     "user_table",
