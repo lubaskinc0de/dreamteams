@@ -55,35 +55,27 @@ class RegisterParticipant:
 
         user = await self.user_factory.create_user()
 
-        try:
-            participant_data = ParticipantData(
-                full_name=data.full_name,
-                avatar_url=str(data.avatar_url) if data.avatar_url else None,
-                bio=data.bio,
-                skills=[
-                    ParticipantSkill(
-                        name=s.name,
-                        level=s.level,
-                    )
-                    for s in data.skills
-                ],
-                experience_level=data.experience_level,
-                preferred_domains=data.preferred_domains,
-                contacts=[
-                    ParticipantContact(
-                        title=c.title,
-                        url=str(c.url),
-                    )
-                    for c in data.contacts
-                ],
-            )
-        except InvalidParticipantDataError as e:
-            logger.warning(
-                "Invalid participant data",
-                user_id=user.id,
-                error_code=e.code,
-                message=e.message,
-            )
+        participant_data = ParticipantData(
+            full_name=data.full_name,
+            avatar_url=str(data.avatar_url) if data.avatar_url else None,
+            bio=data.bio,
+            skills=[
+                ParticipantSkill(
+                    name=s.name,
+                    level=s.level,
+                )
+                for s in data.skills
+            ],
+            experience_level=data.experience_level,
+            preferred_domains=data.preferred_domains,
+            contacts=[
+                ParticipantContact(
+                    title=c.title,
+                    url=str(c.url),
+                )
+                for c in data.contacts
+            ],
+        )
 
         participant = participant_factory(
             data=participant_data,
