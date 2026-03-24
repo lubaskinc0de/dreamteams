@@ -10,7 +10,6 @@ from dreamteams.application.register.shared.user_factory import UserFactory
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import ParticipantId, UserId
 from dreamteams.entities.common.vo.domain import Domain
-from dreamteams.entities.errors.participant import InvalidParticipantDataError
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
 from dreamteams.entities.user import (
