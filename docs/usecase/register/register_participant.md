@@ -7,7 +7,6 @@ Registers a new participant
 | Field               | Type                      | Description |
 |---------------------|---------------------------|-------------|
 | `full_name`         | `str`                     | Full name   |
-| `avatar_url`        | `str \| None`             | Avatar url |
 | `bio`               | `str`                     | Short biography or description |
 | `skills`            | `list[ParticipantSkill]`  | List of participant skills |
 | `experience_level`  | `ExperienceLevel`         | Experience level |
@@ -31,5 +30,5 @@ Registers a new participant
 ## Errors
 | Error Code | HTTP Status | Condition |
 |-----------|-------------|-----------|
-| `INVALID_PARTICIPANT_DATA` | 400 | Any validation rule fails |
+| `INVALID_PARTICIPANT_DATA` | 422 | Any validation rule fails |
 
