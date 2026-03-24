@@ -1,6 +1,6 @@
 """Add participant
 
-Rivision ID: 91974e63fdd3
+Revision ID: 91974e63fdd3
 Revises: 75e3a5cde34b
 Create Date: 2026-20-03 22:19:30
 
