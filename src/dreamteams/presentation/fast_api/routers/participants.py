@@ -24,7 +24,6 @@ async def register_participant(
     return await interactor.execute(
         ParticipantForm(
             full_name=data.full_name,
-            avatar_url=data.avatar_url,
             bio=data.bio,
             skills=data.skills,
             experience_level=data.experience_level,

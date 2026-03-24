@@ -1,5 +1,5 @@
 import structlog
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field
 
 from dreamteams.application.common.dto.participant_contact import ParticipantContactForm
 from dreamteams.application.common.dto.participant_skill import ParticipantSkillForm
@@ -32,7 +32,6 @@ class ParticipantForm(BaseModel):
     """Form for registering as ``Participant``."""
 
     full_name: str = Field(min_length=1, max_length=70)
-    avatar_url: HttpUrl | None = None
     bio: str = Field(max_length=500)
     skills: list[ParticipantSkillForm]
     experience_level: ExperienceLevel
@@ -56,7 +55,7 @@ class RegisterParticipant:
 
         participant_data = ParticipantData(
             full_name=data.full_name,
-            avatar_url=str(data.avatar_url) if data.avatar_url else None,
+            avatar_url=None,
             bio=data.bio,
             skills=[
                 ParticipantSkill(

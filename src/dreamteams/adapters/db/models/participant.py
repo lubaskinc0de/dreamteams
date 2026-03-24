@@ -24,7 +24,6 @@ participant_table = Table(
     Column("id", UUID(as_uuid=True), primary_key=True),
     Column("user_id", UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
     Column("full_name", String(150), nullable=False),
-    Column("avatar_url", Text, nullable=True),
     Column("bio", Text, nullable=False),
     Column("experience_level", Enum(ExperienceLevel, native_enum=False), nullable=False),
     Column("preferred_domains", ARRAY(Enum(Domain, native_enum=False)), nullable=False),

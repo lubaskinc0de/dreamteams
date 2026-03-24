@@ -23,7 +23,6 @@ def upgrade() -> None:
         sa.Column('id', sa.UUID(), nullable=False),
         sa.Column('user_id', sa.UUID(), nullable=False),
         sa.Column('full_name', sa.String(150), nullable=False),
-        sa.Column('avatar_url', sa.Text(), nullable=True),
         sa.Column('bio', sa.Text(), nullable=False),
         sa.Column('experience_level', sa.String(), nullable=False),
         sa.Column('preferred_domains', sa.ARRAY(sa.String()), nullable=False),
