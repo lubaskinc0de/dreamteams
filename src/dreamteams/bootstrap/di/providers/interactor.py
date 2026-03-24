@@ -14,6 +14,7 @@ from dreamteams.application.manage_profile.detach_avatar import DetachAvatar
 from dreamteams.application.preview_competition.list import PreviewCompetitions
 from dreamteams.application.publish_competition import CreateCompetition
 from dreamteams.application.register.register_organizer import RegisterOrganizer
+from dreamteams.application.register.register_participant import RegisterParticipant
 from dreamteams.application.register.register_superuser import RegisterSuperuser
 from dreamteams.application.register.shared.user_factory import UserFactory
 
@@ -26,6 +27,7 @@ class InteractorProvider(Provider):
     interactors = provide_all(
         RegisterOrganizer,
         RegisterSuperuser,
+        RegisterParticipant,
         ReadProfile,
         CreateCompetition,
         ListCompetitions,

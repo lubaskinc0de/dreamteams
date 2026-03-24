@@ -31,6 +31,7 @@ from dreamteams.entities.common.identifiers import UserId
 from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
 from tests.common.factory.competition import CompetitionFormFactory, UpdateCompetitionFormFactory
 from tests.common.factory.organizer import OrganizerFormFactory
+from tests.common.factory.participant import ParticipantFormFactory
 from tests.integration.api_client import ApiClient, APIClientConfig
 from tests.integration.constants import ADMIN_USER_ID, DIFFERENT_USER_ID, USER_ID
 from tests.integration.preview_competitions.helpers import create_mixed_competitions
@@ -182,6 +183,7 @@ def api_client(http_session: ClientSession, app_config: Config, trace_id: TraceI
 register_fixture(CompetitionFormFactory)
 register_fixture(UpdateCompetitionFormFactory)
 register_fixture(OrganizerFormFactory)
+register_fixture(ParticipantFormFactory)
 
 
 @pytest.fixture

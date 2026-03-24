@@ -10,7 +10,10 @@ from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.errors.organizer import (
     OrganizerUserIdMismatchError,
 )
-from dreamteams.entities.errors.participant import InvalidParticipantDataError
+from dreamteams.entities.errors.participant import (
+    InvalidParticipantDataError,
+    ParticipantUserIdMismatchError,
+)
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
 
@@ -49,6 +52,13 @@ class User(Entity):
 
         self.organizer = organizer
 
+    def make_participant(self, participant: "Participant") -> None:
+        """Attach ``Participant`` role to user."""
+        if participant.user_id != self.id:
+            raise ParticipantUserIdMismatchError
+
+        self.participant = participant
+
     def get_role(self) -> Organizer:
         """Get user role."""
         if self.organizer is not None:
@@ -65,7 +75,7 @@ class ExperienceLevel(Enum):
     SENIOR = "SENIOR"
 
 
-@dataclass(slots=True)
+@dataclass
 class UpdateParticipantData:
     """Data for updating Participant."""
 
@@ -78,7 +88,7 @@ class UpdateParticipantData:
     contacts: list[ParticipantContact]
 
 
-@dataclass(slots=True)
+@dataclass
 class ParticipantData:
     """Data for creating Participant."""
 

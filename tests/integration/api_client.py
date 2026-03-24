@@ -17,6 +17,7 @@ from dreamteams.application.manage_profile import ProfileModel
 from dreamteams.application.preview_competition.list import PreviewCompetitionsList
 from dreamteams.application.publish_competition import CreatedCompetition
 from dreamteams.application.register.register_organizer import CreatedOrganizer
+from dreamteams.application.register.register_participant import CreatedParticipant
 from dreamteams.application.register.register_superuser import CreatedSuperuser
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerInviteId
 
@@ -27,6 +28,7 @@ USERS_URL = "/users"
 SUPERUSER_URL = f"{USERS_URL}/superuser/"
 COMPETITIONS_URL = "/competitions"
 INVITES_URL = "/invites"
+PARTICIPANT_URL = "/participants"
 
 
 @dataclass
@@ -208,6 +210,15 @@ class ApiClient:
             return await self._load_response(
                 response,
                 response_type=CreatedOrganizer,
+            )
+
+    async def register_participant(self, data: dict[str, Any]) -> APIResponse[CreatedParticipant]:
+        """Register as participant via POST /participants/."""
+        url = PARTICIPANT_URL
+        async with self.session.post(url, headers=self._headers, json=data) as response:
+            return await self._load_response(
+                response,
+                response_type=CreatedParticipant,
             )
 
     async def view_profile(self) -> APIResponse[ProfileModel]:
