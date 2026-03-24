@@ -12,6 +12,7 @@ def _full_name() -> str:
     faker = ParticipantFormFactory.__faker__
     return faker.name()
 
+
 def _avatar_url() -> HttpUrl | None:
     """Generate fake avatar url."""
     faker = ParticipantFormFactory.__faker__

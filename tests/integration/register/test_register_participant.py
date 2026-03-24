@@ -62,6 +62,3 @@ async def test_register_as_participant_fails_if_unauthorized(
     response = await api_client.register_participant(data.model_dump(mode="json"))
 
     response.assert_error(401, "UNAUTHORIZED")
-
-
-

@@ -1,5 +1,4 @@
 import structlog
-from fastapi import HTTPException
 from pydantic import BaseModel, Field, HttpUrl
 
 from dreamteams.application.common.dto.participant_contact import ParticipantContactForm
@@ -61,11 +60,12 @@ class RegisterParticipant:
                 full_name=data.full_name,
                 avatar_url=str(data.avatar_url) if data.avatar_url else None,
                 bio=data.bio,
-                skills=[ParticipantSkill(
-                    name=s.name,
-                    level=s.level,
-                )
-                        for s in data.skills
+                skills=[
+                    ParticipantSkill(
+                        name=s.name,
+                        level=s.level,
+                    )
+                    for s in data.skills
                 ],
                 experience_level=data.experience_level,
                 preferred_domains=data.preferred_domains,

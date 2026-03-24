@@ -8,4 +8,3 @@ class ParticipantSkillForm(BaseModel):
 
     name: str = Field(min_length=1, max_length=70)
     level: SkillLevel
-
