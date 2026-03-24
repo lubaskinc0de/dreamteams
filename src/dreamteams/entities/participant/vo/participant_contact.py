@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from dreamteams.entities.errors.participant import InvalidParticipantDataError
 
 
-@dataclass(frozen=True)
+@dataclass
 class ParticipantContact:
     """Participant contact link with title validation."""
 

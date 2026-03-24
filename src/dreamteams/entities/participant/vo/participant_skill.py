@@ -13,7 +13,7 @@ class SkillLevel(Enum):
     EXPERT = "EXPERT"
 
 
-@dataclass(frozen=True)
+@dataclass
 class ParticipantSkill:
     """Participant skill with name and proficiency level."""
 

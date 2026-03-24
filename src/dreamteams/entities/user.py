@@ -75,7 +75,7 @@ class ExperienceLevel(Enum):
     SENIOR = "SENIOR"
 
 
-@dataclass(slots=True)
+@dataclass
 class UpdateParticipantData:
     """Data for updating Participant."""
 
@@ -88,7 +88,7 @@ class UpdateParticipantData:
     contacts: list[ParticipantContact]
 
 
-@dataclass(slots=True)
+@dataclass
 class ParticipantData:
     """Data for creating Participant."""
 

@@ -24,5 +24,12 @@ mapper_registry.map_imperatively(
             uselist=False,
             back_populates="user",
         ),
+        "participants": relationship(
+            "Participant",
+            lazy="selectin",
+            cascade="all, delete-orphan",
+            uselist=False,
+            back_populates="user",
+        ),
     },
 )

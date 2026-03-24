@@ -1,6 +1,9 @@
 import structlog
+from fastapi import HTTPException
 from pydantic import BaseModel, Field, HttpUrl
 
+from dreamteams.application.common.dto.participant_contact import ParticipantContactForm
+from dreamteams.application.common.dto.participant_skill import ParticipantSkillForm
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
 from dreamteams.application.common.uow import UoW
@@ -30,13 +33,13 @@ class CreatedParticipant(BaseModel):
 class ParticipantForm(BaseModel):
     """Form for registering as ``Participant``."""
 
-    full_name: str = Field(max_length=70)
+    full_name: str = Field(min_length=1, max_length=70)
     avatar_url: HttpUrl | None = None
     bio: str = Field(max_length=500)
-    skills: list[ParticipantSkill]
+    skills: list[ParticipantSkillForm]
     experience_level: ExperienceLevel
     preferred_domains: list[Domain]
-    contacts: list[ParticipantContact]
+    contacts: list[ParticipantContactForm]
 
 
 @interactor
@@ -58,10 +61,21 @@ class RegisterParticipant:
                 full_name=data.full_name,
                 avatar_url=str(data.avatar_url) if data.avatar_url else None,
                 bio=data.bio,
-                skills=data.skills,
+                skills=[ParticipantSkill(
+                    name=s.name,
+                    level=s.level,
+                )
+                        for s in data.skills
+                ],
                 experience_level=data.experience_level,
                 preferred_domains=data.preferred_domains,
-                contacts=data.contacts,
+                contacts=[
+                    ParticipantContact(
+                        title=c.title,
+                        url=str(c.url),
+                    )
+                    for c in data.contacts
+                ],
             )
         except InvalidParticipantDataError as e:
             logger.warning(
@@ -70,7 +84,6 @@ class RegisterParticipant:
                 error_code=e.code,
                 message=e.message,
             )
-            raise
 
         participant = participant_factory(
             data=participant_data,
