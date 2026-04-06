@@ -164,7 +164,7 @@ onMounted(async () => {
                     >
                       <UAvatar
                         :src="userStore.profile?.avatar_url || '/no-photo.png'"
-                        :alt="userStore.organizer?.organizer_name || t('profile.userBadge')"
+                        :alt="userStore.organizer?.organizer_name || userStore.participant?.full_name || t('profile.userBadge')"
                         size="3xl"
                         :ui="{ root: 'w-full h-full' }"
                         class="ring-2 ring-gray-200 dark:ring-gray-700 transition-all group-hover:ring-primary-500"
@@ -182,9 +182,9 @@ onMounted(async () => {
 
                   <!-- User Info -->
                   <div class="flex-1 w-full text-center lg:text-left">
-                    <div class="flex items-center justify-center lg:justify-start gap-3 mb-4">
+                    <div class="flex items-center justify-center lg:justify-start gap-3 mb-4 flex-wrap">
                       <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100">
-                        {{ userStore.organizer?.organizer_name || t("profile.userBadge") }}
+                        {{ userStore.organizer?.organizer_name || userStore.participant?.full_name || t("profile.userBadge") }}
                       </h2>
                       <UBadge
                         v-if="userStore.isAdmin"
@@ -193,30 +193,116 @@ onMounted(async () => {
                         :label="t('profile.adminBadge')"
                         icon="i-heroicons-shield-check"
                       />
+                      <UBadge
+                        v-else-if="userStore.isOrganizer"
+                        color="primary"
+                        variant="subtle"
+                        :label="t('profile.organizerBadge')"
+                        icon="i-heroicons-building-office"
+                      />
+                      <UBadge
+                        v-else-if="userStore.isParticipant"
+                        color="success"
+                        variant="subtle"
+                        :label="t('profile.participantBadge')"
+                        icon="i-heroicons-user"
+                      />
                     </div>
 
+                    <!-- Organizer info -->
                     <div v-if="userStore.isOrganizer && userStore.organizer" class="space-y-2">
-                      <!-- Phone -->
                       <div class="flex justify-center lg:justify-start">
                         <div class="flex items-center gap-2">
                           <UIcon name="i-heroicons-phone" class="text-lg text-gray-600 dark:text-gray-400" />
-                          <p class="text-sm text-gray-900 dark:text-gray-100">
-                            {{ userStore.organizer.phone_number }}
-                          </p>
+                          <p class="text-sm text-gray-900 dark:text-gray-100">{{ userStore.organizer.phone_number }}</p>
                         </div>
                       </div>
-
-                      <!-- Email -->
                       <div class="flex justify-center lg:justify-start">
                         <div class="flex items-center gap-2">
                           <UIcon name="i-heroicons-envelope" class="text-lg text-gray-600 dark:text-gray-400" />
-                          <p class="text-sm text-gray-900 dark:text-gray-100">
-                            {{ userStore.organizer.contact_email }}
-                          </p>
+                          <p class="text-sm text-gray-900 dark:text-gray-100">{{ userStore.organizer.contact_email }}</p>
                         </div>
                       </div>
                     </div>
 
+                    <!-- Participant info -->
+                    <div v-else-if="userStore.isParticipant && userStore.participant" class="space-y-4 text-left">
+                      <!-- Bio -->
+                      <div v-if="userStore.participant.bio">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
+                          {{ t('profile.participant.bio') }}
+                        </p>
+                        <p class="text-sm text-gray-800 dark:text-gray-200">{{ userStore.participant.bio }}</p>
+                      </div>
+
+                      <!-- Experience + Domains row -->
+                      <div class="flex flex-wrap gap-4">
+                        <div>
+                          <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
+                            {{ t('profile.participant.experienceLevel') }}
+                          </p>
+                          <UBadge color="neutral" variant="subtle">
+                            {{ t(`profile.participant.experienceLevels.${userStore.participant.experience_level}`) }}
+                          </UBadge>
+                        </div>
+                        <div>
+                          <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
+                            {{ t('profile.participant.preferredDomains') }}
+                          </p>
+                          <div class="flex flex-wrap gap-1">
+                            <UBadge
+                              v-for="domain in userStore.participant.preferred_domains"
+                              :key="domain"
+                              color="primary"
+                              variant="subtle"
+                            >
+                              {{ t(`profile.participant.domains.${domain}`) }}
+                            </UBadge>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Skills -->
+                      <div v-if="userStore.participant.skills.length">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">
+                          {{ t('profile.participant.skills') }}
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                          <div
+                            v-for="skill in userStore.participant.skills"
+                            :key="skill.name"
+                            class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-sm"
+                          >
+                            <span class="font-medium text-gray-900 dark:text-gray-100">{{ skill.name }}</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">
+                              {{ t(`profile.participant.skillLevels.${skill.level}`) }}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Contacts -->
+                      <div v-if="userStore.participant.contacts.length">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">
+                          {{ t('profile.participant.contacts') }}
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                          <a
+                            v-for="contact in userStore.participant.contacts"
+                            :key="contact.title"
+                            :href="contact.url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-primary-500 hover:text-primary-400 transition-colors"
+                          >
+                            <UIcon name="i-heroicons-link" class="text-xs" />
+                            {{ contact.title }}
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Admin info -->
                     <div v-else-if="userStore.isAdmin">
                       <div class="p-6 rounded-xl border border-primary-200 dark:border-primary-800 bg-primary-50/50 dark:bg-primary-950/30 text-center space-y-3">
                         <UIcon name="i-heroicons-shield-check" class="text-4xl text-primary-500" />
@@ -228,6 +314,7 @@ onMounted(async () => {
                       </div>
                     </div>
 
+                    <!-- Not registered -->
                     <div v-else>
                       <UEmpty icon="i-heroicons-trophy" :title="t('profile.notRegistered.title')"
                         :description="t('profile.notRegistered.description')">

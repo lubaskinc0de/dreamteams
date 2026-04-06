@@ -189,6 +189,7 @@ export const createCompetitionSchemas = (t: (key: string) => string) => {
     participant_type: z.enum(["schoolchild", "student", "any"]),
     venue: venueSchema,
     team_size: teamSizeSchema,
+    auto_accept: z.boolean(),
     milestones: z.array(milestoneSchema).optional(),
     is_team: z.boolean(),
   }).refine(
@@ -310,6 +311,7 @@ export const createCompetitionSchemas = (t: (key: string) => string) => {
     venue: venueSchema,
     team_size: teamSizeSchema,
     milestones: z.array(updateMilestoneSchema).optional(),
+    auto_accept: z.boolean().optional(),
     is_archived: z.boolean().optional(),
   });
 

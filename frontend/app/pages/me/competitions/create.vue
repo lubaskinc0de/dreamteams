@@ -44,6 +44,7 @@ const formState = reactive<CompetitionForm & { is_team: boolean }>({
     min: 1,
     max: 5,
   },
+  auto_accept: false,
   milestones: [],
   is_team: true,
 });
@@ -211,6 +212,7 @@ const goBack = () => {
               v-model:domains="formState.domains"
               v-model:participant-type="formState.participant_type"
               v-model:is-team-competition="isTeamCompetition"
+              v-model:auto-accept="formState.auto_accept"
             />
 
             <!-- Schedule -->

@@ -24,6 +24,7 @@ from dreamteams.application.manage_competitions.read import CompetitionModel
 from dreamteams.application.manage_invites import InviteIssued
 from dreamteams.application.publish_competition import CompetitionForm, CreatedCompetition
 from dreamteams.application.register.register_organizer import CreatedOrganizer
+from dreamteams.application.register.register_participant import CreatedParticipant, ParticipantForm
 from dreamteams.bootstrap.config.loader import Config
 from dreamteams.bootstrap.di.container import get_async_container
 from dreamteams.entities.common.clock import Clock
@@ -208,6 +209,14 @@ def competition_form(
     return competition_form_factory.build()
 
 
+@pytest.fixture
+def participant_form(
+    participant_form_factory: ParticipantFormFactory,
+) -> ParticipantForm:
+    """Participant form."""
+    return participant_form_factory.build()
+
+
 # Entities
 @pytest.fixture
 async def admin_user_id(session: AsyncSession) -> UserId:
@@ -242,6 +251,18 @@ async def organizer(
     with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=email):
         response = await api_client.register_organizer(data)
 
+    return response.assert_status(200).ensure_content()
+
+
+@pytest.fixture
+async def participant(
+    api_client: ApiClient,
+    participant_form: ParticipantForm,
+    faker: Faker,
+) -> CreatedParticipant:
+    """Created participant entity."""
+    with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=faker.email()):
+        response = await api_client.register_participant(data=participant_form.model_dump(mode="json"))
     return response.assert_status(200).ensure_content()
 
 

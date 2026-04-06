@@ -27,6 +27,7 @@ export interface OrganizerModel {
 export interface ProfileModel {
   user_id: string;
   organizer: OrganizerModel | null;
+  participant: ParticipantProfile | null;
   avatar_url: string | null;
   is_admin: boolean;
 }
@@ -77,9 +78,60 @@ export type ErrorCode =
   | "INVITE_ALREADY_REVOKED"
   | "INVITE_ALREADY_USED"
   | "INVITE_REVOKED"
-  | "INVALID_SUPERUSER_PASSWORD";
+  | "INVALID_SUPERUSER_PASSWORD"
+  | "PARTICIPANT_ALREADY_EXISTS";
 
 export interface CreatedSuperuser {
+  user_id: string;
+}
+
+// Participant types
+export type ExperienceLevel = "JUNIOR" | "MID" | "SENIOR";
+export type SkillLevel = "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT";
+export type ParticipantDomain = Domain;
+
+export interface ParticipantSkill {
+  name: string;
+  level: SkillLevel;
+}
+
+export interface ParticipantContact {
+  title: string;
+  url: string;
+}
+
+export interface ParticipantProfile {
+  id: string;
+  user_id: string;
+  full_name: string;
+  bio: string;
+  skills: ParticipantSkill[];
+  experience_level: ExperienceLevel;
+  preferred_domains: ParticipantDomain[];
+  contacts: ParticipantContact[];
+}
+
+export interface ParticipantSkillForm {
+  name: string;
+  level: SkillLevel;
+}
+
+export interface ParticipantContactForm {
+  title: string;
+  url: string;
+}
+
+export interface ParticipantForm {
+  full_name: string;
+  bio: string;
+  skills: ParticipantSkillForm[];
+  experience_level: ExperienceLevel;
+  preferred_domains: Domain[];
+  contacts: ParticipantContactForm[];
+}
+
+export interface CreatedParticipant {
+  participant_id: string;
   user_id: string;
 }
 
@@ -139,6 +191,7 @@ export interface CompetitionForm {
   participant_type: ParticipantType;
   venue: CompetitionVenue;
   team_size: TeamSizeRange;
+  auto_accept: boolean;
   milestones?: MilestoneForm[];
 }
 
@@ -152,6 +205,7 @@ export interface UpdateCompetitionForm {
   venue: CompetitionVenue;
   team_size: TeamSizeRange;
   milestones: MilestoneForm[];
+  auto_accept: boolean;
   is_archived: boolean;
 }
 
@@ -168,6 +222,7 @@ export interface CompetitionModel {
   venue: CompetitionVenue;
   team_size: TeamSizeRange;
   milestones: Milestone[];
+  auto_accept: boolean;
   is_archived: boolean;
   created_at: string;
   updated_at: string;

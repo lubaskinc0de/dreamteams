@@ -16,6 +16,14 @@ export default defineNuxtConfig({
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || "http://localhost",
       useMock: process.env.NUXT_PUBLIC_USE_MOCK || "false",
+      // Request timeout in milliseconds
+      apiTimeout: Number(process.env.NUXT_PUBLIC_API_TIMEOUT) || 10000,
+      // Maximum number of retry attempts after a failed request
+      apiMaxRetries: Number(process.env.NUXT_PUBLIC_API_MAX_RETRIES) || 3,
+      // Base delay in ms for exponential backoff (delay = baseDelay * 2^attempt + jitter)
+      apiRetryBaseDelay: Number(process.env.NUXT_PUBLIC_API_RETRY_BASE_DELAY) || 300,
+      // Upper bound on retry delay in ms
+      apiRetryMaxDelay: Number(process.env.NUXT_PUBLIC_API_RETRY_MAX_DELAY) || 10000,
     },
   },
 

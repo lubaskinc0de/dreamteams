@@ -3,6 +3,8 @@ import type {
   OrganizerForm,
   CreatedOrganizer,
   ProfileModel,
+  ParticipantForm,
+  CreatedParticipant,
   CompetitionForm,
   UpdateCompetitionForm,
   CreatedCompetition,
@@ -23,7 +25,7 @@ import type {
 const MOCK_INVITE_CODE = "MOCK-INVITE-2026";
 
 // Mock data
-const mockUser: ProfileModel = {
+const mockOrganizerUser: ProfileModel = {
   user_id: "123e4567-e89b-12d3-a456-426614174000",
   organizer: {
     id: "123e4567-e89b-12d3-a456-426614174001",
@@ -33,19 +35,42 @@ const mockUser: ProfileModel = {
     contact_email: "ivan@example.com",
     logo: null,
   },
+  participant: null,
   avatar_url: null,
   is_admin: false,
 };
 
-const mockUserWithoutOrganizer: ProfileModel = {
+const mockParticipantUser: ProfileModel = {
   user_id: "123e4567-e89b-12d3-a456-426614174000",
   organizer: null,
+  participant: {
+    id: "123e4567-e89b-12d3-a456-426614174002",
+    user_id: "123e4567-e89b-12d3-a456-426614174000",
+    full_name: "Иван Петров",
+    bio: "Fullstack разработчик с 3 годами опыта. Люблю хакатоны и командную работу.",
+    skills: [
+      { name: "Python", level: "ADVANCED" },
+      { name: "React", level: "INTERMEDIATE" },
+    ],
+    experience_level: "MID",
+    preferred_domains: ["backend", "frontend"],
+    contacts: [{ title: "GitHub", url: "https://github.com/ivan" }],
+  },
+  avatar_url: null,
+  is_admin: false,
+};
+
+const mockUnregisteredUser: ProfileModel = {
+  user_id: "123e4567-e89b-12d3-a456-426614174000",
+  organizer: null,
+  participant: null,
   avatar_url: null,
   is_admin: false,
 };
 
 // Storage for current state
 let isRegistered = false;
+let isParticipantRegistered = false;
 let currentAvatarUrl: string | null = null;
 
 // Mock invite state
@@ -428,6 +453,7 @@ const mockCompetitions: CompetitionModel[] = [
       { title: "Начало хакатона", timestamp: "2026-03-15T10:00:00Z" },
       { title: "Защита проектов", timestamp: "2026-03-17T14:00:00Z" },
     ],
+    auto_accept: false,
     is_archived: false,
     created_at: "2026-01-01T12:00:00Z",
     updated_at: "2026-01-01T12:00:00Z",
@@ -451,6 +477,7 @@ const mockCompetitions: CompetitionModel[] = [
     venue: { format: "online", location: null },
     team_size: { min: 1, max: 3 },
     milestones: [],
+    auto_accept: false,
     is_archived: false,
     created_at: "2025-12-20T12:00:00Z",
     updated_at: "2025-12-20T12:00:00Z",
@@ -476,6 +503,7 @@ const mockCompetitions: CompetitionModel[] = [
     milestones: [
       { title: "Старт регистрации", timestamp: "2026-03-01T00:00:00Z" },
     ],
+    auto_accept: false,
     is_archived: false,
     created_at: "2025-12-15T12:00:00Z",
     updated_at: "2025-12-15T12:00:00Z",
@@ -610,12 +638,17 @@ export const useMockApi = () => {
     // Simulate network delay
     await delay(300);
 
-    const profile = isRegistered ? mockUser : mockUserWithoutOrganizer;
+    let profile: ProfileModel;
+    if (isRegistered) {
+      profile = mockOrganizerUser;
+    } else if (isParticipantRegistered) {
+      profile = mockParticipantUser;
+    } else {
+      profile = mockUnregisteredUser;
+    }
+
     return {
-      data: {
-        ...profile,
-        avatar_url: currentAvatarUrl,
-      },
+      data: { ...profile, avatar_url: currentAvatarUrl },
       error: null,
     };
   };
@@ -733,6 +766,7 @@ export const useMockApi = () => {
       venue: form.venue,
       team_size: form.team_size,
       milestones: form.milestones || [],
+      auto_accept: form.auto_accept,
       is_archived: false,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -806,6 +840,7 @@ export const useMockApi = () => {
       venue: form.venue,
       team_size: form.team_size,
       milestones: form.milestones,
+      auto_accept: form.auto_accept,
       is_archived: form.is_archived,
       created_at: currentCompetition.created_at,
       updated_at: new Date().toISOString(),
@@ -1010,6 +1045,53 @@ export const useMockApi = () => {
     };
   };
 
+  const registerParticipant = async (
+    form: ParticipantForm,
+  ): Promise<{ data: CreatedParticipant | null; error: ApiError | null }> => {
+    await delay(500);
+
+    if (isParticipantRegistered || isRegistered) {
+      return {
+        data: null,
+        error: {
+          code: "PARTICIPANT_ALREADY_EXISTS",
+          message: "Вы уже зарегистрированы как участник",
+          meta: null,
+        },
+      };
+    }
+
+    if (!form.full_name.trim() || form.full_name.length > 70) {
+      return {
+        data: null,
+        error: { code: "VALIDATION_ERROR", message: "Некорректное имя", meta: null },
+      };
+    }
+
+    if (form.skills.length === 0) {
+      return {
+        data: null,
+        error: { code: "VALIDATION_ERROR", message: "Укажите хотя бы один навык", meta: null },
+      };
+    }
+
+    if (form.preferred_domains.length === 0) {
+      return {
+        data: null,
+        error: { code: "VALIDATION_ERROR", message: "Укажите хотя бы одну предпочтительную область", meta: null },
+      };
+    }
+
+    isParticipantRegistered = true;
+    return {
+      data: {
+        participant_id: crypto.randomUUID(),
+        user_id: "123e4567-e89b-12d3-a456-426614174000",
+      },
+      error: null,
+    };
+  };
+
   const MOCK_SUPERUSER_PASSWORD = "superuser123";
   let mockSuperuserCreated = false;
 
@@ -1063,6 +1145,7 @@ export const useMockApi = () => {
     issueInvite,
     listInvites,
     revokeInvite,
+    registerParticipant,
     registerSuperuser,
   };
 };

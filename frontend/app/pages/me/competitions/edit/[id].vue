@@ -85,6 +85,7 @@ const formState = ref<UpdateCompetitionForm>({
     max: 5,
   },
   milestones: [],
+  auto_accept: false,
   is_archived: false,
 });
 
@@ -204,6 +205,7 @@ const initializeForm = (comp: any) => {
     title: m.title,
     timestamp: m.timestamp,
   }));
+  formState.value.auto_accept = comp.auto_accept;
   formState.value.is_archived = comp.is_archived;
 
   // Initialize team competition flag based on whether team_formation dates exist
@@ -409,6 +411,7 @@ const { handleFormError: handleError } = useFormErrorScroll();
                 v-model:domains="formState.domains"
                 v-model:participant-type="formState.participant_type"
                 v-model:is-team-competition="isTeamCompetition"
+                v-model:auto-accept="formState.auto_accept"
                 v-model:is-archived="formState.is_archived"
                 show-archive-field
               />

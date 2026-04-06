@@ -65,7 +65,7 @@ mapper_registry.map_imperatively(
     properties={
         "user": relationship(
             User,
-            back_populates="participants",
+            back_populates="participant",
             lazy="selectin",
         ),
         "skills": relationship(

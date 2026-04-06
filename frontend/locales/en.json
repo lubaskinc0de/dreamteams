@@ -169,6 +169,7 @@
     "headline": "Dashboard",
     "loadingProfile": "Loading profile...",
     "organizerBadge": "Organizer",
+    "participantBadge": "Participant",
     "userBadge": "User",
     "adminBadge": "Administrator",
     "adminInfo": {
@@ -184,13 +185,38 @@
       "description": "ATTENTION!! All your data, as well as all your activity on the platform, will be permanently deleted WITHOUT the possibility of recovery"
     },
     "notRegistered": {
-      "title": "You're not registered as an organizer yet",
-      "description": "Register to start publishing IT competitions and access participant analytics",
-      "button": "Register as Organizer"
+      "title": "You're not registered yet",
+      "description": "Register as a participant to join competitions, or as an organizer to publish events",
+      "button": "Register"
     },
     "registered": {
       "title": "You're registered as an organizer",
       "description": "You can publish IT competitions and manage events on the platform"
+    },
+    "participant": {
+      "bio": "About",
+      "experienceLevel": "Experience",
+      "preferredDomains": "Preferred Domains",
+      "skills": "Skills",
+      "contacts": "Contacts",
+      "experienceLevels": {
+        "JUNIOR": "Junior",
+        "MID": "Middle",
+        "SENIOR": "Senior"
+      },
+      "domains": {
+        "frontend": "Frontend",
+        "mobile": "Mobile",
+        "backend": "Backend",
+        "ai": "AI",
+        "devops": "DevOps"
+      },
+      "skillLevels": {
+        "BEGINNER": "Beginner",
+        "INTERMEDIATE": "Intermediate",
+        "ADVANCED": "Advanced",
+        "EXPERT": "Expert"
+      }
     },
     "settings": {
       "authentication": {
@@ -224,8 +250,16 @@
     "roleSelection": {
       "title": "Tell us about yourself",
       "organizerButton": "I'm an organizer",
+      "participantButton": "I'm a participant",
       "description": "To register as an organizer, you'll need an invite code from a platform administrator.",
       "inviteHint": "Don't have an invite code? Contact the platform administrator to request one."
+    }
+  },
+  "participant": {
+    "register": {
+      "title": "Participant Registration",
+      "description": "Fill in your details to start participating in competitions",
+      "goToProfile": "Go to Profile"
     }
   },
   "form": {
@@ -252,7 +286,62 @@
       "required": "Invite code is required",
       "hint": "Contact an administrator to get an invite code"
     },
-    "dataProtection": "All data is protected and not shared with third parties"
+    "dataProtection": "All data is protected and not shared with third parties",
+    "fullName": {
+      "label": "Full Name",
+      "placeholder": "Your full name",
+      "required": "Full name is required",
+      "maxLength": "Name must not exceed 70 characters"
+    },
+    "bio": {
+      "label": "About Me",
+      "placeholder": "Tell us about yourself, your experience, and goals...",
+      "maxLength": "Bio must not exceed 500 characters"
+    },
+    "experienceLevel": {
+      "label": "Experience Level",
+      "required": "Please select your experience level",
+      "options": {
+        "JUNIOR": "Junior",
+        "MID": "Middle",
+        "SENIOR": "Senior"
+      }
+    },
+    "preferredDomains": {
+      "label": "Preferred Domains",
+      "placeholder": "Select domains",
+      "required": "Please select at least one domain"
+    },
+    "skills": {
+      "label": "Skills",
+      "addButton": "Add Skill",
+      "nameLabel": "Skill Name",
+      "namePlaceholder": "e.g. Python, React, Docker",
+      "nameRequired": "Skill name is required",
+      "nameMaxLength": "Skill name must not exceed 70 characters",
+      "levelLabel": "Proficiency",
+      "levelRequired": "Please select a proficiency level",
+      "minRequired": "Please add at least one skill",
+      "options": {
+        "BEGINNER": "Beginner",
+        "INTERMEDIATE": "Intermediate",
+        "ADVANCED": "Advanced",
+        "EXPERT": "Expert"
+      }
+    },
+    "contacts": {
+      "label": "Contacts (optional)",
+      "addButton": "Add Contact",
+      "titleLabel": "Platform / Label",
+      "titlePlaceholder": "e.g. GitHub, LinkedIn",
+      "titleRequired": "Contact title is required",
+      "titleMaxLength": "Title must not exceed 70 characters",
+      "urlLabel": "URL",
+      "urlPlaceholder": "https://github.com/username",
+      "urlRequired": "URL is required",
+      "urlMaxLength": "URL must not exceed 2083 characters",
+      "invalidUrl": "Please enter a valid URL"
+    }
   },
   "apiErrors": {
     "UNAUTHORIZED": "Please log in",
@@ -270,7 +359,8 @@
     "INVITE_ALREADY_REVOKED": "This invite has already been revoked",
     "INVITE_ALREADY_USED": "This invite has already been used",
     "INVITE_REVOKED": "This invite has been revoked and cannot be used",
-    "INVALID_SUPERUSER_PASSWORD": "Invalid password. Access denied"
+    "INVALID_SUPERUSER_PASSWORD": "Invalid password. Access denied",
+    "PARTICIPANT_ALREADY_EXISTS": "You're already registered as a participant"
   },
   "superuserRegister": {
     "title": "Superuser Registration",
@@ -711,6 +801,10 @@
         "empty": "Click \"Add Milestone\" to create event checkpoints",
         "lockedNotice": "This milestone date has already passed and cannot be changed",
         "selectDate": "Select date"
+      },
+      "autoAccept": {
+        "label": "Auto-Accept Applications",
+        "checkboxLabel": "Automatically accept participant applications"
       },
       "isArchived": {
         "label": "Archive Status",

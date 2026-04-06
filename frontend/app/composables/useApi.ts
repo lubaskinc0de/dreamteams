@@ -3,6 +3,8 @@ import type {
   OrganizerForm,
   CreatedOrganizer,
   ProfileModel,
+  ParticipantForm,
+  CreatedParticipant,
   CompetitionForm,
   UpdateCompetitionForm,
   CreatedCompetition,
@@ -17,6 +19,47 @@ import type {
   CreatedSuperuser,
 } from "~/types/api";
 
+interface RetryConfig {
+  timeout: number;
+  maxRetries: number;
+  baseDelay: number;
+  maxDelay: number;
+}
+
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Wraps a $fetch call with exponential backoff retry logic.
+ * Retries only on transient errors: network failures, 5xx, and 429.
+ * 4xx client errors (except 429) are not retried.
+ */
+const retryFetch = async <T>(
+  fn: () => Promise<T>,
+  cfg: RetryConfig,
+): Promise<T> => {
+  let attempt = 0;
+  while (true) {
+    try {
+      return await fn();
+    } catch (err: any) {
+      const status: number = err.status ?? err.statusCode ?? 0;
+      const isTransient = status === 0 || status === 429 || status >= 500;
+
+      if (!isTransient || attempt >= cfg.maxRetries) {
+        throw err;
+      }
+
+      const jitter = Math.random() * cfg.baseDelay;
+      const delay = Math.min(
+        cfg.baseDelay * Math.pow(2, attempt) + jitter,
+        cfg.maxDelay,
+      );
+      await sleep(delay);
+      attempt++;
+    }
+  }
+};
+
 export const useApi = () => {
   const config = useRuntimeConfig();
   const apiBase = config.public.apiBase;
@@ -26,6 +69,23 @@ export const useApi = () => {
   if (useMock === "true" || useMock.toString() === "true") {
     return useMockApi();
   }
+
+  const retryCfg: RetryConfig = {
+    timeout: config.public.apiTimeout as number,
+    maxRetries: config.public.apiMaxRetries as number,
+    baseDelay: config.public.apiRetryBaseDelay as number,
+    maxDelay: config.public.apiRetryMaxDelay as number,
+  };
+
+  /** $fetch with timeout and automatic exponential-backoff retries. */
+  const apiFetch = <T>(
+    url: string,
+    options?: Parameters<typeof $fetch>[1],
+  ): Promise<T> =>
+    retryFetch(
+      () => $fetch<T>(url, { timeout: retryCfg.timeout, ...options }),
+      retryCfg,
+    );
 
   const handleApiError = (error: any): ApiError => {
     // Structured API error response with a known error code
@@ -63,6 +123,7 @@ export const useApi = () => {
     try {
       await $fetch(`${apiBase}/oauth2/auth`, {
         method: "GET",
+        timeout: retryCfg.timeout,
       });
       return true;
     } catch {
@@ -74,12 +135,10 @@ export const useApi = () => {
     form: OrganizerForm,
   ): Promise<{ data: CreatedOrganizer | null; error: ApiError | null }> => {
     try {
-      const data = await $fetch<CreatedOrganizer>(`${apiBase}/api/organizers/`, {
+      const data = await apiFetch<CreatedOrganizer>(`${apiBase}/api/organizers/`, {
         method: "POST",
         body: form,
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
       return { data, error: null };
     } catch (err: any) {
@@ -92,7 +151,7 @@ export const useApi = () => {
     error: ApiError | null;
   }> => {
     try {
-      const data = await $fetch<ProfileModel>(`${apiBase}/api/users/me`, {
+      const data = await apiFetch<ProfileModel>(`${apiBase}/api/users/me`, {
         method: "GET",
       });
       return { data, error: null };
@@ -106,7 +165,7 @@ export const useApi = () => {
     error: ApiError | null;
   }> => {
     try {
-      const data = await $fetch<null>(`${apiBase}/api/users/me`, {
+      const data = await apiFetch<null>(`${apiBase}/api/users/me`, {
         method: "DELETE",
       });
       return { data, error: null };
@@ -137,12 +196,9 @@ export const useApi = () => {
         params.search = search;
       }
 
-      const data = await $fetch<CompetitionsList>(
+      const data = await apiFetch<CompetitionsList>(
         `${apiBase}/api/competitions/`,
-        {
-          method: "GET",
-          params,
-        },
+        { method: "GET", params },
       );
       return { data, error: null };
     } catch (err: any) {
@@ -154,12 +210,9 @@ export const useApi = () => {
     page: number = 1,
   ): Promise<{ data: PreviewCompetitionsList | null; error: ApiError | null }> => {
     try {
-      const data = await $fetch<PreviewCompetitionsList>(
+      const data = await apiFetch<PreviewCompetitionsList>(
         `${apiBase}/api/competitions/preview`,
-        {
-          method: "GET",
-          params: { page },
-        },
+        { method: "GET", params: { page } },
       );
       return { data, error: null };
     } catch (err: any) {
@@ -171,15 +224,9 @@ export const useApi = () => {
     form: CompetitionForm,
   ): Promise<{ data: CreatedCompetition | null; error: ApiError | null }> => {
     try {
-      const data = await $fetch<CreatedCompetition>(
+      const data = await apiFetch<CreatedCompetition>(
         `${apiBase}/api/competitions/`,
-        {
-          method: "POST",
-          body: form,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
+        { method: "POST", body: form, headers: { "Content-Type": "application/json" } },
       );
       return { data, error: null };
     } catch (err: any) {
@@ -191,11 +238,9 @@ export const useApi = () => {
     competitionId: string,
   ): Promise<{ data: CompetitionModel | null; error: ApiError | null }> => {
     try {
-      const data = await $fetch<CompetitionModel>(
+      const data = await apiFetch<CompetitionModel>(
         `${apiBase}/api/competitions/${competitionId}`,
-        {
-          method: "GET",
-        },
+        { method: "GET" },
       );
       return { data, error: null };
     } catch (err: any) {
@@ -208,15 +253,9 @@ export const useApi = () => {
     form: UpdateCompetitionForm,
   ): Promise<{ data: {} | null; error: ApiError | null }> => {
     try {
-      const data = await $fetch<{}>(
+      const data = await apiFetch<{}>(
         `${apiBase}/api/competitions/${competitionId}`,
-        {
-          method: "PUT",
-          body: form,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
+        { method: "PUT", body: form, headers: { "Content-Type": "application/json" } },
       );
       return { data, error: null };
     } catch (err: any) {
@@ -228,11 +267,9 @@ export const useApi = () => {
     competitionId: string,
   ): Promise<{ data: {} | null; error: ApiError | null }> => {
     try {
-      const data = await $fetch<{}>(
+      const data = await apiFetch<{}>(
         `${apiBase}/api/competitions/${competitionId}`,
-        {
-          method: "DELETE",
-        },
+        { method: "DELETE" },
       );
       return { data, error: null };
     } catch (err: any) {
@@ -247,7 +284,7 @@ export const useApi = () => {
       const formData = new FormData();
       formData.append("file", file);
 
-      const data = await $fetch<{}>(`${apiBase}/api/users/me/avatar`, {
+      const data = await apiFetch<{}>(`${apiBase}/api/users/me/avatar`, {
         method: "PUT",
         body: formData,
       });
@@ -262,7 +299,7 @@ export const useApi = () => {
     error: ApiError | null;
   }> => {
     try {
-      const data = await $fetch<{}>(`${apiBase}/api/users/me/avatar`, {
+      const data = await apiFetch<{}>(`${apiBase}/api/users/me/avatar`, {
         method: "DELETE",
       });
       return { data, error: null };
@@ -275,12 +312,10 @@ export const useApi = () => {
     form: InviteForm,
   ): Promise<{ data: CreatedInvite | null; error: ApiError | null }> => {
     try {
-      const data = await $fetch<CreatedInvite>(`${apiBase}/api/invites/`, {
+      const data = await apiFetch<CreatedInvite>(`${apiBase}/api/invites/`, {
         method: "POST",
         body: form,
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
       return { data, error: null };
     } catch (err: any) {
@@ -292,7 +327,7 @@ export const useApi = () => {
     page: number = 1,
   ): Promise<{ data: InvitesList | null; error: ApiError | null }> => {
     try {
-      const data = await $fetch<InvitesList>(`${apiBase}/api/invites/`, {
+      const data = await apiFetch<InvitesList>(`${apiBase}/api/invites/`, {
         method: "GET",
         params: { page },
       });
@@ -306,8 +341,23 @@ export const useApi = () => {
     inviteId: string,
   ): Promise<{ data: {} | null; error: ApiError | null }> => {
     try {
-      const data = await $fetch<{}>(`${apiBase}/api/invites/${inviteId}`, {
+      const data = await apiFetch<{}>(`${apiBase}/api/invites/${inviteId}`, {
         method: "DELETE",
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const registerParticipant = async (
+    form: ParticipantForm,
+  ): Promise<{ data: CreatedParticipant | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<CreatedParticipant>(`${apiBase}/api/participants/`, {
+        method: "POST",
+        body: form,
+        headers: { "Content-Type": "application/json" },
       });
       return { data, error: null };
     } catch (err: any) {
@@ -319,7 +369,7 @@ export const useApi = () => {
     password: string,
   ): Promise<{ data: CreatedSuperuser | null; error: ApiError | null }> => {
     try {
-      const data = await $fetch<CreatedSuperuser>(`${apiBase}/api/users/superuser/`, {
+      const data = await apiFetch<CreatedSuperuser>(`${apiBase}/api/users/superuser/`, {
         method: "POST",
         body: { password },
         headers: { "Content-Type": "application/json" },
@@ -346,6 +396,7 @@ export const useApi = () => {
     issueInvite,
     listInvites,
     revokeInvite,
+    registerParticipant,
     registerSuperuser,
   };
 };

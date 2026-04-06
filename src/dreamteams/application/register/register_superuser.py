@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import structlog
 from pydantic import BaseModel
 
+from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
 from dreamteams.application.common.password_hasher import PasswordHasher
@@ -39,12 +40,13 @@ class RegisterSuperuser:
     """Interactor for registering a new superuser (admin user)."""
 
     uow: UoW
+    idp: IdProvider
     user_factory: UserFactory
     password_hasher: PasswordHasher
     superuser_config: SuperuserConfig
 
     async def execute(self, data: SuperuserForm) -> CreatedSuperuser:
-        """Create a new user with is_admin=True if the password matches the configured hash."""
+        """Promote the current user to admin, creating a new user if one does not exist yet."""
         logger.debug("Attempting superuser registration")
 
         matches = await asyncio.to_thread(
@@ -56,7 +58,10 @@ class RegisterSuperuser:
             logger.warning("Invalid superuser password supplied")
             raise InvalidSuperuserPasswordError
 
-        user = await self.user_factory.create_user()
+        user = await self.idp.get_user_or_none()
+        if user is None:
+            user = await self.user_factory.create_user()
+
         user.is_admin = True
 
         await self.uow.commit()

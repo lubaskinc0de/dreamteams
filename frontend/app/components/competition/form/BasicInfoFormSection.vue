@@ -11,14 +11,16 @@ interface Props {
   domains: Domain[];
   participantType: ParticipantType;
   isTeamCompetition: boolean;
+  autoAccept?: boolean;
   isArchived?: boolean;
   showArchiveField?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
   showArchiveField: false,
+  autoAccept: false,
 });
-const emit = defineEmits(['update:title', 'update:description', 'update:domains', 'update:participantType', 'update:isTeamCompetition', 'update:isArchived']);
+const emit = defineEmits(['update:title', 'update:description', 'update:domains', 'update:participantType', 'update:isTeamCompetition', 'update:autoAccept', 'update:isArchived']);
 
 const { t } = useI18n();
 
@@ -124,6 +126,22 @@ const participantTypeOptions = [
             size="xl"
           />
           <span class="text-gray-700 dark:text-gray-300">{{ t('competition.form.isTeam.checkboxLabel') }}</span>
+        </div>
+      </UFormField>
+
+      <!-- Auto Accept -->
+      <UFormField
+        name="auto_accept"
+        :label="t('competition.form.autoAccept.label')"
+        size="xl"
+      >
+        <div class="flex items-center gap-3">
+          <USwitch
+            :model-value="autoAccept"
+            @update:model-value="emit('update:autoAccept', $event)"
+            size="xl"
+          />
+          <span class="text-gray-700 dark:text-gray-300">{{ t('competition.form.autoAccept.checkboxLabel') }}</span>
         </div>
       </UFormField>
 
