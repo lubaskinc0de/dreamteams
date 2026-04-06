@@ -14,6 +14,7 @@ Represents a Participant's intention to participate in a specific Competition. A
 | `domains`          | `list[Domain]`           | Domains the participant wants to work in (subset of competition's) |
 | `status`           | `ApplicationStatus`      | Current status of the application                                  |
 | `created_at`       | `datetime`               | Timestamp of application creation                                  |
+| `form_data`        | `dict[str, Any] \| None` | Answers to the competition's ApplicationForm fields; `None` if the competition has no form |
 
 ## ApplicationStatus (Enum)
 
@@ -33,6 +34,8 @@ Represents a Participant's intention to participate in a specific Competition. A
 6. Only applications in `PENDING` status can be withdrawn (deleted) by the participant.
 7. Only the organizer who owns the competition can accept or reject applications.
 8. If the competition has `auto_accept=True`, the application is created with status `ACCEPTED`; otherwise `PENDING`.
+9. If the competition has an ApplicationForm, `form_data` must be provided and validated against the form (see [ApplicationForm](./application-form.md)).
+10. If the competition has no ApplicationForm, `form_data` must be `None`.
 
 ## Lifecycle
 

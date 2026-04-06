@@ -69,6 +69,15 @@ The `UNAUTHORIZED` error includes a `reason` field in metadata with one of the f
 | `COMPETITION_NOT_FOUND`       | 404         | Competition does not exist           | None     |
 | `INVALID_COMPETITION_DATA`    | 400         | Competition data fails validation    | None     |
 
+### Application Management
+
+| Code                              | HTTP Status | Description                                                                              | Metadata |
+| --------------------------------- | ----------- | ---------------------------------------------------------------------------------------- | -------- |
+| `INVALID_APPLICATION_DATA`        | 400         | Application data fails validation (bad domains, form data mismatch, etc.)               | None     |
+| `APPLICATION_ALREADY_RESOLVED`    | 409         | Application is not in PENDING status and cannot be accepted or rejected again            | None     |
+| `APPLICATION_FORM_NOT_FOUND`      | 404         | No ApplicationForm exists for the given competition                                      | None     |
+| `INVALID_APPLICATION_FORM_DATA`   | 400         | ApplicationForm definition is invalid (duplicate field names, bad choices config, etc.) | None     |
+
 ### Participant Management
 
 | Code                          | HTTP Status | Description                          | Metadata |

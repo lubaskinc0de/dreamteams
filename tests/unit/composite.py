@@ -5,6 +5,8 @@ from zoneinfo import ZoneInfo
 from hypothesis import strategies as st
 
 from dreamteams.entities.application.entity import ApplicationData
+from dreamteams.entities.application_form.entity import ApplicationForm, ApplicationFormData, application_form_factory
+from dreamteams.entities.application_form.vo.field import Field, FieldChoice, FieldType
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
@@ -315,3 +317,64 @@ def valid_application_data(draw: st.DrawFn, domains: list[Domain] | None = None)
     else:
         selected = draw(st.lists(st.sampled_from(Domain), min_size=1, unique=True))
     return ApplicationData(domains=selected)
+
+
+@st.composite
+def valid_field_choice(draw: st.DrawFn) -> FieldChoice:
+    """Valid FieldChoice with non-blank value and label."""
+    return FieldChoice(value=draw(valid_text()), label=draw(valid_text()))
+
+
+@st.composite
+def valid_field(draw: st.DrawFn, field_type: FieldType | None = None) -> Field:
+    """Valid Field. Generates choices for SELECT/MULTISELECT types."""
+    ft = field_type if field_type is not None else draw(st.sampled_from(list(FieldType)))
+    name = draw(valid_text())
+    label = draw(valid_text())
+    required = draw(st.booleans())
+    if ft in (FieldType.SELECT, FieldType.MULTISELECT):
+        choices = draw(
+            st.lists(valid_field_choice(), min_size=1, max_size=5, unique_by=lambda c: c.value),
+        )
+        return Field(name=name, label=label, type=ft, required=required, choices=tuple(choices))
+    return Field(name=name, label=label, type=ft, required=required)
+
+
+@st.composite
+def valid_application_form_data(draw: st.DrawFn, min_fields: int = 1) -> ApplicationFormData:
+    """ApplicationFormData with at least min_fields uniquely-named fields."""
+    fields = draw(
+        st.lists(valid_field(), min_size=min_fields, max_size=5, unique_by=lambda f: f.name),
+    )
+    return ApplicationFormData(fields=fields)
+
+
+@st.composite
+def valid_application_form(draw: st.DrawFn, user: User, clock: Clock, competition: Competition) -> ApplicationForm:
+    """Valid ApplicationForm entity created via factory."""
+    data = draw(valid_application_form_data())
+    return application_form_factory(data=data, competition=competition, user=user, clock=clock)
+
+
+@st.composite
+def valid_form_data_for_form(draw: st.DrawFn, form: ApplicationForm) -> dict[str, Any]:
+    """Valid form_data dict satisfying all fields in the given ApplicationForm."""
+    result: dict[str, Any] = {}
+    for field in form.fields:
+        # optional fields are randomly included or skipped
+        if not field.required and not draw(st.booleans()):
+            continue
+        if field.type == FieldType.STRING:
+            result[field.name] = draw(valid_text())
+        elif field.type == FieldType.INT:
+            result[field.name] = draw(st.integers())
+        elif field.type == FieldType.SELECT:
+            assert field.choices is not None
+            result[field.name] = draw(st.sampled_from(field.choices)).value
+        elif field.type == FieldType.MULTISELECT:
+            assert field.choices is not None
+            chosen = draw(
+                st.lists(st.sampled_from(field.choices), min_size=1, unique_by=lambda c: c.value),
+            )
+            result[field.name] = [c.value for c in chosen]
+    return result
