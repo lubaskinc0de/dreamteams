@@ -8,26 +8,28 @@ from dreamteams.entities.participant.vo.participant_skill import SkillLevel
 
 
 def _skills() -> list[ParticipantSkillForm]:
-    """Generate random skills with random levels."""
+    """Generate random skills with unique names."""
     faker = ParticipantFormFactory.__faker__
+    count = faker.random_int(min=1, max=10)
     return [
         ParticipantSkillForm(
-            name=faker.word(),
+            name=f"{faker.word()}-{i}",
             level=faker.random_element(list(SkillLevel)),
         )
-        for _ in range(faker.random_int(min=1, max=10))
+        for i in range(count)
     ]
 
 
 def _contacts() -> list[ParticipantContactForm]:
-    """Generate random contacts URLs."""
+    """Generate random contacts with unique titles and URLs."""
     faker = ParticipantFormFactory.__faker__
+    count = faker.random_int(min=1, max=10)
     return [
         ParticipantContactForm(
-            title=faker.word(),
-            url=HttpUrl(faker.url()),
+            title=f"{faker.word()}-{i}",
+            url=HttpUrl(f"https://contact-{i}-{faker.lexify('????')}.example.com/"),
         )
-        for _ in range(faker.random_int(min=1, max=10))
+        for i in range(count)
     ]
 
 

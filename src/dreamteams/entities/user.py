@@ -117,25 +117,35 @@ class Participant(Entity):
     created_at: datetime
     updated_at: datetime
 
+    def __post_init__(self) -> None:
+        """Enforce Participant invariants on every construction and mutation."""
+        if not self.full_name.strip():
+            raise InvalidParticipantDataError(message="Full name must not be empty")
+
+        if not self.skills:
+            raise InvalidParticipantDataError(message="Skills list must not be empty")
+
+        if not self.preferred_domains:
+            raise InvalidParticipantDataError(message="Preferred domains list not be empty")
+
+        skill_names = [s.name for s in self.skills]
+        if len(skill_names) != len(set(skill_names)):
+            raise InvalidParticipantDataError(message="Skill names must be unique")
+
+        contact_titles = [c.title for c in self.contacts]
+        if len(contact_titles) != len(set(contact_titles)):
+            raise InvalidParticipantDataError(message="Contact titles must be unique")
+
+        contact_urls = [c.url for c in self.contacts]
+        if len(contact_urls) != len(set(contact_urls)):
+            raise InvalidParticipantDataError(message="Contact URLs must be unique")
+
     def update(
         self,
         data: "UpdateParticipantData",
         clock: Clock,
     ) -> None:
         """Update participant profile fields."""
-        if not data.full_name.strip():
-            raise InvalidParticipantDataError(message="Full name must not be empty")
-
-        if not data.skills:
-            raise InvalidParticipantDataError(message="Skills list must not be empty")
-
-        if not data.preferred_domains:
-            raise InvalidParticipantDataError(message="Preferred domains list not be empty")
-
-        urls = [c.url for c in data.contacts]
-        if len(urls) != len(set(urls)):
-            raise InvalidParticipantDataError(message="Contact URLs must be unique")
-
         self.full_name = data.full_name
         self.avatar_url = data.avatar_url
         self.bio = data.bio
@@ -144,6 +154,7 @@ class Participant(Entity):
         self.preferred_domains = data.preferred_domains
         self.contacts = data.contacts
         self.update_at = clock.now()
+        self.__post_init__()
 
 
 def participant_factory(
@@ -152,19 +163,6 @@ def participant_factory(
     clock: Clock,
 ) -> Participant:
     """Create a new Participant."""
-    if not data.full_name.strip():
-        raise InvalidParticipantDataError(message="Full name must not be empty")
-
-    if not data.skills:
-        raise InvalidParticipantDataError(message="Skills list must not be empty")
-
-    if not data.preferred_domains:
-        raise InvalidParticipantDataError(message="Preferred domains list not be empty")
-
-    urls = [c.url for c in data.contacts]
-    if len(urls) != len(set(urls)):
-        raise InvalidParticipantDataError(message="Contact URLs must be unique")
-
     now = clock.now()
     return Participant(
         id=uuid4(),

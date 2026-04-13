@@ -12,15 +12,19 @@ from dreamteams.adapters.tracing import TraceId, TracingConfig
 from dreamteams.application.common.gateway.competition import CompetitionSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.manage_application_form import ApplicationFormModel, CreatedApplicationForm
+from dreamteams.application.manage_applications import ApplicationsList
 from dreamteams.application.manage_competitions import CompetitionModel, CompetitionsList
 from dreamteams.application.manage_invites import InviteIssued, InviteModel, InvitesList
+from dreamteams.application.manage_my_applications import ApplicationModel
+from dreamteams.application.manage_my_applications import ApplicationsList as MyApplicationsList
 from dreamteams.application.manage_profile import ProfileModel
 from dreamteams.application.preview_competition.list import PreviewCompetitionsList
 from dreamteams.application.publish_competition import CreatedCompetition
 from dreamteams.application.register.register_organizer import CreatedOrganizer
 from dreamteams.application.register.register_participant import CreatedParticipant
 from dreamteams.application.register.register_superuser import CreatedSuperuser
-from dreamteams.entities.common.identifiers import CompetitionId, OrganizerInviteId
+from dreamteams.application.submit_application import CreatedApplication
+from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId, OrganizerInviteId
 
 retort = Retort()
 
@@ -30,6 +34,7 @@ SUPERUSER_URL = f"{USERS_URL}/superuser/"
 COMPETITIONS_URL = "/competitions"
 INVITES_URL = "/invites"
 PARTICIPANT_URL = "/participants"
+APPLICATIONS_URL = "/applications"
 
 
 @dataclass
@@ -390,4 +395,59 @@ class ApiClient:
         """Delete application form via DELETE /competitions/{competition_id}/application-form/."""
         url = f"{COMPETITIONS_URL}/{competition_id}/application-form/"
         async with self.session.delete(url, headers=self._headers) as response:
+            return await self._load_response(response, response_type=None)
+
+    async def submit_application(
+        self,
+        competition_id: CompetitionId,
+        data: dict[str, Any],
+    ) -> APIResponse[CreatedApplication]:
+        """Submit an application via POST /competitions/{competition_id}/applications/."""
+        url = f"{COMPETITIONS_URL}/{competition_id}/applications/"
+        async with self.session.post(url, headers=self._headers, json=data) as response:
+            return await self._load_response(response, response_type=CreatedApplication)
+
+    async def list_applications_by_competition(
+        self,
+        competition_id: CompetitionId,
+        page: int = 1,
+    ) -> APIResponse[ApplicationsList]:
+        """List applications for a competition via GET /competitions/{competition_id}/applications/."""
+        url = f"{COMPETITIONS_URL}/{competition_id}/applications/"
+        async with self.session.get(url, headers=self._headers, params={"page": page}) as response:
+            return await self._load_response(response, response_type=ApplicationsList)
+
+    async def list_my_applications(self, page: int = 1) -> APIResponse[MyApplicationsList]:
+        """List own applications via GET /applications/."""
+        async with self.session.get(APPLICATIONS_URL + "/", headers=self._headers, params={"page": page}) as response:
+            return await self._load_response(response, response_type=MyApplicationsList)
+
+    async def read_my_application(self, application_id: ApplicationId) -> APIResponse[ApplicationModel]:
+        """Read own application via GET /applications/{application_id}/my/."""
+        url = f"{APPLICATIONS_URL}/{application_id}/my/"
+        async with self.session.get(url, headers=self._headers) as response:
+            return await self._load_response(response, response_type=ApplicationModel)
+
+    async def read_application(self, application_id: ApplicationId) -> APIResponse[ApplicationModel]:
+        """Read application (organizer) via GET /applications/{application_id}/."""
+        url = f"{APPLICATIONS_URL}/{application_id}/"
+        async with self.session.get(url, headers=self._headers) as response:
+            return await self._load_response(response, response_type=ApplicationModel)
+
+    async def withdraw_application(self, application_id: ApplicationId) -> APIResponse[None]:
+        """Withdraw application via DELETE /applications/{application_id}/."""
+        url = f"{APPLICATIONS_URL}/{application_id}/"
+        async with self.session.delete(url, headers=self._headers) as response:
+            return await self._load_response(response, response_type=None)
+
+    async def accept_application(self, application_id: ApplicationId) -> APIResponse[None]:
+        """Accept application via POST /applications/{application_id}/accept/."""
+        url = f"{APPLICATIONS_URL}/{application_id}/accept/"
+        async with self.session.post(url, headers=self._headers) as response:
+            return await self._load_response(response, response_type=None)
+
+    async def reject_application(self, application_id: ApplicationId) -> APIResponse[None]:
+        """Reject application via POST /applications/{application_id}/reject/."""
+        url = f"{APPLICATIONS_URL}/{application_id}/reject/"
+        async with self.session.post(url, headers=self._headers) as response:
             return await self._load_response(response, response_type=None)

@@ -1,4 +1,4 @@
-# ReadApplication
+# ReadMyApplication
 
 ## Input
 
@@ -21,4 +21,4 @@
 ## Business Rules
 
 1. Application must exist (`APPLICATION_NOT_FOUND`)
-2. Only the participant who submitted the application or the organizer who owns the competition may read it (`ACCESS_DENIED`)
+2. Only the participant who submitted the application may read it (`ACCESS_DENIED`)

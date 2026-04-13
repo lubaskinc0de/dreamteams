@@ -63,6 +63,13 @@ async def test_view_participant_profile(
         response = await api_client.view_profile()
 
     profile_model = response.assert_status(200).ensure_content()
+    assert profile_model is not None
+    assert profile_model.participant is not None
+    # Skills order from DB is not guaranteed; compare sorted
+    assert sorted(profile_model.participant.skills, key=lambda s: s.name) == sorted(
+        [ParticipantSkill(name=s.name, level=s.level) for s in participant_form.skills],
+        key=lambda s: s.name,
+    )
     assert profile_model == ProfileModel(
         user_id=participant.user_id,
         organizer=None,
@@ -71,7 +78,7 @@ async def test_view_participant_profile(
             user_id=participant.user_id,
             full_name=participant_form.full_name,
             bio=participant_form.bio,
-            skills=[ParticipantSkill(name=s.name, level=s.level) for s in participant_form.skills],
+            skills=profile_model.participant.skills,
             experience_level=participant_form.experience_level,
             preferred_domains=participant_form.preferred_domains,
             contacts=[ParticipantContact(title=c.title, url=str(c.url)) for c in participant_form.contacts],

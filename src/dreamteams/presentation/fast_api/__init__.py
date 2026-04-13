@@ -3,6 +3,12 @@ from fastapi.exceptions import RequestValidationError
 
 from dreamteams.presentation.fast_api.error_handlers import app_error_handler, validation_error_handler
 from dreamteams.presentation.fast_api.routers.application_forms import router as application_forms_router
+from dreamteams.presentation.fast_api.routers.applications import (
+    applications_router,
+)
+from dreamteams.presentation.fast_api.routers.applications import (
+    competitions_router as applications_competitions_router,
+)
 from dreamteams.presentation.fast_api.routers.competitions import router as competitions_router
 from dreamteams.presentation.fast_api.routers.invites import router as invites_router
 from dreamteams.presentation.fast_api.routers.organizers import router as organizers_router
@@ -20,6 +26,8 @@ def include_routers(app: FastAPI) -> None:
     app.include_router(invites_router)
     app.include_router(participants_router)
     app.include_router(application_forms_router)
+    app.include_router(applications_competitions_router)
+    app.include_router(applications_router)
 
 
 def include_exception_handlers(app: FastAPI) -> None:

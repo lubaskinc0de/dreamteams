@@ -253,22 +253,22 @@ def valid_participant_data(draw: st.DrawFn) -> ParticipantData:
     bio = draw(valid_text())
 
     skills = draw(st.lists(participant_skill_data(), min_size=1))
+    skills_unique = list({s.name: s for s in skills}.values())
 
     experience_level = draw(st.sampled_from(list(ExperienceLevel)))
 
     preferred_domains = draw(st.lists(domain_data(), min_size=1))
 
-    contacts = draw(st.lists(participant_contact_data(), min_size=1))
-    contacts_unique = {c.url: c for c in contacts}
+    contacts = draw(st.lists(participant_contact_data(), min_size=1, unique_by=(lambda c: c.title, lambda c: c.url)))
 
     return ParticipantData(
         full_name=full_name,
         avatar_url=None,
         bio=bio,
-        skills=skills,
+        skills=skills_unique,
         experience_level=experience_level,
         preferred_domains=preferred_domains,
-        contacts=list(contacts_unique.values()),
+        contacts=contacts,
     )
 
 
@@ -290,22 +290,22 @@ def valid_participant_update_data(draw: st.DrawFn) -> UpdateParticipantData:
     bio = draw(valid_text())
 
     skills = draw(st.lists(participant_skill_data(), min_size=1))
+    skills_unique = list({s.name: s for s in skills}.values())
 
     experience_level = draw(st.sampled_from(list(ExperienceLevel)))
 
     preferred_domains = draw(st.lists(domain_data(), min_size=1))
 
-    contacts = draw(st.lists(participant_contact_data(), min_size=1))
-    contacts_unique = {c.url: c for c in contacts}
+    contacts = draw(st.lists(participant_contact_data(), min_size=1, unique_by=(lambda c: c.title, lambda c: c.url)))
 
     return UpdateParticipantData(
         full_name=full_name,
         avatar_url=None,
         bio=bio,
-        skills=skills,
+        skills=skills_unique,
         experience_level=experience_level,
         preferred_domains=preferred_domains,
-        contacts=list(contacts_unique.values()),
+        contacts=contacts,
     )
 
 

@@ -4,8 +4,14 @@ from hypothesis import strategies as st
 
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.errors.participant import InvalidParticipantDataError
+from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
 from dreamteams.entities.user import Participant, UpdateParticipantData, User
-from tests.unit.composite import participant_contact_data, valid_participant, valid_participant_update_data
+from tests.unit.composite import (
+    participant_contact_data,
+    participant_skill_data,
+    valid_participant,
+    valid_participant_update_data,
+)
 
 
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture, HealthCheck.too_slow], max_examples=30)
@@ -41,15 +47,59 @@ def test_update_participant_succeeds(
 
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=10)
 @given(st.data(), valid_participant_update_data())
-def test_participant_contacts_are_unique(
+def test_participant_skill_names_are_unique(
     user_without_organizer: User,
     clock: Clock,
     data: st.DataObject,
     valid_participant_update_data: UpdateParticipantData,
 ) -> None:
-    """Test cannot update participant with duplicate contacts."""
+    """Test cannot update participant with duplicate skill names."""
     participant = data.draw(valid_participant(user=user_without_organizer, clock=clock))
-    valid_participant_update_data.contacts = [data.draw(participant_contact_data())] * 2
+    duplicate_skill = data.draw(participant_skill_data())
+    valid_participant_update_data.skills = [duplicate_skill] * 2
+
+    with pytest.raises(InvalidParticipantDataError, match="Skill names must be unique"):
+        participant.update(
+            data=valid_participant_update_data,
+            clock=clock,
+        )
+
+
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=10)
+@given(st.data(), valid_participant_update_data())
+def test_participant_contact_titles_are_unique(
+    user_without_organizer: User,
+    clock: Clock,
+    data: st.DataObject,
+    valid_participant_update_data: UpdateParticipantData,
+) -> None:
+    """Test cannot update participant with duplicate contact titles."""
+    participant = data.draw(valid_participant(user=user_without_organizer, clock=clock))
+    contact = data.draw(participant_contact_data())
+    valid_participant_update_data.contacts = [
+        contact,
+        ParticipantContact(title=contact.title, url="https://other.example.com"),
+    ]
+
+    with pytest.raises(InvalidParticipantDataError, match="Contact titles must be unique"):
+        participant.update(
+            data=valid_participant_update_data,
+            clock=clock,
+        )
+
+
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=10)
+@given(st.data(), valid_participant_update_data())
+def test_participant_contact_urls_are_unique(
+    user_without_organizer: User,
+    clock: Clock,
+    data: st.DataObject,
+    valid_participant_update_data: UpdateParticipantData,
+) -> None:
+    """Test cannot update participant with duplicate contact URLs."""
+    participant = data.draw(valid_participant(user=user_without_organizer, clock=clock))
+    contact = data.draw(participant_contact_data())
+    valid_participant_update_data.contacts = [contact, ParticipantContact(title="Other Title", url=contact.url)]
 
     with pytest.raises(InvalidParticipantDataError, match="Contact URLs must be unique"):
         participant.update(
