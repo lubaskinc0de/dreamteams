@@ -53,3 +53,6 @@ cookie-secret:
 
 build-frontend:
     cd ./frontend; npm run generate
+
+docs:
+    mkdocs serve

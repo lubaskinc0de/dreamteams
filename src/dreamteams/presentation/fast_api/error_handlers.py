@@ -9,9 +9,14 @@ from dreamteams.adapters.auth.errors.base import UnauthorizedError
 from dreamteams.adapters.errors.http.response import ErrorResponse, InternalServerError, ValidationError
 from dreamteams.adapters.tracing import MissingTraceIdError
 from dreamteams.application.common.logger import Logger
+from dreamteams.application.errors.application_form import (
+    ApplicationFormAlreadyExistsError,
+    ApplicationFormNotFoundError,
+)
 from dreamteams.application.errors.invite import InviteNotFoundError
 from dreamteams.application.errors.organizer import OrganizerAlreadyExistsError
 from dreamteams.application.errors.user import InvalidSuperuserPasswordError, UserNotFoundError
+from dreamteams.entities.errors.application_form import InvalidApplicationFormDataError
 from dreamteams.entities.errors.base import AccessDeniedError, AppError
 from dreamteams.entities.errors.competition import CompetitionNotFoundError, InvalidCompetitionDataError
 from dreamteams.entities.errors.invite import InviteAlreadyRevokedError, InviteAlreadyUsedError, InviteRevokedError
@@ -37,6 +42,9 @@ error_to_http_status: dict[type[AppError], int] = {
     InviteAlreadyUsedError: 409,
     InviteRevokedError: 403,
     InvalidSuperuserPasswordError: 403,
+    ApplicationFormNotFoundError: 404,
+    ApplicationFormAlreadyExistsError: 409,
+    InvalidApplicationFormDataError: 400,
 }
 
 

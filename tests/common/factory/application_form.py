@@ -1,0 +1,77 @@
+from polyfactory.factories.pydantic_factory import ModelFactory
+
+from dreamteams.application.manage_application_form.create import (
+    ApplicationFormInput,
+    FieldChoiceForm,
+    FieldForm,
+)
+from dreamteams.entities.application_form.vo.field import FieldType
+
+
+def _field_forms_provider() -> list[FieldForm]:
+    """Generate a valid, non-empty list of FieldForm objects with unique names."""
+    random_ = ApplicationFormInputFactory.__random__
+    faker = ApplicationFormInputFactory.__faker__
+
+    candidates: list[FieldForm] = [
+        FieldForm(
+            name="bio",
+            label="Short bio",
+            type=FieldType.STRING,
+            required=True,
+            choices=None,
+        ),
+        FieldForm(
+            name="age",
+            label="Your age",
+            type=FieldType.INT,
+            required=False,
+            choices=None,
+        ),
+        FieldForm(
+            name="size",
+            label="T-shirt size",
+            type=FieldType.SELECT,
+            required=True,
+            choices=[
+                FieldChoiceForm(value="s", label="Small"),
+                FieldChoiceForm(value="m", label="Medium"),
+                FieldChoiceForm(value="l", label="Large"),
+            ],
+        ),
+        FieldForm(
+            name="roles",
+            label="Preferred roles",
+            type=FieldType.MULTISELECT,
+            required=False,
+            choices=[
+                FieldChoiceForm(value="frontend", label="Frontend"),
+                FieldChoiceForm(value="backend", label="Backend"),
+            ],
+        ),
+    ]
+
+    count = random_.randint(1, len(candidates))
+    chosen: list[FieldForm] = random_.sample(candidates, count)
+
+    # Guarantee at least one field in case of unexpected filtering
+    if not chosen:
+        chosen = [
+            FieldForm(
+                name=faker.slug()[:20],
+                label=faker.word().capitalize(),
+                type=FieldType.STRING,
+                required=True,
+                choices=None,
+            ),
+        ]
+
+    return chosen
+
+
+class ApplicationFormInputFactory(ModelFactory[ApplicationFormInput]):
+    """Factory for ApplicationFormInput models."""
+
+    __model__ = ApplicationFormInput
+
+    fields = _field_forms_provider

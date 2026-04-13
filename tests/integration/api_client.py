@@ -11,6 +11,7 @@ from dreamteams.adapters.errors.http.response import ErrorResponse
 from dreamteams.adapters.tracing import TraceId, TracingConfig
 from dreamteams.application.common.gateway.competition import CompetitionSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
+from dreamteams.application.manage_application_form import ApplicationFormModel, CreatedApplicationForm
 from dreamteams.application.manage_competitions import CompetitionModel, CompetitionsList
 from dreamteams.application.manage_invites import InviteIssued, InviteModel, InvitesList
 from dreamteams.application.manage_profile import ProfileModel
@@ -366,5 +367,27 @@ class ApiClient:
     async def revoke_invite(self, invite_id: OrganizerInviteId) -> APIResponse[None]:
         """Revoke an organizer invite via DELETE /invites/{invite_id}."""
         url = f"{INVITES_URL}/{invite_id}"
+        async with self.session.delete(url, headers=self._headers) as response:
+            return await self._load_response(response, response_type=None)
+
+    async def create_application_form(
+        self,
+        competition_id: CompetitionId,
+        data: dict[str, Any],
+    ) -> APIResponse[CreatedApplicationForm]:
+        """Create application form via POST /competitions/{competition_id}/application-form/."""
+        url = f"{COMPETITIONS_URL}/{competition_id}/application-form/"
+        async with self.session.post(url, headers=self._headers, json=data) as response:
+            return await self._load_response(response, response_type=CreatedApplicationForm)
+
+    async def read_application_form(self, competition_id: CompetitionId) -> APIResponse[ApplicationFormModel]:
+        """Read application form via GET /competitions/{competition_id}/application-form/."""
+        url = f"{COMPETITIONS_URL}/{competition_id}/application-form/"
+        async with self.session.get(url, headers=self._headers) as response:
+            return await self._load_response(response, response_type=ApplicationFormModel)
+
+    async def delete_application_form(self, competition_id: CompetitionId) -> APIResponse[None]:
+        """Delete application form via DELETE /competitions/{competition_id}/application-form/."""
+        url = f"{COMPETITIONS_URL}/{competition_id}/application-form/"
         async with self.session.delete(url, headers=self._headers) as response:
             return await self._load_response(response, response_type=None)

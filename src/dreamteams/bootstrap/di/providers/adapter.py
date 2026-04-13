@@ -10,6 +10,7 @@ from dreamteams.adapters.auth.idp.user import IdProviderImpl
 from dreamteams.adapters.avatar_storage import S3AvatarStorage, S3Config
 from dreamteams.adapters.clock import SystemClock
 from dreamteams.adapters.db.config import DbConfig
+from dreamteams.adapters.db.gateway.application_form import SAApplicationFormGateway
 from dreamteams.adapters.db.gateway.auth_user import SAAuthUserGateway
 from dreamteams.adapters.db.gateway.competition import SACompetitionGateway
 from dreamteams.adapters.db.gateway.organizer import SAOrganizerGateway
@@ -32,6 +33,7 @@ class AdapterProvider(Provider):
         WithParents[SAOrganizerGateway],
         WithParents[SACompetitionGateway],
         WithParents[SAOrganizerInviteGateway],
+        WithParents[SAApplicationFormGateway],
         scope=Scope.REQUEST,
     )
     auth_provider = provide(WithParents[SimpleAuthProvider], scope=Scope.REQUEST)

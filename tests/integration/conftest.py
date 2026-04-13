@@ -20,6 +20,7 @@ from dreamteams.adapters.clock import SystemClock
 from dreamteams.adapters.db.models.auth_user import auth_user_table
 from dreamteams.adapters.db.models.user import user_table
 from dreamteams.adapters.tracing import TraceId
+from dreamteams.application.manage_application_form import ApplicationFormInput, CreatedApplicationForm
 from dreamteams.application.manage_competitions.read import CompetitionModel
 from dreamteams.application.manage_invites import InviteIssued
 from dreamteams.application.publish_competition import CompetitionForm, CreatedCompetition
@@ -30,6 +31,7 @@ from dreamteams.bootstrap.di.container import get_async_container
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import UserId
 from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
+from tests.common.factory.application_form import ApplicationFormInputFactory
 from tests.common.factory.competition import CompetitionFormFactory, UpdateCompetitionFormFactory
 from tests.common.factory.organizer import OrganizerFormFactory
 from tests.common.factory.participant import ParticipantFormFactory
@@ -181,6 +183,7 @@ def api_client(http_session: ClientSession, app_config: Config, trace_id: TraceI
 
 
 # Mock data
+register_fixture(ApplicationFormInputFactory)
 register_fixture(CompetitionFormFactory)
 register_fixture(UpdateCompetitionFormFactory)
 register_fixture(OrganizerFormFactory)
@@ -297,6 +300,29 @@ async def competition(
     with api_client.authenticate(auth_user_id=USER_ID):
         response = await api_client.create_competition(competition_form.model_dump(mode="json"))
 
+    return response.assert_status(200).ensure_content()
+
+
+@pytest.fixture
+def application_form_input(
+    application_form_input_factory: ApplicationFormInputFactory,
+) -> ApplicationFormInput:
+    """Valid ApplicationFormInput built by the factory."""
+    return application_form_input_factory.build()
+
+
+@pytest.fixture
+async def created_application_form(
+    api_client: ApiClient,
+    competition: CreatedCompetition,
+    application_form_input: ApplicationFormInput,
+) -> CreatedApplicationForm:
+    """Created application form attached to the competition owned by USER_ID."""
+    with api_client.authenticate(auth_user_id=USER_ID):
+        response = await api_client.create_application_form(
+            competition.competition_id,
+            application_form_input.model_dump(mode="json"),
+        )
     return response.assert_status(200).ensure_content()
 
 

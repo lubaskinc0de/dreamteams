@@ -1,5 +1,10 @@
 from dishka import BaseScope, Provider, Scope, provide, provide_all
 
+from dreamteams.application.manage_application_form import (
+    CreateApplicationForm,
+    DeleteApplicationForm,
+    ReadApplicationForm,
+)
 from dreamteams.application.manage_competitions import (
     DeleteCompetition,
     ListCompetitions,
@@ -42,5 +47,8 @@ class InteractorProvider(Provider):
         ListInvites,
         ReadInvite,
         RevokeInvite,
+        CreateApplicationForm,
+        ReadApplicationForm,
+        DeleteApplicationForm,
     )
     user_factory = provide(UserFactory)

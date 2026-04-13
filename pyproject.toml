@@ -35,7 +35,10 @@ test = [
     "faker==39.0.0",
     "hypothesis==6.150.2",
 ]
-dev = ['dreamteams[test,lint]']
+docs = [
+    "mkdocs==1.6.1",
+]
+dev = ['dreamteams[test,lint,docs]']
 ci = ['dreamteams[dev]']
 
 [tool.pytest.ini_options]
