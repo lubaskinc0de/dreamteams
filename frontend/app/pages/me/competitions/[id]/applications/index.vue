@@ -1,0 +1,118 @@
+<script setup lang="ts">
+import { useCompetitionApplicationsStore } from '~/stores/competitionApplications';
+
+const { t } = useI18n();
+const route = useRoute();
+const router = useRouter();
+const store = useCompetitionApplicationsStore();
+
+const competitionId = computed(() => route.params.id as string);
+
+useSeoMeta({ title: t('applications.title') });
+
+onMounted(async () => {
+  await store.fetchApplications(competitionId.value);
+});
+
+const statusColor = (status: string) => {
+  if (status === 'accepted') return 'success';
+  if (status === 'rejected') return 'error';
+  return 'warning';
+};
+
+const goToApplication = (applicationId: string) => {
+  router.push(`/me/competitions/${competitionId.value}/applications/${applicationId}`);
+};
+</script>
+
+<template>
+  <UPage>
+    <UPageBody>
+      <UContainer class="!max-w-5xl">
+        <!-- Header -->
+        <div class="flex items-center gap-4 mb-6">
+          <UButton
+            icon="i-heroicons-arrow-left"
+            color="neutral"
+            variant="ghost"
+            @click="router.push('/me/competitions/applications')"
+          />
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+            {{ t('applications.title') }}
+          </h1>
+          <UBadge v-if="!store.loading" variant="soft" :label="String(store.total)" />
+        </div>
+
+        <!-- Error -->
+        <UAlert
+          v-if="store.error && !store.loading"
+          color="error"
+          variant="soft"
+          :title="t('apiErrors.' + store.error.code)"
+          icon="i-heroicons-exclamation-circle"
+          class="mb-4"
+        />
+
+        <!-- Loading -->
+        <div v-if="store.loading" class="space-y-3">
+          <USkeleton v-for="i in 5" :key="i" class="h-20 w-full rounded-lg" />
+        </div>
+
+        <!-- Empty -->
+        <UAlert
+          v-else-if="store.applications.length === 0 && !store.error"
+          color="info"
+          variant="soft"
+          :title="t('applications.empty')"
+          :description="t('applications.emptyDescription')"
+          icon="i-heroicons-inbox"
+        />
+
+        <!-- List -->
+        <div v-else class="space-y-3">
+          <UCard
+            v-for="app in store.applications"
+            :key="app.id"
+            class="cursor-pointer hover:shadow-md transition-shadow"
+            @click="goToApplication(app.id)"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-xs text-gray-400 font-mono truncate">{{ app.participant_id }}</span>
+                </div>
+                <div class="flex flex-wrap gap-1">
+                  <UBadge
+                    v-for="domain in app.domains"
+                    :key="domain"
+                    size="xs"
+                    variant="soft"
+                    :label="domain"
+                  />
+                </div>
+                <p class="text-xs text-gray-400 mt-1">
+                  {{ t('applications.submittedAt') }}: {{ new Date(app.created_at).toLocaleDateString() }}
+                </p>
+              </div>
+              <UBadge
+                :color="statusColor(app.status)"
+                variant="subtle"
+                :label="t('applications.status.' + app.status)"
+              />
+            </div>
+          </UCard>
+        </div>
+
+        <!-- Pagination -->
+        <div v-if="store.total > 10" class="mt-6 flex justify-center">
+          <UPagination
+            :total="store.total"
+            :page="store.page"
+            :items-per-page="10"
+            @update:page="(p) => store.fetchApplications(competitionId, p)"
+          />
+        </div>
+      </UContainer>
+    </UPageBody>
+  </UPage>
+</template>

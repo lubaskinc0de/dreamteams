@@ -1129,6 +1129,11 @@ export const useMockApi = () => {
     };
   };
 
+  const notImplemented = async () => ({
+    data: null,
+    error: { code: "INTERNAL_SERVER_ERROR", message: "Not available in mock mode", meta: null },
+  });
+
   return {
     checkAuth,
     registerOrganizer,
@@ -1147,5 +1152,16 @@ export const useMockApi = () => {
     revokeInvite,
     registerParticipant,
     registerSuperuser,
+    getApplicationForm: notImplemented,
+    createApplicationForm: notImplemented,
+    deleteApplicationForm: notImplemented,
+    submitApplication: notImplemented,
+    listApplicationsByCompetition: notImplemented,
+    listMyApplications: notImplemented,
+    readMyApplication: notImplemented,
+    readApplication: notImplemented,
+    withdrawApplication: notImplemented,
+    acceptApplication: notImplemented,
+    rejectApplication: notImplemented,
   };
 };

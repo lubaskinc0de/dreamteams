@@ -9,9 +9,10 @@ interface Props {
   competitions: CompetitionModel[];
   loading: boolean;
   hasMore: boolean;
+  showDelete?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), { showDelete: true });
 const emit = defineEmits(['click', 'delete', 'load-more']);
 
 const scrollArea = useTemplateRef('scrollArea');
@@ -44,6 +45,7 @@ watch(scrollArea, (newRef) => {
         v-for="competition in competitions"
         :key="competition.id"
         :competition="competition"
+        :show-delete="props.showDelete"
         @click="emit('click', $event)"
         @delete="emit('delete', $event)"
       />

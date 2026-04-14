@@ -121,6 +121,22 @@ const handleDelete = async () => {
               @edit="goToEdit"
               @delete="isDeleteModalOpen = true"
             />
+
+            <!-- Application management links -->
+            <div class="flex flex-wrap gap-2 mt-3">
+              <UButton
+                variant="soft"
+                icon="i-heroicons-document-text"
+                :label="t('applicationForm.title')"
+                @click="router.push(`/me/competitions/${competitionId}/application-form`)"
+              />
+              <UButton
+                variant="soft"
+                icon="i-heroicons-users"
+                :label="t('applications.title')"
+                @click="router.push(`/me/competitions/${competitionId}/applications`)"
+              />
+            </div>
           </div>
         </div>
 

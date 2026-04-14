@@ -47,6 +47,9 @@
     "theme": "Theme",
     "language": "Language",
     "adminPanel": "Admin Panel",
+    "applicationForms": "Application Forms",
+    "applications": "Applications",
+    "myCompetitions": "My Competitions",
     "logout": "Sign Out"
   },
   "home": {
@@ -360,7 +363,15 @@
     "INVITE_ALREADY_USED": "This invite has already been used",
     "INVITE_REVOKED": "This invite has been revoked and cannot be used",
     "INVALID_SUPERUSER_PASSWORD": "Invalid password. Access denied",
-    "PARTICIPANT_ALREADY_EXISTS": "You're already registered as a participant"
+    "PARTICIPANT_ALREADY_EXISTS": "You're already registered as a participant",
+    "COMPETITION_NOT_FOUND": "Competition not found",
+    "APPLICATION_FORM_ALREADY_EXISTS": "An application form already exists. Delete the current one before creating a new one",
+    "APPLICATION_FORM_NOT_FOUND": "Application form not found",
+    "INVALID_APPLICATION_FORM_DATA": "Invalid application form data",
+    "APPLICATION_NOT_FOUND": "Application not found",
+    "APPLICATION_ALREADY_EXISTS": "You have already applied to this competition",
+    "APPLICATION_ALREADY_RESOLVED": "Application has already been processed and cannot be changed",
+    "INVALID_APPLICATION_DATA": "Invalid application data. Check your selected domains and form answers"
   },
   "superuserRegister": {
     "title": "Superuser Registration",
@@ -432,6 +443,30 @@
     },
     "inviteCopyFailed": {
       "title": "Failed to copy code"
+    },
+    "applicationFormCreated": {
+      "title": "Form created!",
+      "description": "Application form created successfully"
+    },
+    "applicationFormDeleted": {
+      "title": "Form deleted",
+      "description": "Application form deleted successfully"
+    },
+    "applicationSubmitted": {
+      "title": "Application submitted!",
+      "description": "Your application has been sent"
+    },
+    "applicationWithdrawn": {
+      "title": "Application withdrawn",
+      "description": "Your application has been removed"
+    },
+    "applicationAccepted": {
+      "title": "Application accepted",
+      "description": "Participant's application has been approved"
+    },
+    "applicationRejected": {
+      "title": "Application rejected",
+      "description": "Participant's application has been rejected"
     }
   },
   "notifications": {
@@ -530,6 +565,7 @@
     "empty": "You don't have any competitions yet",
     "emptyDescription": "Create your first competition to get started",
     "createButton": "Create Competition",
+    "loadMore": "Load more",
     "searchPlaceholder": "Search competitions...",
     "filters": {
       "title": "Filters",
@@ -821,5 +857,95 @@
       "student": "University Students",
       "any": "Everyone"
     }
+  },
+  "applicationForm": {
+    "title": "Application Form",
+    "selectCompetition": "Select a competition to set up its application form",
+    "noForm": "No application form",
+    "noFormDescription": "Create a form for participants to fill in when applying",
+    "createButton": "Create Form",
+    "deleteButton": "Delete Form",
+    "deleteConfirmTitle": "Delete application form?",
+    "deleteConfirmDescription": "Future applicants will not be asked to fill in any form. Already submitted applications are not affected.",
+    "fields": "Form fields",
+    "addField": "Add field",
+    "removeField": "Remove field",
+    "fieldName": {
+      "label": "Field identifier",
+      "placeholder": "e.g. tshirt_size"
+    },
+    "fieldLabel": {
+      "label": "Display label",
+      "placeholder": "e.g. T-shirt size"
+    },
+    "fieldType": {
+      "label": "Field type",
+      "string": "Text",
+      "int": "Number",
+      "select": "Single choice",
+      "multiselect": "Multiple choice"
+    },
+    "fieldRequired": "Required field",
+    "choices": "Choices",
+    "addChoice": "Add choice",
+    "choiceValue": {
+      "label": "Value",
+      "placeholder": "e.g. S"
+    },
+    "choiceLabel": {
+      "label": "Display",
+      "placeholder": "e.g. Small"
+    },
+    "createdAt": "Created",
+    "saving": "Saving...",
+    "tabBuild": "Build",
+    "tabPreview": "Preview",
+    "previewEmpty": "Add fields above to see a preview"
+  },
+  "applications": {
+    "title": "Applications",
+    "selectCompetition": "Select a competition to view its applications",
+    "empty": "No applications yet",
+    "emptyDescription": "No participants have applied to this competition yet",
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "rejected": "Rejected"
+    },
+    "participant": "Participant",
+    "domains": "Domains",
+    "submittedAt": "Submitted",
+    "formData": "Form data",
+    "noFormData": "No form was required",
+    "acceptButton": "Accept",
+    "rejectButton": "Reject",
+    "accepting": "Accepting...",
+    "rejecting": "Rejecting...",
+    "alreadyResolved": "Application already processed",
+    "backToList": "Back to applications"
+  },
+  "myApplications": {
+    "title": "My Applications",
+    "empty": "No applications",
+    "emptyDescription": "Find a competition and submit your application",
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "rejected": "Rejected"
+    },
+    "competition": "Competition",
+    "domains": "Domains",
+    "submittedAt": "Submitted",
+    "formData": "Form data",
+    "noFormData": "No form was required",
+    "withdrawButton": "Withdraw application",
+    "withdrawing": "Withdrawing...",
+    "withdrawConfirmTitle": "Withdraw application?",
+    "withdrawConfirmDescription": "The application will be permanently deleted. You can apply again.",
+    "backToList": "Back to applications",
+    "applyButton": "Apply",
+    "applying": "Applying...",
+    "selectDomains": "Select domains",
+    "domainsRequired": "Select at least one domain"
   }
 }

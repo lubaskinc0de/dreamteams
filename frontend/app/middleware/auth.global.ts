@@ -41,20 +41,20 @@ export default defineNuxtRouteMiddleware(async (to) => {
     });
   }
 
+  const userStore = useUserStore();
+
   // If authenticated but not admin, deny access to admin routes
-  if (isAuthenticated.value && isAdminRoute) {
-    const userStore = useUserStore();
-    if (!userStore.isAdmin) {
-      throw createError({
-        statusCode: 403,
-        statusMessage: 'Forbidden',
-        fatal: true,
-      });
-    }
+  if (isAuthenticated.value && isAdminRoute && !userStore.isAdmin) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Forbidden',
+      fatal: true,
+    });
   }
 
-  // If authenticated but needs onboarding, redirect to onboarding flow
-  if (isAuthenticated.value && needsOnboarding.value && !isOnboardingRoute && !isSuperuserRegisterRoute) {
+  // If authenticated but needs onboarding, redirect to onboarding flow.
+  // Admins are allowed to visit /admin even without a role (to issue themselves an invite first).
+  if (isAuthenticated.value && needsOnboarding.value && !isOnboardingRoute && !isSuperuserRegisterRoute && !(isAdminRoute && userStore.isAdmin)) {
     return navigateTo('/onboarding', { replace: true });
   }
 

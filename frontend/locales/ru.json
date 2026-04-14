@@ -47,6 +47,9 @@
     "theme": "Тема",
     "language": "Язык",
     "adminPanel": "Панель администратора",
+    "applicationForms": "Формы заявок",
+    "applications": "Заявки",
+    "myCompetitions": "Мои соревнования",
     "logout": "Выйти"
   },
   "home": {
@@ -360,7 +363,15 @@
     "INVITE_ALREADY_USED": "Этот инвайт уже использован",
     "INVITE_REVOKED": "Этот инвайт был отозван и не может быть использован",
     "INVALID_SUPERUSER_PASSWORD": "Неверный пароль. Доступ запрещён",
-    "PARTICIPANT_ALREADY_EXISTS": "Вы уже зарегистрированы как участник"
+    "PARTICIPANT_ALREADY_EXISTS": "Вы уже зарегистрированы как участник",
+  "COMPETITION_NOT_FOUND": "Соревнование не найдено",
+  "APPLICATION_FORM_ALREADY_EXISTS": "Форма заявки уже существует. Удалите текущую перед созданием новой",
+  "APPLICATION_FORM_NOT_FOUND": "Форма заявки не найдена",
+  "INVALID_APPLICATION_FORM_DATA": "Неверные данные формы заявки",
+  "APPLICATION_NOT_FOUND": "Заявка не найдена",
+  "APPLICATION_ALREADY_EXISTS": "Вы уже подали заявку на это соревнование",
+  "APPLICATION_ALREADY_RESOLVED": "Заявка уже обработана и не может быть изменена",
+  "INVALID_APPLICATION_DATA": "Неверные данные заявки. Проверьте выбранные направления и ответы на форму"
   },
   "superuserRegister": {
     "title": "Регистрация суперпользователя",
@@ -432,6 +443,30 @@
     },
     "inviteCopyFailed": {
       "title": "Не удалось скопировать код"
+    },
+    "applicationFormCreated": {
+      "title": "Форма создана!",
+      "description": "Форма заявки успешно создана"
+    },
+    "applicationFormDeleted": {
+      "title": "Форма удалена",
+      "description": "Форма заявки успешно удалена"
+    },
+    "applicationSubmitted": {
+      "title": "Заявка подана!",
+      "description": "Ваша заявка успешно отправлена"
+    },
+    "applicationWithdrawn": {
+      "title": "Заявка отозвана",
+      "description": "Ваша заявка успешно удалена"
+    },
+    "applicationAccepted": {
+      "title": "Заявка принята",
+      "description": "Заявка участника одобрена"
+    },
+    "applicationRejected": {
+      "title": "Заявка отклонена",
+      "description": "Заявка участника отклонена"
     }
   },
   "notifications": {
@@ -530,6 +565,7 @@
     "empty": "У вас пока нет соревнований",
     "emptyDescription": "Создайте первое соревнование, чтобы начать работу",
     "createButton": "Создать соревнование",
+    "loadMore": "Загрузить ещё",
     "searchPlaceholder": "Поиск соревнований...",
     "filters": {
       "title": "Фильтры",
@@ -821,5 +857,95 @@
       "student": "Студенты",
       "any": "Все"
     }
+  },
+  "applicationForm": {
+    "title": "Форма заявки",
+    "selectCompetition": "Выберите соревнование, для которого хотите настроить форму заявки",
+    "noForm": "Форма заявки не создана",
+    "noFormDescription": "Создайте форму, чтобы участники заполняли её при подаче заявки",
+    "createButton": "Создать форму",
+    "deleteButton": "Удалить форму",
+    "deleteConfirmTitle": "Удалить форму заявки?",
+    "deleteConfirmDescription": "Все будущие заявки не смогут включать данные формы. Уже поданные заявки не затрагиваются.",
+    "fields": "Поля формы",
+    "addField": "Добавить поле",
+    "removeField": "Удалить поле",
+    "fieldName": {
+      "label": "Идентификатор поля",
+      "placeholder": "например: tshirt_size"
+    },
+    "fieldLabel": {
+      "label": "Отображаемое название",
+      "placeholder": "например: Размер футболки"
+    },
+    "fieldType": {
+      "label": "Тип поля",
+      "string": "Текст",
+      "int": "Число",
+      "select": "Выбор одного",
+      "multiselect": "Выбор нескольких"
+    },
+    "fieldRequired": "Обязательное поле",
+    "choices": "Варианты ответа",
+    "addChoice": "Добавить вариант",
+    "choiceValue": {
+      "label": "Значение",
+      "placeholder": "например: S"
+    },
+    "choiceLabel": {
+      "label": "Отображение",
+      "placeholder": "например: Маленький"
+    },
+    "createdAt": "Создана",
+    "saving": "Сохранение...",
+    "tabBuild": "Конструктор",
+    "tabPreview": "Предпросмотр",
+    "previewEmpty": "Добавьте поля выше, чтобы увидеть предпросмотр"
+  },
+  "applications": {
+    "title": "Заявки",
+    "selectCompetition": "Выберите соревнование, для которого хотите просмотреть заявки",
+    "empty": "Заявок пока нет",
+    "emptyDescription": "Участники ещё не подали заявки на это соревнование",
+    "status": {
+      "pending": "На рассмотрении",
+      "accepted": "Принята",
+      "rejected": "Отклонена"
+    },
+    "participant": "Участник",
+    "domains": "Направления",
+    "submittedAt": "Подана",
+    "formData": "Данные формы",
+    "noFormData": "Форма не заполнялась",
+    "acceptButton": "Принять",
+    "rejectButton": "Отклонить",
+    "accepting": "Принятие...",
+    "rejecting": "Отклонение...",
+    "alreadyResolved": "Заявка уже обработана",
+    "backToList": "К списку заявок"
+  },
+  "myApplications": {
+    "title": "Мои заявки",
+    "empty": "У вас нет заявок",
+    "emptyDescription": "Найдите соревнование и подайте заявку",
+    "status": {
+      "pending": "На рассмотрении",
+      "accepted": "Принята",
+      "rejected": "Отклонена"
+    },
+    "competition": "Соревнование",
+    "domains": "Направления",
+    "submittedAt": "Подана",
+    "formData": "Данные формы",
+    "noFormData": "Форма не заполнялась",
+    "withdrawButton": "Отозвать заявку",
+    "withdrawing": "Отзыв...",
+    "withdrawConfirmTitle": "Отозвать заявку?",
+    "withdrawConfirmDescription": "Заявка будет безвозвратно удалена. Вы сможете подать новую.",
+    "backToList": "К списку заявок",
+    "applyButton": "Подать заявку",
+    "applying": "Подача заявки...",
+    "selectDomains": "Выберите направления",
+    "domainsRequired": "Выберите хотя бы одно направление"
   }
 }

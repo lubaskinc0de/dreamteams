@@ -17,6 +17,13 @@ import type {
   CreatedInvite,
   InvitesList,
   CreatedSuperuser,
+  ApplicationFormInput,
+  CreatedApplicationForm,
+  ApplicationFormModel,
+  SubmitApplicationForm,
+  CreatedApplication,
+  ApplicationModel,
+  ApplicationsList,
 } from "~/types/api";
 
 interface RetryConfig {
@@ -380,6 +387,167 @@ export const useApi = () => {
     }
   };
 
+  // Application Form endpoints
+
+  const getApplicationForm = async (
+    competitionId: string,
+  ): Promise<{ data: ApplicationFormModel | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<ApplicationFormModel>(
+        `${apiBase}/api/competitions/${competitionId}/application-form/`,
+        { method: "GET" },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const createApplicationForm = async (
+    competitionId: string,
+    form: ApplicationFormInput,
+  ): Promise<{ data: CreatedApplicationForm | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<CreatedApplicationForm>(
+        `${apiBase}/api/competitions/${competitionId}/application-form/`,
+        { method: "POST", body: form, headers: { "Content-Type": "application/json" } },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const deleteApplicationForm = async (
+    competitionId: string,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<{}>(
+        `${apiBase}/api/competitions/${competitionId}/application-form/`,
+        { method: "DELETE" },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  // Application endpoints
+
+  const submitApplication = async (
+    competitionId: string,
+    form: SubmitApplicationForm,
+  ): Promise<{ data: CreatedApplication | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<CreatedApplication>(
+        `${apiBase}/api/competitions/${competitionId}/applications/`,
+        { method: "POST", body: form, headers: { "Content-Type": "application/json" } },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const listApplicationsByCompetition = async (
+    competitionId: string,
+    page: number = 1,
+  ): Promise<{ data: ApplicationsList | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<ApplicationsList>(
+        `${apiBase}/api/competitions/${competitionId}/applications/`,
+        { method: "GET", params: { page } },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const listMyApplications = async (
+    page: number = 1,
+  ): Promise<{ data: ApplicationsList | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<ApplicationsList>(
+        `${apiBase}/api/applications/`,
+        { method: "GET", params: { page } },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const readMyApplication = async (
+    applicationId: string,
+  ): Promise<{ data: ApplicationModel | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<ApplicationModel>(
+        `${apiBase}/api/applications/${applicationId}/my/`,
+        { method: "GET" },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const readApplication = async (
+    applicationId: string,
+  ): Promise<{ data: ApplicationModel | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<ApplicationModel>(
+        `${apiBase}/api/applications/${applicationId}/`,
+        { method: "GET" },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const withdrawApplication = async (
+    applicationId: string,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<{}>(
+        `${apiBase}/api/applications/${applicationId}/`,
+        { method: "DELETE" },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const acceptApplication = async (
+    applicationId: string,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<{}>(
+        `${apiBase}/api/applications/${applicationId}/accept/`,
+        { method: "POST" },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const rejectApplication = async (
+    applicationId: string,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<{}>(
+        `${apiBase}/api/applications/${applicationId}/reject/`,
+        { method: "POST" },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
   return {
     checkAuth,
     registerOrganizer,
@@ -398,5 +566,16 @@ export const useApi = () => {
     revokeInvite,
     registerParticipant,
     registerSuperuser,
+    getApplicationForm,
+    createApplicationForm,
+    deleteApplicationForm,
+    submitApplication,
+    listApplicationsByCompetition,
+    listMyApplications,
+    readMyApplication,
+    readApplication,
+    withdrawApplication,
+    acceptApplication,
+    rejectApplication,
   };
 };

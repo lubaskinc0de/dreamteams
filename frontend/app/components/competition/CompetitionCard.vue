@@ -8,9 +8,10 @@ import type { CompetitionModel } from '~/types/api';
 
 interface Props {
   competition: CompetitionModel;
+  showDelete?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), { showDelete: true });
 
 // Emits
 const emit = defineEmits<{
@@ -46,6 +47,7 @@ const handleDelete = () => {
         <div class="flex items-center gap-2 shrink-0">
           <CompetitionStatusBadge :competition="competition" />
           <UButton
+            v-if="props.showDelete"
             icon="i-heroicons-trash"
             color="error"
             variant="ghost"

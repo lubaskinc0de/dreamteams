@@ -5,6 +5,7 @@ from pydantic import BaseModel, EmailStr, Field
 
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
 from dreamteams.application.common.gateway.organizer_invite import OrganizerInviteGateway
+from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
 from dreamteams.application.common.phone_number import RussianPhoneNumber
@@ -39,6 +40,7 @@ class RegisterOrganizer:
     """Interactor for registering as ``Organizer``."""
 
     uow: UoW
+    idp: IdProvider
     user_factory: UserFactory
     organizer_gateway: OrganizerGateway
     organizer_invite_gateway: OrganizerInviteGateway
@@ -62,7 +64,9 @@ class RegisterOrganizer:
             )
             raise OrganizerAlreadyExistsError
 
-        user = await self.user_factory.create_user()
+        user = await self.idp.get_user_or_none()
+        if user is None:
+            user = await self.user_factory.create_user()
         organizer_id = uuid4()
         logger.debug("Generated new organizer id", user_id=user.id, organizer_id=organizer_id)
         organizer = Organizer(

@@ -43,10 +43,16 @@ export const useAuth = () => {
           hasProfile.value = false;
         }
       } else if (data) {
-        // User has profile
         userStore.profile = data;
-        needsOnboarding.value = false;
-        hasProfile.value = true;
+        // A user with no organizer and no participant still needs to pick a role,
+        // even if their profile record exists (e.g. superuser without a role yet)
+        if (data.organizer === null && data.participant === null) {
+          needsOnboarding.value = true;
+          hasProfile.value = false;
+        } else {
+          needsOnboarding.value = false;
+          hasProfile.value = true;
+        }
       }
     } catch (error: any) {
       console.error('Error checking auth status:', error);

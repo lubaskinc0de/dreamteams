@@ -33,29 +33,29 @@ const navItems = computed<NavigationMenuItem[]>(() => {
     return publicNavItems.value;
   }
 
+  const items = [...publicNavItems.value];
+
   if (userStore.isAdmin) {
-    return [
-      ...publicNavItems.value,
-      {
-        label: t('nav.adminPanel'),
-        icon: 'i-heroicons-shield-check',
-        to: '/admin/invites',
-      },
-    ];
+    items.push({
+      label: t('nav.adminPanel'),
+      icon: 'i-heroicons-shield-check',
+      to: '/admin/invites',
+    });
   }
 
-  if (!userStore.isOrganizer) {
-    return publicNavItems.value;
-  }
-
-  return [
-    ...publicNavItems.value,
-    {
-      label: t('nav.competitions'),
+  if (userStore.isOrganizer) {
+    items.push({
+      label: t('nav.myCompetitions'),
       icon: 'i-heroicons-trophy',
-      to: '/me/competitions',
-    },
-  ];
+      children: [
+        { label: t('nav.competitions'), icon: 'i-heroicons-list-bullet', to: '/me/competitions' },
+        { label: t('nav.applicationForms'), icon: 'i-heroicons-document-text', to: '/me/competitions/application-form' },
+        { label: t('nav.applications'), icon: 'i-heroicons-users', to: '/me/competitions/applications' },
+      ],
+    });
+  }
+
+  return items;
 });
 
 // Handle login

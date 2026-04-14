@@ -79,7 +79,15 @@ export type ErrorCode =
   | "INVITE_ALREADY_USED"
   | "INVITE_REVOKED"
   | "INVALID_SUPERUSER_PASSWORD"
-  | "PARTICIPANT_ALREADY_EXISTS";
+  | "PARTICIPANT_ALREADY_EXISTS"
+  | "COMPETITION_NOT_FOUND"
+  | "APPLICATION_FORM_ALREADY_EXISTS"
+  | "APPLICATION_FORM_NOT_FOUND"
+  | "INVALID_APPLICATION_FORM_DATA"
+  | "APPLICATION_NOT_FOUND"
+  | "APPLICATION_ALREADY_EXISTS"
+  | "APPLICATION_ALREADY_RESOLVED"
+  | "INVALID_APPLICATION_DATA";
 
 export interface CreatedSuperuser {
   user_id: string;
@@ -265,6 +273,78 @@ export interface PreviewCompetitionModel {
 
 export interface PreviewCompetitionsList {
   items: PreviewCompetitionModel[];
+  total: number;
+  page: number;
+}
+
+// Application Form types
+export type FieldType = "string" | "int" | "select" | "multiselect";
+
+export interface FieldChoiceForm {
+  value: string;
+  label: string;
+}
+
+export interface FieldForm {
+  name: string;
+  label: string;
+  type: FieldType;
+  required?: boolean;
+  choices?: FieldChoiceForm[] | null;
+}
+
+export interface ApplicationFormInput {
+  fields: FieldForm[];
+}
+
+export interface CreatedApplicationForm {
+  application_form_id: string;
+}
+
+export interface FieldChoiceModel {
+  value: string;
+  label: string;
+}
+
+export interface FieldModel {
+  name: string;
+  label: string;
+  type: FieldType;
+  required: boolean;
+  choices: FieldChoiceModel[] | null;
+}
+
+export interface ApplicationFormModel {
+  id: string;
+  competition_id: string;
+  created_at: string;
+  fields: FieldModel[];
+}
+
+// Application types
+export type ApplicationStatus = "pending" | "accepted" | "rejected";
+
+export interface SubmitApplicationForm {
+  domains: Domain[];
+  form_data: Record<string, any> | null;
+}
+
+export interface CreatedApplication {
+  application_id: string;
+}
+
+export interface ApplicationModel {
+  id: string;
+  participant_id: string;
+  competition_id: string;
+  domains: Domain[];
+  status: ApplicationStatus;
+  created_at: string;
+  form_data: Record<string, any> | null;
+}
+
+export interface ApplicationsList {
+  items: ApplicationModel[];
   total: number;
   page: number;
 }
