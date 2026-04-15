@@ -1,11 +1,4 @@
 services:
-    grafana:
-        extends:
-            file: docker-compose.base.yml
-            service: grafana
-        volumes:
-            - grafana_data:/var/lib/grafana
-
     nginx:
         extends:
             file: docker-compose.base.yml
@@ -17,6 +10,8 @@ services:
                 condition: service_healthy
             rustfs:
                 condition: service_started
+        networks:
+            - "shared"
 
     oauth2-proxy:
         extends:
@@ -25,6 +20,8 @@ services:
         depends_on:
             redis:
                 condition: service_healthy
+        networks:
+            - "shared"
 
     redis:
         extends:
@@ -32,6 +29,8 @@ services:
             service: redis
         volumes:
             - redis_data:/data
+        networks:
+            - "shared"
 
     migrations:
         extends:
@@ -40,6 +39,8 @@ services:
         depends_on:
             db:
                 condition: service_healthy
+        networks:
+            - "shared"
 
     api:
         extends:
@@ -52,6 +53,8 @@ services:
                 condition: service_completed_successfully
             rustfs:
                 condition: service_started
+        networks:
+            - "shared"
 
     db:
         extends:
@@ -59,18 +62,8 @@ services:
             service: db
         volumes:
             - pg_data:/var/lib/postgresql/data/
-
-    vector:
-        extends:
-            file: docker-compose.base.yml
-            service: vector
-
-    loki:
-        extends:
-            file: docker-compose.base.yml
-            service: loki
-        volumes:
-            - loki_data:/loki
+        networks:
+            - "shared"
 
     rustfs:
         extends:
@@ -78,6 +71,8 @@ services:
             service: rustfs
         volumes:
             - rustfs_data:/data
+        networks:
+            - "shared"
 
 volumes:
     pg_data:
@@ -85,3 +80,7 @@ volumes:
     loki_data:
     redis_data:
     rustfs_data:
+
+networks:
+    shared:
+        external: true

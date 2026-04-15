@@ -1,14 +1,4 @@
 services:
-    grafana:
-        image: grafana/grafana:12.1.4
-        build:
-            context: ../
-            dockerfile: docker/grafana.Dockerfile
-        restart: unless-stopped
-        container_name: grafana
-        ports:
-            - "3000:3000"
-
     nginx:
         image: nginx:1.29.3
         restart: unless-stopped
@@ -100,24 +90,6 @@ services:
         volumes:
             - ../.config/init-db.sql:/docker-entrypoint-initdb.d/init.sql
 
-    vector:
-        container_name: vector
-        build:
-            context: ../
-            dockerfile: docker/vector.Dockerfile
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock
-
-    loki:
-        build:
-            context: ../
-            dockerfile: docker/loki.Dockerfile
-        container_name: loki
-        command: ["-config.file=/etc/loki/config.yaml"]
-        expose:
-            - "3100"
-        restart: unless-stopped
-    
     rustfs:
         image: rustfs/rustfs:1.0.0-alpha.82
         container_name: rustfs

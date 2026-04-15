@@ -1,9 +1,7 @@
 import pytest
 
-from dreamteams.application.register.register_organizer import CreatedOrganizer
-from dreamteams.entities.common.identifiers import UserId
 from tests.integration.api_client import ApiClient
-from tests.integration.constants import ADMIN_USER_ID, USER_ID
+from tests.integration.helpers.facade import Gateway
 
 
 @pytest.mark.parametrize(
@@ -15,11 +13,15 @@ from tests.integration.constants import ADMIN_USER_ID, USER_ID
 )
 async def test_admin_can_issue_invite(
     api_client: ApiClient,
-    admin_user_id: UserId,  # noqa: ARG001
+    gateway: Gateway,
     data: dict[str, object],
 ) -> None:
     """Admin can issue an invite with or without a display name."""
-    with api_client.authenticate(auth_user_id=ADMIN_USER_ID):
+    # Arrange
+    admin = await gateway.admin.create()
+
+    # Act
+    with api_client.authenticate(auth_user_id=admin.auth_id):
         response = await api_client.issue_invite(data)
 
     content = response.assert_status(200).ensure_content()
@@ -30,18 +32,18 @@ async def test_admin_can_issue_invite(
 
 async def test_non_admin_cannot_issue_invite(
     api_client: ApiClient,
-    organizer: CreatedOrganizer,  # noqa: ARG001
+    gateway: Gateway,
 ) -> None:
     """Non-admin users get ACCESS_DENIED when trying to issue invites."""
-    with api_client.authenticate(auth_user_id=USER_ID):
+    organizer = await gateway.organizer.create_with_admin(gateway.admin)
+
+    with api_client.authenticate(auth_user_id=organizer.organizer.auth_id):
         response = await api_client.issue_invite({})
 
     response.assert_error(403, "ACCESS_DENIED")
 
 
-async def test_unauthenticated_cannot_issue_invite(
-    api_client: ApiClient,
-) -> None:
+async def test_unauthenticated_cannot_issue_invite(api_client: ApiClient) -> None:
     """Unauthenticated requests get UNAUTHORIZED when trying to issue invites."""
     response = await api_client.issue_invite({})
 

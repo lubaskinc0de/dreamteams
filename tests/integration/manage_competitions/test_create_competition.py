@@ -2,7 +2,6 @@ from typing import Any
 
 import pytest
 
-from dreamteams.application.register.register_organizer import CreatedOrganizer
 from tests.common.factory.competition import CompetitionFormFactory
 from tests.common.helpers.competition import (
     INVALID_COMPETITION_DATA_CASES,
@@ -10,19 +9,19 @@ from tests.common.helpers.competition import (
     schedule_from_deltas,
 )
 from tests.integration.api_client import ApiClient
-from tests.integration.constants import USER_ID
+from tests.integration.helpers.facade import Gateway
 
 
 async def test_create_competition_as_organizer_succeeds(
     api_client: ApiClient,
-    organizer: CreatedOrganizer,  # noqa: ARG001
     competition_form_factory: CompetitionFormFactory,
+    gateway: Gateway,
 ) -> None:
     """Test creating competition as organizer."""
-    data = competition_form_factory.build().model_dump(mode="json")
+    organizer = await gateway.organizer.create_with_admin(gateway.admin)
 
-    with api_client.authenticate(auth_user_id=USER_ID):
-        response = await api_client.create_competition(data)
+    with api_client.authenticate(auth_user_id=organizer.organizer.auth_id):
+        response = await api_client.create_competition(competition_form_factory.build().model_dump(mode="json"))
 
     response.assert_status(200).ensure_content()
 
@@ -30,30 +29,28 @@ async def test_create_competition_as_organizer_succeeds(
 @pytest.mark.parametrize(("update_data", "expected_error"), INVALID_COMPETITION_DATA_CASES)
 async def test_create_competition_with_invalid_data(
     api_client: ApiClient,
-    organizer: CreatedOrganizer,  # noqa: ARG001
     competition_form_factory: CompetitionFormFactory,
+    gateway: Gateway,
     update_data: dict[str, Any],
     expected_error: str,
 ) -> None:
     """Test creating competition with invalid data."""
+    # Arrange
+    organizer = await gateway.organizer.create_with_admin(gateway.admin)
     base_data = competition_form_factory.build().model_dump(mode="json")
 
     update_data = update_data.copy()
-
-    # Convert schedule with timedelta to ISO strings
     if "schedule" in update_data:
-        schedule = update_data["schedule"]
-        update_data["schedule"] = schedule_from_deltas(**schedule)
-
-    # Convert milestones with timedelta to ISO strings
+        update_data["schedule"] = schedule_from_deltas(**update_data["schedule"])
     if "milestones" in update_data:
         update_data["milestones"] = milestones_from_deltas(update_data["milestones"])
-
     base_data.update(update_data)
 
-    with api_client.authenticate(auth_user_id=USER_ID):
+    # Act
+    with api_client.authenticate(auth_user_id=organizer.organizer.auth_id):
         response = await api_client.create_competition(base_data)
 
+    # Assert
     response.assert_error(422, expected_error)
 
 

@@ -1,21 +1,22 @@
 from uuid import uuid4
 
-from dreamteams.application.register.register_participant import CreatedParticipant
-from dreamteams.application.submit_application import CreatedApplication
 from tests.integration.api_client import ApiClient
-from tests.integration.constants import ANOTHER_PARTICIPANT_USER_ID, PARTICIPANT_USER_ID, USER_ID
+from tests.integration.helpers.facade import Gateway
 
 
 async def test_participant_can_withdraw_pending_application(
     api_client: ApiClient,
-    submitted_application: CreatedApplication,
+    gateway: Gateway,
 ) -> None:
     """Participant who submitted a PENDING application can withdraw it successfully."""
     # Arrange
-    application_id = submitted_application.application_id
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+    application_id = await gateway.application.submit(participant.auth_id, comp)
 
     # Act
-    with api_client.authenticate(auth_user_id=PARTICIPANT_USER_ID):
+    with api_client.authenticate(auth_user_id=participant.auth_id):
         response = await api_client.withdraw_application(application_id)
 
     # Assert
@@ -24,11 +25,14 @@ async def test_participant_can_withdraw_pending_application(
 
 async def test_unauthenticated_cannot_withdraw_application(
     api_client: ApiClient,
-    submitted_application: CreatedApplication,
+    gateway: Gateway,
 ) -> None:
     """Unauthenticated requests to withdraw an application are rejected with UNAUTHORIZED."""
     # Arrange
-    application_id = submitted_application.application_id
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+    application_id = await gateway.application.submit(participant.auth_id, comp)
 
     # Act
     response = await api_client.withdraw_application(application_id)
@@ -39,15 +43,18 @@ async def test_unauthenticated_cannot_withdraw_application(
 
 async def test_other_participant_cannot_withdraw_application(
     api_client: ApiClient,
-    submitted_application: CreatedApplication,
-    another_participant: CreatedParticipant,  # noqa: ARG001
+    gateway: Gateway,
 ) -> None:
     """A registered participant who did not submit the application is denied with ACCESS_DENIED."""
     # Arrange
-    application_id = submitted_application.application_id
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    submitter = await gateway.participant.create()
+    other_participant = await gateway.participant.create()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+    application_id = await gateway.application.submit(submitter.auth_id, comp)
 
     # Act
-    with api_client.authenticate(auth_user_id=ANOTHER_PARTICIPANT_USER_ID):
+    with api_client.authenticate(auth_user_id=other_participant.auth_id):
         response = await api_client.withdraw_application(application_id)
 
     # Assert
@@ -56,16 +63,18 @@ async def test_other_participant_cannot_withdraw_application(
 
 async def test_accepted_application_cannot_be_withdrawn(
     api_client: ApiClient,
-    submitted_application: CreatedApplication,
+    gateway: Gateway,
 ) -> None:
     """A participant cannot withdraw an application that has already been accepted."""
-    # Arrange — accept the application as the competition organizer
-    application_id = submitted_application.application_id
-    with api_client.authenticate(auth_user_id=USER_ID):
-        (await api_client.accept_application(application_id)).assert_status(200)
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+    application_id = await gateway.application.submit(participant.auth_id, comp)
+    await gateway.application.accept(application_id, owner.organizer.auth_id)
 
     # Act
-    with api_client.authenticate(auth_user_id=PARTICIPANT_USER_ID):
+    with api_client.authenticate(auth_user_id=participant.auth_id):
         response = await api_client.withdraw_application(application_id)
 
     # Assert
@@ -74,14 +83,15 @@ async def test_accepted_application_cannot_be_withdrawn(
 
 async def test_withdrawing_nonexistent_application_fails(
     api_client: ApiClient,
-    different_participant: CreatedParticipant,  # noqa: ARG001
+    gateway: Gateway,
 ) -> None:
     """Withdrawing an application that does not exist is rejected with APPLICATION_NOT_FOUND."""
     # Arrange
+    participant = await gateway.participant.create()
     nonexistent_id = uuid4()
 
     # Act
-    with api_client.authenticate(auth_user_id=PARTICIPANT_USER_ID):
+    with api_client.authenticate(auth_user_id=participant.auth_id):
         response = await api_client.withdraw_application(nonexistent_id)
 
     # Assert

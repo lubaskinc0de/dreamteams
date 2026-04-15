@@ -1,12 +1,10 @@
 from typing import Any
+from uuid import uuid4
 
 import pytest
 from dishka import AsyncContainer
-from faker import Faker
 
 from dreamteams.application.common.gateway.competition import CompetitionGateway
-from dreamteams.application.publish_competition import CreatedCompetition
-from dreamteams.application.register.register_organizer import CreatedOrganizer
 from dreamteams.entities.common.clock import Clock
 from tests.common.factory.competition import UpdateCompetitionFormFactory
 from tests.common.helpers.competition import (
@@ -16,23 +14,28 @@ from tests.common.helpers.competition import (
 )
 from tests.integration.api_client import ApiClient
 from tests.integration.competition_helpers import competition_update_form_to_model
-from tests.integration.constants import DIFFERENT_USER_ID, USER_ID
+from tests.integration.helpers.facade import Gateway
 
 
 async def test_update_competition_as_owner_succeeds(
     api_client: ApiClient,
-    competition: CreatedCompetition,
+    gateway: Gateway,
     update_competition_form_factory: UpdateCompetitionFormFactory,
     request_container: AsyncContainer,
     clock: Clock,
 ) -> None:
     """Test updating competition as owner."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    comp = await gateway.competition.create(owner.organizer.auth_id)
+
     update_form = update_competition_form_factory.build()
     data = update_form.model_dump(mode="json")
+
     competition_gateway = await request_container.get(CompetitionGateway)
-    db_competition = await competition_gateway.get(competition.competition_id)
+    db_competition = await competition_gateway.get(comp.created.competition_id)
     expected_model = competition_update_form_to_model(
-        competition_id=competition.competition_id,
+        competition_id=comp.created.competition_id,
         updated_at=db_competition.updated_at,
         created_at=db_competition.created_at,
         organizer_id=db_competition.organizer_id,
@@ -40,12 +43,13 @@ async def test_update_competition_as_owner_succeeds(
         clock=clock,
     )
 
-    with api_client.authenticate(auth_user_id=USER_ID):
-        update_response = await api_client.update_competition(competition.competition_id, data)
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        update_response = await api_client.update_competition(comp.created.competition_id, data)
         update_response.assert_status(200)
+        read_response = await api_client.read_competition(comp.created.competition_id)
 
-        read_response = await api_client.read_competition(competition.competition_id)
-
+    # Assert
     actual_model = read_response.assert_status(200).ensure_content()
     assert actual_model.updated_at > expected_model.updated_at
     expected_model.updated_at = actual_model.updated_at
@@ -55,28 +59,28 @@ async def test_update_competition_as_owner_succeeds(
 @pytest.mark.parametrize(("update_data", "expected_error"), INVALID_COMPETITION_DATA_CASES)
 async def test_update_competition_with_invalid_data(
     api_client: ApiClient,
-    competition: CreatedCompetition,
+    gateway: Gateway,
     update_competition_form_factory: UpdateCompetitionFormFactory,
     update_data: dict[str, Any],
     expected_error: str,
 ) -> None:
     """Test updating competition with invalid data."""
     # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    comp = await gateway.competition.create(owner.organizer.auth_id)
+
     base_data = update_competition_form_factory.build().model_dump(mode="json")
     update_data = update_data.copy()
 
     if "schedule" in update_data:
-        schedule = update_data["schedule"]
-        update_data["schedule"] = schedule_from_deltas(**schedule)
-
+        update_data["schedule"] = schedule_from_deltas(**update_data["schedule"])
     if "milestones" in update_data:
         update_data["milestones"] = milestones_from_deltas(update_data["milestones"])
-
     base_data.update(update_data)
 
     # Act
-    with api_client.authenticate(auth_user_id=USER_ID):
-        response = await api_client.update_competition(competition.competition_id, base_data)
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.update_competition(comp.created.competition_id, base_data)
 
     # Assert
     response.assert_error(422, expected_error)
@@ -84,43 +88,56 @@ async def test_update_competition_with_invalid_data(
 
 async def test_update_competition_fails_if_unauthorized(
     api_client: ApiClient,
-    competition: CreatedCompetition,
+    gateway: Gateway,
     update_competition_form_factory: UpdateCompetitionFormFactory,
 ) -> None:
     """Test updating competition fails when user is unauthorized."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    comp = await gateway.competition.create(owner.organizer.auth_id)
     data = update_competition_form_factory.build().model_dump(mode="json")
 
-    response = await api_client.update_competition(competition.competition_id, data)
+    # Act
+    response = await api_client.update_competition(comp.created.competition_id, data)
 
+    # Assert
     response.assert_error(401, "UNAUTHORIZED")
 
 
 async def test_update_competition_fails_if_not_owner(
     api_client: ApiClient,
-    competition: CreatedCompetition,
+    gateway: Gateway,
     update_competition_form_factory: UpdateCompetitionFormFactory,
-    different_organizer: CreatedOrganizer,  # noqa: ARG001
 ) -> None:
     """Test updating competition fails when user is not the owner."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    interloper = await gateway.organizer.create(owner.admin.auth_id)
+    comp = await gateway.competition.create(owner.organizer.auth_id)
     data = update_competition_form_factory.build().model_dump(mode="json")
 
-    with api_client.authenticate(auth_user_id=DIFFERENT_USER_ID):
-        response = await api_client.update_competition(competition.competition_id, data)
+    # Act
+    with api_client.authenticate(auth_user_id=interloper.auth_id):
+        response = await api_client.update_competition(comp.created.competition_id, data)
 
+    # Assert
     response.assert_error(403, "ACCESS_DENIED")
 
 
 async def test_update_competition_fails_if_not_found(
     api_client: ApiClient,
-    organizer: CreatedOrganizer,  # noqa: ARG001
+    gateway: Gateway,
     update_competition_form_factory: UpdateCompetitionFormFactory,
-    faker: Faker,
 ) -> None:
     """Test updating competition fails when competition does not exist."""
-    non_existent_id = faker.uuid4(cast_to=None)
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    non_existent_id = uuid4()
     data = update_competition_form_factory.build().model_dump(mode="json")
 
-    with api_client.authenticate(auth_user_id=USER_ID):
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
         response = await api_client.update_competition(non_existent_id, data)
 
+    # Assert
     response.assert_error(404, "COMPETITION_NOT_FOUND")

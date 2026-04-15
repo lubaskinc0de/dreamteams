@@ -1,55 +1,74 @@
-from faker import Faker
+from uuid import uuid4
 
-from dreamteams.application.publish_competition import CreatedCompetition
-from dreamteams.application.register.register_organizer import CreatedOrganizer
 from tests.integration.api_client import ApiClient
-from tests.integration.constants import DIFFERENT_USER_ID, USER_ID
+from tests.integration.helpers.facade import Gateway
 
 
 async def test_delete_competition_as_owner_succeeds(
     api_client: ApiClient,
-    competition: CreatedCompetition,
+    gateway: Gateway,
 ) -> None:
     """Test deleting competition by owner organizer."""
-    with api_client.authenticate(auth_user_id=USER_ID):
-        response = await api_client.delete_competition(competition.competition_id)
-        read_response = await api_client.read_competition(competition.competition_id)
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    comp = await gateway.competition.create(owner.organizer.auth_id)
 
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.delete_competition(comp.created.competition_id)
+        read_response = await api_client.read_competition(comp.created.competition_id)
+
+    # Assert
     response.assert_status(200)
     read_response.assert_status(404)
 
 
 async def test_delete_competition_fails_if_not_found(
     api_client: ApiClient,
-    organizer: CreatedOrganizer,  # noqa: ARG001
-    faker: Faker,
+    gateway: Gateway,
 ) -> None:
     """Test deleting non-existent competition."""
-    non_existent_id = faker.uuid4(cast_to=None)
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    non_existent_id = uuid4()
 
-    with api_client.authenticate(auth_user_id=USER_ID):
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
         response = await api_client.delete_competition(non_existent_id)
 
+    # Assert
     response.assert_error(404, "COMPETITION_NOT_FOUND")
 
 
 async def test_delete_competition_fails_if_not_owner(
     api_client: ApiClient,
-    competition: CreatedCompetition,
-    different_organizer: CreatedOrganizer,  # noqa: ARG001
+    gateway: Gateway,
 ) -> None:
     """Test deleting competition by different organizer."""
-    with api_client.authenticate(auth_user_id=DIFFERENT_USER_ID):
-        response = await api_client.delete_competition(competition.competition_id)
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    interloper = await gateway.organizer.create(owner.admin.auth_id)
+    comp = await gateway.competition.create(owner.organizer.auth_id)
 
+    # Act
+    with api_client.authenticate(auth_user_id=interloper.auth_id):
+        response = await api_client.delete_competition(comp.created.competition_id)
+
+    # Assert
     response.assert_error(403, "ACCESS_DENIED")
 
 
 async def test_delete_competition_fails_if_unauthorized(
     api_client: ApiClient,
-    competition: CreatedCompetition,
+    gateway: Gateway,
 ) -> None:
     """Test deleting competition fails when user is unauthorized."""
-    response = await api_client.delete_competition(competition.competition_id)
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    comp = await gateway.competition.create(owner.organizer.auth_id)
 
+    # Act
+    response = await api_client.delete_competition(comp.created.competition_id)
+
+    # Assert
     response.assert_error(401, "UNAUTHORIZED")

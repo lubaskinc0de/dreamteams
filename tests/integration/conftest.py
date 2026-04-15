@@ -1,4 +1,3 @@
-import asyncio
 import os
 from collections.abc import AsyncIterable, AsyncIterator
 from importlib.resources import files
@@ -12,46 +11,28 @@ from aiohttp import ClientSession
 from dishka import AsyncContainer
 from faker import Faker
 from polyfactory.pytest_plugin import register_fixture
-from sqlalchemy import insert, text
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import tests.assets
 from dreamteams.adapters.clock import SystemClock
-from dreamteams.adapters.db.models.auth_user import auth_user_table
-from dreamteams.adapters.db.models.user import user_table
 from dreamteams.adapters.tracing import TraceId
-from dreamteams.application.manage_application_form import ApplicationFormInput, CreatedApplicationForm
-from dreamteams.application.manage_competitions.read import CompetitionModel
-from dreamteams.application.manage_invites import InviteIssued
-from dreamteams.application.manage_my_applications import ApplicationModel
-from dreamteams.application.publish_competition import CompetitionForm, CreatedCompetition
-from dreamteams.application.register.register_organizer import CreatedOrganizer
-from dreamteams.application.register.register_participant import CreatedParticipant, ParticipantForm
-from dreamteams.application.submit_application import CreatedApplication, SubmitApplicationInput
 from dreamteams.bootstrap.config.loader import Config
 from dreamteams.bootstrap.di.container import get_async_container
 from dreamteams.entities.common.clock import Clock
-from dreamteams.entities.common.identifiers import UserId
-from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
 from tests.common.factory.application import SubmitApplicationInputFactory
 from tests.common.factory.application_form import ApplicationFormInputFactory
 from tests.common.factory.competition import CompetitionFormFactory, UpdateCompetitionFormFactory
 from tests.common.factory.organizer import OrganizerFormFactory
 from tests.common.factory.participant import ParticipantFormFactory
 from tests.integration.api_client import ApiClient, APIClientConfig
-from tests.integration.competition_helpers import activate_competition, create_mixed_competitions
-from tests.integration.constants import (
-    ADMIN_USER_ID,
-    ANOTHER_PARTICIPANT_USER_ID,
-    DIFFERENT_USER_ID,
-    PARTICIPANT_USER_ID,
-    USER_ID,
-)
-from tests.integration.manage_applications.helpers import (
-    create_applications_for_competition,
-    create_mixed_applications,
-)
-from tests.integration.manage_my_applications.helpers import create_competition_and_submit
+from tests.integration.helpers.admin_factory import AdminGateway
+from tests.integration.helpers.application_factory import ApplicationGateway
+from tests.integration.helpers.application_form_factory import ApplicationFormGateway
+from tests.integration.helpers.competition_factory import CompetitionGateway
+from tests.integration.helpers.facade import Gateway
+from tests.integration.helpers.organizer_factory import OrganizerGateway
+from tests.integration.helpers.participant_factory import ParticipantGateway
 
 # This is a fake private key used only to sign fake access token for tests
 DUMMY_PRIVATE_KEY = """
@@ -85,7 +66,7 @@ gJWzg5NcCJa53leWAceA2fpttF2GgEYsR6udisqYI+UH1TUaMrujUqGFbNqXqdHo
 -----END PRIVATE KEY-----
 """
 
-# Infrastructure
+# --- Infrastructure ---
 
 
 @pytest.fixture(scope="session")
@@ -129,9 +110,7 @@ async def session(container: AsyncContainer) -> AsyncIterator[AsyncSession]:
 
 
 @pytest.fixture(autouse=True)
-async def gracefully_teardown(
-    session: AsyncSession,
-) -> AsyncIterable[None]:
+async def gracefully_teardown(session: AsyncSession) -> AsyncIterable[None]:
     """Automatically truncate all tables after each test."""
     yield
     await session.execute(
@@ -172,9 +151,7 @@ def base_url() -> str:
 async def access_token(app_config: Config) -> str:
     """Dummy access token with email_verified set to True."""
     return jwt.encode(
-        {
-            "email_verified": True,
-        },
+        {"email_verified": True},
         key=DUMMY_PRIVATE_KEY,
         algorithm=app_config.web_auth_user_id_provider.access_token_alg,
     )
@@ -196,7 +173,14 @@ def api_client(http_session: ClientSession, app_config: Config, trace_id: TraceI
     )
 
 
-# Mock data
+@pytest.fixture
+def assets() -> Traversable:
+    """File assets for tests."""
+    return files(tests.assets)
+
+
+# Polyfactory
+
 register_fixture(ApplicationFormInputFactory)
 register_fixture(SubmitApplicationInputFactory)
 register_fixture(CompetitionFormFactory)
@@ -205,355 +189,94 @@ register_fixture(OrganizerFormFactory)
 register_fixture(ParticipantFormFactory)
 
 
-@pytest.fixture
-def email(faker: Faker) -> str:
-    """Fake email."""
-    return faker.email()
+# Gateway
 
 
 @pytest.fixture
-def organizer_form(
+def admin_gateway(session: AsyncSession, api_client: ApiClient) -> AdminGateway:
+    """Gateway for admin user creation and invite issuance."""
+    return AdminGateway(session=session, api_client=api_client)
+
+
+@pytest.fixture
+def organizer_gateway(
+    api_client: ApiClient,
     organizer_form_factory: OrganizerFormFactory,
-) -> OrganizerForm:
-    """Organizer form."""
-    return organizer_form_factory.build()
+    faker: Faker,
+) -> OrganizerGateway:
+    """Gateway for organizer registration."""
+    return OrganizerGateway(api_client=api_client, organizer_form_factory=organizer_form_factory, faker=faker)
 
 
 @pytest.fixture
-def competition_form(
-    competition_form_factory: CompetitionFormFactory,
-) -> CompetitionForm:
-    """Competition form."""
-    return competition_form_factory.build()
-
-
-@pytest.fixture
-def participant_form(
+def participant_gateway(
+    api_client: ApiClient,
     participant_form_factory: ParticipantFormFactory,
-) -> ParticipantForm:
-    """Participant form."""
-    return participant_form_factory.build()
-
-
-# Entities
-@pytest.fixture
-async def admin_user_id(session: AsyncSession) -> UserId:
-    """Insert an admin user directly into the DB and return their UserId."""
-    admin_id = uuid4()
-    await session.execute(insert(user_table).values(id=admin_id, avatar=None, is_admin=True))
-    await session.execute(insert(auth_user_table).values(auth_user_id=ADMIN_USER_ID, user_id=admin_id))
-    await session.commit()
-    return admin_id
-
-
-@pytest.fixture
-async def issued_invite(
-    api_client: ApiClient,
-    admin_user_id: UserId,  # noqa: ARG001
-) -> InviteIssued:
-    """Issue an organizer invite as the admin user."""
-    with api_client.authenticate(auth_user_id=ADMIN_USER_ID):
-        response = await api_client.issue_invite({})
-    return response.assert_status(200).ensure_content()
-
-
-@pytest.fixture
-async def organizer(
-    api_client: ApiClient,
-    organizer_form: OrganizerForm,
-    email: str,
-    issued_invite: InviteIssued,
-) -> CreatedOrganizer:
-    """Created organizer entity."""
-    data = {**organizer_form.model_dump(), "invite_code": issued_invite.code}
-    with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=email):
-        response = await api_client.register_organizer(data)
-
-    return response.assert_status(200).ensure_content()
-
-
-@pytest.fixture
-async def participant(
-    api_client: ApiClient,
-    participant_form: ParticipantForm,
     faker: Faker,
-) -> CreatedParticipant:
-    """Created participant entity."""
-    with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=faker.email()):
-        response = await api_client.register_participant(data=participant_form.model_dump(mode="json"))
-    return response.assert_status(200).ensure_content()
+) -> ParticipantGateway:
+    """Gateway for participant registration."""
+    return ParticipantGateway(api_client=api_client, participant_form_factory=participant_form_factory, faker=faker)
 
 
 @pytest.fixture
-async def different_organizer(
+def competition_gateway(
     api_client: ApiClient,
-    organizer_form_factory: OrganizerFormFactory,
-    faker: Faker,
-    admin_user_id: UserId,  # noqa: ARG001
-) -> CreatedOrganizer:
-    """Created different organizer entity."""
-    with api_client.authenticate(auth_user_id=ADMIN_USER_ID):
-        invite_response = await api_client.issue_invite({})
-    invite = invite_response.assert_status(200).ensure_content()
-
-    organizer_data = organizer_form_factory.build()
-    different_email = faker.email()
-
-    with api_client.authenticate(auth_user_id=DIFFERENT_USER_ID, auth_user_email=different_email):
-        response = await api_client.register_organizer({**organizer_data.model_dump(), "invite_code": invite.code})
-
-    return response.assert_status(200).ensure_content()
-
-
-@pytest.fixture
-async def competition(
-    api_client: ApiClient,
-    organizer: CreatedOrganizer,  # noqa: ARG001
-    competition_form: CompetitionForm,
-) -> CreatedCompetition:
-    """Created competition entity."""
-    with api_client.authenticate(auth_user_id=USER_ID):
-        response = await api_client.create_competition(competition_form.model_dump(mode="json"))
-
-    return response.assert_status(200).ensure_content()
-
-
-@pytest.fixture
-async def non_autoaccept_competition(
-    api_client: ApiClient,
-    organizer: CreatedOrganizer,  # noqa: ARG001
-    competition_form: CompetitionForm,
-) -> CreatedCompetition:
-    """Created competition with auto_accept=False so submitted applications start as PENDING."""
-    form_data = {**competition_form.model_dump(mode="json"), "auto_accept": False}
-    with api_client.authenticate(auth_user_id=USER_ID):
-        response = await api_client.create_competition(form_data)
-
-    return response.assert_status(200).ensure_content()
-
-
-@pytest.fixture
-async def active_competition(
-    api_client: ApiClient,
-    organizer: CreatedOrganizer,  # noqa: ARG001
-    competition_form: CompetitionForm,
-    update_competition_form_factory: UpdateCompetitionFormFactory,
     session: AsyncSession,
-) -> CreatedCompetition:
-    """Competition with open registration, not archived, ANY participant type, high participant limit."""
-    with api_client.authenticate(auth_user_id=USER_ID):
-        created = (
-            (await api_client.create_competition(competition_form.model_dump(mode="json")))
-            .assert_status(200)
-            .ensure_content()
-        )
-
-    await activate_competition(
-        api_client,
-        session,
-        update_competition_form_factory,
-        created.competition_id,
-        domains=competition_form.domains,
-        auto_accept=competition_form.auto_accept,
+    competition_form_factory: CompetitionFormFactory,
+    update_competition_form_factory: UpdateCompetitionFormFactory,
+) -> CompetitionGateway:
+    """Gateway for competition creation and state manipulation."""
+    return CompetitionGateway(
+        api_client=api_client,
+        session=session,
+        competition_form_factory=competition_form_factory,
+        update_competition_form_factory=update_competition_form_factory,
     )
 
-    return created
-
 
 @pytest.fixture
-async def active_non_autoaccept_competition(
+def application_gateway(
     api_client: ApiClient,
-    organizer: CreatedOrganizer,  # noqa: ARG001
-    competition_form: CompetitionForm,
-    update_competition_form_factory: UpdateCompetitionFormFactory,
-    session: AsyncSession,
-) -> CreatedCompetition:
-    """Competition with open registration, not archived, auto_accept=False, ANY participant type."""
-    form_data = {**competition_form.model_dump(mode="json"), "auto_accept": False}
-    with api_client.authenticate(auth_user_id=USER_ID):
-        created = (await api_client.create_competition(form_data)).assert_status(200).ensure_content()
-
-    await activate_competition(
-        api_client,
-        session,
-        update_competition_form_factory,
-        created.competition_id,
-        domains=competition_form.domains,
-        auto_accept=False,
+    submit_application_input_factory: SubmitApplicationInputFactory,
+    participant_gateway: ParticipantGateway,
+    competition_gateway: CompetitionGateway,
+) -> ApplicationGateway:
+    """Gateway for application submission and status transitions."""
+    return ApplicationGateway(
+        api_client=api_client,
+        submit_application_input_factory=submit_application_input_factory,
+        participant_gateway=participant_gateway,
+        competition_gateway=competition_gateway,
     )
 
-    return created
-
 
 @pytest.fixture
-def application_form_input(
+def application_form_gateway(
+    api_client: ApiClient,
     application_form_input_factory: ApplicationFormInputFactory,
-) -> ApplicationFormInput:
-    """Valid ApplicationFormInput built by the factory."""
-    return application_form_input_factory.build()
-
-
-@pytest.fixture
-def submit_application_input(
-    submit_application_input_factory: SubmitApplicationInputFactory,
-    competition_form: CompetitionForm,
-) -> SubmitApplicationInput:
-    """Valid SubmitApplicationInput with domains guaranteed to be a subset of the competition's domains."""
-    return submit_application_input_factory.build(domains=[competition_form.domains[0]], form_data=None)
-
-
-@pytest.fixture
-async def created_application_form(
-    api_client: ApiClient,
-    competition: CreatedCompetition,
-    application_form_input: ApplicationFormInput,
-) -> CreatedApplicationForm:
-    """Created application form attached to the competition owned by USER_ID."""
-    with api_client.authenticate(auth_user_id=USER_ID):
-        response = await api_client.create_application_form(
-            competition.competition_id,
-            application_form_input.model_dump(mode="json"),
-        )
-    return response.assert_status(200).ensure_content()
-
-
-@pytest.fixture
-async def different_participant(
-    api_client: ApiClient,
-    participant_form_factory: ParticipantFormFactory,
-    faker: Faker,
-) -> CreatedParticipant:
-    """Created participant entity using PARTICIPANT_USER_ID."""
-    form = participant_form_factory.build()
-    with api_client.authenticate(auth_user_id=PARTICIPANT_USER_ID, auth_user_email=faker.email()):
-        response = await api_client.register_participant(data=form.model_dump(mode="json"))
-    return response.assert_status(200).ensure_content()
-
-
-@pytest.fixture
-async def another_participant(
-    api_client: ApiClient,
-    participant_form_factory: ParticipantFormFactory,
-    faker: Faker,
-) -> CreatedParticipant:
-    """Created participant entity using ANOTHER_PARTICIPANT_USER_ID."""
-    form = participant_form_factory.build()
-    with api_client.authenticate(auth_user_id=ANOTHER_PARTICIPANT_USER_ID, auth_user_email=faker.email()):
-        response = await api_client.register_participant(data=form.model_dump(mode="json"))
-    return response.assert_status(200).ensure_content()
-
-
-@pytest.fixture
-async def submitted_application(
-    api_client: ApiClient,
-    different_participant: CreatedParticipant,  # noqa: ARG001
-    active_non_autoaccept_competition: CreatedCompetition,
-    submit_application_input: SubmitApplicationInput,
-) -> CreatedApplication:
-    """Application submitted by PARTICIPANT_USER_ID participant to the competition owned by USER_ID."""
-    with api_client.authenticate(auth_user_id=PARTICIPANT_USER_ID):
-        response = await api_client.submit_application(
-            active_non_autoaccept_competition.competition_id,
-            submit_application_input.model_dump(mode="json"),
-        )
-    return response.assert_status(200).ensure_content()
-
-
-@pytest.fixture(params=[0, 1, 5, 10])
-async def applications(
-    api_client: ApiClient,
-    organizer: CreatedOrganizer,  # noqa: ARG001
-    active_non_autoaccept_competition: CreatedCompetition,
-    submit_application_input: SubmitApplicationInput,
-    participant_form_factory: ParticipantFormFactory,
-    faker: Faker,
-    request: pytest.FixtureRequest,
-) -> list[ApplicationModel]:
-    """Applications with mixed statuses submitted to the competition (0, 1, 5, or 10 applications)."""
-    num_applications: int = request.param
-    submitted_ids = await create_applications_for_competition(
-        num_applications,
-        api_client,
-        active_non_autoaccept_competition.competition_id,
-        submit_application_input,
-        participant_form_factory,
-        faker,
+) -> ApplicationFormGateway:
+    """Gateway for application form creation and deletion."""
+    return ApplicationFormGateway(
+        api_client=api_client,
+        application_form_input_factory=application_form_input_factory,
     )
-    return await create_mixed_applications(api_client, submitted_ids)
-
-
-@pytest.fixture(params=[0, 1, 5, 10])
-async def my_applications(
-    api_client: ApiClient,
-    different_participant: CreatedParticipant,  # noqa: ARG001
-    organizer: CreatedOrganizer,  # noqa: ARG001
-    competition_form_factory: CompetitionFormFactory,
-    update_competition_form_factory: UpdateCompetitionFormFactory,
-    submit_application_input_factory: SubmitApplicationInputFactory,
-    session: AsyncSession,
-    request: pytest.FixtureRequest,
-) -> list[ApplicationModel]:
-    """N applications submitted by PARTICIPANT_USER_ID to separate competitions, with mixed statuses."""
-    num_applications: int = request.param
-    submitted_ids = []
-    for _ in range(num_applications):
-        app_id = await create_competition_and_submit(
-            api_client,
-            competition_form_factory,
-            update_competition_form_factory,
-            submit_application_input_factory,
-            session,
-        )
-        submitted_ids.append(app_id)
-    return await create_mixed_applications(api_client, submitted_ids)
-
-
-async def create_competitions(
-    num_competitions: int,
-    competition_form_factory: CompetitionFormFactory,
-    api_client: ApiClient,
-    user_id: str = USER_ID,
-) -> list[CompetitionModel]:
-    """Create and read competitions."""
-    forms = [competition_form_factory.build() for _ in range(num_competitions)]
-    with api_client.authenticate(auth_user_id=user_id):
-        created_responses = await asyncio.gather(
-            *[api_client.create_competition(form.model_dump(mode="json")) for form in forms],
-        )
-        created = [response.assert_status(200).ensure_content() for response in created_responses]
-        read_responses = await asyncio.gather(*[api_client.read_competition(c.competition_id) for c in created])
-        return [response.assert_status(200).ensure_content() for response in read_responses]
-
-
-async def create_competition(
-    competition_form: CompetitionForm,
-    api_client: ApiClient,
-) -> CompetitionModel:
-    """Create and read competition."""
-    competition_id = (
-        (await api_client.create_competition(competition_form.model_dump(mode="json")))
-        .assert_status(200)
-        .ensure_content()
-        .competition_id
-    )
-    return (await api_client.read_competition(competition_id)).assert_status(200).ensure_content()
 
 
 @pytest.fixture
-def assets() -> Traversable:
-    """File assets for tests."""
-    return files(tests.assets)
-
-
-@pytest.fixture(params=[0, 1, 5, 10])
-async def competitions(
-    api_client: ApiClient,
-    competition_form_factory: CompetitionFormFactory,
-    request: pytest.FixtureRequest,
-    organizer: CreatedOrganizer,  # noqa: ARG001
-    session: AsyncSession,
-) -> list[CompetitionModel]:
-    """Create and read competitions with mixed states (active, inactive, archived, passed)."""
-    num_competitions = request.param
-    base_competitions = await create_competitions(num_competitions, competition_form_factory, api_client)
-    return await create_mixed_competitions(session, api_client, base_competitions)
+def gateway(
+    admin_gateway: AdminGateway,
+    organizer_gateway: OrganizerGateway,
+    participant_gateway: ParticipantGateway,
+    competition_gateway: CompetitionGateway,
+    application_gateway: ApplicationGateway,
+    application_form_gateway: ApplicationFormGateway,
+) -> Gateway:
+    """Facade providing access to all per-entity gateways."""
+    return Gateway(
+        admin=admin_gateway,
+        organizer=organizer_gateway,
+        participant=participant_gateway,
+        competition=competition_gateway,
+        application=application_gateway,
+        application_form=application_form_gateway,
+    )

@@ -1,11 +1,11 @@
 from typing import Any
+from uuid import uuid4
 
 import pytest
 from faker import Faker
 
 from tests.common.factory.participant import ParticipantFormFactory
 from tests.integration.api_client import ApiClient
-from tests.integration.constants import USER_ID
 
 
 async def test_register_as_participant(
@@ -16,7 +16,7 @@ async def test_register_as_participant(
     """Test register as participant."""
     data = {**participant_form_factory.build().model_dump(mode="json")}
 
-    with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=faker.email()):
+    with api_client.authenticate(auth_user_id=str(uuid4()), auth_user_email=faker.email()):
         response = await api_client.register_participant(data=data)
 
     response.assert_status(200).ensure_content()
@@ -46,7 +46,7 @@ async def test_register_as_participant_with_invalid_data(
     """Test register as participant with invalid data."""
     data = participant_form_factory.build().model_copy(update=update_data)
 
-    with api_client.authenticate(auth_user_id=USER_ID, auth_user_email=faker.email()):
+    with api_client.authenticate(auth_user_id=str(uuid4()), auth_user_email=faker.email()):
         response = await api_client.register_participant(data.model_dump(mode="json"))
 
     response.assert_error(422, "VALIDATION_ERROR")

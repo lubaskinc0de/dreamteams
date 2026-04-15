@@ -1,25 +1,24 @@
 from uuid import uuid4
 
 from dreamteams.application.manage_my_applications import ApplicationModel
-from dreamteams.application.publish_competition import CreatedCompetition
-from dreamteams.application.register.register_organizer import CreatedOrganizer
-from dreamteams.application.submit_application import CreatedApplication
 from dreamteams.entities.application.entity import ApplicationStatus
 from tests.integration.api_client import ApiClient
-from tests.integration.constants import DIFFERENT_USER_ID, PARTICIPANT_USER_ID, USER_ID
+from tests.integration.helpers.facade import Gateway
 
 
 async def test_organizer_can_read_application(
     api_client: ApiClient,
-    submitted_application: CreatedApplication,
-    active_non_autoaccept_competition: CreatedCompetition,
+    gateway: Gateway,
 ) -> None:
     """Competition organizer can read an application submitted to their competition."""
     # Arrange
-    application_id = submitted_application.application_id
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+    application_id = await gateway.application.submit(participant.auth_id, comp)
 
     # Act
-    with api_client.authenticate(auth_user_id=USER_ID):
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
         response = await api_client.read_application(application_id)
 
     # Assert
@@ -27,7 +26,7 @@ async def test_organizer_can_read_application(
     assert result == ApplicationModel(
         id=application_id,
         participant_id=result.participant_id,
-        competition_id=active_non_autoaccept_competition.competition_id,
+        competition_id=comp.created.competition_id,
         domains=result.domains,
         status=ApplicationStatus.PENDING,
         created_at=result.created_at,
@@ -37,11 +36,14 @@ async def test_organizer_can_read_application(
 
 async def test_unauthenticated_cannot_read_application(
     api_client: ApiClient,
-    submitted_application: CreatedApplication,
+    gateway: Gateway,
 ) -> None:
     """Unauthenticated requests to read an application are rejected with UNAUTHORIZED."""
     # Arrange
-    application_id = submitted_application.application_id
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+    application_id = await gateway.application.submit(participant.auth_id, comp)
 
     # Act
     response = await api_client.read_application(application_id)
@@ -52,15 +54,18 @@ async def test_unauthenticated_cannot_read_application(
 
 async def test_non_owner_organizer_cannot_read_application(
     api_client: ApiClient,
-    submitted_application: CreatedApplication,
-    different_organizer: CreatedOrganizer,  # noqa: ARG001
+    gateway: Gateway,
 ) -> None:
     """An organizer who does not own the competition is denied with ACCESS_DENIED."""
     # Arrange
-    application_id = submitted_application.application_id
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    interloper = await gateway.organizer.create(owner.admin.auth_id)
+    participant = await gateway.participant.create()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+    application_id = await gateway.application.submit(participant.auth_id, comp)
 
     # Act
-    with api_client.authenticate(auth_user_id=DIFFERENT_USER_ID):
+    with api_client.authenticate(auth_user_id=interloper.auth_id):
         response = await api_client.read_application(application_id)
 
     # Assert
@@ -69,16 +74,18 @@ async def test_non_owner_organizer_cannot_read_application(
 
 async def test_withdrawn_application_cannot_be_read_by_organizer(
     api_client: ApiClient,
-    submitted_application: CreatedApplication,
+    gateway: Gateway,
 ) -> None:
     """Reading a withdrawn application returns APPLICATION_NOT_FOUND for the organizer."""
-    # Arrange — withdraw the application as the participant
-    application_id = submitted_application.application_id
-    with api_client.authenticate(auth_user_id=PARTICIPANT_USER_ID):
-        (await api_client.withdraw_application(application_id)).assert_status(200)
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+    application_id = await gateway.application.submit(participant.auth_id, comp)
+    await gateway.application.withdraw(application_id, participant.auth_id)
 
     # Act
-    with api_client.authenticate(auth_user_id=USER_ID):
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
         response = await api_client.read_application(application_id)
 
     # Assert
@@ -87,14 +94,15 @@ async def test_withdrawn_application_cannot_be_read_by_organizer(
 
 async def test_reading_nonexistent_application_fails(
     api_client: ApiClient,
-    organizer: CreatedOrganizer,  # noqa: ARG001
+    gateway: Gateway,
 ) -> None:
     """Reading an application that does not exist is rejected with APPLICATION_NOT_FOUND."""
     # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
     nonexistent_id = uuid4()
 
     # Act
-    with api_client.authenticate(auth_user_id=USER_ID):
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
         response = await api_client.read_application(nonexistent_id)
 
     # Assert
