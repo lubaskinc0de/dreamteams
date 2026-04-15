@@ -14,9 +14,9 @@ Value object (immutable dataclass)
 | ----------- | --------------------------------- | ------------------------------------------------------------------------------ |
 | `name`      | `str`                             | Machine-readable unique identifier for the field within the form               |
 | `label`     | `str`                             | Human-readable label displayed to the participant                              |
-| `type`      | `FieldType`                       | Data type of the field (STRING, INT, SELECT, MULTISELECT)                      |
+| `type`      | [`FieldType`](field-type.md)                       | Data type of the field (STRING, INT, SELECT, MULTISELECT)                      |
 | `required`  | `bool`                            | Whether the participant must supply a value for this field (default: `True`)   |
-| `choices`   | `tuple[FieldChoice, ...] \| None` | Available options; required for SELECT / MULTISELECT, absent otherwise         |
+| `choices`   | `tuple[`[`FieldChoice`](field-choice.md)`, ...] \| None` | Available options; required for SELECT / MULTISELECT, absent otherwise         |
 
 ## Business Rules
 

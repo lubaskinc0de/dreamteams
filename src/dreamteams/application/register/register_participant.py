@@ -10,6 +10,7 @@ from dreamteams.application.register.shared.user_factory import UserFactory
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import ParticipantId, UserId
 from dreamteams.entities.common.vo.domain import Domain
+from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
 from dreamteams.entities.user import (
@@ -37,6 +38,7 @@ class ParticipantForm(BaseModel):
     experience_level: ExperienceLevel
     preferred_domains: list[Domain]
     contacts: list[ParticipantContactForm]
+    participant_type: ParticipantType
 
 
 @interactor
@@ -73,6 +75,7 @@ class RegisterParticipant:
                 )
                 for c in data.contacts
             ],
+            participant_type=data.participant_type,
         )
 
         participant = participant_factory(

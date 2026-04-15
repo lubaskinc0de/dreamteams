@@ -15,8 +15,8 @@ from tests.common.helpers.competition import (
     schedule_from_deltas,
 )
 from tests.integration.api_client import ApiClient
+from tests.integration.competition_helpers import competition_update_form_to_model
 from tests.integration.constants import DIFFERENT_USER_ID, USER_ID
-from tests.integration.manage_competitions.helpers import competition_update_form_to_model
 
 
 async def test_update_competition_as_owner_succeeds(

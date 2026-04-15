@@ -14,6 +14,7 @@ from sqlalchemy.orm import relationship
 
 from dreamteams.adapters.db.models.base import mapper_registry
 from dreamteams.entities.common.vo.domain import Domain
+from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill, SkillLevel
 from dreamteams.entities.user import ExperienceLevel, Participant, User
@@ -27,6 +28,7 @@ participant_table = Table(
     Column("bio", Text, nullable=False),
     Column("experience_level", Enum(ExperienceLevel, native_enum=False), nullable=False),
     Column("preferred_domains", ARRAY(Enum(Domain, native_enum=False)), nullable=False),
+    Column("participant_type", Enum(ParticipantType, native_enum=False), nullable=False),
     Column("created_at", DateTime(timezone=True), nullable=False),
     Column("updated_at", DateTime(timezone=True), nullable=False),
 )

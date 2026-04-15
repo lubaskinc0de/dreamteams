@@ -29,5 +29,6 @@ async def register_participant(
             experience_level=data.experience_level,
             preferred_domains=data.preferred_domains,
             contacts=data.contacts,
+            participant_type=data.participant_type,
         ),
     )

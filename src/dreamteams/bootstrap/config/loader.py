@@ -8,7 +8,8 @@ from adaptix import Retort
 from dreamteams.adapters.auth.idp.auth_user import WebAuthUserIdProviderConfig
 from dreamteams.adapters.avatar_storage import S3Config
 from dreamteams.adapters.db.config import DbConfig
-from dreamteams.adapters.env_loader import env
+from dreamteams.adapters.env_loader import env, optional_env
+from dreamteams.adapters.sentry import SentryConfig
 from dreamteams.adapters.tracing import TracingConfig
 from dreamteams.application.register.register_superuser import SuperuserConfig
 from dreamteams.presentation.fast_api.config import ApiConfig, CorsConfig, ServerConfig
@@ -38,6 +39,7 @@ class Config:
     api: ApiConfig
     s3: S3Config
     superuser: SuperuserConfig
+    sentry: SentryConfig
 
     @classmethod
     def load(cls) -> Self:
@@ -61,6 +63,7 @@ class Config:
             public_url=env("S3_PUBLIC_URL"),
         )
         superuser = SuperuserConfig(password_hash=env("SUPERUSER_PWD_HASH"))
+        sentry = SentryConfig(optional_env("SENTRY_DSN"))
         return cls(
             db=db,
             web_auth_user_id_provider=toml_config.auth,
@@ -70,4 +73,5 @@ class Config:
             api=toml_config.api,
             s3=s3,
             superuser=superuser,
+            sentry=sentry,
         )

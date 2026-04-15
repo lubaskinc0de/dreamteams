@@ -115,9 +115,22 @@ def past_schedule(draw: st.DrawFn) -> CompetitionSchedule:
 
 
 @st.composite
+def open_schedule(draw: st.DrawFn) -> CompetitionSchedule:
+    """CompetitionSchedule with registration window currently open (started in past, ends in future)."""
+    r_start = draw(dt_past())
+    r_end = draw(dt_future())
+    return CompetitionSchedule(
+        registration_start=r_start,
+        registration_end=r_end,
+        team_formation_start=None,
+        team_formation_end=None,
+    )
+
+
+@st.composite
 def valid_text(draw: st.DrawFn) -> str:
     """Valid text with min_length = 1, contains only non-space characters."""
-    return draw(st.text(st.characters(exclude_categories=("Zs", "Cc", "Cf", "Cs", "Co", "Cn")), min_size=1))
+    return draw(st.text(st.characters(exclude_categories=("Zs", "Zl", "Zp", "Cc", "Cf", "Cs", "Co", "Cn")), min_size=1))
 
 
 @st.composite
@@ -186,10 +199,34 @@ def valid_competition_data(draw: st.DrawFn) -> CompetitionData:
 
 
 @st.composite
-def valid_competition(draw: st.DrawFn, user: User, clock: Clock) -> Competition:
-    """Valid competition entity."""
+def valid_competition(
+    draw: st.DrawFn,
+    user: User,
+    clock: Clock,
+    *,
+    is_archived: bool = True,
+    is_open: bool = False,
+    is_ended: bool = False,
+) -> Competition:
+    """Valid competition entity.
+
+    By default mirrors ``competition_factory`` behaviour: ``is_archived=True`` with a future
+    registration schedule.  Keyword flags override the schedule / archive state:
+
+    - ``is_open=True``  — registration window is currently open (started in past, ends in future)
+    - ``is_ended=True`` — registration window is in the past (already ended)
+    - ``is_archived``   — controls ``Competition.is_archived`` (default True)
+
+    ``is_open`` and ``is_ended`` are mutually exclusive.
+    """
     data = draw(valid_competition_data())
-    return competition_factory(data, user, clock)
+    competition = competition_factory(data, user, clock)
+    competition.is_archived = is_archived
+    if is_open:
+        competition.schedule = draw(open_schedule())
+    elif is_ended:
+        competition.schedule = draw(past_schedule())
+    return competition
 
 
 @st.composite
@@ -261,6 +298,8 @@ def valid_participant_data(draw: st.DrawFn) -> ParticipantData:
 
     contacts = draw(st.lists(participant_contact_data(), min_size=1, unique_by=(lambda c: c.title, lambda c: c.url)))
 
+    participant_type = draw(st.sampled_from([ParticipantType.SCHOOLCHILD, ParticipantType.STUDENT]))
+
     return ParticipantData(
         full_name=full_name,
         avatar_url=None,
@@ -269,6 +308,7 @@ def valid_participant_data(draw: st.DrawFn) -> ParticipantData:
         experience_level=experience_level,
         preferred_domains=preferred_domains,
         contacts=contacts,
+        participant_type=participant_type,
     )
 
 
@@ -298,6 +338,8 @@ def valid_participant_update_data(draw: st.DrawFn) -> UpdateParticipantData:
 
     contacts = draw(st.lists(participant_contact_data(), min_size=1, unique_by=(lambda c: c.title, lambda c: c.url)))
 
+    participant_type = draw(st.sampled_from([ParticipantType.SCHOOLCHILD, ParticipantType.STUDENT]))
+
     return UpdateParticipantData(
         full_name=full_name,
         avatar_url=None,
@@ -306,6 +348,7 @@ def valid_participant_update_data(draw: st.DrawFn) -> UpdateParticipantData:
         experience_level=experience_level,
         preferred_domains=preferred_domains,
         contacts=contacts,
+        participant_type=participant_type,
     )
 
 

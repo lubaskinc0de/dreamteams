@@ -11,7 +11,8 @@ from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
 from dreamteams.application.common.uow import UoW
 from dreamteams.application.errors.application import ApplicationAlreadyExistsError
-from dreamteams.entities.application.entity import ApplicationData, application_factory
+from dreamteams.entities.application.entity import ApplicationData
+from dreamteams.entities.application.submit_service import submit_application as submit_application_service
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId
 from dreamteams.entities.common.vo.domain import Domain
@@ -71,12 +72,14 @@ class SubmitApplication:
             )
             raise ApplicationAlreadyExistsError
 
+        accepted_count = await self.application_gateway.count_accepted_by_competition(competition_id)
         form = await self.application_form_gateway.get_by_competition_id(competition_id)
 
-        application = application_factory(
+        application = submit_application_service(
             data=ApplicationData(domains=data.domains, form_data=data.form_data),
             user=user,
             competition=competition,
+            accepted_count=accepted_count,
             clock=self.clock,
             form=form,
         )

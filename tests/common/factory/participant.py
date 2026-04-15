@@ -4,6 +4,7 @@ from pydantic import HttpUrl
 from dreamteams.application.common.dto.participant_contact import ParticipantContactForm
 from dreamteams.application.common.dto.participant_skill import ParticipantSkillForm
 from dreamteams.application.register.register_participant import ParticipantForm
+from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.participant.vo.participant_skill import SkillLevel
 
 
@@ -33,9 +34,14 @@ def _contacts() -> list[ParticipantContactForm]:
     ]
 
 
+def _participant_type() -> ParticipantType:
+    return ParticipantFormFactory.__random__.choice([ParticipantType.SCHOOLCHILD, ParticipantType.STUDENT])
+
+
 class ParticipantFormFactory(ModelFactory[ParticipantForm]):
     """Factory of ParticipantForm models."""
 
     __model__ = ParticipantForm
     skills = _skills
     contacts = _contacts
+    participant_type = _participant_type

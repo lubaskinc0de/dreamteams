@@ -19,3 +19,15 @@ def env[T = str](name: str, tp: type[T] | None = None, env_prefix: str = ENV_PRE
     except LoadError as e:
         msg = f"Cannot load environment variable '{variable_name}'."
         raise RuntimeError(msg) from e
+
+
+def optional_env[T = str](
+    name: str,
+    tp: type[T] | None = None,
+    env_prefix: str = ENV_PREFIX,
+) -> T | None:
+    """Optional load env var."""
+    try:
+        return env(name, tp, env_prefix)
+    except RuntimeError:
+        return None

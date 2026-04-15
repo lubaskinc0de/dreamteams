@@ -2,6 +2,7 @@ import pytest
 from faker import Faker
 
 from dreamteams.entities.common.vo.domain import Domain
+from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill, SkillLevel
 from dreamteams.entities.user import ExperienceLevel, Participant, User
@@ -26,6 +27,7 @@ def participant_user(faker: Faker) -> User:
         experience_level=ExperienceLevel.MID,
         preferred_domains=[Domain.BACKEND],
         contacts=[ParticipantContact(title="GitHub", url=faker.url())],
+        participant_type=ParticipantType.STUDENT,
         created_at=NOW,
         updated_at=NOW,
     )

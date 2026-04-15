@@ -19,13 +19,13 @@ from tests.integration.manage_applications.helpers import (
 
 async def test_list_applications_succeeds(
     api_client: ApiClient,
-    non_autoaccept_competition: CreatedCompetition,
+    active_non_autoaccept_competition: CreatedCompetition,
     applications: list[ApplicationModel],
 ) -> None:
     """All submitted applications appear in the list regardless of their status."""
     # Act
     with api_client.authenticate(auth_user_id=USER_ID):
-        response = await api_client.list_applications_by_competition(non_autoaccept_competition.competition_id)
+        response = await api_client.list_applications_by_competition(active_non_autoaccept_competition.competition_id)
 
     # Assert
     result = response.assert_status(200).ensure_content()
@@ -91,7 +91,7 @@ async def test_listing_applications_for_nonexistent_competition_fails(
 @pytest.mark.parametrize("page", [1, 2])
 async def test_list_applications_with_pagination(
     api_client: ApiClient,
-    non_autoaccept_competition: CreatedCompetition,
+    active_non_autoaccept_competition: CreatedCompetition,
     competition_form: CompetitionForm,
     submit_application_input_factory: SubmitApplicationInputFactory,
     participant_form_factory: ParticipantFormFactory,
@@ -108,7 +108,7 @@ async def test_list_applications_with_pagination(
     submitted_ids = await create_applications_for_competition(
         num_applications,
         api_client,
-        non_autoaccept_competition.competition_id,
+        active_non_autoaccept_competition.competition_id,
         submit_input,
         participant_form_factory,
         faker,
@@ -121,7 +121,7 @@ async def test_list_applications_with_pagination(
     # Act
     with api_client.authenticate(auth_user_id=USER_ID):
         response = await api_client.list_applications_by_competition(
-            non_autoaccept_competition.competition_id,
+            active_non_autoaccept_competition.competition_id,
             page=page,
         )
 

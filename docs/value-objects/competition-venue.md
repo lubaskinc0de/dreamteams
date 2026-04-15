@@ -12,7 +12,7 @@ Value object (dataclass)
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `format` | `CompetitionFormat` | Competition format (ONLINE, OFFLINE, HYBRID) |
+| `format` | [`CompetitionFormat`](competition-format.md) | Competition format (ONLINE, OFFLINE, HYBRID) |
 | `location` | `str \| None` | Physical location (required for OFFLINE and HYBRID) |
 
 ## Validation Rules
@@ -23,3 +23,7 @@ Value object (dataclass)
 ## Possible Errors
 
 - `InvalidCompetitionDataError` — when location is missing for OFFLINE or HYBRID format
+
+## Used By
+
+- [Competition](../entities/competition.md)

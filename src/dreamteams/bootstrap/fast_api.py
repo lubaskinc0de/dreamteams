@@ -1,11 +1,14 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
+import sentry_sdk
 import uvicorn
+from dishka import AsyncContainer
 from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from dreamteams.adapters.sentry import SentryConfig
 from dreamteams.bootstrap.config.loader import Config
 from dreamteams.bootstrap.di.container import get_async_container
 from dreamteams.bootstrap.logs import configure_structlog
@@ -18,8 +21,14 @@ log_config = configure_structlog()
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """FastAPI lifespan context manager that handles DI container lifecycle during application startup and shutdown."""
+    container: AsyncContainer = app.state.dishka_container
+    sentry_config = await container.get(SentryConfig)
+
+    if sentry_config.dsn is not None:
+        sentry_sdk.init(sentry_config.dsn)
+
     yield
-    await app.state.dishka_container.close()
+    await container.close()
 
 
 def create_app(config: Config) -> FastAPI:

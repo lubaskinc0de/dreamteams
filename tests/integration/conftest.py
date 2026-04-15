@@ -39,6 +39,7 @@ from tests.common.factory.competition import CompetitionFormFactory, UpdateCompe
 from tests.common.factory.organizer import OrganizerFormFactory
 from tests.common.factory.participant import ParticipantFormFactory
 from tests.integration.api_client import ApiClient, APIClientConfig
+from tests.integration.competition_helpers import activate_competition, create_mixed_competitions
 from tests.integration.constants import (
     ADMIN_USER_ID,
     ANOTHER_PARTICIPANT_USER_ID,
@@ -51,7 +52,6 @@ from tests.integration.manage_applications.helpers import (
     create_mixed_applications,
 )
 from tests.integration.manage_my_applications.helpers import create_competition_and_submit
-from tests.integration.preview_competitions.helpers import create_mixed_competitions
 
 # This is a fake private key used only to sign fake access token for tests
 DUMMY_PRIVATE_KEY = """
@@ -333,6 +333,59 @@ async def non_autoaccept_competition(
 
 
 @pytest.fixture
+async def active_competition(
+    api_client: ApiClient,
+    organizer: CreatedOrganizer,  # noqa: ARG001
+    competition_form: CompetitionForm,
+    update_competition_form_factory: UpdateCompetitionFormFactory,
+    session: AsyncSession,
+) -> CreatedCompetition:
+    """Competition with open registration, not archived, ANY participant type, high participant limit."""
+    with api_client.authenticate(auth_user_id=USER_ID):
+        created = (
+            (await api_client.create_competition(competition_form.model_dump(mode="json")))
+            .assert_status(200)
+            .ensure_content()
+        )
+
+    await activate_competition(
+        api_client,
+        session,
+        update_competition_form_factory,
+        created.competition_id,
+        domains=competition_form.domains,
+        auto_accept=competition_form.auto_accept,
+    )
+
+    return created
+
+
+@pytest.fixture
+async def active_non_autoaccept_competition(
+    api_client: ApiClient,
+    organizer: CreatedOrganizer,  # noqa: ARG001
+    competition_form: CompetitionForm,
+    update_competition_form_factory: UpdateCompetitionFormFactory,
+    session: AsyncSession,
+) -> CreatedCompetition:
+    """Competition with open registration, not archived, auto_accept=False, ANY participant type."""
+    form_data = {**competition_form.model_dump(mode="json"), "auto_accept": False}
+    with api_client.authenticate(auth_user_id=USER_ID):
+        created = (await api_client.create_competition(form_data)).assert_status(200).ensure_content()
+
+    await activate_competition(
+        api_client,
+        session,
+        update_competition_form_factory,
+        created.competition_id,
+        domains=competition_form.domains,
+        auto_accept=False,
+    )
+
+    return created
+
+
+@pytest.fixture
 def application_form_input(
     application_form_input_factory: ApplicationFormInputFactory,
 ) -> ApplicationFormInput:
@@ -394,13 +447,13 @@ async def another_participant(
 async def submitted_application(
     api_client: ApiClient,
     different_participant: CreatedParticipant,  # noqa: ARG001
-    non_autoaccept_competition: CreatedCompetition,
+    active_non_autoaccept_competition: CreatedCompetition,
     submit_application_input: SubmitApplicationInput,
 ) -> CreatedApplication:
     """Application submitted by PARTICIPANT_USER_ID participant to the competition owned by USER_ID."""
     with api_client.authenticate(auth_user_id=PARTICIPANT_USER_ID):
         response = await api_client.submit_application(
-            non_autoaccept_competition.competition_id,
+            active_non_autoaccept_competition.competition_id,
             submit_application_input.model_dump(mode="json"),
         )
     return response.assert_status(200).ensure_content()
@@ -410,7 +463,7 @@ async def submitted_application(
 async def applications(
     api_client: ApiClient,
     organizer: CreatedOrganizer,  # noqa: ARG001
-    non_autoaccept_competition: CreatedCompetition,
+    active_non_autoaccept_competition: CreatedCompetition,
     submit_application_input: SubmitApplicationInput,
     participant_form_factory: ParticipantFormFactory,
     faker: Faker,
@@ -421,7 +474,7 @@ async def applications(
     submitted_ids = await create_applications_for_competition(
         num_applications,
         api_client,
-        non_autoaccept_competition.competition_id,
+        active_non_autoaccept_competition.competition_id,
         submit_application_input,
         participant_form_factory,
         faker,
@@ -435,7 +488,9 @@ async def my_applications(
     different_participant: CreatedParticipant,  # noqa: ARG001
     organizer: CreatedOrganizer,  # noqa: ARG001
     competition_form_factory: CompetitionFormFactory,
+    update_competition_form_factory: UpdateCompetitionFormFactory,
     submit_application_input_factory: SubmitApplicationInputFactory,
+    session: AsyncSession,
     request: pytest.FixtureRequest,
 ) -> list[ApplicationModel]:
     """N applications submitted by PARTICIPANT_USER_ID to separate competitions, with mixed statuses."""
@@ -445,7 +500,9 @@ async def my_applications(
         app_id = await create_competition_and_submit(
             api_client,
             competition_form_factory,
+            update_competition_form_factory,
             submit_application_input_factory,
+            session,
         )
         submitted_ids.append(app_id)
     return await create_mixed_applications(api_client, submitted_ids)

@@ -9,14 +9,14 @@ Represents a participant (physical person) registered on the platform to take pa
 | Attribute           | Type                   | Description                                               |
 | ------------------- | ---------------------- | --------------------------------------------------------- |
 | `id`                | `ParticipantId` (UUID) | Unique participant identifier                             |
-| `user_id`           | `UserId` (UUID)        | Reference to the associated user account                  |
+| `user_id`           | `UserId` (UUID)        | Reference to the associated [User](user.md) account                  |
 | `full_name`         | `str`                  | Full name of the participant                              |
 | `avatar_url`        | `str \| None`          | URL to the participant's profile picture                  |
 | `bio`               | `str`                  | Short biography or description                            |
-| `skills`            | `list[ParticipantSkill]`          | List of professional skills                               |
-| `experience_level`  | `ExperienceLevel`      | Level of expertise                                        |
-| `preferred_domains` | `list[Domain]`         | Preferred IT domains (e.g., Web Dev, AI, Cybersecurity)   |
-| `contacts`          | `list[ParticipantContact]`        | List of contact links (GitHub, Telegram, portfolio, etc.) |
+| `skills`            | `list[`[`ParticipantSkill`](../value-objects/participant-skill.md)`]`          | List of professional skills                               |
+| `experience_level`  | [`ExperienceLevel`](#experiencelevel-enum)      | Level of expertise                                        |
+| `preferred_domains` | `list[`[`Domain`](../value-objects/domain.md)`]`         | Preferred IT domains (e.g., Web Dev, AI, Cybersecurity)   |
+| `contacts`          | `list[`[`ParticipantContact`](../value-objects/participant-contact.md)`]`        | List of contact links (GitHub, Telegram, portfolio, etc.) |
 | `created_at`        | `datetime`             | Timestamp of profile creation                             |
 | `updated_at`        | `datetime`             | Timestamp of last profile update                          |
 

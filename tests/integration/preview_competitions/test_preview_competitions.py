@@ -8,10 +8,10 @@ from dreamteams.application.preview_competition.list import PreviewCompetitionsL
 from dreamteams.application.register.register_organizer import CreatedOrganizer
 from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
 from tests.integration.api_client import ApiClient
-from tests.integration.manage_competitions.helpers import create_competitions_list
-from tests.integration.preview_competitions.helpers import (
+from tests.integration.competition_helpers import (
     change_archived_state,
     competitions_list_to_preview_list,
+    create_competitions_list,
     make_all_active,
     make_all_inactive,
     make_all_passed,

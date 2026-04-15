@@ -10,7 +10,7 @@ Represents a user in the system. Acts as a container for user roles (organizer, 
 |-----------|------|-------------|
 | `id` | `UserId` (UUID) | User identifier |
 | `is_admin` | `bool` | Whether user has admin privileges |
-| `organizer` | `Organizer \| None` | Organizer role attached to user |
+| `organizer` | [`Organizer`](organizer.md)` \| None` | Organizer role attached to user |
 
 ## Business Rules
 

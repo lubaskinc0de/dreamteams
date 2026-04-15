@@ -40,6 +40,7 @@ def test_update_participant_succeeds(
         experience_level=valid_participant_update_data.experience_level,
         preferred_domains=valid_participant_update_data.preferred_domains,
         contacts=valid_participant_update_data.contacts,
+        participant_type=participant.participant_type,
         created_at=participant.created_at,
         updated_at=participant.update_at,
     )

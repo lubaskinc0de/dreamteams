@@ -29,3 +29,7 @@ Value object (dataclass)
 ## Possible Errors
 
 - `InvalidCompetitionDataError` — when validation rules are violated
+
+## Used By
+
+- [Competition](../entities/competition.md)

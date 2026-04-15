@@ -7,6 +7,7 @@ from dreamteams.entities.base import Entity, model
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import OrganizerId, ParticipantId, UserId
 from dreamteams.entities.common.vo.domain import Domain
+from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.errors.organizer import (
     OrganizerUserIdMismatchError,
 )
@@ -86,6 +87,7 @@ class UpdateParticipantData:
     experience_level: ExperienceLevel
     preferred_domains: list[Domain]
     contacts: list[ParticipantContact]
+    participant_type: ParticipantType
 
 
 @dataclass
@@ -99,6 +101,7 @@ class ParticipantData:
     experience_level: ExperienceLevel
     preferred_domains: list[Domain]
     contacts: list[ParticipantContact]
+    participant_type: ParticipantType
 
 
 @model
@@ -114,6 +117,7 @@ class Participant(Entity):
     experience_level: ExperienceLevel
     preferred_domains: list[Domain]
     contacts: list[ParticipantContact]
+    participant_type: ParticipantType
     created_at: datetime
     updated_at: datetime
 
@@ -127,6 +131,9 @@ class Participant(Entity):
 
         if not self.preferred_domains:
             raise InvalidParticipantDataError(message="Preferred domains list not be empty")
+
+        if self.participant_type == ParticipantType.ANY:
+            raise InvalidParticipantDataError(message="Participant type cannot be ANY")
 
         skill_names = [s.name for s in self.skills]
         if len(skill_names) != len(set(skill_names)):
@@ -174,6 +181,7 @@ def participant_factory(
         experience_level=data.experience_level,
         preferred_domains=data.preferred_domains,
         contacts=data.contacts,
+        participant_type=data.participant_type,
         created_at=now,
         updated_at=now,
     )

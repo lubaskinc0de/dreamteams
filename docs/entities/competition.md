@@ -9,17 +9,17 @@ Represents a hackathon or olympiad event created by an organizer.
 | Attribute            | Type                   | Description                                        |
 | -------------------- | ---------------------- | -------------------------------------------------- |
 | `id`                 | `CompetitionId` (UUID) | Competition identifier                             |
-| `organizer_id`       | `OrganizerId` (UUID)   | Reference to organizer who created the competition |
+| `organizer_id`       | `OrganizerId` (UUID)   | Reference to [Organizer](organizer.md) who created the competition |
 | `title`              | `str`                  | Competition title                                  |
 | `banner`             | `str \| None`          | Banner image URL                                   |
 | `description`        | `str`                  | Detailed description of the competition            |
-| `schedule`           | `CompetitionSchedule`  | Competition dates and registration period          |
-| `participant_limits` | `ParticipantLimits`    | Min and max participants                           |
-| `domains`            | `list[Domain]`         | IT domains relevant to this competition            |
-| `participant_type`   | `ParticipantType`      | Target participant category                        |
-| `venue`              | `CompetitionVenue`     | Event format and location                          |
-| `team_size`          | `TeamSizeRange`        | Min and max team size                              |
-| `milestones`         | `list[Milestone]`      | Custom timeline milestones                         |
+| `schedule`           | [`CompetitionSchedule`](../value-objects/competition-schedule.md)  | Competition dates and registration period          |
+| `participant_limits` | [`ParticipantLimits`](../value-objects/participant-limits.md)    | Min and max participants                           |
+| `domains`            | `list[`[`Domain`](../value-objects/domain.md)`]`         | IT domains relevant to this competition            |
+| `participant_type`   | [`ParticipantType`](../value-objects/participant-type.md)      | Target participant category                        |
+| `venue`              | [`CompetitionVenue`](../value-objects/competition-venue.md)     | Event format and location                          |
+| `team_size`          | [`TeamSizeRange`](../value-objects/team-size-range.md)        | Min and max team size                              |
+| `milestones`         | `list[`[`Milestone`](../value-objects/milestone.md)`]`      | Custom timeline milestones                         |
 | `auto_accept`        | `bool`                 | Auto-accept applications (default: `False`)        |
 | `is_archived`        | `bool`                 | Whether competition is archived                    |
 | `created_at`         | `datetime`             | When competition was created                       |

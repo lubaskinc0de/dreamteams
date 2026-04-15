@@ -1,1 +1,143 @@
-site_name: My Docs
+site_name: DreamTeams
+site_description: Competition management platform — documentation
+site_author: DreamTeams Team
+docs_dir: docs
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Inter
+    code: JetBrains Mono
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+    - toc.follow
+  icon:
+    logo: material/trophy-outline
+    repo: fontawesome/brands/github
+
+plugins:
+  - search:
+      lang: en
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - toc:
+      permalink: true
+  - attr_list
+  - md_in_html
+
+nav:
+  - Home: index.md
+  - Entities:
+    - entities/index.md
+    - User: entities/user.md
+    - Organizer: entities/organizer.md
+    - Participant: entities/participant.md
+    - Competition: entities/competition.md
+    - Application: entities/application.md
+    - Application Form: entities/application-form.md
+    - Organizer Invite: entities/organizer-invite.md
+  - Value Objects:
+    - value-objects/index.md
+    - Domain: value-objects/domain.md
+    - Competition Format: value-objects/competition-format.md
+    - Competition Schedule: value-objects/competition-schedule.md
+    - Competition Venue: value-objects/competition-venue.md
+    - Participant Limits: value-objects/participant-limits.md
+    - Participant Type: value-objects/participant-type.md
+    - Participant Contact: value-objects/participant-contact.md
+    - Participant Skill: value-objects/participant-skill.md
+    - Team Size Range: value-objects/team-size-range.md
+    - Milestone: value-objects/milestone.md
+    - Field: value-objects/field.md
+    - Field Type: value-objects/field-type.md
+    - Field Choice: value-objects/field-choice.md
+  - Use Cases:
+    - Register:
+      - Overview: usecase/register/usecase.md
+      - Register Organizer: usecase/register/register_organizer.md
+      - Register Participant: usecase/register/register_participant.md
+      - Register Superuser: usecase/register/register_superuser.md
+    - Manage Profile:
+      - Overview: usecase/manage_profile/usecase.md
+      - Read Profile: usecase/manage_profile/read_profile.md
+      - Update Organizer: usecase/manage_profile/update_organizer.md
+    - Manage Invites:
+      - Overview: usecase/manage_invites/usecase.md
+      - Issue Invite: usecase/manage_invites/issue_invite.md
+      - Revoke Invite: usecase/manage_invites/revoke_invite.md
+      - Read Invite: usecase/manage_invites/read_invite.md
+      - List Invites: usecase/manage_invites/list_invites.md
+    - Publish Competition:
+      - Overview: usecase/publish_competition/usecase.md
+      - Create Competition: usecase/publish_competition/create_competition.md
+    - Manage Competitions:
+      - Overview: usecase/manage_competitions/usecase.md
+      - List Competitions: usecase/manage_competitions/list_competitions.md
+      - Read Competition: usecase/manage_competitions/read_competition.md
+      - Update Competition: usecase/manage_competitions/update_competition.md
+      - Delete Competition: usecase/manage_competitions/delete_competition.md
+    - Preview Competition:
+      - Overview: usecase/preview_competition/usecase.md
+      - List Competitions: usecase/preview_competition/list_competitions.md
+      - Read Competition: usecase/preview_competition/read_competition.md
+    - Manage Application Form:
+      - Overview: usecase/manage_application_form/usecase.md
+      - Create Application Form: usecase/manage_application_form/create_application_form.md
+      - Read Application Form: usecase/manage_application_form/read_application_form.md
+      - Delete Application Form: usecase/manage_application_form/delete_application_form.md
+    - Submit Application:
+      - Overview: usecase/submit_application/usecase.md
+      - Submit Application: usecase/submit_application/submit_application.md
+    - Manage My Applications:
+      - Overview: usecase/manage_my_applications/usecase.md
+      - List My Applications: usecase/manage_my_applications/list_my_applications.md
+      - Read My Application: usecase/manage_my_applications/read_my_application.md
+      - Withdraw Application: usecase/manage_my_applications/withdraw_application.md
+    - Manage Applications:
+      - Overview: usecase/manage_applications/usecase.md
+      - List Applications: usecase/manage_applications/list_applications.md
+      - Read Application: usecase/manage_applications/read_application.md
+      - Accept Application: usecase/manage_applications/accept_application.md
+      - Reject Application: usecase/manage_applications/reject_application.md
+  - Errors:
+    - errors/index.md
+    - Authentication & Authorization: errors/auth.md
+    - User & Organizer: errors/user-management.md
+    - Invites: errors/invite-management.md
+    - Competitions: errors/competition-management.md
+    - Applications: errors/application-management.md
+    - Participants & Media: errors/participant-media.md
+    - Generic: errors/generic.md

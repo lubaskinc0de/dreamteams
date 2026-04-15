@@ -34,6 +34,7 @@ def test_create_participant_with_valid_data(
         experience_level=data.experience_level,
         preferred_domains=data.preferred_domains,
         contacts=participant.contacts,
+        participant_type=data.participant_type,
         created_at=participant.created_at,
         updated_at=participant.updated_at,
     )

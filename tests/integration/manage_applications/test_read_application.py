@@ -12,7 +12,7 @@ from tests.integration.constants import DIFFERENT_USER_ID, PARTICIPANT_USER_ID, 
 async def test_organizer_can_read_application(
     api_client: ApiClient,
     submitted_application: CreatedApplication,
-    non_autoaccept_competition: CreatedCompetition,
+    active_non_autoaccept_competition: CreatedCompetition,
 ) -> None:
     """Competition organizer can read an application submitted to their competition."""
     # Arrange
@@ -27,7 +27,7 @@ async def test_organizer_can_read_application(
     assert result == ApplicationModel(
         id=application_id,
         participant_id=result.participant_id,
-        competition_id=non_autoaccept_competition.competition_id,
+        competition_id=active_non_autoaccept_competition.competition_id,
         domains=result.domains,
         status=ApplicationStatus.PENDING,
         created_at=result.created_at,

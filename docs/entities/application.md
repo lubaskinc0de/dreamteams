@@ -9,10 +9,10 @@ Represents a Participant's intention to participate in a specific Competition. A
 | Attribute          | Type                     | Description                                                        |
 | ------------------ | ------------------------ | ------------------------------------------------------------------ |
 | `id`               | `ApplicationId` (UUID)   | Unique application identifier                                      |
-| `participant_id`   | `ParticipantId` (UUID)   | Reference to the applying participant                              |
-| `competition_id`   | `CompetitionId` (UUID)   | Reference to the target competition                                |
-| `domains`          | `list[Domain]`           | Domains the participant wants to work in (subset of competition's) |
-| `status`           | `ApplicationStatus`      | Current status of the application                                  |
+| `participant_id`   | `ParticipantId` (UUID)   | Reference to the applying [Participant](participant.md)                              |
+| `competition_id`   | `CompetitionId` (UUID)   | Reference to the target [Competition](competition.md)                                |
+| `domains`          | `list[`[`Domain`](../value-objects/domain.md)`]`           | Domains the participant wants to work in (subset of competition's) |
+| `status`           | [`ApplicationStatus`](#applicationstatus-enum)      | Current status of the application                                  |
 | `created_at`       | `datetime`               | Timestamp of application creation                                  |
 | `form_data`        | `dict[str, Any] \| None` | Answers to the competition's ApplicationForm fields; `None` if the competition has no form |
 

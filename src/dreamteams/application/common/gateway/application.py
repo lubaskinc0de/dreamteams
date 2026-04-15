@@ -49,3 +49,8 @@ class ApplicationGateway(Protocol):
         Returns tuple of (applications list, total count).
         """
         raise NotImplementedError
+
+    @abstractmethod
+    async def count_accepted_by_competition(self, competition_id: CompetitionId) -> int:
+        """Count applications with ACCEPTED status for a given competition."""
+        raise NotImplementedError

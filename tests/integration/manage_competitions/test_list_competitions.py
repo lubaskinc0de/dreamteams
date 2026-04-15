@@ -12,8 +12,7 @@ from tests.common.factory.competition import CompetitionFormFactory
 from tests.integration.api_client import ApiClient
 from tests.integration.conftest import create_competition, create_competitions
 from tests.integration.constants import DIFFERENT_USER_ID, USER_ID
-from tests.integration.manage_competitions.helpers import create_competitions_list
-from tests.integration.preview_competitions.helpers import change_archived_state, make_all_active
+from tests.integration.competition_helpers import change_archived_state, create_competitions_list, make_all_active
 
 
 async def test_list_competitions_succeeds(

@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from dreamteams.adapters.db.models.application import application_table
 from dreamteams.application.common.gateway.application import ApplicationGateway
-from dreamteams.entities.application.entity import Application
+from dreamteams.entities.application.entity import Application, ApplicationStatus
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId, ParticipantId
 
 
@@ -75,3 +75,12 @@ class SAApplicationGateway(ApplicationGateway):
         )
         result = await self._session.scalars(query)
         return list(result.all()), total
+
+    @override
+    async def count_accepted_by_competition(self, competition_id: CompetitionId) -> int:
+        """Count applications with ACCEPTED status for a given competition."""
+        query = select(func.count()).where(
+            application_table.c.competition_id == competition_id,
+            application_table.c.status == ApplicationStatus.ACCEPTED,
+        )
+        return await self._session.scalar(query) or 0

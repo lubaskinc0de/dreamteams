@@ -9,9 +9,9 @@ Represents an optional set of extra input fields that an organizer can attach to
 | Attribute        | Type                        | Description                                                              |
 | ---------------- | --------------------------- | ------------------------------------------------------------------------ |
 | `id`             | `ApplicationFormId` (UUID)  | Unique identifier                                                        |
-| `competition_id` | `CompetitionId` (UUID)      | The competition this form belongs to (one-to-one)                        |
+| `competition_id` | `CompetitionId` (UUID)      | The [Competition](competition.md) this form belongs to (one-to-one)                        |
 | `created_at`     | `datetime`                  | When the form was created                                                |
-| `fields`         | `frozenset[Field]`          | The set of fields participants must fill in; uniqueness enforced by `name` |
+| `fields`         | `frozenset[`[`Field`](../value-objects/field.md)`]`          | The set of fields participants must fill in; uniqueness enforced by `name` |
 
 ## Storage
 

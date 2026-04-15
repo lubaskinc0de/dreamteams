@@ -24,3 +24,7 @@ Value object (dataclass)
 ## Possible Errors
 
 - `InvalidCompetitionDataError` — when title is empty or timestamps are not unique
+
+## Used By
+
+- [Competition](../entities/competition.md)

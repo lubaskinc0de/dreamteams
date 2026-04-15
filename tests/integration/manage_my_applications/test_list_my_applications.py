@@ -1,4 +1,5 @@
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from dreamteams.application.manage_my_applications import ApplicationModel, ApplicationsList
 from dreamteams.application.manage_my_applications.list import PAGE_SIZE
@@ -8,7 +9,7 @@ from dreamteams.application.register.register_participant import CreatedParticip
 from dreamteams.application.submit_application import CreatedApplication
 from dreamteams.entities.application.entity import ApplicationStatus
 from tests.common.factory.application import SubmitApplicationInputFactory
-from tests.common.factory.competition import CompetitionFormFactory
+from tests.common.factory.competition import CompetitionFormFactory, UpdateCompetitionFormFactory
 from tests.integration.api_client import ApiClient
 from tests.integration.constants import PARTICIPANT_USER_ID, USER_ID
 from tests.integration.manage_my_applications.helpers import (
@@ -20,7 +21,7 @@ from tests.integration.manage_my_applications.helpers import (
 async def test_participant_can_list_own_applications(
     api_client: ApiClient,
     submitted_application: CreatedApplication,
-    non_autoaccept_competition: CreatedCompetition,
+    active_non_autoaccept_competition: CreatedCompetition,
 ) -> None:
     """Participant who submitted an application sees it in their application list."""
     # Arrange
@@ -37,7 +38,7 @@ async def test_participant_can_list_own_applications(
             ApplicationModel(
                 id=application_id,
                 participant_id=result.items[0].participant_id,
-                competition_id=non_autoaccept_competition.competition_id,
+                competition_id=active_non_autoaccept_competition.competition_id,
                 domains=result.items[0].domains,
                 status=ApplicationStatus.PENDING,
                 created_at=result.items[0].created_at,
@@ -107,7 +108,9 @@ async def test_list_my_applications_with_pagination(
     different_participant: CreatedParticipant,  # noqa: ARG001
     organizer: CreatedOrganizer,  # noqa: ARG001
     competition_form_factory: CompetitionFormFactory,
+    update_competition_form_factory: UpdateCompetitionFormFactory,
     submit_application_input_factory: SubmitApplicationInputFactory,
+    session: AsyncSession,
     page: int,
 ) -> None:
     """List own applications returns the correct page and total when there are multiple pages of results."""
@@ -118,7 +121,9 @@ async def test_list_my_applications_with_pagination(
         app_id = await create_competition_and_submit(
             api_client,
             competition_form_factory,
+            update_competition_form_factory,
             submit_application_input_factory,
+            session,
         )
         application_ids.append(app_id)
     with api_client.authenticate(auth_user_id=PARTICIPANT_USER_ID):

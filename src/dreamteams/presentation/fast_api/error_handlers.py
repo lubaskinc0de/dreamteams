@@ -17,7 +17,13 @@ from dreamteams.application.errors.application_form import (
 from dreamteams.application.errors.invite import InviteNotFoundError
 from dreamteams.application.errors.organizer import OrganizerAlreadyExistsError
 from dreamteams.application.errors.user import InvalidSuperuserPasswordError, UserNotFoundError
-from dreamteams.entities.errors.application import ApplicationAlreadyResolvedError, InvalidApplicationDataError
+from dreamteams.entities.errors.application import (
+    ApplicationAlreadyResolvedError,
+    CompetitionNotActiveError,
+    InvalidApplicationDataError,
+    ParticipantLimitsExceededError,
+    ParticipantTypeMismatchError,
+)
 from dreamteams.entities.errors.application_form import InvalidApplicationFormDataError
 from dreamteams.entities.errors.base import AccessDeniedError, AppError
 from dreamteams.entities.errors.competition import CompetitionNotFoundError, InvalidCompetitionDataError
@@ -53,6 +59,9 @@ error_to_http_status: dict[type[AppError], int] = {
     ApplicationAlreadyExistsError: 409,
     InvalidApplicationDataError: 400,
     ApplicationAlreadyResolvedError: 409,
+    CompetitionNotActiveError: 409,
+    ParticipantTypeMismatchError: 422,
+    ParticipantLimitsExceededError: 409,
 }
 
 
