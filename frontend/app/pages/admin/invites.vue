@@ -131,9 +131,9 @@ const totalPages = computed(() =>
 <template>
   <UContainer class="py-8">
     <!-- Page header -->
-    <div class="flex items-center justify-between mb-8">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
       <div>
-        <h1 class="text-4xl font-bold text-gray-900 dark:text-gray-100">
+        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100">
           {{ t("admin.invites.title") }}
         </h1>
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
@@ -143,6 +143,7 @@ const totalPages = computed(() =>
       <UButton
         icon="i-heroicons-plus"
         :label="t('admin.invites.createButton')"
+        class="w-full sm:w-auto justify-center"
         @click="openCreateModal"
       />
     </div>
@@ -188,7 +189,7 @@ const totalPages = computed(() =>
           <!-- Invite info -->
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
-              <code class="text-base font-mono bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded truncate max-w-xs"
+              <code class="text-sm sm:text-base font-mono bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded break-all max-w-full sm:max-w-xs"
                     :title="invite.code">
                 {{ invite.code }}
               </code>
@@ -224,6 +225,7 @@ const totalPages = computed(() =>
             size="sm"
             icon="i-heroicons-x-circle"
             :label="t('admin.invites.revokeButton')"
+            class="w-full sm:w-auto justify-center"
             @click="openRevokeModal(invite.id)"
           />
         </div>

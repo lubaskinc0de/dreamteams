@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import structlog
+from opentelemetry import trace
 from pydantic import BaseModel
 
 from dreamteams.application.common.gateway.competition import CompetitionGateway
@@ -19,6 +20,7 @@ from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import CompetitionNotFoundError
 
 logger: Logger = structlog.get_logger(__name__)
+_tracer = trace.get_tracer("dreamteams.interactors")
 
 
 class CompetitionModel(BaseModel):
@@ -51,33 +53,34 @@ class ReadCompetition:
 
     async def execute(self, competition_id: CompetitionId) -> CompetitionModel:
         """Read competition by ID."""
-        user = await self.idp.get_user()
-        logger.debug("Reading competition", competition_id=competition_id, user_id=user.id)
+        with _tracer.start_as_current_span("interactor.read_competition"):
+            user = await self.idp.get_user()
+            logger.debug("Reading competition", competition_id=competition_id, user_id=user.id)
 
-        competition = await self.competition_gateway.get(competition_id)
-        if competition is None:
-            logger.warning("Competition not found", competition_id=competition_id, user_id=user.id)
-            raise CompetitionNotFoundError
+            competition = await self.competition_gateway.get(competition_id)
+            if competition is None:
+                logger.warning("Competition not found", competition_id=competition_id, user_id=user.id)
+                raise CompetitionNotFoundError
 
-        if not competition.can_read(user):
-            logger.warning("Access denied to read competition", competition_id=competition_id, user_id=user.id)
-            raise AccessDeniedError(message="Only the organizer who created this competition can view it")
+            if not competition.can_read(user):
+                logger.warning("Access denied to read competition", competition_id=competition_id, user_id=user.id)
+                raise AccessDeniedError(message="Only the organizer who created this competition can view it")
 
-        return CompetitionModel(
-            id=competition.id,
-            organizer_id=competition.organizer_id,
-            title=competition.title,
-            banner=competition.banner,
-            description=competition.description,
-            schedule=competition.schedule,
-            participant_limits=competition.participant_limits,
-            domains=competition.domains,
-            participant_type=competition.participant_type,
-            venue=competition.venue,
-            team_size=competition.team_size,
-            milestones=competition.milestones,
-            auto_accept=competition.auto_accept,
-            is_archived=competition.is_archived,
-            created_at=competition.created_at,
-            updated_at=competition.updated_at,
-        )
+            return CompetitionModel(
+                id=competition.id,
+                organizer_id=competition.organizer_id,
+                title=competition.title,
+                banner=competition.banner,
+                description=competition.description,
+                schedule=competition.schedule,
+                participant_limits=competition.participant_limits,
+                domains=competition.domains,
+                participant_type=competition.participant_type,
+                venue=competition.venue,
+                team_size=competition.team_size,
+                milestones=competition.milestones,
+                auto_accept=competition.auto_accept,
+                is_archived=competition.is_archived,
+                created_at=competition.created_at,
+                updated_at=competition.updated_at,
+            )

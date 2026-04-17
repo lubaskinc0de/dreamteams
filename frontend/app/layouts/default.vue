@@ -71,7 +71,7 @@ const handleLogin = async () => {
       <template #left>
         <NuxtLink :to="brandLink" class="flex items-center gap-3 group" :aria-label="t('nav.brand')">
           <img src="/logo.png" alt="DreamTeams Logo"
-            class="h-12 w-12 sm:h-16 sm:w-16 object-contain transition-transform group-hover:scale-110" />
+            class="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 lg:h-16 lg:w-16 object-contain transition-transform group-hover:scale-110" />
           <span
             class="text-lg sm:text-xl font-extrabold text-gray-900 dark:text-gray-100 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors">
             {{ t("nav.brand") }}
@@ -128,7 +128,7 @@ const handleLogin = async () => {
               :aria-label="t('nav.settings')"
             />
             <template #content>
-              <div class="p-4 space-y-4 min-w-48">
+              <div class="p-4 space-y-4 w-[min(18rem,calc(100vw-2rem))]">
                 <div class="flex items-center justify-between gap-4">
                   <span class="text-sm font-medium text-gray-900 dark:text-white">
                     {{ t('nav.theme') }}
@@ -170,7 +170,7 @@ const handleLogin = async () => {
     <!-- Footer -->
     <footer class="bg-gray-100 dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800">
       <UContainer class="py-12">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
           <!-- Brand Section -->
           <div class="space-y-4">
             <div class="flex items-center gap-3">

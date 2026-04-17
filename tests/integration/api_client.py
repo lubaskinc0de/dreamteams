@@ -8,7 +8,6 @@ from aiohttp import ClientResponse, ClientResponseError, ClientSession, FormData
 
 from dreamteams.adapters.auth.model import AuthUserId
 from dreamteams.adapters.errors.http.response import ErrorResponse
-from dreamteams.adapters.tracing import TraceId, TracingConfig
 from dreamteams.application.common.gateway.competition import CompetitionSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.manage_application_form import ApplicationFormModel, CreatedApplicationForm
@@ -136,15 +135,10 @@ class ApiClient:
         self,
         session: ClientSession,
         config: APIClientConfig,
-        trace_id: TraceId,
-        tracing_config: TracingConfig,
         access_token: str | None,
     ) -> None:
         self.session = session
-        self.trace_id = trace_id
-        self._headers: dict[str, str] = {
-            tracing_config.trace_id_header: self.trace_id,
-        }
+        self._headers: dict[str, str] = {}
         self._config = config
         self._access_token = access_token
 
@@ -450,4 +444,16 @@ class ApiClient:
         """Reject application via POST /applications/{application_id}/reject/."""
         url = f"{APPLICATIONS_URL}/{application_id}/reject/"
         async with self.session.post(url, headers=self._headers) as response:
+            return await self._load_response(response, response_type=None)
+
+    async def update_participant(self, data: dict[str, Any]) -> APIResponse[None]:
+        """Update participant profile via PUT /users/me/participant."""
+        url = f"{USERS_URL}/me/participant"
+        async with self.session.put(url, headers=self._headers, json=data) as response:
+            return await self._load_response(response, response_type=None)
+
+    async def update_organizer(self, data: dict[str, Any]) -> APIResponse[None]:
+        """Update organizer profile via PUT /users/me/organizer."""
+        url = f"{USERS_URL}/me/organizer"
+        async with self.session.put(url, headers=self._headers, json=data) as response:
             return await self._load_response(response, response_type=None)

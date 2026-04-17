@@ -5,9 +5,9 @@ access_token_header = "X-Access-Token"
 access_token_alg = "RS256"
 allow_unverified_email = true
 
-[tracing]
-trace_id_header = "X-Trace-Id"
-trace_id_required = false
+[otel]
+endpoint = "http://tempo:4318/v1/traces"
+service_name = "dreamteams"
 
 [cors]
 allow_origins = ["http://localhost:3001"]

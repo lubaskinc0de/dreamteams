@@ -4,6 +4,8 @@ import type {
   CreatedOrganizer,
   ProfileModel,
   ParticipantForm,
+  UpdateParticipantForm,
+  UpdateOrganizerForm,
   CreatedParticipant,
   CompetitionForm,
   UpdateCompetitionForm,
@@ -372,6 +374,36 @@ export const useApi = () => {
     }
   };
 
+  const updateParticipant = async (
+    form: UpdateParticipantForm,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<{}>(`${apiBase}/api/users/me/participant`, {
+        method: "PUT",
+        body: form,
+        headers: { "Content-Type": "application/json" },
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const updateOrganizer = async (
+    form: UpdateOrganizerForm,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<{}>(`${apiBase}/api/users/me/organizer`, {
+        method: "PUT",
+        body: form,
+        headers: { "Content-Type": "application/json" },
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
   const registerSuperuser = async (
     password: string,
   ): Promise<{ data: CreatedSuperuser | null; error: ApiError | null }> => {
@@ -565,6 +597,8 @@ export const useApi = () => {
     listInvites,
     revokeInvite,
     registerParticipant,
+    updateParticipant,
+    updateOrganizer,
     registerSuperuser,
     getApplicationForm,
     createApplicationForm,

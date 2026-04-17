@@ -3,11 +3,12 @@ from fastapi import Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from opentelemetry import trace
+from opentelemetry.trace import StatusCode
 
 from dreamteams.adapters.auth.errors.auth_user import AuthUserAlreadyExistsError
 from dreamteams.adapters.auth.errors.base import UnauthorizedError
 from dreamteams.adapters.errors.http.response import ErrorResponse, InternalServerError, ValidationError
-from dreamteams.adapters.tracing import MissingTraceIdError
 from dreamteams.application.common.logger import Logger
 from dreamteams.application.errors.application import ApplicationAlreadyExistsError, ApplicationNotFoundError
 from dreamteams.application.errors.application_form import (
@@ -15,7 +16,8 @@ from dreamteams.application.errors.application_form import (
     ApplicationFormNotFoundError,
 )
 from dreamteams.application.errors.invite import InviteNotFoundError
-from dreamteams.application.errors.organizer import OrganizerAlreadyExistsError
+from dreamteams.application.errors.organizer import OrganizerAlreadyExistsError, OrganizerNotFoundError
+from dreamteams.application.errors.participant import ParticipantNotFoundError
 from dreamteams.application.errors.user import InvalidSuperuserPasswordError, UserNotFoundError
 from dreamteams.entities.errors.application import (
     ApplicationAlreadyResolvedError,
@@ -41,7 +43,6 @@ error_to_http_status: dict[type[AppError], int] = {
     AuthUserAlreadyExistsError: 409,
     UserNotFoundError: 404,
     AccessDeniedError: 403,
-    MissingTraceIdError: 422,
     OrganizerAlreadyExistsError: 409,
     InvalidCompetitionDataError: 422,
     CompetitionNotFoundError: 404,
@@ -62,6 +63,8 @@ error_to_http_status: dict[type[AppError], int] = {
     CompetitionNotActiveError: 409,
     ParticipantTypeMismatchError: 422,
     ParticipantLimitsExceededError: 409,
+    OrganizerNotFoundError: 404,
+    ParticipantNotFoundError: 404,
 }
 
 
@@ -99,9 +102,12 @@ async def get_app_error_response(
 
 async def app_error_handler(_request: Request, exc: Exception) -> JSONResponse:
     """FastAPI exception handler that converts AppError exceptions to JSON error responses."""
+    span = trace.get_current_span()
+    span.record_exception(exc)
     app_error = exc if isinstance(exc, AppError) else None
     if app_error is None:
         logger.exception("Handling unexpected internal server error", exc_info=exc)
+        span.set_status(StatusCode.ERROR, str(exc))
         app_error = InternalServerError(orig_error=exc)
     return await get_app_error_response(app_error)
 

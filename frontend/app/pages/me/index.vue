@@ -93,6 +93,17 @@ const tabs = computed(() => [
   },
 ]);
 
+const isOrganizerEditOpen = ref(false);
+const isParticipantEditOpen = ref(false);
+const isNameEditOpen = ref(false);
+const fieldEditOpen = ref(false);
+type ParticipantEditableField = "bio" | "experience_level" | "preferred_domains" | "skills" | "contacts";
+const editField = ref<ParticipantEditableField>("bio");
+const openFieldEdit = (field: ParticipantEditableField) => {
+  editField.value = field;
+  fieldEditOpen.value = true;
+};
+
 const isDeleteModalOpen = ref(false);
 const isDeleting = ref(false);
 
@@ -154,11 +165,11 @@ onMounted(async () => {
             <!-- Information Tab -->
             <template #information>
               <UCard>
-                <div class="flex flex-col lg:flex-row gap-6 lg:gap-8 items-center lg:items-start">
+                <div class="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8 items-center lg:items-start">
                   <!-- Avatar Section -->
                   <div class="flex-shrink-0">
                     <div
-                      class="relative group cursor-pointer w-20 h-20"
+                      class="relative group cursor-pointer w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28"
                       @click="isAvatarModalOpen = true"
                       :title="t('avatar.clickToEdit')"
                     >
@@ -182,10 +193,18 @@ onMounted(async () => {
 
                   <!-- User Info -->
                   <div class="flex-1 w-full text-center lg:text-left">
-                    <div class="flex items-center justify-center lg:justify-start gap-3 mb-4 flex-wrap">
+                    <div class="flex items-center justify-center lg:justify-start gap-2 mb-4 flex-wrap">
                       <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100">
                         {{ userStore.organizer?.organizer_name || userStore.participant?.full_name || t("profile.userBadge") }}
                       </h2>
+                      <UButton
+                        v-if="userStore.isParticipant"
+                        icon="i-heroicons-pencil-square"
+                        color="neutral"
+                        variant="ghost"
+                        size="xs"
+                        @click="isNameEditOpen = true"
+                      />
                       <UBadge
                         v-if="userStore.isAdmin"
                         color="warning"
@@ -200,61 +219,134 @@ onMounted(async () => {
                         :label="t('profile.organizerBadge')"
                         icon="i-heroicons-building-office"
                       />
-                      <UBadge
-                        v-else-if="userStore.isParticipant"
-                        color="success"
-                        variant="subtle"
-                        :label="t('profile.participantBadge')"
-                        icon="i-heroicons-user"
-                      />
                     </div>
 
                     <!-- Organizer info -->
                     <div v-if="userStore.isOrganizer && userStore.organizer" class="space-y-2">
                       <div class="flex justify-center lg:justify-start">
-                        <div class="flex items-center gap-2">
+                        <a
+                          :href="`tel:${userStore.organizer.phone_number}`"
+                          class="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
+                        >
                           <UIcon name="i-heroicons-phone" class="text-lg text-gray-600 dark:text-gray-400" />
-                          <p class="text-sm text-gray-900 dark:text-gray-100">{{ userStore.organizer.phone_number }}</p>
-                        </div>
+                          {{ userStore.organizer.phone_number }}
+                        </a>
                       </div>
-                      <div class="flex justify-center lg:justify-start">
-                        <div class="flex items-center gap-2">
+                      <div v-if="userStore.organizer.contact_email" class="flex justify-center lg:justify-start">
+                        <a
+                          :href="`mailto:${userStore.organizer.contact_email}`"
+                          class="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
+                        >
                           <UIcon name="i-heroicons-envelope" class="text-lg text-gray-600 dark:text-gray-400" />
-                          <p class="text-sm text-gray-900 dark:text-gray-100">{{ userStore.organizer.contact_email }}</p>
-                        </div>
+                          {{ userStore.organizer.contact_email }}
+                        </a>
+                      </div>
+                      <div class="flex justify-center lg:justify-start pt-2">
+                        <UButton
+                          icon="i-heroicons-pencil-square"
+                          color="neutral"
+                          variant="ghost"
+                          size="sm"
+                          @click="isOrganizerEditOpen = true"
+                        >
+                          {{ t("common.edit") }}
+                        </UButton>
                       </div>
                     </div>
 
                     <!-- Participant info -->
                     <div v-else-if="userStore.isParticipant && userStore.participant" class="space-y-4 text-left">
-                      <!-- Bio -->
-                      <div v-if="userStore.participant.bio">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
+                      <!-- + buttons for unfilled optional fields -->
+                      <div class="flex flex-wrap gap-2">
+                        <UButton v-if="!userStore.participant.bio" icon="i-heroicons-plus" size="xs" color="neutral" variant="outline" @click="openFieldEdit('bio')">
                           {{ t('profile.participant.bio') }}
-                        </p>
-                        <p class="text-sm text-gray-800 dark:text-gray-200">{{ userStore.participant.bio }}</p>
+                        </UButton>
+                        <UButton v-if="!userStore.participant.experience_level" icon="i-heroicons-plus" size="xs" color="neutral" variant="outline" @click="openFieldEdit('experience_level')">
+                          {{ t('profile.participant.experienceLevel') }}
+                        </UButton>
+                        <UButton v-if="!userStore.participant.preferred_domains.length" icon="i-heroicons-plus" size="xs" color="neutral" variant="outline" @click="openFieldEdit('preferred_domains')">
+                          {{ t('profile.participant.preferredDomains') }}
+                        </UButton>
+                        <UButton v-if="!userStore.participant.skills.length" icon="i-heroicons-plus" size="xs" color="neutral" variant="outline" @click="openFieldEdit('skills')">
+                          {{ t('profile.participant.skills') }}
+                        </UButton>
+                        <UButton v-if="!userStore.participant.contacts.length" icon="i-heroicons-plus" size="xs" color="neutral" variant="outline" @click="openFieldEdit('contacts')">
+                          {{ t('profile.participant.contacts') }}
+                        </UButton>
                       </div>
 
-                      <!-- Experience + Domains row -->
-                      <div class="flex flex-wrap gap-4">
-                        <div>
-                          <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
-                            {{ t('profile.participant.experienceLevel') }}
-                          </p>
-                          <UBadge color="neutral" variant="subtle">
+                      <!-- Bio + Experience: two columns on lg -->
+                      <div
+                        v-if="userStore.participant.bio || userStore.participant.experience_level"
+                        class="grid grid-cols-1 lg:grid-cols-2 gap-4"
+                      >
+                        <!-- Bio -->
+                        <div v-if="userStore.participant.bio">
+                          <div class="flex items-center gap-1 mb-1">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                              {{ t('profile.participant.bio') }}
+                            </p>
+                            <UButton icon="i-heroicons-pencil-square" size="xs" color="neutral" variant="ghost" :padded="false" @click="openFieldEdit('bio')" />
+                          </div>
+                          <p class="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">{{ userStore.participant.bio }}</p>
+                        </div>
+
+                        <!-- Experience -->
+                        <div v-if="userStore.participant.experience_level">
+                          <div class="flex items-center gap-1 mb-1">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                              {{ t('profile.participant.experienceLevel') }}
+                            </p>
+                            <UButton icon="i-heroicons-pencil-square" size="xs" color="neutral" variant="ghost" :padded="false" @click="openFieldEdit('experience_level')" />
+                          </div>
+                          <UBadge color="neutral" variant="subtle" size="md">
                             {{ t(`profile.participant.experienceLevels.${userStore.participant.experience_level}`) }}
                           </UBadge>
                         </div>
-                        <div>
-                          <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
-                            {{ t('profile.participant.preferredDomains') }}
-                          </p>
-                          <div class="flex flex-wrap gap-1">
+                      </div>
+
+                      <!-- Skills + Domains: two columns on lg -->
+                      <div
+                        v-if="userStore.participant.skills.length || userStore.participant.preferred_domains.length"
+                        class="grid grid-cols-1 lg:grid-cols-2 gap-4"
+                      >
+                        <!-- Skills -->
+                        <div v-if="userStore.participant.skills.length">
+                          <div class="flex items-center gap-1 mb-2">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                              {{ t('profile.participant.skills') }}
+                            </p>
+                            <UButton icon="i-heroicons-pencil-square" size="xs" color="neutral" variant="ghost" :padded="false" @click="openFieldEdit('skills')" />
+                          </div>
+                          <div class="flex flex-wrap gap-1.5">
+                            <div
+                              v-for="skill in userStore.participant.skills"
+                              :key="skill.name"
+                              class="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-gray-100 dark:bg-gray-800"
+                            >
+                              <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ skill.name }}</span>
+                              <span class="text-xs text-gray-500 dark:text-gray-400">
+                                {{ t(`profile.participant.skillLevels.${skill.level}`) }}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Preferred Domains -->
+                        <div v-if="userStore.participant.preferred_domains.length">
+                          <div class="flex items-center gap-1 mb-2">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                              {{ t('profile.participant.preferredDomains') }}
+                            </p>
+                            <UButton icon="i-heroicons-pencil-square" size="xs" color="neutral" variant="ghost" :padded="false" @click="openFieldEdit('preferred_domains')" />
+                          </div>
+                          <div class="flex flex-wrap gap-1.5">
                             <UBadge
                               v-for="domain in userStore.participant.preferred_domains"
                               :key="domain"
                               color="primary"
                               variant="subtle"
+                              size="md"
                             >
                               {{ t(`profile.participant.domains.${domain}`) }}
                             </UBadge>
@@ -262,30 +354,14 @@ onMounted(async () => {
                         </div>
                       </div>
 
-                      <!-- Skills -->
-                      <div v-if="userStore.participant.skills.length">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">
-                          {{ t('profile.participant.skills') }}
-                        </p>
-                        <div class="flex flex-wrap gap-2">
-                          <div
-                            v-for="skill in userStore.participant.skills"
-                            :key="skill.name"
-                            class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-sm"
-                          >
-                            <span class="font-medium text-gray-900 dark:text-gray-100">{{ skill.name }}</span>
-                            <span class="text-xs text-gray-500 dark:text-gray-400">
-                              {{ t(`profile.participant.skillLevels.${skill.level}`) }}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Contacts -->
+                      <!-- Contacts (full width) -->
                       <div v-if="userStore.participant.contacts.length">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">
-                          {{ t('profile.participant.contacts') }}
-                        </p>
+                        <div class="flex items-center gap-1 mb-2">
+                          <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                            {{ t('profile.participant.contacts') }}
+                          </p>
+                          <UButton icon="i-heroicons-pencil-square" size="xs" color="neutral" variant="ghost" :padded="false" @click="openFieldEdit('contacts')" />
+                        </div>
                         <div class="flex flex-wrap gap-2">
                           <a
                             v-for="contact in userStore.participant.contacts"
@@ -293,7 +369,7 @@ onMounted(async () => {
                             :href="contact.url"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-primary-500 hover:text-primary-400 transition-colors"
+                            class="flex items-center gap-1.5 px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-primary-500 hover:text-primary-400 transition-colors"
                           >
                             <UIcon name="i-heroicons-link" class="text-xs" />
                             {{ contact.title }}
@@ -416,6 +492,28 @@ onMounted(async () => {
         :current-avatar-url="userStore.profile?.avatar_url"
         @upload="handleAvatarUpload"
         @delete="handleAvatarDelete"
+      />
+
+      <!-- Organizer Edit Modal -->
+      <OrganizerEditModal
+        v-if="isOrganizerEditOpen && userStore.organizer"
+        v-model:open="isOrganizerEditOpen"
+        :organizer-name="userStore.organizer.organizer_name"
+        :contact-email="userStore.organizer.contact_email"
+      />
+
+      <!-- Participant Name Edit Modal -->
+      <ParticipantNameEditModal
+        v-if="isNameEditOpen && userStore.participant"
+        v-model:open="isNameEditOpen"
+        :current-name="userStore.participant.full_name"
+      />
+
+      <!-- Participant Field Edit Modal -->
+      <ParticipantFieldEditModal
+        v-if="fieldEditOpen && userStore.participant"
+        v-model:open="fieldEditOpen"
+        :field="editField"
       />
     </UPageBody>
   </UPage>

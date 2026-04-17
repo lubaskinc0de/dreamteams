@@ -65,12 +65,17 @@ const isTeamFormationLocked = computed(() => props.lockedTeamFormationStart && p
 
         <UFormField
           name="schedule.registration_start"
-          :label="t('competition.form.schedule.registrationPeriod.label')"
           required
           size="xl"
           class="mb-3"
           :error-pattern="/schedule\.(registration_start|registration_end)/"
         >
+          <template #label>
+            {{ t('competition.form.schedule.registrationPeriod.label') }}
+            <UTooltip :text="t('competition.form.schedule.registrationPeriod.tooltip')">
+              <UIcon name="i-heroicons-question-mark-circle" class="w-3.5 h-3.5 text-gray-400 cursor-help" />
+            </UTooltip>
+          </template>
           <UInputDate
             ref="registrationDateInput"
             :model-value="(registrationDateRange as any)"
@@ -150,12 +155,17 @@ const isTeamFormationLocked = computed(() => props.lockedTeamFormationStart && p
 
         <UFormField
           name="schedule.team_formation_start"
-          :label="t('competition.form.schedule.teamFormationPeriod.label')"
           :required="isTeamCompetition"
           size="xl"
           class="mb-3"
           :error-pattern="/schedule\.team_formation_(start|end)/"
         >
+          <template #label>
+            {{ t('competition.form.schedule.teamFormationPeriod.label') }}
+            <UTooltip :text="t('competition.form.schedule.teamFormationPeriod.tooltip')">
+              <UIcon name="i-heroicons-question-mark-circle" class="w-3.5 h-3.5 text-gray-400 cursor-help" />
+            </UTooltip>
+          </template>
           <UInputDate
             ref="teamFormationDateInput"
             :model-value="(teamFormationDateRange as any)"

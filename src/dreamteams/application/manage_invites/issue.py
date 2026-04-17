@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 import structlog
+from opentelemetry import trace
 from pydantic import BaseModel
 
 from dreamteams.application.common.idp import IdProvider
@@ -11,6 +12,7 @@ from dreamteams.entities.common.identifiers import OrganizerInviteId
 from dreamteams.entities.organizer_invite import organizer_invite_factory
 
 logger: Logger = structlog.get_logger(__name__)
+_tracer = trace.get_tracer("dreamteams.interactors")
 
 
 class IssueInviteForm(BaseModel):
@@ -35,18 +37,19 @@ class IssueInvite:
 
     async def execute(self, data: IssueInviteForm) -> InviteIssued:
         """Create a new organizer invite with a unique code."""
-        user = await self.idp.get_user()
-        logger.debug("Issuing invite", user_id=user.id)
+        with _tracer.start_as_current_span("interactor.issue_invite"):
+            user = await self.idp.get_user()
+            logger.debug("Issuing invite", user_id=user.id)
 
-        invite_id = uuid4()
-        invite = organizer_invite_factory(
-            invite_id=invite_id,
-            display_name=data.display_name,
-            user=user,
-        )
+            invite_id = uuid4()
+            invite = organizer_invite_factory(
+                invite_id=invite_id,
+                display_name=data.display_name,
+                user=user,
+            )
 
-        self.uow.add(invite)
-        await self.uow.commit()
+            self.uow.add(invite)
+            await self.uow.commit()
 
-        logger.info("Invite issued", invite_id=invite_id, user_id=user.id)
-        return InviteIssued(invite_id=invite_id, code=invite.code)
+            logger.info("Invite issued", invite_id=invite_id, user_id=user.id)
+            return InviteIssued(invite_id=invite_id, code=invite.code)

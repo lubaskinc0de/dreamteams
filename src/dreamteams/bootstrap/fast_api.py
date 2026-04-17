@@ -7,11 +7,14 @@ from dishka import AsyncContainer
 from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 
 from dreamteams.adapters.sentry import SentryConfig
 from dreamteams.bootstrap.config.loader import Config
 from dreamteams.bootstrap.di.container import get_async_container
 from dreamteams.bootstrap.logs import configure_structlog
+from dreamteams.bootstrap.observability import setup_observability
 from dreamteams.presentation.fast_api import include_exception_handlers, include_routers
 from dreamteams.presentation.fast_api.tracing import tracing_middleware
 
@@ -20,7 +23,7 @@ log_config = configure_structlog()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """FastAPI lifespan context manager that handles DI container lifecycle during application startup and shutdown."""
+    """Handle DI container lifecycle during application startup and shutdown."""
     container: AsyncContainer = app.state.dishka_container
     sentry_config = await container.get(SentryConfig)
 
@@ -32,10 +35,19 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 def create_app(config: Config) -> FastAPI:
-    """Creates and configures the FastAPI application instance with routers, error handlers, and DI container."""
+    """Create and configure the FastAPI application instance."""
+    setup_observability(config.otel)
+    SQLAlchemyInstrumentor().instrument()
+
     app = FastAPI(
         lifespan=lifespan,
         root_path=config.api.root_path,
+    )
+
+    # OTel added first → outermost → creates span before tracing_middleware reads it
+    FastAPIInstrumentor.instrument_app(
+        app,
+        excluded_urls="/internal/metrics,/internal/alive,/internal/ready",
     )
     app.middleware("http")(tracing_middleware)
     app.add_middleware(
@@ -55,7 +67,7 @@ def create_app(config: Config) -> FastAPI:
 
 
 def run_api() -> None:
-    """Starts the FastAPI application server using uvicorn on the configured host and port."""
+    """Start the FastAPI application server."""
     config = Config.load()
     uvicorn.run(
         create_app(config),

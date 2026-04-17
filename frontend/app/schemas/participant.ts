@@ -43,17 +43,37 @@ export const createParticipantSchemas = (t: (key: string) => string) => {
     { message: t("form.experienceLevel.required") },
   );
 
+  const participantTypeSchema = z.enum(
+    ["schoolchild", "student"] as const,
+    { message: t("form.participantType.required") },
+  );
+
+  const ageSchema = z.number({ message: t("form.age.required") }).int();
+
   const participantRegistrationSchema = z.object({
     full_name: fullNameSchema,
-    bio: bioSchema,
-    experience_level: experienceLevelSchema,
+    participant_type: participantTypeSchema,
+    age: ageSchema,
+    bio: bioSchema.nullable().optional(),
+    experience_level: experienceLevelSchema.nullable().optional(),
     preferred_domains: z
       .array(z.enum(["frontend", "mobile", "backend", "ai", "devops"] as const))
-      .min(1, t("form.preferredDomains.required")),
-    skills: z
-      .array(skillSchema)
-      .min(1, t("form.skills.minRequired")),
-    contacts: z.array(contactSchema),
+      .optional(),
+    skills: z.array(skillSchema).optional(),
+    contacts: z.array(contactSchema).optional(),
+  });
+
+  const participantUpdateSchema = z.object({
+    full_name: fullNameSchema,
+    participant_type: participantTypeSchema,
+    age: ageSchema,
+    bio: bioSchema.nullable().optional(),
+    experience_level: experienceLevelSchema.nullable().optional(),
+    preferred_domains: z
+      .array(z.enum(["frontend", "mobile", "backend", "ai", "devops"] as const))
+      .optional(),
+    skills: z.array(skillSchema).optional(),
+    contacts: z.array(contactSchema).optional(),
   });
 
   return {
@@ -63,10 +83,17 @@ export const createParticipantSchemas = (t: (key: string) => string) => {
     skillSchema,
     contactSchema,
     experienceLevelSchema,
+    participantTypeSchema,
+    ageSchema,
     participantRegistrationSchema,
+    participantUpdateSchema,
   };
 };
 
 export type ParticipantRegistrationSchema = z.infer<
   ReturnType<typeof createParticipantSchemas>["participantRegistrationSchema"]
+>;
+
+export type ParticipantUpdateSchema = z.infer<
+  ReturnType<typeof createParticipantSchemas>["participantUpdateSchema"]
 >;

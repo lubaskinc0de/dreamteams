@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 from typing import override
 
 import structlog
+from opentelemetry import trace
 from sqlalchemy import delete, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,6 +13,8 @@ from dreamteams.application.common.logger import Logger
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
 from dreamteams.entities.competition.entity import Competition
 from dreamteams.entities.competition.milestone import Milestone
+
+_tracer = trace.get_tracer("dreamteams.adapters")
 
 SIMILARITY_THRESHOLD = 0.15
 logger: Logger = structlog.get_logger(__name__)
@@ -74,19 +77,20 @@ class SACompetitionGateway(CompetitionGateway):
             filter_by.append(similarity > SIMILARITY_THRESHOLD)
             order_by = [similarity.desc(), *order_by]
 
-        count_query = select(func.count()).where(*filter_by)
-        total = await self._session.scalar(count_query) or 0
-        query = (
-            select(Competition)
-            .where(*filter_by)
-            .order_by(
-                *order_by,
-                desc(competition_table.c.id) if sort_order == SortOrder.DESC else competition_table.c.id,
+        with _tracer.start_as_current_span("db.competition_list"):
+            count_query = select(func.count()).where(*filter_by)
+            total = await self._session.scalar(count_query) or 0
+            query = (
+                select(Competition)
+                .where(*filter_by)
+                .order_by(
+                    *order_by,
+                    desc(competition_table.c.id) if sort_order == SortOrder.DESC else competition_table.c.id,
+                )
+                .limit(page_size)
+                .offset((page - 1) * page_size)
             )
-            .limit(page_size)
-            .offset((page - 1) * page_size)
-        )
 
-        result = await self._session.scalars(query)
-        competitions = list(result.all())
-        return competitions, total
+            result = await self._session.scalars(query)
+            competitions = list(result.all())
+            return competitions, total

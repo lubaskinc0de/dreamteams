@@ -11,3 +11,10 @@ class OrganizerGateway(Protocol):
         Returns False if organizer with phone_number or contact_email already exists.
         """
         ...
+
+    async def is_unique_by_email(self, contact_email: str) -> bool:
+        """Check if no organizer with the given contact email exists.
+
+        Returns True if no organizer uses this email.
+        """
+        ...

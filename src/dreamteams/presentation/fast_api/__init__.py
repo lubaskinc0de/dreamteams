@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
+from prometheus_client import make_asgi_app as make_prometheus_app
 
 from dreamteams.presentation.fast_api.error_handlers import app_error_handler, validation_error_handler
 from dreamteams.presentation.fast_api.routers.application_forms import router as application_forms_router
@@ -19,6 +20,7 @@ from dreamteams.presentation.fast_api.routers.users import router as users_route
 
 def include_routers(app: FastAPI) -> None:
     """Registers all API routers with the FastAPI application."""
+    app.mount("/internal/metrics", make_prometheus_app())
     app.include_router(root_router)
     app.include_router(organizers_router)
     app.include_router(users_router)

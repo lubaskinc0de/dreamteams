@@ -62,11 +62,13 @@ const updateMilestone = (index: number, field: keyof MilestoneInput, value: any)
       >
         <div class="space-y-4">
           <!-- Title -->
-          <UFormField
-            :label="t('competition.form.milestone.title.label')"
-            required
-            size="lg"
-          >
+          <UFormField required size="lg">
+            <template #label>
+              {{ t('competition.form.milestone.title.label') }}
+              <UTooltip :text="t('competition.form.milestone.title.tooltip')">
+                <UIcon name="i-heroicons-question-mark-circle" class="w-3.5 h-3.5 text-gray-400 cursor-help" />
+              </UTooltip>
+            </template>
             <UInput
               :model-value="milestone.title"
               @update:model-value="updateMilestone(index, 'title', $event)"
@@ -77,11 +79,13 @@ const updateMilestone = (index: number, field: keyof MilestoneInput, value: any)
           </UFormField>
 
           <!-- Date and Time -->
-          <UFormField
-            :label="t('competition.form.milestone.datetime.label')"
-            required
-            size="lg"
-          >
+          <UFormField required size="lg">
+            <template #label>
+              {{ t('competition.form.milestone.datetime.label') }}
+              <UTooltip :text="t('competition.form.milestone.datetime.tooltip')">
+                <UIcon name="i-heroicons-question-mark-circle" class="w-3.5 h-3.5 text-gray-400 cursor-help" />
+              </UTooltip>
+            </template>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               <UInputDate
                 :model-value="(milestone.date as any)"

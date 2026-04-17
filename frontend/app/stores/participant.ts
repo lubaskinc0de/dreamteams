@@ -1,10 +1,16 @@
 import { defineStore } from "pinia";
-import type { ParticipantForm, CreatedParticipant, ApiError } from "~/types/api";
+import type {
+  ParticipantForm,
+  UpdateParticipantForm,
+  CreatedParticipant,
+  ApiError,
+} from "~/types/api";
 import { useNotificationsStore } from "~/stores/notifications";
 
 export const useParticipantStore = defineStore("participant", {
   state: () => ({
     registrationSuccess: false,
+    updateSuccess: false,
     createdParticipant: null as CreatedParticipant | null,
     loading: false,
     error: null as ApiError | null,
@@ -42,12 +48,43 @@ export const useParticipantStore = defineStore("participant", {
       this.loading = false;
     },
 
+    async updateParticipant(form: UpdateParticipantForm) {
+      const { $i18n } = useNuxtApp();
+      const notifications = useNotificationsStore();
+      const api = useApi();
+
+      this.loading = true;
+      this.error = null;
+      this.updateSuccess = false;
+
+      const { error } = await api.updateParticipant(form);
+
+      if (error) {
+        this.error = error;
+      } else {
+        this.updateSuccess = true;
+
+        notifications.add({
+          title: $i18n.t("toast.profileUpdated.title"),
+          description: $i18n.t("toast.profileUpdated.description"),
+          icon: "i-heroicons-check-circle",
+          color: "success",
+        });
+
+        const userStore = useUserStore();
+        await userStore.fetchProfile();
+      }
+
+      this.loading = false;
+    },
+
     clearError() {
       this.error = null;
     },
 
     reset() {
       this.registrationSuccess = false;
+      this.updateSuccess = false;
       this.createdParticipant = null;
       this.error = null;
     },

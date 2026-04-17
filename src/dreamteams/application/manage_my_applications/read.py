@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Any
 
 import structlog
+from opentelemetry import trace
 from pydantic import BaseModel
 
 from dreamteams.application.common.gateway.application import ApplicationGateway
@@ -15,6 +16,7 @@ from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.errors.base import AccessDeniedError
 
 logger: Logger = structlog.get_logger(__name__)
+_tracer = trace.get_tracer("dreamteams.interactors")
 
 
 class ApplicationModel(BaseModel):
@@ -38,24 +40,25 @@ class ReadMyApplication:
 
     async def execute(self, application_id: ApplicationId) -> ApplicationModel:
         """Read a single application; only the submitting participant may access it."""
-        user = await self.idp.get_user()
-        logger.debug("Reading own application", application_id=application_id, user_id=user.id)
+        with _tracer.start_as_current_span("interactor.read_my_application"):
+            user = await self.idp.get_user()
+            logger.debug("Reading own application", application_id=application_id, user_id=user.id)
 
-        application = await self.application_gateway.get(application_id)
-        if application is None:
-            logger.warning("Application not found", application_id=application_id, user_id=user.id)
-            raise ApplicationNotFoundError
+            application = await self.application_gateway.get(application_id)
+            if application is None:
+                logger.warning("Application not found", application_id=application_id, user_id=user.id)
+                raise ApplicationNotFoundError
 
-        if user.participant is None or user.participant.id != application.participant_id:
-            logger.warning("Access denied to read application", application_id=application_id, user_id=user.id)
-            raise AccessDeniedError(message="Only the participant who submitted this application can read it")
+            if user.participant is None or user.participant.id != application.participant_id:
+                logger.warning("Access denied to read application", application_id=application_id, user_id=user.id)
+                raise AccessDeniedError(message="Only the participant who submitted this application can read it")
 
-        return ApplicationModel(
-            id=application.id,
-            participant_id=application.participant_id,
-            competition_id=application.competition_id,
-            domains=application.domains,
-            status=application.status,
-            created_at=application.created_at,
-            form_data=application.form_data,
-        )
+            return ApplicationModel(
+                id=application.id,
+                participant_id=application.participant_id,
+                competition_id=application.competition_id,
+                domains=application.domains,
+                status=application.status,
+                created_at=application.created_at,
+                form_data=application.form_data,
+            )

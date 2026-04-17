@@ -1,5 +1,6 @@
 from typing import override
 
+from opentelemetry import trace
 from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -7,6 +8,8 @@ from dreamteams.adapters.db.models.application import application_table
 from dreamteams.application.common.gateway.application import ApplicationGateway
 from dreamteams.entities.application.entity import Application, ApplicationStatus
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId, ParticipantId
+
+_tracer = trace.get_tracer("dreamteams.adapters")
 
 
 class SAApplicationGateway(ApplicationGateway):
@@ -43,17 +46,18 @@ class SAApplicationGateway(ApplicationGateway):
         page_size: int,
     ) -> tuple[list[Application], int]:
         """List applications for a competition with pagination ordered by created_at DESC."""
-        where = application_table.c.competition_id == competition_id
-        total = await self._session.scalar(select(func.count()).where(where)) or 0
-        query = (
-            select(Application)
-            .where(where)
-            .order_by(desc(application_table.c.created_at))
-            .limit(page_size)
-            .offset((page - 1) * page_size)
-        )
-        result = await self._session.scalars(query)
-        return list(result.all()), total
+        with _tracer.start_as_current_span("db.application_list_by_competition"):
+            where = application_table.c.competition_id == competition_id
+            total = await self._session.scalar(select(func.count()).where(where)) or 0
+            query = (
+                select(Application)
+                .where(where)
+                .order_by(desc(application_table.c.created_at))
+                .limit(page_size)
+                .offset((page - 1) * page_size)
+            )
+            result = await self._session.scalars(query)
+            return list(result.all()), total
 
     @override
     async def list_by_participant(
@@ -64,17 +68,18 @@ class SAApplicationGateway(ApplicationGateway):
         page_size: int,
     ) -> tuple[list[Application], int]:
         """List applications submitted by a participant with pagination ordered by created_at DESC."""
-        where = application_table.c.participant_id == participant_id
-        total = await self._session.scalar(select(func.count()).where(where)) or 0
-        query = (
-            select(Application)
-            .where(where)
-            .order_by(desc(application_table.c.created_at))
-            .limit(page_size)
-            .offset((page - 1) * page_size)
-        )
-        result = await self._session.scalars(query)
-        return list(result.all()), total
+        with _tracer.start_as_current_span("db.application_list_by_participant"):
+            where = application_table.c.participant_id == participant_id
+            total = await self._session.scalar(select(func.count()).where(where)) or 0
+            query = (
+                select(Application)
+                .where(where)
+                .order_by(desc(application_table.c.created_at))
+                .limit(page_size)
+                .offset((page - 1) * page_size)
+            )
+            result = await self._session.scalars(query)
+            return list(result.all()), total
 
     @override
     async def count_accepted_by_competition(self, competition_id: CompetitionId) -> int:

@@ -69,6 +69,7 @@ export type ErrorCode =
   | "UNAUTHORIZED"
   | "AUTH_USER_ALREADY_EXISTS"
   | "ORGANIZER_ALREADY_EXISTS"
+  | "ORGANIZER_NOT_FOUND"
   | "USER_NOT_FOUND"
   | "USER_HAS_NO_ROLE"
   | "ACCESS_DENIED"
@@ -80,14 +81,20 @@ export type ErrorCode =
   | "INVITE_REVOKED"
   | "INVALID_SUPERUSER_PASSWORD"
   | "PARTICIPANT_ALREADY_EXISTS"
+  | "PARTICIPANT_NOT_FOUND"
+  | "INVALID_PARTICIPANT_DATA"
   | "COMPETITION_NOT_FOUND"
+  | "INVALID_COMPETITION_DATA"
   | "APPLICATION_FORM_ALREADY_EXISTS"
   | "APPLICATION_FORM_NOT_FOUND"
   | "INVALID_APPLICATION_FORM_DATA"
   | "APPLICATION_NOT_FOUND"
   | "APPLICATION_ALREADY_EXISTS"
   | "APPLICATION_ALREADY_RESOLVED"
-  | "INVALID_APPLICATION_DATA";
+  | "INVALID_APPLICATION_DATA"
+  | "COMPETITION_NOT_ACTIVE"
+  | "PARTICIPANT_LIMITS_EXCEEDED"
+  | "PARTICIPANT_TYPE_MISMATCH";
 
 export interface CreatedSuperuser {
   user_id: string;
@@ -97,6 +104,7 @@ export interface CreatedSuperuser {
 export type ExperienceLevel = "JUNIOR" | "MID" | "SENIOR";
 export type SkillLevel = "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT";
 export type ParticipantDomain = Domain;
+export type ParticipantRoleType = "schoolchild" | "student";
 
 export interface ParticipantSkill {
   name: string;
@@ -112,9 +120,11 @@ export interface ParticipantProfile {
   id: string;
   user_id: string;
   full_name: string;
-  bio: string;
+  participant_type: ParticipantRoleType;
+  age: number;
+  bio: string | null;
   skills: ParticipantSkill[];
-  experience_level: ExperienceLevel;
+  experience_level: ExperienceLevel | null;
   preferred_domains: ParticipantDomain[];
   contacts: ParticipantContact[];
 }
@@ -131,11 +141,29 @@ export interface ParticipantContactForm {
 
 export interface ParticipantForm {
   full_name: string;
-  bio: string;
-  skills: ParticipantSkillForm[];
-  experience_level: ExperienceLevel;
-  preferred_domains: Domain[];
-  contacts: ParticipantContactForm[];
+  participant_type: ParticipantRoleType;
+  age: number;
+  bio?: string | null;
+  skills?: ParticipantSkillForm[];
+  experience_level?: ExperienceLevel | null;
+  preferred_domains?: Domain[];
+  contacts?: ParticipantContactForm[];
+}
+
+export interface UpdateParticipantForm {
+  full_name: string;
+  participant_type: ParticipantRoleType;
+  age: number;
+  bio?: string | null;
+  skills?: ParticipantSkillForm[];
+  experience_level?: ExperienceLevel | null;
+  preferred_domains?: Domain[];
+  contacts?: ParticipantContactForm[];
+}
+
+export interface UpdateOrganizerForm {
+  organizer_name: string;
+  contact_email: string;
 }
 
 export interface CreatedParticipant {

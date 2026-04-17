@@ -1,4 +1,5 @@
 import structlog
+from opentelemetry import trace
 from pydantic import BaseModel, Field
 
 from dreamteams.application.common.gateway.competition import CompetitionGateway, CompetitionSortBy
@@ -10,6 +11,7 @@ from dreamteams.application.manage_competitions.read import CompetitionModel
 from dreamteams.entities.errors.base import AccessDeniedError
 
 logger: Logger = structlog.get_logger(__name__)
+_tracer = trace.get_tracer("dreamteams.interactors")
 
 PAGE_SIZE = 10
 
@@ -41,53 +43,54 @@ class ListCompetitions:
 
     async def execute(self, input_data: ListCompetitionsInput) -> CompetitionsList:
         """List competitions for current organizer."""
-        user = await self.idp.get_user()
-        if user.organizer is None:
-            logger.warning("User has no organizer role", user_id=user.id)
-            raise AccessDeniedError(message="Only organizers can list competitions")
+        with _tracer.start_as_current_span("interactor.list_competitions"):
+            user = await self.idp.get_user()
+            if user.organizer is None:
+                logger.warning("User has no organizer role", user_id=user.id)
+                raise AccessDeniedError(message="Only organizers can list competitions")
 
-        logger.debug(
-            "Listing competitions",
-            user_id=user.id,
-            page=input_data.page,
-            sort_by=input_data.sort_by,
-            sort_order=input_data.sort_order,
-            is_archived=input_data.is_archived,
-            search=input_data.search,
-            page_size=PAGE_SIZE,
-            organizer_id=user.organizer.id,
-        )
-        competitions, total = await self.competition_gateway.list(
-            user.organizer.id,
-            page=input_data.page,
-            page_size=PAGE_SIZE,
-            sort_by=input_data.sort_by,
-            sort_order=input_data.sort_order,
-            is_archived=input_data.is_archived,
-            search=input_data.search,
-            active=None,
-        )
-
-        items = [
-            CompetitionModel(
-                id=competition.id,
-                organizer_id=competition.organizer_id,
-                title=competition.title,
-                banner=competition.banner,
-                description=competition.description,
-                schedule=competition.schedule,
-                participant_limits=competition.participant_limits,
-                domains=competition.domains,
-                participant_type=competition.participant_type,
-                venue=competition.venue,
-                team_size=competition.team_size,
-                milestones=competition.milestones,
-                auto_accept=competition.auto_accept,
-                is_archived=competition.is_archived,
-                created_at=competition.created_at,
-                updated_at=competition.updated_at,
+            logger.debug(
+                "Listing competitions",
+                user_id=user.id,
+                page=input_data.page,
+                sort_by=input_data.sort_by,
+                sort_order=input_data.sort_order,
+                is_archived=input_data.is_archived,
+                search=input_data.search,
+                page_size=PAGE_SIZE,
+                organizer_id=user.organizer.id,
             )
-            for competition in competitions
-        ]
+            competitions, total = await self.competition_gateway.list(
+                user.organizer.id,
+                page=input_data.page,
+                page_size=PAGE_SIZE,
+                sort_by=input_data.sort_by,
+                sort_order=input_data.sort_order,
+                is_archived=input_data.is_archived,
+                search=input_data.search,
+                active=None,
+            )
 
-        return CompetitionsList(items=items, total=total, page=input_data.page)
+            items = [
+                CompetitionModel(
+                    id=competition.id,
+                    organizer_id=competition.organizer_id,
+                    title=competition.title,
+                    banner=competition.banner,
+                    description=competition.description,
+                    schedule=competition.schedule,
+                    participant_limits=competition.participant_limits,
+                    domains=competition.domains,
+                    participant_type=competition.participant_type,
+                    venue=competition.venue,
+                    team_size=competition.team_size,
+                    milestones=competition.milestones,
+                    auto_accept=competition.auto_accept,
+                    is_archived=competition.is_archived,
+                    created_at=competition.created_at,
+                    updated_at=competition.updated_at,
+                )
+                for competition in competitions
+            ]
+
+            return CompetitionsList(items=items, total=total, page=input_data.page)

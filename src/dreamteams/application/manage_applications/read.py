@@ -1,4 +1,5 @@
 import structlog
+from opentelemetry import trace
 
 from dreamteams.application.common.gateway.application import ApplicationGateway
 from dreamteams.application.common.gateway.competition import CompetitionGateway
@@ -11,6 +12,7 @@ from dreamteams.entities.common.identifiers import ApplicationId
 from dreamteams.entities.errors.base import AccessDeniedError
 
 logger: Logger = structlog.get_logger(__name__)
+_tracer = trace.get_tracer("dreamteams.interactors")
 
 
 @interactor
@@ -23,25 +25,28 @@ class ReadApplication:
 
     async def execute(self, application_id: ApplicationId) -> ApplicationModel:
         """Read a single application; only the organizer who owns the competition may access it."""
-        user = await self.idp.get_user()
-        logger.debug("Reading application", application_id=application_id, user_id=user.id)
+        with _tracer.start_as_current_span("interactor.read_application"):
+            user = await self.idp.get_user()
+            logger.debug("Reading application", application_id=application_id, user_id=user.id)
 
-        application = await self.application_gateway.get(application_id)
-        if application is None:
-            logger.warning("Application not found", application_id=application_id, user_id=user.id)
-            raise ApplicationNotFoundError
+            application = await self.application_gateway.get(application_id)
+            if application is None:
+                logger.warning("Application not found", application_id=application_id, user_id=user.id)
+                raise ApplicationNotFoundError
 
-        competition = await self.competition_gateway.get(application.competition_id)
-        if competition is None or not competition.can_read(user):
-            logger.warning("Access denied to read application", application_id=application_id, user_id=user.id)
-            raise AccessDeniedError(message="Only the organizer who owns this competition can read its applications")
+            competition = await self.competition_gateway.get(application.competition_id)
+            if competition is None or not competition.can_read(user):
+                logger.warning("Access denied to read application", application_id=application_id, user_id=user.id)
+                raise AccessDeniedError(
+                    message="Only the organizer who owns this competition can read its applications",
+                )
 
-        return ApplicationModel(
-            id=application.id,
-            participant_id=application.participant_id,
-            competition_id=application.competition_id,
-            domains=application.domains,
-            status=application.status,
-            created_at=application.created_at,
-            form_data=application.form_data,
-        )
+            return ApplicationModel(
+                id=application.id,
+                participant_id=application.participant_id,
+                competition_id=application.competition_id,
+                domains=application.domains,
+                status=application.status,
+                created_at=application.created_at,
+                form_data=application.form_data,
+            )

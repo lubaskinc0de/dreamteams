@@ -4,6 +4,7 @@ from hypothesis import strategies as st
 
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.errors.participant import InvalidParticipantDataError
+from dreamteams.entities.participant.vo.age import Age
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
 from dreamteams.entities.user import (
     Participant,
@@ -28,13 +29,13 @@ def test_create_participant_with_valid_data(
         id=participant.id,
         user_id=participant.user_id,
         full_name=data.full_name,
-        avatar_url=data.avatar_url,
         bio=data.bio,
         skills=data.skills,
         experience_level=data.experience_level,
         preferred_domains=data.preferred_domains,
         contacts=participant.contacts,
         participant_type=data.participant_type,
+        age=data.age,
         created_at=participant.created_at,
         updated_at=participant.updated_at,
     )
@@ -120,37 +121,24 @@ def test_participant_full_name_is_not_empty(
         )
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture, HealthCheck.too_slow], max_examples=10)
-@given(valid_participant_data())
-def test_participant_skills_are_not_empty(
-    user_without_organizer: User,
-    clock: Clock,
-    data: ParticipantData,
-) -> None:
-    """Test cannot create participant with empty skills."""
-    data.skills = []
-
-    with pytest.raises(InvalidParticipantDataError, match="Skills list must not be empty"):
-        participant_factory(
-            data=data,
-            user=user_without_organizer,
-            clock=clock,
-        )
+@settings(suppress_health_check=[HealthCheck.too_slow], max_examples=10)
+@given(st.integers(max_value=-1))
+def test_participant_age_negative_is_invalid(age: int) -> None:
+    """Test cannot create Age VO with negative value."""
+    with pytest.raises(InvalidParticipantDataError, match="Age must be between 0 and 150"):
+        Age(age)
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture, HealthCheck.too_slow], max_examples=10)
-@given(valid_participant_data())
-def test_participant_preferred_domains_are_not_empty(
-    user_without_organizer: User,
-    clock: Clock,
-    data: ParticipantData,
-) -> None:
-    """Test cannot create participant with empty preferred domains."""
-    data.preferred_domains = []
+@settings(suppress_health_check=[HealthCheck.too_slow], max_examples=10)
+@given(st.integers(min_value=151))
+def test_participant_age_above_maximum_is_invalid(age: int) -> None:
+    """Test cannot create Age VO with value above maximum."""
+    with pytest.raises(InvalidParticipantDataError, match="Age must be between 0 and 150"):
+        Age(age)
 
-    with pytest.raises(InvalidParticipantDataError, match="Preferred domains list not be empty"):
-        participant_factory(
-            data=data,
-            user=user_without_organizer,
-            clock=clock,
-        )
+
+@settings(suppress_health_check=[HealthCheck.too_slow], max_examples=10)
+@given(st.integers(min_value=0, max_value=150))
+def test_participant_age_valid(age: int) -> None:
+    """Test Age VO accepts values in 0-150 range."""
+    assert Age(age).value == age

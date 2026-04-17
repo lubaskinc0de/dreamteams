@@ -17,20 +17,36 @@ export const createOrganizerSchemas = (t: (key: string) => string) => {
     .string()
     .min(1, t("form.inviteCode.required"));
 
+  const contactEmailSchema = z
+    .string()
+    .min(1, t("form.contactEmail.required"))
+    .email(t("form.contactEmail.invalid"));
+
   const organizerRegistrationSchema = z.object({
     organizer_name: organizerNameSchema,
     phone_number: phoneSchema,
     invite_code: inviteCodeSchema,
   });
 
+  const organizerUpdateSchema = z.object({
+    organizer_name: organizerNameSchema,
+    contact_email: contactEmailSchema,
+  });
+
   return {
     phoneSchema,
     organizerNameSchema,
     inviteCodeSchema,
+    contactEmailSchema,
     organizerRegistrationSchema,
+    organizerUpdateSchema,
   };
 };
 
 export type OrganizerRegistrationSchema = z.infer<
   ReturnType<typeof createOrganizerSchemas>["organizerRegistrationSchema"]
+>;
+
+export type OrganizerUpdateSchema = z.infer<
+  ReturnType<typeof createOrganizerSchemas>["organizerUpdateSchema"]
 >;

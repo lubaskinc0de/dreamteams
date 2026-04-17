@@ -21,6 +21,7 @@ from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import CompetitionSchedule, ScheduleData
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
+from dreamteams.entities.participant.vo.age import Age
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill, SkillLevel
 from dreamteams.entities.user import (
@@ -287,28 +288,30 @@ def participant_contact_data(draw: st.DrawFn) -> ParticipantContact:
 def valid_participant_data(draw: st.DrawFn) -> ParticipantData:
     """Valid participant data."""
     full_name = draw(valid_text())
-    bio = draw(valid_text())
+    bio = draw(st.one_of(st.none(), valid_text()))
 
-    skills = draw(st.lists(participant_skill_data(), min_size=1))
+    skills = draw(st.lists(participant_skill_data(), min_size=0))
     skills_unique = list({s.name: s for s in skills}.values())
 
-    experience_level = draw(st.sampled_from(list(ExperienceLevel)))
+    experience_level = draw(st.one_of(st.none(), st.sampled_from(list(ExperienceLevel))))
 
-    preferred_domains = draw(st.lists(domain_data(), min_size=1))
+    preferred_domains = draw(st.lists(domain_data(), min_size=0))
 
-    contacts = draw(st.lists(participant_contact_data(), min_size=1, unique_by=(lambda c: c.title, lambda c: c.url)))
+    contacts = draw(st.lists(participant_contact_data(), min_size=0, unique_by=(lambda c: c.title, lambda c: c.url)))
 
     participant_type = draw(st.sampled_from([ParticipantType.SCHOOLCHILD, ParticipantType.STUDENT]))
 
+    age = draw(st.integers(min_value=0, max_value=150).map(Age))
+
     return ParticipantData(
         full_name=full_name,
-        avatar_url=None,
         bio=bio,
         skills=skills_unique,
         experience_level=experience_level,
         preferred_domains=preferred_domains,
         contacts=contacts,
         participant_type=participant_type,
+        age=age,
     )
 
 
@@ -327,28 +330,30 @@ def valid_participant(draw: st.DrawFn, user: User, clock: Clock) -> Participant:
 def valid_participant_update_data(draw: st.DrawFn) -> UpdateParticipantData:
     """Valid participant update data."""
     full_name = draw(valid_text())
-    bio = draw(valid_text())
+    bio = draw(st.one_of(st.none(), valid_text()))
 
-    skills = draw(st.lists(participant_skill_data(), min_size=1))
+    skills = draw(st.lists(participant_skill_data(), min_size=0))
     skills_unique = list({s.name: s for s in skills}.values())
 
-    experience_level = draw(st.sampled_from(list(ExperienceLevel)))
+    experience_level = draw(st.one_of(st.none(), st.sampled_from(list(ExperienceLevel))))
 
-    preferred_domains = draw(st.lists(domain_data(), min_size=1))
+    preferred_domains = draw(st.lists(domain_data(), min_size=0))
 
-    contacts = draw(st.lists(participant_contact_data(), min_size=1, unique_by=(lambda c: c.title, lambda c: c.url)))
+    contacts = draw(st.lists(participant_contact_data(), min_size=0, unique_by=(lambda c: c.title, lambda c: c.url)))
 
     participant_type = draw(st.sampled_from([ParticipantType.SCHOOLCHILD, ParticipantType.STUDENT]))
 
+    age = draw(st.integers(min_value=0, max_value=150).map(Age))
+
     return UpdateParticipantData(
         full_name=full_name,
-        avatar_url=None,
         bio=bio,
         skills=skills_unique,
         experience_level=experience_level,
         preferred_domains=preferred_domains,
         contacts=contacts,
         participant_type=participant_type,
+        age=age,
     )
 
 

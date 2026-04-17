@@ -26,7 +26,7 @@ const isSettingsOpen = ref(false);
       </span>
 
       <template #right>
-        <UPopover v-model:open="isSettingsOpen" :ui="{ content: 'p-3 min-w-[180px]' }">
+        <UPopover v-model:open="isSettingsOpen" :ui="{ content: 'p-3 w-[min(18rem,calc(100vw-2rem))]' }">
           <UButton
             icon="i-heroicons-cog-6-tooth"
             color="neutral"
@@ -61,7 +61,7 @@ const isSettingsOpen = ref(false);
           <img
             src="/logo.png"
             alt="DreamTeams Logo"
-            class="h-14 w-14 object-contain"
+            class="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 object-contain"
           />
           <div>
             <p class="font-semibold text-gray-900 dark:text-gray-100">

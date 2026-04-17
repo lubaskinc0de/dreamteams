@@ -4,11 +4,22 @@ import aiobotocore  # noqa: F401
 import botocore  # noqa: F401
 import python_multipart  # noqa: F401
 import structlog
+from opentelemetry import trace as otel_trace
+
+
+def _inject_otel_context(_logger: object, _method: str, event_dict: dict[str, Any]) -> dict[str, Any]:
+    span = otel_trace.get_current_span()
+    ctx = span.get_span_context()
+    if ctx.is_valid:
+        event_dict["trace_id"] = format(ctx.trace_id, "032x")
+        event_dict["span_id"] = format(ctx.span_id, "016x")
+    return event_dict
 
 
 def configure_structlog() -> dict[str, Any]:
     """Configure structlog and return log_config."""
     processors = [
+        _inject_otel_context,
         structlog.contextvars.merge_contextvars,
         structlog.stdlib.add_logger_name,
         structlog.stdlib.add_log_level,

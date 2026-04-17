@@ -47,6 +47,8 @@ const mockParticipantUser: ProfileModel = {
     id: "123e4567-e89b-12d3-a456-426614174002",
     user_id: "123e4567-e89b-12d3-a456-426614174000",
     full_name: "Иван Петров",
+    participant_type: "student" as const,
+    age: 22,
     bio: "Fullstack разработчик с 3 годами опыта. Люблю хакатоны и командную работу.",
     skills: [
       { name: "Python", level: "ADVANCED" },
@@ -1068,19 +1070,6 @@ export const useMockApi = () => {
       };
     }
 
-    if (form.skills.length === 0) {
-      return {
-        data: null,
-        error: { code: "VALIDATION_ERROR", message: "Укажите хотя бы один навык", meta: null },
-      };
-    }
-
-    if (form.preferred_domains.length === 0) {
-      return {
-        data: null,
-        error: { code: "VALIDATION_ERROR", message: "Укажите хотя бы одну предпочтительную область", meta: null },
-      };
-    }
 
     isParticipantRegistered = true;
     return {
@@ -1151,6 +1140,8 @@ export const useMockApi = () => {
     listInvites,
     revokeInvite,
     registerParticipant,
+    updateParticipant: notImplemented,
+    updateOrganizer: notImplemented,
     registerSuperuser,
     getApplicationForm: notImplemented,
     createApplicationForm: notImplemented,

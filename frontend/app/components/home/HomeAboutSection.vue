@@ -41,7 +41,7 @@ const column3 = [17, 18, 19, 20, 21, 22, 23, 24];
       :overlay="false"
       :repeat="2"
       :ui="{
-        root: '[--duration:40s] absolute w-[280px] md:w-[360px] -top-[400px] left-1/2 -translate-x-1/2 md:translate-x-0 md:left-[8%] xl:left-[38%] h-[1160px] transform-3d rotate-x-55 rotate-y-0 rotate-z-30'
+        root: '[--duration:40s] absolute w-[min(280px,calc(100vw-2rem))] md:w-[360px] -top-[400px] left-1/2 -translate-x-1/2 md:translate-x-0 md:left-[8%] xl:left-[38%] h-[1160px] transform-3d rotate-x-55 rotate-y-0 rotate-z-30'
       }"
     >
       <img

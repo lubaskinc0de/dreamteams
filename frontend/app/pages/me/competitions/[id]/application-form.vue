@@ -160,7 +160,7 @@ const handleCreate = async () => {
         <template v-else-if="formStore.form">
           <UCard class="mb-6">
             <template #header>
-              <div class="flex items-center justify-between">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                   <p class="text-sm text-gray-500 dark:text-gray-400">
                     {{ t('applicationForm.createdAt') }}: {{ new Date(formStore.form.created_at).toLocaleDateString() }}
@@ -171,6 +171,7 @@ const handleCreate = async () => {
                   variant="soft"
                   icon="i-heroicons-trash"
                   :label="t('applicationForm.deleteButton')"
+                  class="w-full sm:w-auto justify-center"
                   @click="isDeleteModalOpen = true"
                 />
               </div>
@@ -187,15 +188,15 @@ const handleCreate = async () => {
                   <div class="flex-1">
                     <div class="flex items-center gap-2 mb-1">
                       <span class="font-medium text-gray-900 dark:text-white">{{ field.label }}</span>
-                      <UBadge size="xs" variant="soft" :label="t('applicationForm.fieldType.' + field.type)" />
-                      <UBadge v-if="field.required" size="xs" color="error" variant="soft" :label="t('applicationForm.fieldRequired')" />
+                      <UBadge size="sm" variant="soft" :label="t('applicationForm.fieldType.' + field.type)" />
+                      <UBadge v-if="field.required" size="sm" color="error" variant="soft" :label="t('applicationForm.fieldRequired')" />
                     </div>
                     <p class="text-xs text-gray-400 font-mono">{{ field.name }}</p>
                     <div v-if="field.choices && field.choices.length > 0" class="mt-2 flex flex-wrap gap-1">
                       <UBadge
                         v-for="choice in field.choices"
                         :key="choice.value"
-                        size="xs"
+                        size="sm"
                         variant="outline"
                         :label="`${choice.label} (${choice.value})`"
                       />
@@ -240,7 +241,7 @@ const handleCreate = async () => {
                         icon="i-heroicons-x-mark"
                         color="neutral"
                         variant="ghost"
-                        size="xs"
+                        size="sm"
                         @click="removeField(index)"
                       />
                     </div>
@@ -300,12 +301,12 @@ const handleCreate = async () => {
                           icon="i-heroicons-x-mark"
                           color="neutral"
                           variant="ghost"
-                          size="xs"
+                          size="sm"
                           @click="removeChoice(field, ci)"
                         />
                       </div>
                       <UButton
-                        size="xs"
+                        size="sm"
                         variant="soft"
                         icon="i-heroicons-plus"
                         :label="t('applicationForm.addChoice')"

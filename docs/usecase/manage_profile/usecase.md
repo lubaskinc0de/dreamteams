@@ -10,4 +10,5 @@ User manages their profile: view information and assigned roles.
 ## Interactors
 
 - [ReadProfile](./read_profile.md) — read current user profile
+- [UpdateParticipant](./update_participant.md) — update participant profile
 - [UpdateOrganizer](./update_organizer.md) — update organizer profile

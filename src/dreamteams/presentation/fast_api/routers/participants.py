@@ -21,14 +21,4 @@ async def register_participant(
     data: ParticipantForm,
 ) -> CreatedParticipant:
     """HTTP endpoint for registering as ``Participant``."""
-    return await interactor.execute(
-        ParticipantForm(
-            full_name=data.full_name,
-            bio=data.bio,
-            skills=data.skills,
-            experience_level=data.experience_level,
-            preferred_domains=data.preferred_domains,
-            contacts=data.contacts,
-            participant_type=data.participant_type,
-        ),
-    )
+    return await interactor.execute(data)

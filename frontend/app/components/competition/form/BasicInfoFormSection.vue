@@ -51,12 +51,13 @@ const participantTypeOptions = [
 
     <div class="space-y-6">
       <!-- Title -->
-      <UFormField
-        name="title"
-        :label="t('competition.form.title.label')"
-        required
-        size="xl"
-      >
+      <UFormField name="title" required size="xl">
+        <template #label>
+          {{ t('competition.form.title.label') }}
+          <UTooltip :text="t('competition.form.title.tooltip')">
+            <UIcon name="i-heroicons-question-mark-circle" class="w-3.5 h-3.5 text-gray-400 cursor-help" />
+          </UTooltip>
+        </template>
         <UInput
           :model-value="title"
           @update:model-value="emit('update:title', $event)"
@@ -67,12 +68,13 @@ const participantTypeOptions = [
       </UFormField>
 
       <!-- Description -->
-      <UFormField
-        name="description"
-        :label="t('competition.form.description.label')"
-        required
-        size="xl"
-      >
+      <UFormField name="description" required size="xl">
+        <template #label>
+          {{ t('competition.form.description.label') }}
+          <UTooltip :text="t('competition.form.description.tooltip')">
+            <UIcon name="i-heroicons-question-mark-circle" class="w-3.5 h-3.5 text-gray-400 cursor-help" />
+          </UTooltip>
+        </template>
         <UTextarea
           :model-value="description"
           @update:model-value="emit('update:description', $event)"
@@ -84,41 +86,48 @@ const participantTypeOptions = [
       </UFormField>
 
       <!-- Domains -->
-      <UFormField
-        name="domains"
-        :label="t('competition.form.domains.label')"
-        required
-        size="xl"
-      >
+      <UFormField name="domains" required size="xl">
+        <template #label>
+          {{ t('competition.form.domains.label') }}
+          <UTooltip :text="t('competition.form.domains.tooltip')">
+            <UIcon name="i-heroicons-question-mark-circle" class="w-3.5 h-3.5 text-gray-400 cursor-help" />
+          </UTooltip>
+        </template>
         <UCheckboxGroup
           :model-value="domains"
           @update:model-value="emit('update:domains', $event)"
           :items="domainOptions"
-          orientation="horizontal"
+          orientation="vertical"
           size="xl"
+          :ui="{ fieldset: 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3' }"
         />
       </UFormField>
 
       <!-- Participant Type -->
-      <UFormField
-        name="participant_type"
-        :label="t('competition.form.participantType.label')"
-        required
-        size="xl"
-      >
+      <UFormField name="participant_type" required size="xl">
+        <template #label>
+          {{ t('competition.form.participantType.label') }}
+          <UTooltip :text="t('competition.form.participantType.tooltip')">
+            <UIcon name="i-heroicons-question-mark-circle" class="w-3.5 h-3.5 text-gray-400 cursor-help" />
+          </UTooltip>
+        </template>
         <URadioGroup
           :model-value="participantType"
           @update:model-value="emit('update:participantType', $event)"
           :items="participantTypeOptions"
           size="xl"
+          :ui="{ fieldset: 'flex flex-col gap-2 sm:flex-row sm:gap-4 sm:flex-wrap' }"
         />
       </UFormField>
 
       <!-- Is Team Competition -->
-      <UFormField
-        :label="t('competition.form.isTeam.label')"
-        size="xl"
-      >
+      <UFormField size="xl">
+        <template #label>
+          {{ t('competition.form.isTeam.label') }}
+          <UTooltip :text="t('competition.form.isTeam.tooltip')">
+            <UIcon name="i-heroicons-question-mark-circle" class="w-3.5 h-3.5 text-gray-400 cursor-help" />
+          </UTooltip>
+        </template>
         <div class="flex items-center gap-3">
           <USwitch
             :model-value="isTeamCompetition"
@@ -130,11 +139,13 @@ const participantTypeOptions = [
       </UFormField>
 
       <!-- Auto Accept -->
-      <UFormField
-        name="auto_accept"
-        :label="t('competition.form.autoAccept.label')"
-        size="xl"
-      >
+      <UFormField name="auto_accept" size="xl">
+        <template #label>
+          {{ t('competition.form.autoAccept.label') }}
+          <UTooltip :text="t('competition.form.autoAccept.tooltip')">
+            <UIcon name="i-heroicons-question-mark-circle" class="w-3.5 h-3.5 text-gray-400 cursor-help" />
+          </UTooltip>
+        </template>
         <div class="flex items-center gap-3">
           <USwitch
             :model-value="autoAccept"

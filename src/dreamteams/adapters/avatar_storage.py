@@ -9,10 +9,13 @@ from urllib.parse import quote
 import aioboto3
 import structlog
 from botocore.exceptions import ClientError
+from opentelemetry import trace
 
 from dreamteams.application.common.avatar_storage import AvatarStorage
 from dreamteams.application.common.logger import Logger
 from dreamteams.entities.common.identifiers import UserId
+
+_tracer = trace.get_tracer("dreamteams.adapters")
 
 logger: Logger = structlog.get_logger(__name__)
 
@@ -124,21 +127,22 @@ class S3AvatarStorage(AvatarStorage, S3Client):
         """Upload user avatar to storage."""
         object_key = self._get_avatar_key(user_id)
 
-        try:
-            async with self._get_s3_client() as s3:
-                await s3.put_object(
-                    Bucket=self.bucket,
-                    Key=object_key,
-                    Body=file_data,
-                    ContentType=content_type,
-                    ACL="public-read",
-                )
-        except Exception:
-            logger.exception("Failed to upload avatar for user", user_id=user_id)
-            raise
-        else:
-            logger.debug("Avatar uploaded for user", user_id=user_id)
-            return object_key
+        with _tracer.start_as_current_span("s3.upload_avatar"):
+            try:
+                async with self._get_s3_client() as s3:
+                    await s3.put_object(
+                        Bucket=self.bucket,
+                        Key=object_key,
+                        Body=file_data,
+                        ContentType=content_type,
+                        ACL="public-read",
+                    )
+            except Exception:
+                logger.exception("Failed to upload avatar for user", user_id=user_id)
+                raise
+            else:
+                logger.debug("Avatar uploaded for user", user_id=user_id)
+                return object_key
 
     @override
     async def delete_avatar(self, user_id: UserId) -> None:
@@ -149,8 +153,9 @@ class S3AvatarStorage(AvatarStorage, S3Client):
 
     async def _delete_object(self, object_key: str) -> None:
         """Delete single object from storage."""
-        async with self._get_s3_client() as s3:
-            await s3.delete_object(Bucket=self.bucket, Key=object_key)
+        with _tracer.start_as_current_span("s3.delete_avatar"):
+            async with self._get_s3_client() as s3:
+                await s3.delete_object(Bucket=self.bucket, Key=object_key)
 
     @override
     def get_url(self, key: str) -> str:

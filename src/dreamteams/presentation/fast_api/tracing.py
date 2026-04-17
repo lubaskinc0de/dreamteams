@@ -1,21 +1,21 @@
 from collections.abc import Awaitable, Callable
 
 import structlog
-from dishka import AsyncContainer
 from fastapi import Request, Response
-
-from dreamteams.adapters.tracing import TraceId
+from opentelemetry import trace
 
 
 async def tracing_middleware(
     request: Request,
     call_next: Callable[[Request], Awaitable[Response]],
 ) -> Response:
-    """Middleware that binds trace id logging contextvar for each request."""
-    if request.method not in {"GET", "POST", "DELETE", "PUT", "PATCH"}:
-        return await call_next(request)
-
-    dishka_container: AsyncContainer = request.state.dishka_container
-    trace_id: TraceId = await dishka_container.get(TraceId)
-    with structlog.contextvars.bound_contextvars(trace_id=trace_id):
-        return await call_next(request)
+    """Bind OTel trace_id and span_id into structlog context for each request."""
+    span = trace.get_current_span()
+    ctx = span.get_span_context()
+    if ctx.is_valid:
+        with structlog.contextvars.bound_contextvars(
+            trace_id=format(ctx.trace_id, "032x"),
+            span_id=format(ctx.span_id, "016x"),
+        ):
+            return await call_next(request)
+    return await call_next(request)

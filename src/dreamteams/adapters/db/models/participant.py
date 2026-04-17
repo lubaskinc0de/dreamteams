@@ -1,3 +1,5 @@
+from typing import override
+
 from sqlalchemy import (
     ARRAY,
     UUID,
@@ -5,19 +7,45 @@ from sqlalchemy import (
     DateTime,
     Enum,
     ForeignKey,
+    Integer,
     PrimaryKeyConstraint,
     String,
     Table,
     Text,
+    TypeDecorator,
 )
+from sqlalchemy.engine import Dialect
 from sqlalchemy.orm import relationship
 
 from dreamteams.adapters.db.models.base import mapper_registry
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.participant.vo.age import Age
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill, SkillLevel
 from dreamteams.entities.user import ExperienceLevel, Participant, User
+
+
+class AgeType(TypeDecorator[Age]):
+    """SQLAlchemy type that maps between integer DB column and Age value object."""
+
+    impl: type[Integer] = Integer  # type: ignore[mutable-override]
+    cache_ok: bool = True  # type: ignore[mutable-override]
+
+    @override
+    def process_bind_param(self, value: Age | None, dialect: Dialect) -> int | None:
+        """Convert Age VO to int for storage."""
+        if isinstance(value, Age):
+            return value.value
+        return None
+
+    @override
+    def process_result_value(self, value: int | None, dialect: Dialect) -> Age | None:
+        """Convert stored int back to Age VO."""
+        if value is not None:
+            return Age(value)
+        return None
+
 
 participant_table = Table(
     "participants",
@@ -25,10 +53,11 @@ participant_table = Table(
     Column("id", UUID(as_uuid=True), primary_key=True),
     Column("user_id", UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
     Column("full_name", String(150), nullable=False),
-    Column("bio", Text, nullable=False),
-    Column("experience_level", Enum(ExperienceLevel, native_enum=False), nullable=False),
+    Column("bio", Text, nullable=True),
+    Column("experience_level", Enum(ExperienceLevel, native_enum=False), nullable=True),
     Column("preferred_domains", ARRAY(Enum(Domain, native_enum=False)), nullable=False),
     Column("participant_type", Enum(ParticipantType, native_enum=False), nullable=False),
+    Column("age", AgeType, nullable=False),
     Column("created_at", DateTime(timezone=True), nullable=False),
     Column("updated_at", DateTime(timezone=True), nullable=False),
 )

@@ -28,3 +28,15 @@ class SAOrganizerGateway(OrganizerGateway):
         )
         result = await self._session.execute(query)
         return result.first() is None
+
+    @override
+    async def is_unique_by_email(self, contact_email: str) -> bool:
+        """Check if no organizer with the given contact email exists.
+
+        Returns True if no organizer uses this email.
+        """
+        query = select(organizer_table).where(
+            organizer_table.c.contact_email == contact_email,
+        )
+        result = await self._session.execute(query)
+        return result.first() is None

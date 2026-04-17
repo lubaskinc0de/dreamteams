@@ -10,8 +10,8 @@ from dreamteams.adapters.avatar_storage import S3Config
 from dreamteams.adapters.db.config import DbConfig
 from dreamteams.adapters.env_loader import env, optional_env
 from dreamteams.adapters.sentry import SentryConfig
-from dreamteams.adapters.tracing import TracingConfig
 from dreamteams.application.register.register_superuser import SuperuserConfig
+from dreamteams.bootstrap.observability import OTelConfig
 from dreamteams.presentation.fast_api.config import ApiConfig, CorsConfig, ServerConfig
 
 retort = Retort()
@@ -22,7 +22,7 @@ class TomlConfig:
     """Configuration structure loaded from TOML file matching the file's schema."""
 
     auth: WebAuthUserIdProviderConfig
-    tracing: TracingConfig
+    otel: OTelConfig
     cors: CorsConfig
     api: ApiConfig
 
@@ -33,7 +33,7 @@ class Config:
 
     db: DbConfig
     web_auth_user_id_provider: WebAuthUserIdProviderConfig
-    tracing: TracingConfig
+    otel: OTelConfig
     server: ServerConfig
     cors: CorsConfig
     api: ApiConfig
@@ -67,7 +67,7 @@ class Config:
         return cls(
             db=db,
             web_auth_user_id_provider=toml_config.auth,
-            tracing=toml_config.tracing,
+            otel=toml_config.otel,
             server=server,
             cors=toml_config.cors,
             api=toml_config.api,

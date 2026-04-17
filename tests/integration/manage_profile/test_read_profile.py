@@ -77,6 +77,8 @@ async def test_view_participant_profile(api_client: ApiClient, gateway: Gateway)
             id=participant.created.participant_id,
             user_id=participant.created.user_id,
             full_name=participant.form.full_name,
+            participant_type=participant.form.participant_type,
+            age=participant.form.age,
             bio=participant.form.bio,
             skills=profile_model.participant.skills,
             experience_level=participant.form.experience_level,

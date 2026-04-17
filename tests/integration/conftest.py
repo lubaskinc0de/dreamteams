@@ -2,7 +2,6 @@ import os
 from collections.abc import AsyncIterable, AsyncIterator
 from importlib.resources import files
 from importlib.resources.abc import Traversable
-from uuid import uuid4
 
 import aiohttp
 import jwt
@@ -16,15 +15,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import tests.assets
 from dreamteams.adapters.clock import SystemClock
-from dreamteams.adapters.tracing import TraceId
 from dreamteams.bootstrap.config.loader import Config
 from dreamteams.bootstrap.di.container import get_async_container
 from dreamteams.entities.common.clock import Clock
 from tests.common.factory.application import SubmitApplicationInputFactory
 from tests.common.factory.application_form import ApplicationFormInputFactory
 from tests.common.factory.competition import CompetitionFormFactory, UpdateCompetitionFormFactory
-from tests.common.factory.organizer import OrganizerFormFactory
-from tests.common.factory.participant import ParticipantFormFactory
+from tests.common.factory.organizer import OrganizerFormFactory, UpdateOrganizerFormFactory
+from tests.common.factory.participant import ParticipantFormFactory, UpdateParticipantFormFactory
 from tests.integration.api_client import ApiClient, APIClientConfig
 from tests.integration.helpers.admin_factory import AdminGateway
 from tests.integration.helpers.application_factory import ApplicationGateway
@@ -79,12 +77,6 @@ def clock() -> Clock:
 async def app_config() -> Config:
     """Load and provide app config."""
     return Config.load()
-
-
-@pytest.fixture
-async def trace_id() -> TraceId:
-    """Generate trace id."""
-    return uuid4().hex
 
 
 @pytest.fixture
@@ -158,7 +150,7 @@ async def access_token(app_config: Config) -> str:
 
 
 @pytest.fixture
-def api_client(http_session: ClientSession, app_config: Config, trace_id: TraceId, access_token: str) -> ApiClient:
+def api_client(http_session: ClientSession, app_config: Config, access_token: str) -> ApiClient:
     """Create and provide API client for tests."""
     return ApiClient(
         session=http_session,
@@ -167,8 +159,6 @@ def api_client(http_session: ClientSession, app_config: Config, trace_id: TraceI
             auth_user_email_header=app_config.web_auth_user_id_provider.user_email_header,
             access_token_header=app_config.web_auth_user_id_provider.access_token_header,
         ),
-        trace_id=trace_id,
-        tracing_config=app_config.tracing,
         access_token=access_token,
     )
 
@@ -186,7 +176,9 @@ register_fixture(SubmitApplicationInputFactory)
 register_fixture(CompetitionFormFactory)
 register_fixture(UpdateCompetitionFormFactory)
 register_fixture(OrganizerFormFactory)
+register_fixture(UpdateOrganizerFormFactory)
 register_fixture(ParticipantFormFactory)
+register_fixture(UpdateParticipantFormFactory)
 
 
 # Gateway

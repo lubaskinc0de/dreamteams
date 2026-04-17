@@ -17,6 +17,7 @@ from dreamteams.adapters.db.gateway.competition import SACompetitionGateway
 from dreamteams.adapters.db.gateway.organizer import SAOrganizerGateway
 from dreamteams.adapters.db.gateway.organizer_invite import SAOrganizerInviteGateway
 from dreamteams.adapters.db.gateway.user import SAUserGateway
+from dreamteams.adapters.metrics import OTelMetricsGateway
 from dreamteams.application.common.uow import UoW
 
 
@@ -41,6 +42,7 @@ class AdapterProvider(Provider):
     auth_provider = provide(WithParents[SimpleAuthProvider], scope=Scope.REQUEST)
     clock = provide(WithParents[SystemClock], scope=Scope.APP)
     password_hasher = provide(WithParents[Argon2PasswordHasher], scope=Scope.APP)
+    metrics_gateway = provide(WithParents[OTelMetricsGateway], scope=Scope.APP)
 
     @provide(scope=Scope.APP)
     async def get_avatar_storage(self, config: S3Config) -> WithParents[S3AvatarStorage]:

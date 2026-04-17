@@ -24,7 +24,7 @@ export const useNotificationsStore = defineStore("notifications", {
       this.items.unshift({
         ...notification,
         id: crypto.randomUUID(),
-        read: false,
+        read: true,
         createdAt: new Date(),
       });
       // Keep at most 50 notifications

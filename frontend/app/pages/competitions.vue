@@ -8,6 +8,7 @@ import type { PreviewCompetitionModel } from "~/types/api";
  */
 
 const { t } = useI18n();
+const { getErrorMessage } = useErrorHandler();
 
 // Initialize competitions preview state
 const {
@@ -25,7 +26,8 @@ onMounted(() => {
   reset();
 });
 
-const { login } = useAuth();
+const { login, isAuthenticated, hasProfile } = useAuth();
+const router = useRouter();
 
 // Modal state for competition details
 const selectedCompetition = ref<PreviewCompetitionModel | null>(null);
@@ -67,8 +69,12 @@ const handlePlaceCompetition = () => {
 };
 
 // Handle register button click on card
-const handleRegister = (_competitionId: string) => {
-  login();
+const handleRegister = (competitionId: string) => {
+  if (isAuthenticated.value && hasProfile.value) {
+    router.push(`/me/competitions/${competitionId}/application-form`);
+  } else {
+    login();
+  }
 };
 
 // Smooth scroll to content
@@ -93,17 +99,17 @@ useHead({
     <!-- Hero Banner -->
     <section class="relative overflow-hidden bg-gray-900">
       <!-- Animated pulsating blurs — brighter green/primary tones -->
-      <div class="absolute -top-32 -left-32 w-125 h-125 bg-primary-500/40 rounded-full blur-[140px] animate-pulse" />
-      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-100 bg-primary-500/30 rounded-full blur-[160px] animate-[pulse_4s_ease-in-out_infinite]" />
-      <div class="absolute -bottom-32 -right-32 w-112.5 h-112.5 bg-primary-400/35 rounded-full blur-[120px] animate-[pulse_3s_ease-in-out_infinite_0.5s]" />
-      <div class="absolute top-0 right-1/4 w-64 h-64 bg-primary-400/20 rounded-full blur-[100px] animate-[pulse_5s_ease-in-out_infinite_1s]" />
+      <div class="absolute -top-32 -left-32 w-64 h-64 sm:w-96 sm:h-96 lg:w-125 lg:h-125 bg-primary-500/40 rounded-full blur-[140px] animate-pulse" />
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-64 sm:w-[28rem] sm:h-80 lg:w-150 lg:h-100 bg-primary-500/30 rounded-full blur-[160px] animate-[pulse_4s_ease-in-out_infinite]" />
+      <div class="absolute -bottom-32 -right-32 w-64 h-64 sm:w-96 sm:h-96 lg:w-112.5 lg:h-112.5 bg-primary-400/35 rounded-full blur-[120px] animate-[pulse_3s_ease-in-out_infinite_0.5s]" />
+      <div class="hidden sm:block absolute top-0 right-1/4 w-64 h-64 bg-primary-400/20 rounded-full blur-[100px] animate-[pulse_5s_ease-in-out_infinite_1s]" />
 
-      <div class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+      <div class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
         <div class="text-center">
           <p class="text-primary-400 text-sm font-semibold tracking-widest uppercase mb-3">
             DreamTeams
           </p>
-          <h1 class="text-white text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight mb-6">
+          <h1 class="text-white text-3xl sm:text-4xl md:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight mb-6">
             <template v-if="!loading || competitions.length > 0">
               <i18n-t keypath="competitionsPreview.found" tag="span">
                 <template #found>
@@ -147,7 +153,7 @@ useHead({
         <div v-if="error" class="text-center py-16">
           <UIcon name="i-heroicons-exclamation-triangle" class="size-12 text-red-400 mb-4" />
           <p class="text-red-600 dark:text-red-400 text-lg mb-4">
-            {{ error.message }}
+            {{ getErrorMessage(error) }}
           </p>
           <UButton
             variant="soft"

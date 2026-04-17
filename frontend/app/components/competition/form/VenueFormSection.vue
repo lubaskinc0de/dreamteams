@@ -35,10 +35,15 @@ const venueFormatOptions = [
       <!-- Format -->
       <UFormField
         name="venue.format"
-        :label="t('competition.form.venue.format.label')"
         required
         size="xl"
       >
+        <template #label>
+          {{ t('competition.form.venue.format.label') }}
+          <UTooltip :text="t('competition.form.venue.format.tooltip')">
+            <UIcon name="i-heroicons-question-mark-circle" class="w-3.5 h-3.5 text-gray-400 cursor-help" />
+          </UTooltip>
+        </template>
         <URadioGroup
           :model-value="format"
           @update:model-value="emit('update:format', $event)"
@@ -51,9 +56,14 @@ const venueFormatOptions = [
       <UFormField
         v-if="format !== 'online'"
         name="venue.location"
-        :label="t('competition.form.venue.location.label')"
         size="xl"
       >
+        <template #label>
+          {{ t('competition.form.venue.location.label') }}
+          <UTooltip :text="t('competition.form.venue.location.tooltip')">
+            <UIcon name="i-heroicons-question-mark-circle" class="w-3.5 h-3.5 text-gray-400 cursor-help" />
+          </UTooltip>
+        </template>
         <UInput
           :model-value="location || ''"
           @update:model-value="emit('update:location', $event || null)"

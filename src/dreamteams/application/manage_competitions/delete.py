@@ -1,4 +1,5 @@
 import structlog
+from opentelemetry import trace
 
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.idp import IdProvider
@@ -10,6 +11,7 @@ from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import CompetitionNotFoundError
 
 logger: Logger = structlog.get_logger(__name__)
+_tracer = trace.get_tracer("dreamteams.interactors")
 
 
 @interactor
@@ -22,23 +24,24 @@ class DeleteCompetition:
 
     async def execute(self, competition_id: CompetitionId) -> None:
         """Deletes competition by organizer who created it."""
-        user = await self.idp.get_user()
-        logger.debug("Deleting competition", competition_id=competition_id, user_id=user.id)
+        with _tracer.start_as_current_span("interactor.delete_competition"):
+            user = await self.idp.get_user()
+            logger.debug("Deleting competition", competition_id=competition_id, user_id=user.id)
 
-        competition = await self.competition_gateway.get(competition_id)
-        if competition is None:
-            logger.warning("Competition not found", competition_id=competition_id, user_id=user.id)
-            raise CompetitionNotFoundError
+            competition = await self.competition_gateway.get(competition_id)
+            if competition is None:
+                logger.warning("Competition not found", competition_id=competition_id, user_id=user.id)
+                raise CompetitionNotFoundError
 
-        if not competition.can_delete(user):
-            logger.warning(
-                "Attempt to delete competition without permission",
-                competition_id=competition_id,
-                user_id=user.id,
-            )
-            raise AccessDeniedError(message="Only the organizer who created this competition can delete it")
+            if not competition.can_delete(user):
+                logger.warning(
+                    "Attempt to delete competition without permission",
+                    competition_id=competition_id,
+                    user_id=user.id,
+                )
+                raise AccessDeniedError(message="Only the organizer who created this competition can delete it")
 
-        await self.uow.delete(competition)
-        await self.uow.commit()
+            await self.uow.delete(competition)
+            await self.uow.commit()
 
-        logger.info("Competition deleted", competition_id=competition_id, user_id=user.id)
+            logger.info("Competition deleted", competition_id=competition_id, user_id=user.id)

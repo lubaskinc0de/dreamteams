@@ -1,4 +1,5 @@
 import structlog
+from opentelemetry import trace
 from pydantic import BaseModel, Field
 
 from dreamteams.application.common.gateway.application import ApplicationGateway
@@ -9,6 +10,7 @@ from dreamteams.application.manage_my_applications.read import ApplicationModel
 from dreamteams.entities.errors.base import AccessDeniedError
 
 logger: Logger = structlog.get_logger(__name__)
+_tracer = trace.get_tracer("dreamteams.interactors")
 
 PAGE_SIZE = 20
 
@@ -30,30 +32,31 @@ class ListMyApplications:
 
     async def execute(self, page: int = Field(ge=1, default=1)) -> ApplicationsList:
         """List all applications submitted by the current participant."""
-        user = await self.idp.get_user()
-        logger.debug("Listing own applications", user_id=user.id, page=page)
+        with _tracer.start_as_current_span("interactor.list_my_applications"):
+            user = await self.idp.get_user()
+            logger.debug("Listing own applications", user_id=user.id, page=page)
 
-        if user.participant is None:
-            logger.warning("User has no participant profile", user_id=user.id)
-            raise AccessDeniedError(message="Only participants can list their applications")
+            if user.participant is None:
+                logger.warning("User has no participant profile", user_id=user.id)
+                raise AccessDeniedError(message="Only participants can list their applications")
 
-        applications, total = await self.application_gateway.list_by_participant(
-            user.participant.id,
-            page=page,
-            page_size=PAGE_SIZE,
-        )
-
-        items = [
-            ApplicationModel(
-                id=app.id,
-                participant_id=app.participant_id,
-                competition_id=app.competition_id,
-                domains=app.domains,
-                status=app.status,
-                created_at=app.created_at,
-                form_data=app.form_data,
+            applications, total = await self.application_gateway.list_by_participant(
+                user.participant.id,
+                page=page,
+                page_size=PAGE_SIZE,
             )
-            for app in applications
-        ]
 
-        return ApplicationsList(items=items, total=total, page=page)
+            items = [
+                ApplicationModel(
+                    id=app.id,
+                    participant_id=app.participant_id,
+                    competition_id=app.competition_id,
+                    domains=app.domains,
+                    status=app.status,
+                    created_at=app.created_at,
+                    form_data=app.form_data,
+                )
+                for app in applications
+            ]
+
+            return ApplicationsList(items=items, total=total, page=page)

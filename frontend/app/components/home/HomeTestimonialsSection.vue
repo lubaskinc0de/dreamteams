@@ -45,7 +45,7 @@ const { t } = useI18n();
             v-for="(testimonial, index) in testimonials"
             :key="`testimonial-row1-${testimonial.name}-${index}`"
             variant="soft"
-            class="w-80 shrink-0"
+            class="w-72 sm:w-80 shrink-0"
           >
             <div class="flex items-start gap-4 mb-4">
               <UAvatar
@@ -89,7 +89,7 @@ const { t } = useI18n();
             v-for="(testimonial, index) in testimonials"
             :key="`testimonial-row2-${testimonial.name}-${index}`"
             variant="soft"
-            class="w-80 shrink-0"
+            class="w-72 sm:w-80 shrink-0"
           >
             <div class="flex items-start gap-4 mb-4">
               <UAvatar

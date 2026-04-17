@@ -77,7 +77,7 @@ watch(
                 color="primary"
                 size="lg"
                 icon="i-heroicons-user"
-                class="shadow-lg hover:shadow-xl transition-all"
+                class="w-full sm:w-auto justify-center shadow-lg hover:shadow-xl transition-all"
               >
                 {{ t('onboarding.roleSelection.participantButton') }}
               </UButton>
@@ -88,7 +88,7 @@ watch(
                 variant="outline"
                 size="lg"
                 icon="i-heroicons-building-office"
-                class="shadow-lg hover:shadow-xl transition-all"
+                class="w-full sm:w-auto justify-center shadow-lg hover:shadow-xl transition-all"
               >
                 {{ t('onboarding.roleSelection.organizerButton') }}
               </UButton>
@@ -111,15 +111,6 @@ watch(
               <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 {{ t("register.title") }}
               </h2>
-            </div>
-
-            <div class="bg-primary-50 dark:bg-primary-950/30 rounded-lg p-4 mb-6 text-left">
-              <div class="flex items-start gap-3">
-                <UIcon name="i-heroicons-information-circle" class="text-primary-500 text-lg mt-0.5 shrink-0" />
-                <p class="text-sm text-toned">
-                  {{ t('onboarding.roleSelection.inviteHint') }}
-                </p>
-              </div>
             </div>
 
             <OrganizerRegistrationForm />

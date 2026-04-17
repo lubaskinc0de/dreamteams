@@ -15,6 +15,7 @@ from dreamteams.entities.errors.participant import (
     InvalidParticipantDataError,
     ParticipantUserIdMismatchError,
 )
+from dreamteams.entities.participant.vo.age import Age
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
 
@@ -31,6 +32,11 @@ class Organizer(Entity):
     organizer_name: str
     phone_number: str
     contact_email: str
+
+    def update(self, data: "UpdateOrganizerData") -> None:
+        """Update organizer profile fields."""
+        self.organizer_name = data.organizer_name
+        self.contact_email = data.contact_email
 
 
 @model
@@ -77,17 +83,25 @@ class ExperienceLevel(Enum):
 
 
 @dataclass
+class UpdateOrganizerData:
+    """Data for updating Organizer."""
+
+    organizer_name: str
+    contact_email: str
+
+
+@dataclass
 class UpdateParticipantData:
     """Data for updating Participant."""
 
     full_name: str
-    avatar_url: str | None
-    bio: str
+    bio: str | None
     skills: list[ParticipantSkill]
-    experience_level: ExperienceLevel
+    experience_level: ExperienceLevel | None
     preferred_domains: list[Domain]
     contacts: list[ParticipantContact]
     participant_type: ParticipantType
+    age: Age
 
 
 @dataclass
@@ -95,13 +109,13 @@ class ParticipantData:
     """Data for creating Participant."""
 
     full_name: str
-    avatar_url: str | None
-    bio: str
+    bio: str | None
     skills: list[ParticipantSkill]
-    experience_level: ExperienceLevel
+    experience_level: ExperienceLevel | None
     preferred_domains: list[Domain]
     contacts: list[ParticipantContact]
     participant_type: ParticipantType
+    age: Age
 
 
 @model
@@ -111,13 +125,13 @@ class Participant(Entity):
     id: ParticipantId
     user_id: UserId
     full_name: str
-    avatar_url: str | None
-    bio: str
+    bio: str | None
     skills: list[ParticipantSkill]
-    experience_level: ExperienceLevel
+    experience_level: ExperienceLevel | None
     preferred_domains: list[Domain]
     contacts: list[ParticipantContact]
     participant_type: ParticipantType
+    age: Age
     created_at: datetime
     updated_at: datetime
 
@@ -125,12 +139,6 @@ class Participant(Entity):
         """Enforce Participant invariants on every construction and mutation."""
         if not self.full_name.strip():
             raise InvalidParticipantDataError(message="Full name must not be empty")
-
-        if not self.skills:
-            raise InvalidParticipantDataError(message="Skills list must not be empty")
-
-        if not self.preferred_domains:
-            raise InvalidParticipantDataError(message="Preferred domains list not be empty")
 
         if self.participant_type == ParticipantType.ANY:
             raise InvalidParticipantDataError(message="Participant type cannot be ANY")
@@ -154,13 +162,14 @@ class Participant(Entity):
     ) -> None:
         """Update participant profile fields."""
         self.full_name = data.full_name
-        self.avatar_url = data.avatar_url
         self.bio = data.bio
         self.skills = data.skills
         self.experience_level = data.experience_level
         self.preferred_domains = data.preferred_domains
+        self.participant_type = data.participant_type
         self.contacts = data.contacts
-        self.update_at = clock.now()
+        self.age = data.age
+        self.updated_at = clock.now()
         self.__post_init__()
 
 
@@ -175,13 +184,13 @@ def participant_factory(
         id=uuid4(),
         user_id=user.id,
         full_name=data.full_name,
-        avatar_url=data.avatar_url,
         bio=data.bio,
         skills=data.skills,
         experience_level=data.experience_level,
         preferred_domains=data.preferred_domains,
         contacts=data.contacts,
         participant_type=data.participant_type,
+        age=data.age,
         created_at=now,
         updated_at=now,
     )

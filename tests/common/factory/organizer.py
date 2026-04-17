@@ -1,5 +1,6 @@
 from polyfactory.factories.pydantic_factory import ModelFactory
 
+from dreamteams.application.manage_profile.update_organizer import UpdateOrganizerForm
 from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
 
 
@@ -14,3 +15,9 @@ class OrganizerFormFactory(ModelFactory[OrganizerForm]):
 
     __model__ = OrganizerForm
     phone_number = _generate_organizer_phone_number
+
+
+class UpdateOrganizerFormFactory(ModelFactory[UpdateOrganizerForm]):
+    """Factory of UpdateOrganizerForm models."""
+
+    __model__ = UpdateOrganizerForm

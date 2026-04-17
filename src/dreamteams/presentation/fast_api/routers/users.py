@@ -11,6 +11,8 @@ from dreamteams.application.manage_profile import ProfileModel, ReadProfile
 from dreamteams.application.manage_profile.attach_avatar import AttachAvatar, AvatarForm
 from dreamteams.application.manage_profile.delete import DeleteProfile
 from dreamteams.application.manage_profile.detach_avatar import DetachAvatar
+from dreamteams.application.manage_profile.update_organizer import UpdateOrganizer, UpdateOrganizerForm
+from dreamteams.application.manage_profile.update_participant import UpdateParticipant, UpdateParticipantForm
 from dreamteams.application.register.register_superuser import CreatedSuperuser, RegisterSuperuser, SuperuserForm
 from dreamteams.presentation.fast_api.errors import InvalidAvatarError
 
@@ -75,6 +77,24 @@ async def attach_avatar(
         raise InvalidAvatarError(reason="File is not a valid image.")
 
     await interactor.execute(AvatarForm(file.file, file.content_type))
+
+
+@router.put("/me/participant")
+async def update_participant(
+    interactor: FromDishka[UpdateParticipant],
+    data: UpdateParticipantForm,
+) -> None:
+    """HTTP endpoint for updating participant profile."""
+    await interactor.execute(data)
+
+
+@router.put("/me/organizer")
+async def update_organizer(
+    interactor: FromDishka[UpdateOrganizer],
+    data: UpdateOrganizerForm,
+) -> None:
+    """HTTP endpoint for updating organizer profile."""
+    await interactor.execute(data)
 
 
 @router.delete("/me/avatar")

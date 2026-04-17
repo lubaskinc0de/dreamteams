@@ -23,8 +23,11 @@ class ParticipantGateway:
         """Register a fresh participant and return their credentials and form."""
         auth_id = str(uuid4())
         email = self.faker.email()
-        kwargs = {} if participant_type is None else {"participant_type": participant_type}
-        form = self.participant_form_factory.build(**kwargs)
+        form = (
+            self.participant_form_factory.build(participant_type=participant_type)
+            if participant_type is not None
+            else self.participant_form_factory.build()
+        )
 
         with self.api_client.authenticate(auth_user_id=auth_id, auth_user_email=email):
             participant = (

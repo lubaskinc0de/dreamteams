@@ -22,6 +22,26 @@ async def test_register_as_participant(
     response.assert_status(200).ensure_content()
 
 
+async def test_register_as_participant_without_optional_fields(
+    api_client: ApiClient,
+    participant_form_factory: ParticipantFormFactory,
+    faker: Faker,
+) -> None:
+    """Test register as participant succeeds when all optional fields are omitted."""
+    data = participant_form_factory.build(
+        bio=None,
+        skills=[],
+        experience_level=None,
+        preferred_domains=[],
+        contacts=[],
+    ).model_dump(mode="json")
+
+    with api_client.authenticate(auth_user_id=str(uuid4()), auth_user_email=faker.email()):
+        response = await api_client.register_participant(data=data)
+
+    response.assert_status(200).ensure_content()
+
+
 @pytest.mark.parametrize(
     "update_data",
     [
@@ -29,7 +49,7 @@ async def test_register_as_participant(
         {"full_name": "a" * 71},
         # Participant bio exceeds max length (500 characters)
         {"bio": "a" * 501},
-        # Participant skills empty
+        # Malformed skill object (empty name, invalid level)
         {"skills": [{"name": "", "level": ""}]},
         # Incorrect contact url
         {"contacts": [{"title": "GitHub", "url": "not-a-url"}]},
@@ -50,6 +70,22 @@ async def test_register_as_participant_with_invalid_data(
         response = await api_client.register_participant(data.model_dump(mode="json"))
 
     response.assert_error(422, "VALIDATION_ERROR")
+
+
+@pytest.mark.parametrize("age", [-1, 151])
+async def test_register_as_participant_with_invalid_age(
+    api_client: ApiClient,
+    participant_form_factory: ParticipantFormFactory,
+    age: int,
+    faker: Faker,
+) -> None:
+    """Test register as participant fails when age is out of bounds."""
+    data = participant_form_factory.build().model_copy(update={"age": age})
+
+    with api_client.authenticate(auth_user_id=str(uuid4()), auth_user_email=faker.email()):
+        response = await api_client.register_participant(data.model_dump(mode="json"))
+
+    response.assert_error(400, "INVALID_PARTICIPANT_DATA")
 
 
 async def test_register_as_participant_fails_if_unauthorized(

@@ -202,6 +202,11 @@
       "preferredDomains": "Preferred Domains",
       "skills": "Skills",
       "contacts": "Contacts",
+      "addBio": "Add bio",
+      "addExperience": "Add experience",
+      "addDomains": "Add domains",
+      "addSkills": "Add skills",
+      "addContacts": "Add contacts",
       "experienceLevels": {
         "JUNIOR": "Junior",
         "MID": "Middle",
@@ -223,9 +228,9 @@
     },
     "settings": {
       "authentication": {
-          "title": "Authentication",
-          "logout": "Sign out",
-          "delete_profile": "Delete my profile"
+        "title": "Authentication",
+        "logout": "Sign out",
+        "delete_profile": "Delete my profile"
       },
       "appearance": {
         "title": "Appearance",
@@ -263,6 +268,9 @@
       "title": "Participant Registration",
       "description": "Fill in your details to start participating in competitions",
       "goToProfile": "Go to Profile"
+    },
+    "edit": {
+      "title": "Edit Profile"
     }
   },
   "form": {
@@ -305,10 +313,31 @@
       "label": "Experience Level",
       "required": "Please select your experience level",
       "options": {
+        "none": "Not specified",
         "JUNIOR": "Junior",
         "MID": "Middle",
         "SENIOR": "Senior"
       }
+    },
+    "participantType": {
+      "label": "Who are you?",
+      "required": "Please select participant type",
+      "options": {
+        "SCHOOLCHILD": "School Student",
+        "STUDENT": "University Student"
+      }
+    },
+    "age": {
+      "label": "Age",
+      "placeholder": "Your age",
+      "required": "Age is required",
+      "invalid": "Age is out of allowed range"
+    },
+    "contactEmail": {
+      "label": "Contact Email",
+      "placeholder": "contact{'@'}example.com",
+      "required": "Contact email is required",
+      "invalid": "Enter a valid email address"
     },
     "preferredDomains": {
       "label": "Preferred Domains",
@@ -350,8 +379,11 @@
     "UNAUTHORIZED": "Please log in",
     "USER_NOT_FOUND": "User not found",
     "USER_HAS_NO_ROLE": "User has no role assigned",
-    "AUTH_USER_ALREADY_EXISTS": "You're already registered as an organizer",
+    "AUTH_USER_ALREADY_EXISTS": "You are already registered on the platform",
     "ORGANIZER_ALREADY_EXISTS": "Phone or email is already in use",
+    "ORGANIZER_NOT_FOUND": "Organizer profile not found",
+    "PARTICIPANT_NOT_FOUND": "Participant profile not found",
+    "INVALID_PARTICIPANT_DATA": "Invalid participant data. Please check the entered values",
     "VALIDATION_ERROR": "Please check the form for errors",
     "ACCESS_DENIED": "Access denied",
     "INTERNAL_SERVER_ERROR": "Internal server error. Please try again later",
@@ -371,7 +403,11 @@
     "APPLICATION_NOT_FOUND": "Application not found",
     "APPLICATION_ALREADY_EXISTS": "You have already applied to this competition",
     "APPLICATION_ALREADY_RESOLVED": "Application has already been processed and cannot be changed",
-    "INVALID_APPLICATION_DATA": "Invalid application data. Check your selected domains and form answers"
+    "INVALID_APPLICATION_DATA": "Invalid application data. Check your selected domains and form answers",
+    "INVALID_COMPETITION_DATA": "Invalid competition data. Please check the entered values",
+    "COMPETITION_NOT_ACTIVE": "This competition is not currently accepting applications",
+    "PARTICIPANT_LIMITS_EXCEEDED": "This competition has reached its participant limit",
+    "PARTICIPANT_TYPE_MISMATCH": "Your participant type does not match this competition's requirements"
   },
   "superuserRegister": {
     "title": "Superuser Registration",
@@ -666,10 +702,38 @@
         "venue": "Venue",
         "milestones": "Milestones (optional)"
       },
+      "steps": {
+        "basics": {
+          "title": "Basics",
+          "description": "Name and format"
+        },
+        "schedule": {
+          "title": "Schedule",
+          "description": "Registration dates"
+        },
+        "participants": {
+          "title": "Participants",
+          "description": "Limits and teams"
+        },
+        "venue": {
+          "title": "Venue",
+          "description": "Format and location"
+        },
+        "milestones": {
+          "title": "Milestones",
+          "description": "Key events"
+        },
+        "scheduleParticipants": {
+          "title": "Schedule & Participants"
+        }
+      },
+      "nextStep": "Next",
+      "prevStep": "Back",
       "validation": {
         "errorsFound": "Found {count} errors",
         "scrollToErrors": "Please check the form fields"
-      }
+      },
+      "stepLabel": "Step {current} of {total}"
     },
     "detail": {
       "editButton": "Edit",
@@ -698,19 +762,23 @@
         "label": "Competition Title",
         "placeholder": "e.g., Web Development Hackathon 2026",
         "required": "Title is required",
-        "maxLength": "Title must not exceed 200 characters"
+        "maxLength": "Title must not exceed 200 characters",
+        "tooltip": "The public name of your competition visible to all participants"
       },
       "description": {
         "label": "Description",
         "placeholder": "Describe your competition, its goals and features...",
-        "required": "Description is required"
+        "required": "Description is required",
+        "tooltip": "Detailed information about goals, tasks, format and requirements"
       },
       "schedule": {
         "registrationPeriod": {
-          "label": "Registration Period"
+          "label": "Registration Period",
+          "tooltip": "The time window during which participants can sign up"
         },
         "teamFormationPeriod": {
-          "label": "Team Formation Period"
+          "label": "Team Formation Period",
+          "tooltip": "Period after registration for participants to form and join teams"
         },
         "startTime": {
           "label": "Start Time"
@@ -757,7 +825,8 @@
         },
         "validation": {
           "minLessThanMax": "Minimum must be less than or equal to maximum"
-        }
+        },
+        "tooltip": "Total number of individual participants or teams allowed"
       },
       "domains": {
         "label": "Domains",
@@ -769,7 +838,8 @@
           "backend": "Backend",
           "ai": "AI",
           "devops": "DevOps"
-        }
+        },
+        "tooltip": "Technical areas participants should specialize in"
       },
       "participantType": {
         "label": "Participant Type",
@@ -777,11 +847,13 @@
           "schoolchild": "School Students",
           "student": "University Students",
           "any": "Everyone"
-        }
+        },
+        "tooltip": "Restrict participation to a specific group or open it to everyone"
       },
       "isTeam": {
         "label": "Competition Type",
-        "checkboxLabel": "Team Competition"
+        "checkboxLabel": "Team Competition",
+        "tooltip": "Team competitions require participants to join or form groups"
       },
       "venue": {
         "format": {
@@ -790,11 +862,13 @@
             "online": "Online",
             "offline": "Offline",
             "hybrid": "Hybrid"
-          }
+          },
+          "tooltip": "Whether the competition takes place online, in-person, or both"
         },
         "location": {
           "label": "Location",
-          "placeholder": "e.g., Moscow, Tech Park"
+          "placeholder": "e.g., Moscow, Tech Park",
+          "tooltip": "Physical address or name of the venue"
         },
         "validation": {
           "locationRequired": "Location is required for offline and hybrid formats"
@@ -812,21 +886,24 @@
         },
         "validation": {
           "minLessThanMax": "Minimum must be less than or equal to maximum"
-        }
+        },
+        "tooltip": "Number of members allowed per team"
       },
       "milestone": {
         "title": {
           "label": "Milestone Title",
           "placeholder": "e.g., Project Defense",
           "required": "Milestone title is required",
-          "maxLength": "Title must not exceed 50 characters"
+          "maxLength": "Title must not exceed 50 characters",
+          "tooltip": "A short name for this key event or checkpoint"
         },
         "timestamp": {
           "label": "Date and Time",
           "required": "Please specify date and time"
         },
         "datetime": {
-          "label": "Milestone Date and Time"
+          "label": "Milestone Date and Time",
+          "tooltip": "When this milestone takes place"
         },
         "addButton": "Add Milestone",
         "removeButton": "Remove",
@@ -840,7 +917,8 @@
       },
       "autoAccept": {
         "label": "Auto-Accept Applications",
-        "checkboxLabel": "Automatically accept participant applications"
+        "checkboxLabel": "Automatically accept participant applications",
+        "tooltip": "Skip manual review — all registrations are approved automatically"
       },
       "isArchived": {
         "label": "Archive Status",

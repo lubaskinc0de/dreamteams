@@ -26,14 +26,14 @@ const { t } = useI18n();
         </p>
 
         <!-- CTA Button -->
-        <div class="fade-in-scroll flex justify-start sm:justify-center">
+        <div class="fade-in-scroll flex flex-col sm:flex-row justify-start sm:justify-center">
           <UButton
             @click="navigateTo('/competitions')"
             size="xl"
             icon="i-heroicons-magnifying-glass"
             color="primary"
             variant="solid"
-            class="min-w-[200px]"
+            class="w-full sm:w-auto sm:min-w-[200px]"
             :ui="{ base: 'justify-center' }"
           >
             {{ t('home.findHackathonButton') }}

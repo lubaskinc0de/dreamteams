@@ -1,10 +1,12 @@
 import structlog
+from opentelemetry import trace
 from pydantic import BaseModel, Field
 
 from dreamteams.application.common.dto.milestone import MilestoneForm
 from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
+from dreamteams.application.common.metrics import MetricsGateway
 from dreamteams.application.common.uow import UoW
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import CompetitionId
@@ -18,6 +20,7 @@ from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionVenue
 
 logger: Logger = structlog.get_logger(__name__)
+_tracer = trace.get_tracer("dreamteams.interactors")
 
 
 class CreatedCompetition(BaseModel):
@@ -48,37 +51,40 @@ class CreateCompetition:
     uow: UoW
     idp: IdProvider
     clock: Clock
+    metrics: MetricsGateway
 
     async def execute(self, data: CompetitionForm) -> CreatedCompetition:
         """Creates a new competition."""
-        user = await self.idp.get_user()
-        logger.debug("Creating competition", title=data.title, user_id=user.id)
+        with _tracer.start_as_current_span("interactor.create_competition"):
+            user = await self.idp.get_user()
+            logger.debug("Creating competition", title=data.title, user_id=user.id)
 
-        competition = competition_factory(
-            CompetitionData(
-                title=data.title,
-                description=data.description,
-                schedule=data.schedule,
-                participant_limits=data.participant_limits,
-                domains=data.domains,
-                participant_type=data.participant_type,
-                venue=data.venue,
-                team_size=data.team_size,
-                auto_accept=data.auto_accept,
-                milestones=[MilestoneData(milestone.title, milestone.timestamp) for milestone in data.milestones],
-            ),
-            user,
-            self.clock,
-        )
+            competition = competition_factory(
+                CompetitionData(
+                    title=data.title,
+                    description=data.description,
+                    schedule=data.schedule,
+                    participant_limits=data.participant_limits,
+                    domains=data.domains,
+                    participant_type=data.participant_type,
+                    venue=data.venue,
+                    team_size=data.team_size,
+                    auto_accept=data.auto_accept,
+                    milestones=[MilestoneData(milestone.title, milestone.timestamp) for milestone in data.milestones],
+                ),
+                user,
+                self.clock,
+            )
 
-        logger.debug(
-            "Competition created",
-            competition_id=competition.id,
-            user_id=user.id,
-        )
+            logger.debug(
+                "Competition created",
+                competition_id=competition.id,
+                user_id=user.id,
+            )
 
-        self.uow.add(competition)
-        await self.uow.commit()
+            self.uow.add(competition)
+            await self.uow.commit()
+            self.metrics.record_competition_created()
 
-        logger.info("Competition saved", competition_id=competition.id, user_id=user.id)
-        return CreatedCompetition(competition_id=competition.id)
+            logger.info("Competition saved", competition_id=competition.id, user_id=user.id)
+            return CreatedCompetition(competition_id=competition.id)

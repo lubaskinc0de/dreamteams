@@ -29,10 +29,15 @@ const { t } = useI18n();
       <!-- Participant Limits -->
       <UFormField
         name="participant_limits"
-        :label="t('competition.form.participantLimits.label')"
         required
         size="xl"
       >
+        <template #label>
+          {{ t('competition.form.participantLimits.label') }}
+          <UTooltip :text="t('competition.form.participantLimits.tooltip')">
+            <UIcon name="i-heroicons-question-mark-circle" class="w-3.5 h-3.5 text-gray-400 cursor-help" />
+          </UTooltip>
+        </template>
         <div class="space-y-3">
           <div class="flex justify-between text-base font-medium text-gray-700 dark:text-gray-300">
             <span>{{ t('competition.form.participantLimits.min.label') }}: {{ participantLimitsMin }}</span>
@@ -58,10 +63,15 @@ const { t } = useI18n();
       <UFormField
         v-if="isTeamCompetition"
         name="team_size"
-        :label="t('competition.form.teamSize.label')"
         :required="isTeamCompetition"
         size="xl"
       >
+        <template #label>
+          {{ t('competition.form.teamSize.label') }}
+          <UTooltip :text="t('competition.form.teamSize.tooltip')">
+            <UIcon name="i-heroicons-question-mark-circle" class="w-3.5 h-3.5 text-gray-400 cursor-help" />
+          </UTooltip>
+        </template>
         <div class="space-y-3">
           <div class="flex justify-between text-base font-medium text-gray-700 dark:text-gray-300">
             <span>{{ t('competition.form.teamSize.min.label') }}: {{ teamSizeMin }}</span>

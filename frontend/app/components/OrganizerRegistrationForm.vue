@@ -132,13 +132,17 @@ const isLoading = computed(() => organizerStore.loading || isUploadingAvatar.val
         </p>
       </UFormField>
 
-      <UFormField :label="t('form.inviteCode.label')" name="invite_code" required :aria-required="true"
-        class="w-full">
+      <UFormField name="invite_code" required class="w-full">
+        <template #label>
+          <span class="flex items-center gap-1">
+            {{ t('form.inviteCode.label') }}
+            <UTooltip :text="t('form.inviteCode.hint')">
+              <UIcon name="i-heroicons-question-mark-circle" class="text-gray-400 size-4 cursor-help" />
+            </UTooltip>
+          </span>
+        </template>
         <UInput v-model="state.invite_code" :placeholder="t('form.inviteCode.placeholder')"
           icon="i-heroicons-key" size="xl" :aria-label="t('form.inviteCode.label')" class="w-full" />
-        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-          {{ t("form.inviteCode.hint") }}
-        </p>
       </UFormField>
 
       <div class="pt-2">

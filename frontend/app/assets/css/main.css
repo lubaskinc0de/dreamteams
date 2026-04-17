@@ -162,6 +162,11 @@
  * updated when the color mode changes
  */
 @layer base {
+  html {
+    /* Adaptive: 14px on small screens, scales up, capped at 16.5px */
+    font-size: clamp(14px, 1.5vw + 11px, 16.5px);
+  }
+
   :root {
     /* Light theme variables */
     --color-background-primary: theme("colors.white");
@@ -252,4 +257,35 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;  /* Chrome, Safari and Opera */
   }
+
+  /* Responsive horizontal padding — consistent gutter across breakpoints */
+  .safe-px {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .safe-px {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .safe-px {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+
+  /* Minimum 44×44px touch target (WCAG AAA) */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Prevent horizontal scroll globally — elements that would overflow become contained */
+html, body {
+  overflow-x: hidden;
 }
