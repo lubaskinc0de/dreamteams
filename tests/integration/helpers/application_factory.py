@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass
 
+from dreamteams.application.explore_competitions import SubmitApplicationInput
 from dreamteams.application.manage_my_applications import ApplicationModel
-from dreamteams.application.submit_application import SubmitApplicationInput
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId
 from tests.common.factory.application import SubmitApplicationInputFactory
 from tests.integration.api_client import ApiClient
@@ -80,15 +81,34 @@ class ApplicationGateway:
         auto_accept: bool = False,
     ) -> list[ApplicationModel]:
         """Create ``n`` fresh competitions, submit an application to each, and return participant-view models."""
-        models: list[ApplicationModel] = []
+        comps: list[CompetitionCreated] = [
+            await self.competition_gateway.create_active(owner_auth_id, auto_accept=auto_accept) for _ in range(n)
+        ]
 
-        for _ in range(n):
-            comp = await self.competition_gateway.create_active(owner_auth_id, auto_accept=auto_accept)
-            app_id = await self.submit(participant_auth_id, comp)
-            model = await self.read_as_participant(app_id, participant_auth_id)
-            models.append(model)
+        app_ids = await asyncio.gather(*[self.submit(participant_auth_id, comp) for comp in comps])
+        return await asyncio.gather(
+            *[self.read_as_participant(app_id, participant_auth_id) for app_id in app_ids],
+        )
 
-        return models
+    async def _submit_as(
+        self,
+        participant_auth_id: str,
+        competition_id: CompetitionId,
+        submit_application_input: SubmitApplicationInput,
+    ) -> ApplicationId:
+        """Submit an application for a given participant against a competition."""
+        with self.api_client.authenticate(auth_user_id=participant_auth_id):
+            return (
+                (
+                    await self.api_client.submit_application(
+                        competition_id,
+                        submit_application_input.model_dump(mode="json"),
+                    )
+                )
+                .assert_status(200)
+                .ensure_content()
+                .application_id
+            )
 
     async def create_for_competition(
         self,
@@ -97,26 +117,11 @@ class ApplicationGateway:
         submit_application_input: SubmitApplicationInput,
     ) -> list[ApplicationId]:
         """Create ``n`` fresh participants and have each submit an application to the competition."""
-        submitted_ids: list[ApplicationId] = []
+        participants = await asyncio.gather(*[self.participant_gateway.create() for _ in range(n)])
 
-        for _ in range(n):
-            participant = await self.participant_gateway.create()
-
-            with self.api_client.authenticate(auth_user_id=participant.auth_id):
-                app_id = (
-                    (
-                        await self.api_client.submit_application(
-                            competition_id,
-                            submit_application_input.model_dump(mode="json"),
-                        )
-                    )
-                    .assert_status(200)
-                    .ensure_content()
-                    .application_id
-                )
-                submitted_ids.append(app_id)
-
-        return submitted_ids
+        return await asyncio.gather(
+            *[self._submit_as(p.auth_id, competition_id, submit_application_input) for p in participants],
+        )
 
     async def create_mixed(
         self,
@@ -143,9 +148,60 @@ class ApplicationGateway:
             num_rejected = n // 3
 
         with self.api_client.authenticate(auth_user_id=organizer_auth_id):
-            for app_id in application_ids[:num_accepted]:
-                (await self.api_client.accept_application(app_id)).assert_status(200)
-            for app_id in application_ids[num_accepted : num_accepted + num_rejected]:
-                (await self.api_client.reject_application(app_id)).assert_status(200)
+            accept_responses = await asyncio.gather(
+                *[self.api_client.accept_application(app_id) for app_id in application_ids[:num_accepted]],
+            )
+            reject_responses = await asyncio.gather(
+                *[
+                    self.api_client.reject_application(app_id)
+                    for app_id in application_ids[num_accepted : num_accepted + num_rejected]
+                ],
+            )
+        for response in (*accept_responses, *reject_responses):
+            response.assert_status(200)
 
-        return [await self.read_as_organizer(app_id, organizer_auth_id) for app_id in application_ids]
+        return await asyncio.gather(
+            *[self.read_as_organizer(app_id, organizer_auth_id) for app_id in application_ids],
+        )
+
+    async def create_mixed_for_participant(
+        self,
+        application_ids: list[ApplicationId],
+        organizer_auth_id: str,
+        participant_auth_id: str,
+    ) -> list[ApplicationModel]:
+        """Same distribution as ``create_mixed`` but returns participant-view models."""
+        await self.create_mixed(application_ids, organizer_auth_id)
+        return await asyncio.gather(
+            *[self.read_as_participant(app_id, participant_auth_id) for app_id in application_ids],
+        )
+
+    async def create_active_competitions_with_accepted_members(
+        self,
+        organizer_auth_id: str,
+        member_counts: list[int],
+    ) -> list[CompetitionCreated]:
+        """Create one active, auto-accepting competition per entry in ``member_counts``.
+
+        Submits that many applications to each — every submission lands as ACCEPTED thanks
+        to ``auto_accept=True``.
+        """
+        competitions: list[CompetitionCreated] = [
+            await self.competition_gateway.create_active(organizer_auth_id, auto_accept=True) for _ in member_counts
+        ]
+
+        await asyncio.gather(
+            *[
+                self.create_for_competition(
+                    count,
+                    comp.created.competition_id,
+                    self.submit_application_input_factory.build(
+                        domains=[comp.form.domains[0]],
+                        form_data=None,
+                    ),
+                )
+                for comp, count in zip(competitions, member_counts, strict=True)
+                if count > 0
+            ],
+        )
+        return competitions

@@ -7,12 +7,13 @@ from adaptix import Retort
 
 from dreamteams.adapters.auth.idp.auth_user import WebAuthUserIdProviderConfig
 from dreamteams.adapters.avatar_storage import S3Config
-from dreamteams.adapters.db.config import DbConfig
+from dreamteams.adapters.cache.config import CacheConfig
+from dreamteams.adapters.db.config import DbConfig, DbPoolTomlConfig
 from dreamteams.adapters.env_loader import env, optional_env
 from dreamteams.adapters.sentry import SentryConfig
 from dreamteams.application.register.register_superuser import SuperuserConfig
 from dreamteams.bootstrap.observability import OTelConfig
-from dreamteams.presentation.fast_api.config import ApiConfig, CorsConfig, ServerConfig
+from dreamteams.presentation.fast_api.config import ApiConfig, CorsConfig, ServerConfig, ServerTomlConfig
 
 retort = Retort()
 
@@ -25,6 +26,9 @@ class TomlConfig:
     otel: OTelConfig
     cors: CorsConfig
     api: ApiConfig
+    server: ServerTomlConfig
+    db: DbPoolTomlConfig
+    cache: CacheConfig
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)
@@ -40,6 +44,7 @@ class Config:
     s3: S3Config
     superuser: SuperuserConfig
     sentry: SentryConfig
+    cache: CacheConfig
 
     @classmethod
     def load(cls) -> Self:
@@ -49,11 +54,14 @@ class Config:
         with config_path.open("rb") as f:
             toml_config = retort.load(toml_rs.load(f), TomlConfig)
 
-        db = DbConfig.from_env()
+        db = DbConfig.from_env(
+            max_total_pool_size=toml_config.db.max_total_pool_size,
+            max_total_overflow=toml_config.db.max_total_overflow,
+        )
         server = ServerConfig(
             server_port=env("SERVER_PORT", int),
             server_host=env("SERVER_HOST"),
-            workers=optional_env("SERVER_WORKERS", int) or 1,
+            workers=toml_config.server.workers,
         )
         s3 = S3Config(
             bucket_name=env("S3_BUCKET_NAME"),
@@ -75,4 +83,5 @@ class Config:
             s3=s3,
             superuser=superuser,
             sentry=sentry,
+            cache=toml_config.cache,
         )

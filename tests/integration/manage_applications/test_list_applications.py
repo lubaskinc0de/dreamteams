@@ -2,7 +2,9 @@ from uuid import uuid4
 
 import pytest
 
+from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.manage_applications.list import PAGE_SIZE
+from dreamteams.entities.application.entity import ApplicationStatus
 from tests.common.factory.application import SubmitApplicationInputFactory
 from tests.integration.api_client import ApiClient
 from tests.integration.helpers.facade import Gateway
@@ -139,6 +141,73 @@ async def test_list_applications_with_pagination(
     # Assert
     result = response.assert_status(200).ensure_content()
     assert result == create_applications_list(all_models, page=page)
+
+
+@pytest.mark.parametrize(
+    "status",
+    [ApplicationStatus.PENDING, ApplicationStatus.ACCEPTED, ApplicationStatus.REJECTED],
+)
+async def test_list_applications_filters_by_status(
+    api_client: ApiClient,
+    gateway: Gateway,
+    submit_application_input_factory: SubmitApplicationInputFactory,
+    status: ApplicationStatus,
+) -> None:
+    """Filtering by status returns only applications in that status."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+    submit_input = submit_application_input_factory.build(domains=[comp.form.domains[0]], form_data=None)
+    submitted_ids = await gateway.application.create_for_competition(
+        6,
+        comp.created.competition_id,
+        submit_input,
+    )
+    all_models = await gateway.application.create_mixed(submitted_ids, owner.organizer.auth_id)
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.list_applications_by_competition(
+            comp.created.competition_id,
+            status=status,
+        )
+
+    # Assert
+    result = response.assert_status(200).ensure_content()
+    assert result == create_applications_list(all_models, status=status)
+
+
+@pytest.mark.parametrize("sort_order", [SortOrder.ASC, SortOrder.DESC])
+async def test_list_applications_respects_sort_order(
+    api_client: ApiClient,
+    gateway: Gateway,
+    submit_application_input_factory: SubmitApplicationInputFactory,
+    sort_order: SortOrder,
+) -> None:
+    """Results are ordered by created_at in the requested direction."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+    submit_input = submit_application_input_factory.build(domains=[comp.form.domains[0]], form_data=None)
+    submitted_ids = await gateway.application.create_for_competition(
+        3,
+        comp.created.competition_id,
+        submit_input,
+    )
+    all_models = [
+        await gateway.application.read_as_organizer(app_id, owner.organizer.auth_id) for app_id in submitted_ids
+    ]
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.list_applications_by_competition(
+            comp.created.competition_id,
+            sort_order=sort_order,
+        )
+
+    # Assert
+    result = response.assert_status(200).ensure_content()
+    assert result == create_applications_list(all_models, sort_order=sort_order)
 
 
 @pytest.mark.parametrize("page", [-2, -1, 0])

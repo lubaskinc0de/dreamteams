@@ -1,5 +1,6 @@
 from uuid import uuid4
 
+import pytest
 from dishka import AsyncContainer
 
 from dreamteams.application.common.gateway.competition import CompetitionGateway
@@ -83,3 +84,25 @@ async def test_read_competition_fails_if_unauthorized(
     response = await api_client.read_competition(comp.created.competition_id)
 
     response.assert_error(401, "UNAUTHORIZED")
+
+
+@pytest.mark.parametrize("accepted_count", [0, 1, 5])
+async def test_read_competition_returns_accepted_members_count(
+    api_client: ApiClient,
+    gateway: Gateway,
+    accepted_count: int,
+) -> None:
+    """``members_count`` on the read response equals the number of ACCEPTED applications."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    [comp] = await gateway.application.create_active_competitions_with_accepted_members(
+        owner.organizer.auth_id,
+        [accepted_count],
+    )
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.read_competition(comp.created.competition_id)
+
+    # Assert
+    assert response.assert_status(200).ensure_content().members_count == accepted_count

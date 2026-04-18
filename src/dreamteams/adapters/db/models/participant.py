@@ -13,6 +13,7 @@ from sqlalchemy import (
     Table,
     Text,
     TypeDecorator,
+    asc,
 )
 from sqlalchemy.engine import Dialect
 from sqlalchemy.orm import relationship
@@ -105,6 +106,7 @@ mapper_registry.map_imperatively(
             cascade="all, delete-orphan",
             passive_deletes=True,
             lazy="raise_on_sql",
+            order_by=asc(participant_skills_table.c.name),
         ),
         "contacts": relationship(
             ParticipantContact,
@@ -112,6 +114,7 @@ mapper_registry.map_imperatively(
             cascade="all, delete-orphan",
             passive_deletes=True,
             lazy="raise_on_sql",
+            order_by=asc(participant_contacts_table.c.title),
         ),
     },
 )

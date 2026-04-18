@@ -70,6 +70,11 @@ async def test_view_participant_profile(api_client: ApiClient, gateway: Gateway)
         key=lambda s: s.name,
     )
 
+    expected_contacts = sorted(
+        [ParticipantContact(title=c.title, url=str(c.url)) for c in participant.form.contacts],
+        key=lambda c: c.title,
+    )
+
     assert profile_model == ProfileModel(
         user_id=participant.created.user_id,
         organizer=None,
@@ -83,7 +88,7 @@ async def test_view_participant_profile(api_client: ApiClient, gateway: Gateway)
             skills=profile_model.participant.skills,
             experience_level=participant.form.experience_level,
             preferred_domains=participant.form.preferred_domains,
-            contacts=[ParticipantContact(title=c.title, url=str(c.url)) for c in participant.form.contacts],
+            contacts=expected_contacts,
         ),
         avatar_url=None,
         is_admin=False,

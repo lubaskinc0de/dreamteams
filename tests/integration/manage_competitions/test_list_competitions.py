@@ -359,6 +359,45 @@ async def test_list_competitions_with_pagination(
     assert result == expected_model
 
 
+@pytest.mark.parametrize(
+    # Each entry in the list becomes one competition; its int is that competition's
+    # number of ACCEPTED applications. The list length = number of competitions created.
+    "accepted_counts_per_competition",
+    [
+        [3],
+        [0, 2, 5],
+    ],
+)
+async def test_list_competitions_returns_accepted_members_count(
+    api_client: ApiClient,
+    gateway: Gateway,
+    accepted_counts_per_competition: list[int],
+) -> None:
+    """Each listed row's ``members_count`` equals its competition's ACCEPTED application count."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    competitions = await gateway.application.create_active_competitions_with_accepted_members(
+        owner.organizer.auth_id,
+        accepted_counts_per_competition,
+    )
+    read_models = [
+        await gateway.competition.read(comp.created.competition_id, owner.organizer.auth_id)
+        for comp in competitions
+    ]
+    expected = create_competitions_list(
+        read_models,
+        sort_by=CompetitionSortBy.CREATED_AT,
+        sort_order=SortOrder.DESC,
+    )
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        list_response = await api_client.list_competitions()
+
+    # Assert
+    assert list_response.assert_status(200).ensure_content() == expected
+
+
 @pytest.mark.parametrize("page", [-2, -1, 0])
 async def test_list_competitions_with_invalid_pagination_fails(
     api_client: ApiClient,

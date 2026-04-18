@@ -60,7 +60,7 @@ def test_application_is_created_with_valid_data(
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
-    competition.participant_limits = ParticipantLimits(max=1000, min=1)
+    competition.participant_limits = ParticipantLimits(max=1000)
     app_data = data.draw(valid_application_data(domains=competition.domains))
 
     application = submit_application(
@@ -194,7 +194,7 @@ def test_participant_type_any_accepts_any_participant(
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
-    competition.participant_limits = ParticipantLimits(max=1000, min=1)
+    competition.participant_limits = ParticipantLimits(max=1000)
     app_data = data.draw(valid_application_data(domains=competition.domains))
 
     application = submit_application(
@@ -228,7 +228,7 @@ def test_matching_participant_type_is_accepted(
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.STUDENT
-    competition.participant_limits = ParticipantLimits(max=1000, min=1)
+    competition.participant_limits = ParticipantLimits(max=1000)
     app_data = data.draw(valid_application_data(domains=competition.domains))
 
     application = submit_application(
@@ -267,7 +267,7 @@ def test_participant_limits_exceeded_is_rejected(
     accepted_count = data.draw(st.integers(min_value=max_participants))
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
-    competition.participant_limits = ParticipantLimits(max=max_participants, min=1)
+    competition.participant_limits = ParticipantLimits(max=max_participants)
     app_data = data.draw(valid_application_data(domains=competition.domains))
 
     with pytest.raises(ParticipantLimitsExceededError):
@@ -294,7 +294,7 @@ def test_accepted_count_below_max_is_accepted(
     accepted_count = data.draw(st.integers(min_value=0, max_value=max_participants - 1))
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
-    competition.participant_limits = ParticipantLimits(max=max_participants, min=1)
+    competition.participant_limits = ParticipantLimits(max=max_participants)
     app_data = data.draw(valid_application_data(domains=competition.domains))
 
     application = submit_application(
@@ -331,7 +331,7 @@ def test_auto_accept_competition_produces_accepted_status(
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
-    competition.participant_limits = ParticipantLimits(max=1000, min=1)
+    competition.participant_limits = ParticipantLimits(max=1000)
     competition.auto_accept = True
     app_data = data.draw(valid_application_data(domains=competition.domains))
 
@@ -366,7 +366,7 @@ def test_non_auto_accept_competition_produces_pending_status(
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
-    competition.participant_limits = ParticipantLimits(max=1000, min=1)
+    competition.participant_limits = ParticipantLimits(max=1000)
     competition.auto_accept = False
     app_data = data.draw(valid_application_data(domains=competition.domains))
 
@@ -404,7 +404,7 @@ def test_empty_domains_are_rejected(
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
-    competition.participant_limits = ParticipantLimits(max=1000, min=1)
+    competition.participant_limits = ParticipantLimits(max=1000)
 
     with pytest.raises(InvalidApplicationDataError, match="Domains list must not be empty"):
         submit_application(
@@ -428,7 +428,7 @@ def test_domains_outside_competition_are_rejected(
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
-    competition.participant_limits = ParticipantLimits(max=1000, min=1)
+    competition.participant_limits = ParticipantLimits(max=1000)
     all_domains = set(Domain)
     extra_domains = all_domains - set(competition.domains)
     assume(len(extra_domains) > 0)
@@ -462,7 +462,7 @@ def test_null_form_data_accepted_when_no_form(
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
-    competition.participant_limits = ParticipantLimits(max=1000, min=1)
+    competition.participant_limits = ParticipantLimits(max=1000)
     app_data = data.draw(valid_application_data(domains=competition.domains))
     app_data.form_data = None
 
@@ -489,7 +489,7 @@ def test_form_data_rejected_when_no_form_exists(
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
-    competition.participant_limits = ParticipantLimits(max=1000, min=1)
+    competition.participant_limits = ParticipantLimits(max=1000)
     app_data = data.draw(valid_application_data(domains=competition.domains))
     app_data.form_data = {"unexpected": "value"}
 
@@ -515,7 +515,7 @@ def test_valid_form_data_is_accepted(
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
-    competition.participant_limits = ParticipantLimits(max=1000, min=1)
+    competition.participant_limits = ParticipantLimits(max=1000)
     form_input = data.draw(valid_application_form_data())
     assert organizer is not None
     form = application_form_factory(
@@ -552,7 +552,7 @@ def test_missing_required_field_is_rejected(
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
-    competition.participant_limits = ParticipantLimits(max=1000, min=1)
+    competition.participant_limits = ParticipantLimits(max=1000)
     form = _make_form(organizer, competition, clock, Field(name="bio", label="Bio", type=FieldType.STRING))
     app_data = data.draw(valid_application_data(domains=competition.domains))
     app_data.form_data = {}
@@ -580,7 +580,7 @@ def test_optional_field_can_be_omitted(
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
-    competition.participant_limits = ParticipantLimits(max=1000, min=1)
+    competition.participant_limits = ParticipantLimits(max=1000)
     form = _make_form(
         organizer,
         competition,
@@ -615,7 +615,7 @@ def test_extra_form_key_is_rejected(
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
-    competition.participant_limits = ParticipantLimits(max=1000, min=1)
+    competition.participant_limits = ParticipantLimits(max=1000)
     form = _make_form(organizer, competition, clock, Field(name="bio", label="Bio", type=FieldType.STRING))
     app_data = data.draw(valid_application_data(domains=competition.domains))
     app_data.form_data = {"bio": "hi", "ghost": "x"}
@@ -645,7 +645,7 @@ def test_string_field_rejects_non_string_value(
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
-    competition.participant_limits = ParticipantLimits(max=1000, min=1)
+    competition.participant_limits = ParticipantLimits(max=1000)
     form = _make_form(organizer, competition, clock, Field(name="bio", label="Bio", type=FieldType.STRING))
     app_data = data.draw(valid_application_data(domains=competition.domains))
     app_data.form_data = {"bio": bad_value}
@@ -673,7 +673,7 @@ def test_int_field_rejects_bool_value(
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
-    competition.participant_limits = ParticipantLimits(max=1000, min=1)
+    competition.participant_limits = ParticipantLimits(max=1000)
     form = _make_form(organizer, competition, clock, Field(name="age", label="Age", type=FieldType.INT))
     app_data = data.draw(valid_application_data(domains=competition.domains))
     app_data.form_data = {"age": True}
@@ -701,7 +701,7 @@ def test_select_field_rejects_unknown_choice(
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
-    competition.participant_limits = ParticipantLimits(max=1000, min=1)
+    competition.participant_limits = ParticipantLimits(max=1000)
     form = _make_form(
         organizer,
         competition,
@@ -734,7 +734,7 @@ def test_multiselect_field_rejects_empty_list(
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
-    competition.participant_limits = ParticipantLimits(max=1000, min=1)
+    competition.participant_limits = ParticipantLimits(max=1000)
     form = _make_form(
         organizer,
         competition,
@@ -767,7 +767,7 @@ def test_multiselect_field_rejects_invalid_item(
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
-    competition.participant_limits = ParticipantLimits(max=1000, min=1)
+    competition.participant_limits = ParticipantLimits(max=1000)
     form = _make_form(
         organizer,
         competition,

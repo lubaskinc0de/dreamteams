@@ -7,7 +7,7 @@
 | `title` | `str` | Competition title | Max 200 characters |
 | `description` | `str` | Competition description | Non-empty |
 | `schedule` | `CompetitionSchedule` | Registration and event dates | Value object validation |
-| `participant_limits` | `ParticipantLimits` | Min/max participants | Value object validation |
+| `participant_limits` | `ParticipantLimits` | Max participants | Value object validation |
 | `domains` | `list[Domain]` | Technical domains | Non-empty list |
 | `participant_type` | `ParticipantType` | Participant type | Enum value |
 | `venue` | `CompetitionVenue` | Format and location | Value object validation |
@@ -21,6 +21,7 @@
 |-------|------|-------------|------------|
 | `title` | `str` | Milestone title | Max 50 characters, non-empty |
 | `timestamp` | `datetime` | Milestone timestamp | Valid datetime |
+| `description` | `str \| None` | Optional free-form context | Max 300 characters ([MilestoneDescription](../../value-objects/milestone-description.md)) |
 
 ## Output
 

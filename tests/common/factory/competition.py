@@ -39,11 +39,9 @@ def _competition_schedule_provider() -> ScheduleData:
 
 
 def _participant_limits_provider() -> ParticipantLimits:
-    """Provider for ParticipantLimits with random but valid values."""
+    """Provider for ParticipantLimits with a random but valid max value."""
     random_ = CompetitionFormFactory.__random__
-    min_participants = random_.randint(5, 50)
-    max_participants = random_.randint(min_participants, min_participants + 100)
-    return ParticipantLimits(max=max_participants, min=min_participants)
+    return ParticipantLimits(max=random_.randint(5, 150))
 
 
 def _competition_venue_provider() -> CompetitionVenue:
@@ -92,9 +90,11 @@ def _milestones_provider() -> list[MilestoneForm]:
     timestamps = set()
     for i in range(count):
         days_offset = random_.randint(1, 30) + i * 5
+        description = faker.paragraph(nb_sentences=2)[:300] if random_.choice([True, False]) else None
         milestone_form = MilestoneForm(
             timestamp=now + timedelta(days=days_offset),
             title=faker.sentence(nb_words=3),
+            description=description,
         )
 
         if milestone_form.timestamp in timestamps:

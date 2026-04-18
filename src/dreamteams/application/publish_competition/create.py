@@ -15,6 +15,7 @@ from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import CompetitionData, competition_factory
 from dreamteams.entities.competition.milestone import MilestoneData
+from dreamteams.entities.competition.milestone_description import MilestoneDescription
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import ScheduleData
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
@@ -73,7 +74,16 @@ class CreateCompetition:
                 venue=data.venue,
                 team_size=data.team_size,
                 auto_accept=data.auto_accept,
-                milestones=[MilestoneData(milestone.title, milestone.timestamp) for milestone in data.milestones],
+                milestones=[
+                    MilestoneData(
+                        title=milestone.title,
+                        timestamp=milestone.timestamp,
+                        description=(
+                            MilestoneDescription(milestone.description) if milestone.description is not None else None
+                        ),
+                    )
+                    for milestone in data.milestones
+                ],
             ),
             organizer,
             self.clock,

@@ -61,6 +61,18 @@ class CompetitionGateway:
 
     # --- State manipulation ---
 
+    async def _read_many(
+        self,
+        competition_ids: list[CompetitionId],
+        organizer_auth_id: str,
+    ) -> list[CompetitionModel]:
+        """Read multiple competitions in parallel."""
+        with self.api_client.authenticate(auth_user_id=organizer_auth_id):
+            responses = await asyncio.gather(
+                *[self.api_client.read_competition(cid) for cid in competition_ids],
+            )
+        return [r.assert_status(200).ensure_content() for r in responses]
+
     async def make_all_active(
         self,
         competitions: list[CompetitionModel],
@@ -68,7 +80,6 @@ class CompetitionGateway:
     ) -> list[CompetitionModel]:
         """Make all competitions active (reg started, reg not ended, not archived)."""
         now = datetime.now(tz=UTC)
-        result = []
         for comp in competitions:
             reg_end = comp.schedule.registration_end
             if reg_end <= now:
@@ -88,8 +99,8 @@ class CompetitionGateway:
                 team_formation_start=tf_start,
                 team_formation_end=tf_end,
             )
-            result.append(await self.read(comp.id, organizer_auth_id))
-        return result
+
+        return await self._read_many([c.id for c in competitions], organizer_auth_id)
 
     async def make_all_passed(
         self,
@@ -98,7 +109,6 @@ class CompetitionGateway:
     ) -> list[CompetitionModel]:
         """Make all competitions with registration end in the past."""
         now = datetime.now(tz=UTC)
-        result = []
         for comp in competitions:
             await self._update_directly(
                 comp.id,
@@ -106,8 +116,8 @@ class CompetitionGateway:
                 registration_end=now - timedelta(minutes=1),
                 is_archived=False,
             )
-            result.append(await self.read(comp.id, organizer_auth_id))
-        return result
+
+        return await self._read_many([c.id for c in competitions], organizer_auth_id)
 
     async def make_all_inactive(
         self,
@@ -116,7 +126,6 @@ class CompetitionGateway:
     ) -> list[CompetitionModel]:
         """Make all competitions inactive (registration start in future)."""
         now = datetime.now(tz=UTC)
-        result = []
         for comp in competitions:
             reg_start = now + timedelta(days=7)
             reg_end = reg_start + timedelta(days=14)
@@ -135,8 +144,8 @@ class CompetitionGateway:
                 team_formation_start=tf_start,
                 team_formation_end=tf_end,
             )
-            result.append(await self.read(comp.id, organizer_auth_id))
-        return result
+
+        return await self._read_many([c.id for c in competitions], organizer_auth_id)
 
     async def change_archived_state(
         self,
@@ -146,11 +155,10 @@ class CompetitionGateway:
         is_archived: bool,
     ) -> list[CompetitionModel]:
         """Set archived state for all competitions and return updated models."""
-        result = []
         for comp in competitions:
             await self._update_directly(comp.id, is_archived=is_archived)
-            result.append(await self.read(comp.id, organizer_auth_id))
-        return result
+
+        return await self._read_many([c.id for c in competitions], organizer_auth_id)
 
     async def activate(
         self,
@@ -172,7 +180,7 @@ class CompetitionGateway:
 
         update_form = self.update_competition_form_factory.build(
             participant_type=participant_type,
-            participant_limits=ParticipantLimits(max=max_participants, min=1),
+            participant_limits=ParticipantLimits(max=max_participants),
             is_archived=False,
             domains=domains,
             auto_accept=auto_accept,
@@ -251,7 +259,14 @@ class CompetitionGateway:
     async def create_many(self, organizer_auth_id: str, n: int) -> list[CompetitionModel]:
         """Create N competitions in parallel and return their read models."""
         forms = [self.competition_form_factory.build() for _ in range(n)]
+        return await self.create_many_from_form(organizer_auth_id, forms)
 
+    async def create_many_from_form(
+        self,
+        organizer_auth_id: str,
+        forms: list[CompetitionForm],
+    ) -> list[CompetitionModel]:
+        """Create competitions from the given forms in parallel and return their read models."""
         with self.api_client.authenticate(auth_user_id=organizer_auth_id):
             created_responses = await asyncio.gather(
                 *[self.api_client.create_competition(form.model_dump(mode="json")) for form in forms],
@@ -263,6 +278,23 @@ class CompetitionGateway:
             )
 
         return [r.assert_status(200).ensure_content() for r in read_responses]
+
+    async def create_many_active(
+        self,
+        organizer_auth_id: str,
+        n: int,
+        *,
+        participant_type: ParticipantType = ParticipantType.ANY,
+    ) -> list[CompetitionModel]:
+        """Create ``n`` competitions and open their registration so they're visible to explore.
+
+        All rows are forced to ``participant_type`` (default ``ANY``) so explore eligibility
+        filters don't silently drop them due to the factory's random participant_type.
+        """
+        competitions = await self.create_many(organizer_auth_id, n)
+        for comp in competitions:
+            await self._update_directly(comp.id, participant_type=participant_type)
+        return await self.make_all_active(competitions, organizer_auth_id)
 
     async def create_many_mixed(self, organizer_auth_id: str, n: int) -> list[CompetitionModel]:
         """Create N competitions with mixed states (active, inactive, archived, passed).

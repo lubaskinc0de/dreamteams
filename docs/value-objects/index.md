@@ -9,9 +9,10 @@ Immutable types used within entities. Value objects have no identity — two ins
 | [CompetitionFormat](competition-format.md) | ONLINE / OFFLINE / HYBRID |
 | [CompetitionSchedule](competition-schedule.md) | Registration and team-formation date ranges |
 | [CompetitionVenue](competition-venue.md) | Format and physical location |
-| [ParticipantLimits](participant-limits.md) | Min/max participant count |
+| [ParticipantLimits](participant-limits.md) | Max participant count |
 | [TeamSizeRange](team-size-range.md) | Min/max team size |
 | [Milestone](milestone.md) | Custom timeline event |
+| [MilestoneDescription](milestone-description.md) | Free-form milestone context (≤ 300 chars) |
 | [Domain](domain.md) | IT domain area (Frontend, Backend, AI, …) |
 
 ## Participant

@@ -73,7 +73,7 @@ class ReadProfile:
         if user is None:
             raise UserNotFoundError(user_id=user_id)
         organizer = await self.organizer_gateway.get_by_user_id(user_id)
-        participant = await self.participant_gateway.get_by_user_id(user_id)
+        participant = await self.participant_gateway.get_by_user_id(user_id, eager_skills_and_contacts=True)
         logger.debug("Reading user profile", user_id=user_id)
 
         organizer_model = (

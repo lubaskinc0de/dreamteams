@@ -34,6 +34,11 @@ async def test_participant_profile_is_updated(
         key=lambda s: s.name,
     )
 
+    expected_contacts = sorted(
+        [ParticipantContact(title=c.title, url=str(c.url)) for c in update_form.contacts],
+        key=lambda c: c.title,
+    )
+
     assert profile == ProfileModel(
         user_id=participant.created.user_id,
         organizer=None,
@@ -47,7 +52,7 @@ async def test_participant_profile_is_updated(
             skills=profile.participant.skills,
             experience_level=update_form.experience_level,
             preferred_domains=update_form.preferred_domains,
-            contacts=[ParticipantContact(title=c.title, url=str(c.url)) for c in update_form.contacts],
+            contacts=expected_contacts,
         ),
         avatar_url=None,
         is_admin=False,

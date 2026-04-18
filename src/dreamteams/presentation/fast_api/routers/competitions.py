@@ -4,6 +4,11 @@ from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter, Query
 
+from dreamteams.application.explore_competitions import (
+    ExploreCompetitions,
+    ExploreCompetitionsInput,
+    ExploreCompetitionsList,
+)
 from dreamteams.application.manage_competitions import (
     CompetitionModel,
     CompetitionsList,
@@ -35,6 +40,15 @@ async def preview_competitions(
     input_data: Annotated[PreviewCompetitionsInput, Query()],
 ) -> PreviewCompetitionsList:
     """HTTP endpoint for preview listing competitions."""
+    return await interactor.execute(input_data)
+
+
+@router.get("/explore")
+async def explore_competitions(
+    interactor: FromDishka[ExploreCompetitions],
+    input_data: Annotated[ExploreCompetitionsInput, Query()],
+) -> ExploreCompetitionsList:
+    """Participant-facing explore endpoint with rich filters."""
     return await interactor.execute(input_data)
 
 

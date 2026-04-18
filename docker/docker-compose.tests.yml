@@ -13,6 +13,7 @@ services:
             - API_URL=http://api:${APP_SERVER_PORT}
         depends_on:
             - api
+            - redis
 
     migrations:
         extends:
@@ -33,6 +34,8 @@ services:
                 condition: service_completed_successfully
             rustfs:
                 condition: service_started
+            redis:
+                condition: service_healthy
         environment:
             - APP_S3_PUBLIC_URL=http://rustfs:9000
             - APP_DB_HOST=db
@@ -42,7 +45,12 @@ services:
         extends:
             file: docker-compose.base.yml
             service: db
-    
+
+    redis:
+        extends:
+            file: docker-compose.base.yml
+            service: redis
+
     rustfs:
         extends:
             file: docker-compose.base.yml

@@ -1,6 +1,6 @@
 from polyfactory.factories.pydantic_factory import ModelFactory
 
-from dreamteams.application.submit_application import SubmitApplicationInput
+from dreamteams.application.explore_competitions import SubmitApplicationInput
 from dreamteams.entities.common.vo.domain import Domain
 
 

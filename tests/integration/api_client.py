@@ -1,3 +1,4 @@
+from contextvars import ContextVar, Token
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Self
@@ -8,8 +9,10 @@ from aiohttp import ClientResponse, ClientResponseError, ClientSession, FormData
 
 from dreamteams.adapters.auth.model import AuthUserId
 from dreamteams.adapters.errors.http.response import ErrorResponse
-from dreamteams.application.common.gateway.competition import CompetitionSortBy
+from dreamteams.application.common.gateway.application import ApplicationSortBy
+from dreamteams.application.common.gateway.competition import CompetitionSortBy, ExploreSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
+from dreamteams.application.explore_competitions import CreatedApplication, ExploreCompetitionsList
 from dreamteams.application.manage_application_form import ApplicationFormModel, CreatedApplicationForm
 from dreamteams.application.manage_applications import ApplicationsList
 from dreamteams.application.manage_competitions import CompetitionModel, CompetitionsList
@@ -22,8 +25,9 @@ from dreamteams.application.publish_competition import CreatedCompetition
 from dreamteams.application.register.register_organizer import CreatedOrganizer
 from dreamteams.application.register.register_participant import CreatedParticipant
 from dreamteams.application.register.register_superuser import CreatedSuperuser
-from dreamteams.application.submit_application import CreatedApplication
+from dreamteams.entities.application.entity import ApplicationStatus
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId, OrganizerInviteId
+from dreamteams.entities.common.vo.domain import Domain
 
 retort = Retort()
 
@@ -91,7 +95,11 @@ class APIClientConfig:
 
 
 class AuthContext:
-    """Context manager for setting authentication."""
+    """Context manager for setting authentication.
+
+    Auth headers live in a ``ContextVar`` so concurrent tasks (e.g. ``asyncio.gather``)
+    each carry their own snapshot and do not overwrite each other's credentials.
+    """
 
     def __init__(
         self,
@@ -106,24 +114,21 @@ class AuthContext:
         self._auth_user_email = auth_user_email
         self._config = config
         self._access_token = access_token
+        self._token: Token[dict[str, str] | None] | None = None
 
     def __enter__(self) -> None:
-        """Set authentication header for the duration of the context."""
-        self._api_client.set_header(self._config.auth_user_id_header, self._auth_user_id)
+        """Set authentication headers for the duration of the context."""
+        headers = {self._config.auth_user_id_header: self._auth_user_id}
         if self._access_token:
-            self._api_client.set_header(
-                self._config.access_token_header,
-                self._access_token,
-            )
+            headers[self._config.access_token_header] = self._access_token
         if self._auth_user_email is not None:
-            self._api_client.set_header(
-                self._config.auth_user_email_header,
-                self._auth_user_email,
-            )
+            headers[self._config.auth_user_email_header] = self._auth_user_email
+        self._token = self._api_client._push_auth(headers)  # noqa: SLF001
 
     def __exit__(self, *exc_info: object) -> None:
-        """Remove authentication header after the context."""
-        self._api_client.remove_header(self._config.auth_user_id_header)
+        """Reset authentication headers after the context."""
+        assert self._token is not None
+        self._api_client._pop_auth(self._token)  # noqa: SLF001
         if exc_info[0] is not None:  # exc type
             raise exc_info[1]  # type: ignore[misc] # exc value
 
@@ -138,9 +143,22 @@ class ApiClient:
         access_token: str | None,
     ) -> None:
         self.session = session
-        self._headers: dict[str, str] = {}
+        self._auth_headers: ContextVar[dict[str, str] | None] = ContextVar("_auth_headers", default=None)
         self._config = config
         self._access_token = access_token
+
+    @property
+    def _headers(self) -> dict[str, str]:
+        """Current auth headers for the calling task."""
+        return self._auth_headers.get() or {}
+
+    def _push_auth(self, headers: dict[str, str]) -> Token[dict[str, str] | None]:
+        """Install auth headers for the calling task; call ``_pop_auth`` to restore."""
+        return self._auth_headers.set(headers)
+
+    def _pop_auth(self, token: Token[dict[str, str] | None]) -> None:
+        """Restore prior auth headers using the token returned by ``_push_auth``."""
+        self._auth_headers.reset(token)
 
     async def _load_response[T](self, response: ClientResponse, response_type: type[T] | None) -> APIResponse[T]:
         """Load response content or error from HTTP response."""
@@ -163,22 +181,9 @@ class ApiClient:
                 status=response.status,
             )
 
-    def set_header(self, header: str, value: str) -> None:
-        """Add HTTP header."""
-        self._headers[header] = value
-
-    def remove_header(self, header: str) -> None:
-        """Remove HTTP header."""
-        del self._headers[header]
-
     def authenticate(self, *, auth_user_id: AuthUserId, auth_user_email: str | None = None) -> AuthContext:
         """Set auth user ID for requests."""
         return AuthContext(self, auth_user_id, auth_user_email, self._config, self._access_token)
-
-    @property
-    def headers(self) -> dict[str, str]:
-        """API client headers."""
-        return self._headers
 
     async def readiness(self) -> APIResponse[EmptyResponse]:
         """GET /internal/ready."""
@@ -316,6 +321,40 @@ class ApiClient:
         async with self.session.get(f"{COMPETITIONS_URL}/preview/", headers=self._headers, params=params) as response:
             return await self._load_response(response, response_type=PreviewCompetitionsList)
 
+    async def explore_competitions(
+        self,
+        *,
+        page: int = 1,
+        sort_by: ExploreSortBy = ExploreSortBy.MOST_POPULAR,
+        search: str | None = None,
+        min_team_size: int | None = None,
+        max_team_size: int | None = None,
+        auto_accept: bool | None = None,
+        domains: list[Domain] | None = None,
+    ) -> APIResponse[ExploreCompetitionsList]:
+        """Call GET /competitions/explore (participant-facing)."""
+        params: list[tuple[str, str | int]] = [
+            ("page", page),
+            ("sort_by", sort_by.value),
+        ]
+        if search is not None:
+            params.append(("search", search))
+        if min_team_size is not None:
+            params.append(("min_team_size", min_team_size))
+        if max_team_size is not None:
+            params.append(("max_team_size", max_team_size))
+        if auto_accept is not None:
+            params.append(("auto_accept", str(auto_accept).lower()))
+        if domains is not None:
+            params.extend(("domains", domain.value) for domain in domains)
+
+        async with self.session.get(
+            f"{COMPETITIONS_URL}/explore",
+            headers=self._headers,
+            params=params,
+        ) as response:
+            return await self._load_response(response, response_type=ExploreCompetitionsList)
+
     async def read_competition(self, competition_id: CompetitionId) -> APIResponse[CompetitionModel]:
         """Read competition via GET /competitions/{competition_id}."""
         url = f"{COMPETITIONS_URL}/{competition_id}"
@@ -405,15 +444,40 @@ class ApiClient:
         self,
         competition_id: CompetitionId,
         page: int = 1,
+        *,
+        sort_by: ApplicationSortBy = ApplicationSortBy.CREATED_AT,
+        sort_order: SortOrder = SortOrder.DESC,
+        status: ApplicationStatus | None = None,
     ) -> APIResponse[ApplicationsList]:
         """List applications for a competition via GET /competitions/{competition_id}/applications/."""
         url = f"{COMPETITIONS_URL}/{competition_id}/applications/"
-        async with self.session.get(url, headers=self._headers, params={"page": page}) as response:
+        params: dict[str, str | int] = {
+            "page": page,
+            "sort_by": sort_by.value,
+            "sort_order": sort_order.value,
+        }
+        if status is not None:
+            params["status"] = status.value
+        async with self.session.get(url, headers=self._headers, params=params) as response:
             return await self._load_response(response, response_type=ApplicationsList)
 
-    async def list_my_applications(self, page: int = 1) -> APIResponse[MyApplicationsList]:
+    async def list_my_applications(
+        self,
+        page: int = 1,
+        *,
+        sort_by: ApplicationSortBy = ApplicationSortBy.CREATED_AT,
+        sort_order: SortOrder = SortOrder.DESC,
+        status: ApplicationStatus | None = None,
+    ) -> APIResponse[MyApplicationsList]:
         """List own applications via GET /applications/."""
-        async with self.session.get(APPLICATIONS_URL + "/", headers=self._headers, params={"page": page}) as response:
+        params: dict[str, str | int] = {
+            "page": page,
+            "sort_by": sort_by.value,
+            "sort_order": sort_order.value,
+        }
+        if status is not None:
+            params["status"] = status.value
+        async with self.session.get(APPLICATIONS_URL + "/", headers=self._headers, params=params) as response:
             return await self._load_response(response, response_type=MyApplicationsList)
 
     async def read_my_application(self, application_id: ApplicationId) -> APIResponse[ApplicationModel]:

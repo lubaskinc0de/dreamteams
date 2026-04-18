@@ -3,6 +3,7 @@ from dishka.integrations.fastapi import FastapiProvider
 
 from dreamteams.adapters.auth.idp.auth_user import WebAuthUserIdProviderConfig
 from dreamteams.adapters.avatar_storage import S3Config
+from dreamteams.adapters.cache.config import CacheConfig
 from dreamteams.adapters.db.config import DbConfig
 from dreamteams.adapters.sentry import SentryConfig
 from dreamteams.application.register.register_superuser import SuperuserConfig
@@ -11,6 +12,8 @@ from dreamteams.bootstrap.di.providers.adapter import AdapterProvider
 from dreamteams.bootstrap.di.providers.config import ConfigProvider
 from dreamteams.bootstrap.di.providers.interactor import InteractorProvider
 from dreamteams.bootstrap.di.providers.metrics import MetricsProvider
+from dreamteams.bootstrap.observability import OTelConfig
+from dreamteams.presentation.fast_api.config import ServerConfig
 
 
 def get_async_container(config: Config) -> AsyncContainer:
@@ -29,6 +32,9 @@ def get_async_container(config: Config) -> AsyncContainer:
         S3Config: config.s3,
         SuperuserConfig: config.superuser,
         SentryConfig: config.sentry,
+        OTelConfig: config.otel,
+        ServerConfig: config.server,
+        CacheConfig: config.cache,
     }
     container = make_async_container(*providers, context=context, validation_settings=STRICT_VALIDATION)
     return container

@@ -1,8 +1,16 @@
 from abc import abstractmethod
+from enum import StrEnum, auto
 from typing import Protocol
 
-from dreamteams.entities.application.entity import Application
+from dreamteams.application.common.gateway.sorting import SortOrder
+from dreamteams.entities.application.entity import Application, ApplicationStatus
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId, ParticipantId
+
+
+class ApplicationSortBy(StrEnum):
+    """Fields available for sorting applications."""
+
+    CREATED_AT = auto()
 
 
 class ApplicationGateway(Protocol):
@@ -23,28 +31,34 @@ class ApplicationGateway(Protocol):
         raise NotImplementedError
 
     @abstractmethod
-    async def list_by_competition(
+    async def list_by_competition(  # noqa: PLR0913
         self,
         competition_id: CompetitionId,
         *,
         page: int,
         page_size: int,
+        sort_by: ApplicationSortBy,
+        sort_order: SortOrder,
+        status: ApplicationStatus | None,
     ) -> tuple[list[Application], int]:
-        """List applications for a competition with pagination.
+        """List applications for a competition with pagination, sorting, and optional status filter.
 
         Returns tuple of (applications list, total count).
         """
         raise NotImplementedError
 
     @abstractmethod
-    async def list_by_participant(
+    async def list_by_participant(  # noqa: PLR0913
         self,
         participant_id: ParticipantId,
         *,
         page: int,
         page_size: int,
+        sort_by: ApplicationSortBy,
+        sort_order: SortOrder,
+        status: ApplicationStatus | None,
     ) -> tuple[list[Application], int]:
-        """List applications submitted by a participant with pagination.
+        """List applications submitted by a participant with pagination, sorting, and optional status filter.
 
         Returns tuple of (applications list, total count).
         """

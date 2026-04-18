@@ -1,20 +1,31 @@
 import structlog
 from pydantic import BaseModel, Field
 
-from dreamteams.application.common.gateway.application import ApplicationGateway
+from dreamteams.application.common.gateway.application import ApplicationGateway, ApplicationSortBy
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
+from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
 from dreamteams.application.errors.organizer import OrganizerNotFoundError
 from dreamteams.application.manage_my_applications.read import ApplicationModel
+from dreamteams.entities.application.entity import ApplicationStatus
 from dreamteams.entities.common.identifiers import CompetitionId
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import CompetitionNotFoundError
 
 logger: Logger = structlog.get_logger(__name__)
 PAGE_SIZE = 20
+
+
+class ListApplicationsByCompetitionInput(BaseModel):
+    """Input parameters for listing applications of a competition."""
+
+    page: int = Field(ge=1, default=1)
+    sort_by: ApplicationSortBy = ApplicationSortBy.CREATED_AT
+    sort_order: SortOrder = SortOrder.DESC
+    status: ApplicationStatus | None = None
 
 
 class ApplicationsList(BaseModel):
@@ -37,15 +48,18 @@ class ListApplicationsByCompetition:
     async def execute(
         self,
         competition_id: CompetitionId,
-        page: int = Field(ge=1, default=1),
+        input_data: ListApplicationsByCompetitionInput,
     ) -> ApplicationsList:
-        """List all applications for a competition; only the owning organizer may do this."""
+        """List applications for a competition; only the owning organizer may do this."""
         user_id = await self.idp.get_user_id()
         logger.debug(
             "Listing applications by competition",
             competition_id=competition_id,
             user_id=user_id,
-            page=page,
+            page=input_data.page,
+            sort_by=input_data.sort_by,
+            sort_order=input_data.sort_order,
+            status=input_data.status,
         )
 
         competition = await self.competition_gateway.get(competition_id)
@@ -64,8 +78,11 @@ class ListApplicationsByCompetition:
 
         applications, total = await self.application_gateway.list_by_competition(
             competition_id,
-            page=page,
+            page=input_data.page,
             page_size=PAGE_SIZE,
+            sort_by=input_data.sort_by,
+            sort_order=input_data.sort_order,
+            status=input_data.status,
         )
 
         items = [
@@ -81,4 +98,4 @@ class ListApplicationsByCompetition:
             for app in applications
         ]
 
-        return ApplicationsList(items=items, total=total, page=page)
+        return ApplicationsList(items=items, total=total, page=input_data.page)

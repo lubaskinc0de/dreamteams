@@ -1,8 +1,8 @@
 from uuid import uuid4
 
+from dreamteams.application.explore_competitions import CreatedApplication
 from dreamteams.application.manage_application_form import ApplicationFormInput
 from dreamteams.application.manage_application_form.create import FieldForm
-from dreamteams.application.submit_application import CreatedApplication
 from dreamteams.entities.application_form.vo.field import FieldType
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType

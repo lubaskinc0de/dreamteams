@@ -18,7 +18,8 @@ target_metadata = mapper_registry.metadata
 
 
 def get_url() -> str:
-    config = DbConfig.from_env()
+    # Pool sizing is irrelevant for alembic (uses NullPool); pass placeholders.
+    config = DbConfig.from_env(max_total_pool_size=1, max_total_overflow=0)
     url = config.connection_url
     return url.render_as_string(hide_password=False)
 

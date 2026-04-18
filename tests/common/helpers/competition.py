@@ -39,18 +39,16 @@ INVALID_COMPETITION_DATA_CASES: list[tuple[dict[str, Any], str]] = [
     ({"description": "   "}, "INVALID_COMPETITION_DATA"),  # Description cannot be whitespace only
     # Domains validation
     ({"domains": []}, "INVALID_COMPETITION_DATA"),  # Domains list cannot be empty
-    # Participant limits: min exceeds max
-    ({"participant_limits": {"max": 10, "min": 50}}, "INVALID_COMPETITION_DATA"),
-    # Participant limits: both zero
-    ({"participant_limits": {"max": 0, "min": 0}}, "INVALID_COMPETITION_DATA"),
+    # Participant limits: max is zero
+    ({"participant_limits": {"max": 0}}, "INVALID_COMPETITION_DATA"),
+    # Participant limits: max is negative
+    ({"participant_limits": {"max": -10}}, "INVALID_COMPETITION_DATA"),
     # Team size: min exceeds max
     ({"team_size": {"max": 3, "min": 10}}, "INVALID_COMPETITION_DATA"),
     # Team size: max is zero
     ({"team_size": {"max": 0, "min": 1}}, "INVALID_COMPETITION_DATA"),
     # Team size: min is zero (must be at least 1)
     ({"team_size": {"max": 5, "min": 0}}, "INVALID_COMPETITION_DATA"),
-    # Participant limits: negative min
-    ({"participant_limits": {"max": 100, "min": -10}}, "INVALID_COMPETITION_DATA"),
     # Schedule validation: registration start equals registration end
     (
         {

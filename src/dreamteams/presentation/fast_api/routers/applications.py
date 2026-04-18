@@ -4,21 +4,23 @@ from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter, Query
 
+from dreamteams.application.explore_competitions import CreatedApplication, SubmitApplication, SubmitApplicationInput
 from dreamteams.application.manage_applications import (
     AcceptApplication,
     ApplicationsList,
     ListApplicationsByCompetition,
+    ListApplicationsByCompetitionInput,
     ReadApplication,
     RejectApplication,
 )
 from dreamteams.application.manage_my_applications import (
     ListMyApplications,
+    ListMyApplicationsInput,
     ReadMyApplication,
     WithdrawApplication,
 )
 from dreamteams.application.manage_my_applications.list import ApplicationsList as MyApplicationsList
 from dreamteams.application.manage_my_applications.read import ApplicationModel
-from dreamteams.application.submit_application import CreatedApplication, SubmitApplication, SubmitApplicationInput
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId
 
 competitions_router = APIRouter(
@@ -48,19 +50,19 @@ async def submit_application(
 async def list_applications_by_competition(
     interactor: FromDishka[ListApplicationsByCompetition],
     competition_id: CompetitionId,
-    page: Annotated[int, Query(ge=1)] = 1,
+    input_data: Annotated[ListApplicationsByCompetitionInput, Query()],
 ) -> ApplicationsList:
     """HTTP endpoint for listing all applications submitted to a competition."""
-    return await interactor.execute(competition_id, page)
+    return await interactor.execute(competition_id, input_data)
 
 
 @applications_router.get("/")
 async def list_my_applications(
     interactor: FromDishka[ListMyApplications],
-    page: Annotated[int, Query(ge=1)] = 1,
+    input_data: Annotated[ListMyApplicationsInput, Query()],
 ) -> MyApplicationsList:
     """HTTP endpoint for listing all applications submitted by the current participant."""
-    return await interactor.execute(page)
+    return await interactor.execute(input_data)
 
 
 @applications_router.get("/{application_id}/my/")

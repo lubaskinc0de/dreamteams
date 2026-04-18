@@ -4,14 +4,17 @@
 
 | Field | Type | Description | Validation |
 |-------|------|-------------|------------|
-| `page` | `int` | Page number for pagination | Positive integer |
+| `page` | `int` | Page number for pagination | Positive integer (default `1`) |
+| `sort_by` | `str` | Field to sort by | `created_at` (default) |
+| `sort_order` | `str` | Sort order | `asc` or `desc` (default `desc`) |
+| `status` | `str \| null` | Filter by application status | `pending` / `accepted` / `rejected` (default: no filter) |
 
 ## Output
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `items` | `list[ApplicationModel]` | Applications for the current page |
-| `total` | `int` | Total number of applications submitted by this participant |
+| `total` | `int` | Total number of applications matching the filter |
 | `page` | `int` | Current page number |
 
 ### ApplicationModel
@@ -31,4 +34,5 @@
 1. User must have a Participant profile (`ACCESS_DENIED`)
 2. Returns only applications submitted by the current participant
 3. Returns an empty list if the participant has submitted no applications
-4. Results are ordered by `created_at` descending (newest first)
+4. Results are ordered by `sort_by` in `sort_order`, with `id` as a stable tiebreaker
+5. `status`, when provided, narrows results to that status only

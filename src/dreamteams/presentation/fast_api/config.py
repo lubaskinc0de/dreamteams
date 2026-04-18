@@ -7,7 +7,14 @@ class ServerConfig:
 
     server_port: int
     server_host: str
-    workers: int = 1
+    workers: int
+
+
+@dataclass(slots=True, frozen=True, kw_only=True)
+class ServerTomlConfig:
+    """HTTP-server configuration fields supplied via TOML (host/port remain env-only)."""
+
+    workers: int
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)

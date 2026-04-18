@@ -1,5 +1,6 @@
 from dishka import BaseScope, Provider, Scope, provide, provide_all
 
+from dreamteams.application.explore_competitions import ExploreCompetitions, SubmitApplication
 from dreamteams.application.manage_application_form import (
     CreateApplicationForm,
     DeleteApplicationForm,
@@ -35,7 +36,6 @@ from dreamteams.application.register.register_organizer import RegisterOrganizer
 from dreamteams.application.register.register_participant import RegisterParticipant
 from dreamteams.application.register.register_superuser import RegisterSuperuser
 from dreamteams.application.register.shared.user_factory import UserFactory
-from dreamteams.application.submit_application import SubmitApplication
 
 
 class InteractorProvider(Provider):
@@ -58,6 +58,7 @@ class InteractorProvider(Provider):
         UpdateParticipant,
         UpdateOrganizer,
         PreviewCompetitions,
+        ExploreCompetitions,
         DeleteProfile,
         IssueInvite,
         ListInvites,

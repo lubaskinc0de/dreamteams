@@ -14,7 +14,7 @@ Represents a hackathon or olympiad event created by an organizer.
 | `banner`             | `str \| None`          | Banner image URL                                   |
 | `description`        | `str`                  | Detailed description of the competition            |
 | `schedule`           | [`CompetitionSchedule`](../value-objects/competition-schedule.md)  | Competition dates and registration period          |
-| `participant_limits` | [`ParticipantLimits`](../value-objects/participant-limits.md)    | Min and max participants                           |
+| `participant_limits` | [`ParticipantLimits`](../value-objects/participant-limits.md)    | Max participants                                    |
 | `domains`            | `list[`[`Domain`](../value-objects/domain.md)`]`         | IT domains relevant to this competition            |
 | `participant_type`   | [`ParticipantType`](../value-objects/participant-type.md)      | Target participant category                        |
 | `venue`              | [`CompetitionVenue`](../value-objects/competition-venue.md)     | Event format and location                          |

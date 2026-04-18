@@ -17,14 +17,18 @@ class SAParticipantGateway(ParticipantGateway):
         self._session = session
 
     @override
-    async def get_by_user_id(self, user_id: UserId) -> Participant | None:
-        """Loads the participant attached to a user, with skills and contacts eagerly populated."""
-        result = await self._session.execute(
-            select(Participant)
-            .where(participant_table.c.user_id == user_id)
-            .options(
+    async def get_by_user_id(
+        self,
+        user_id: UserId,
+        *,
+        eager_skills_and_contacts: bool = False,
+    ) -> Participant | None:
+        """Load the participant attached to a user; eager-load skills/contacts only when requested."""
+        query = select(Participant).where(participant_table.c.user_id == user_id)
+        if eager_skills_and_contacts:
+            query = query.options(
                 selectinload(Participant.skills),  # type: ignore[arg-type]
                 selectinload(Participant.contacts),  # type: ignore[arg-type]
-            ),
-        )
+            )
+        result = await self._session.execute(query)
         return result.scalar_one_or_none()

@@ -10,6 +10,7 @@ endpoint = "http://otel-collector:4318"
 service_name = "dreamteams"
 sample_ratio = 0.1
 metric_export_interval_ms = 10000
+instrument_sqlalchemy = true
 
 [cors]
 allow_origins = ["http://localhost:3001"]
@@ -19,3 +20,23 @@ allow_headers=["*"]
 
 [api]
 root_path = "/api"
+
+[server]
+# Number of uvicorn worker processes. Engine pool_size / max_overflow are derived
+# from db.max_total_pool_size / max_total_overflow divided by this value.
+workers = 4
+
+[db]
+# Collective pool caps across all API workers. Per-worker = total // server.workers at startup.
+# Total (max_total_pool_size + max_total_overflow) must stay below pgbouncer's
+# DEFAULT_POOL_SIZE to avoid client-side queueing. DEFAULT_POOL_SIZE=200 currently.
+max_total_pool_size = 160
+max_total_overflow = 40
+
+[cache]
+# Redis-backed cache for authenticated request hot paths.
+url = "redis://redis:6379/1"
+# TTL bounds for the IdP auth_user_id -> user_id mapping. Jitter spreads expiry across
+# keys so a synchronous mass-expiry doesn't hammer the DB.
+auth_user_ttl_seconds = 3600
+auth_user_ttl_jitter_seconds = 300

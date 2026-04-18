@@ -17,6 +17,7 @@ from dreamteams.entities.competition.entity import (
     competition_factory,
 )
 from dreamteams.entities.competition.milestone import Milestone, MilestoneData
+from dreamteams.entities.competition.milestone_description import MilestoneDescription
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import CompetitionSchedule, ScheduleData
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
@@ -136,11 +137,23 @@ def valid_text(draw: st.DrawFn) -> str:
 
 
 @st.composite
+def milestone_description(draw: st.DrawFn) -> MilestoneDescription | None:
+    """Optional MilestoneDescription, sometimes None."""
+    return draw(
+        st.one_of(
+            st.none(),
+            st.text(max_size=MilestoneDescription.MAX_LENGTH).map(MilestoneDescription),
+        ),
+    )
+
+
+@st.composite
 def milestone_data(draw: st.DrawFn) -> MilestoneData:
     """Valid milestone data."""
     return MilestoneData(
         title=draw(valid_text()),
         timestamp=draw(dt_future()),
+        description=draw(milestone_description()),
     )
 
 
@@ -150,6 +163,7 @@ def milestone(draw: st.DrawFn) -> Milestone:
     return Milestone(
         title=draw(valid_text()),
         timestamp=draw(dt_future()),
+        description=draw(milestone_description()),
     )
 
 
@@ -175,17 +189,14 @@ def _deduplicate_milestones(milestones: Any) -> Any:
 @st.composite
 def valid_competition_data(draw: st.DrawFn) -> CompetitionData:
     """Valid competition data."""
-    min_participants, max_participants = draw(positive_ordered_pairs())
+    max_participants = draw(st.integers(min_value=1, max_value=10_000))
     min_team, max_team = draw(positive_ordered_pairs())
     venue_format = draw(st.sampled_from(CompetitionFormat))
     return CompetitionData(
         title=draw(valid_text()),
         description=draw(valid_text()),
         schedule=draw(valid_schedule_data()),
-        participant_limits=ParticipantLimits(
-            max=max_participants,
-            min=min_participants,
-        ),
+        participant_limits=ParticipantLimits(max=max_participants),
         domains=draw(st.lists(st.sampled_from(Domain), min_size=1)),
         venue=CompetitionVenue(
             format=venue_format,
@@ -234,17 +245,14 @@ def valid_competition(
 @st.composite
 def valid_competition_update_data(draw: st.DrawFn) -> UpdateCompetitionData:
     """Valid competition update data."""
-    min_participants, max_participants = draw(positive_ordered_pairs())
+    max_participants = draw(st.integers(min_value=1, max_value=10_000))
     min_team, max_team = draw(positive_ordered_pairs())
     venue_format = draw(st.sampled_from(CompetitionFormat))
     return UpdateCompetitionData(
         title=draw(valid_text()),
         description=draw(valid_text()),
         schedule=draw(valid_schedule_data()),
-        participant_limits=ParticipantLimits(
-            max=max_participants,
-            min=min_participants,
-        ),
+        participant_limits=ParticipantLimits(max=max_participants),
         domains=draw(st.lists(st.sampled_from(Domain), min_size=1)),
         venue=CompetitionVenue(
             format=venue_format,

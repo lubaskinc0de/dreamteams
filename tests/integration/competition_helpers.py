@@ -1,20 +1,20 @@
 from collections.abc import Callable
 from datetime import datetime
 
+from dreamteams.application.common.dto.explore_competition import ExploreCompetitionModel, ExploreOrganizerModel
+from dreamteams.application.common.dto.preview_competition import PreviewCompetitionModel, PreviewOrganizerModel
 from dreamteams.application.common.gateway.competition import CompetitionSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
+from dreamteams.application.explore_competitions.list import ExploreCompetitionsList
 from dreamteams.application.manage_competitions import CompetitionModel
 from dreamteams.application.manage_competitions.list import PAGE_SIZE, CompetitionsList
 from dreamteams.application.manage_competitions.update import UpdateCompetitionForm
-from dreamteams.application.preview_competition.list import (
-    PreviewCompetitionModel,
-    PreviewCompetitionsList,
-    PreviewOrganizerModel,
-)
+from dreamteams.application.preview_competition.list import PreviewCompetitionsList
 from dreamteams.application.publish_competition.create import CompetitionForm
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
 from dreamteams.entities.competition.milestone import Milestone
+from dreamteams.entities.competition.milestone_description import MilestoneDescription
 from dreamteams.entities.competition.schedule import schedule_factory
 from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
 
@@ -61,6 +61,8 @@ def competition_form_to_model(
     updated_at: datetime,
     form: CompetitionForm,
     clock: Clock,
+    *,
+    members_count: int = 0,
 ) -> CompetitionModel:
     """Transform competition form and additional data to CompetitionModel."""
     return CompetitionModel(
@@ -76,11 +78,16 @@ def competition_form_to_model(
         venue=form.venue,
         team_size=form.team_size,
         milestones=[
-            Milestone(timestamp=milestone.timestamp, title=milestone.title)
+            Milestone(
+                timestamp=milestone.timestamp,
+                title=milestone.title,
+                description=MilestoneDescription(milestone.description) if milestone.description is not None else None,
+            )
             for milestone in sorted(form.milestones, key=lambda item: item.timestamp)
         ],
         auto_accept=form.auto_accept,
         is_archived=True,
+        members_count=members_count,
         created_at=created_at,
         updated_at=updated_at,
     )
@@ -93,6 +100,8 @@ def competition_update_form_to_model(
     updated_at: datetime,
     form: UpdateCompetitionForm,
     clock: Clock,
+    *,
+    members_count: int = 0,
 ) -> CompetitionModel:
     """Transform competition update form and additional data to CompetitionModel."""
     return CompetitionModel(
@@ -108,13 +117,18 @@ def competition_update_form_to_model(
         venue=form.venue,
         team_size=form.team_size,
         milestones=[
-            Milestone(timestamp=milestone.timestamp, title=milestone.title)
+            Milestone(
+                timestamp=milestone.timestamp,
+                title=milestone.title,
+                description=MilestoneDescription(milestone.description) if milestone.description is not None else None,
+            )
             for milestone in sorted(form.milestones, key=lambda item: item.timestamp)
         ]
         if form.milestones
         else [],
         auto_accept=form.auto_accept,
         is_archived=form.is_archived,
+        members_count=members_count,
         created_at=created_at,
         updated_at=updated_at,
     )
@@ -148,6 +162,7 @@ def competitions_list_to_preview_list(
             milestones=comp.milestones,
             auto_accept=comp.auto_accept,
             is_archived=comp.is_archived,
+            members_count=comp.members_count,
             created_at=comp.created_at,
             updated_at=comp.updated_at,
         )
@@ -155,3 +170,40 @@ def competitions_list_to_preview_list(
     ]
 
     return PreviewCompetitionsList(total=lst.total, page=lst.page, items=preview_items)
+
+
+def competitions_list_to_explore_list(
+    lst: CompetitionsList,
+    organizer_form: OrganizerForm,
+    organizer_id: OrganizerId,
+) -> ExploreCompetitionsList:
+    """Transform CompetitionsList to ExploreCompetitionsList with organizer info populated."""
+    organizer_model = ExploreOrganizerModel(
+        id=organizer_id,
+        name=organizer_form.organizer_name,
+        avatar_url=None,
+    )
+
+    explore_items = [
+        ExploreCompetitionModel(
+            id=comp.id,
+            organizer=organizer_model,
+            title=comp.title,
+            banner=comp.banner,
+            description=comp.description,
+            schedule=comp.schedule,
+            participant_limits=comp.participant_limits,
+            domains=comp.domains,
+            participant_type=comp.participant_type,
+            venue=comp.venue,
+            team_size=comp.team_size,
+            milestones=comp.milestones,
+            auto_accept=comp.auto_accept,
+            members_count=comp.members_count,
+            created_at=comp.created_at,
+            updated_at=comp.updated_at,
+        )
+        for comp in lst.items
+    ]
+
+    return ExploreCompetitionsList(total=lst.total, page=lst.page, items=explore_items)

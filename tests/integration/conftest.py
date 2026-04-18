@@ -10,6 +10,7 @@ from aiohttp import ClientSession
 from dishka import AsyncContainer
 from faker import Faker
 from polyfactory.pytest_plugin import register_fixture
+from redis.asyncio import Redis
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -102,8 +103,17 @@ async def session(container: AsyncContainer) -> AsyncIterator[AsyncSession]:
 
 
 @pytest.fixture(autouse=True)
-async def gracefully_teardown(session: AsyncSession) -> AsyncIterable[None]:
-    """Automatically truncate all tables after each test."""
+async def gracefully_teardown(
+    session: AsyncSession,
+    container: AsyncContainer,
+) -> AsyncIterable[None]:
+    """Truncate all tables and flush the app's Redis DB after each test.
+
+    The cache is a read-through for ``auth_user_id -> user_id``; leaving entries
+    between tests would cause a fresh row with the same ``auth_user_id`` to resolve
+    to a stale ``user_id`` and diverge from the DB. Redis client is resolved through
+    the same Dishka container the app uses so both point at the same connection.
+    """
     yield
     await session.execute(
         text("""
@@ -124,6 +134,8 @@ async def gracefully_teardown(session: AsyncSession) -> AsyncIterable[None]:
         """),
     )
     await session.commit()
+    redis = await container.get(Redis)
+    await redis.flushdb()
 
 
 @pytest.fixture

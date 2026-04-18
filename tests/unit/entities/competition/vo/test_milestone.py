@@ -5,22 +5,24 @@ from faker import Faker
 from hypothesis import given
 
 from dreamteams.entities.common.clock import Clock
-from dreamteams.entities.competition.milestone import MilestoneData, milestone_factory
+from dreamteams.entities.competition.milestone import Milestone, MilestoneData, milestone_factory
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
-from tests.unit.composite import dt_future, dt_past
+from tests.unit.composite import dt_future, dt_past, milestone_data
 
 
-@given(dt_future())
+@given(milestone_data())
 def test_create_milestone_with_valid_data(
     clock: Clock,
-    timestamp: datetime,
+    data: MilestoneData,
 ) -> None:
-    """Test creating Milestone with valid timestamp and title."""
-    title = "Stage 1"
-    milestone = milestone_factory(MilestoneData(timestamp=timestamp, title=title), clock)
+    """Milestone factory returns an entity matching the input data (title, timestamp, optional description)."""
+    milestone = milestone_factory(data, clock)
 
-    assert milestone.timestamp == timestamp.replace(second=0, microsecond=0)
-    assert milestone.title == title
+    assert milestone == Milestone(
+        timestamp=data.timestamp.replace(second=0, microsecond=0),
+        title=data.title,
+        description=data.description,
+    )
 
 
 @given(dt_future())

@@ -5,14 +5,17 @@
 | Field | Type | Description | Validation |
 |-------|------|-------------|------------|
 | `competition_id` | `CompetitionId` | Competition identifier | UUID format |
-| `page` | `int` | Page number for pagination | Positive integer |
+| `page` | `int` | Page number for pagination | Positive integer (default `1`) |
+| `sort_by` | `str` | Field to sort by | `created_at` (default) |
+| `sort_order` | `str` | Sort order | `asc` or `desc` (default `desc`) |
+| `status` | `str \| null` | Filter by application status | `pending` / `accepted` / `rejected` (default: no filter) |
 
 ## Output
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `items` | `list[ApplicationModel]` | Applications for the current page |
-| `total` | `int` | Total number of applications for this competition |
+| `total` | `int` | Total number of applications matching the filter |
 | `page` | `int` | Current page number |
 
 ### ApplicationModel
@@ -31,5 +34,6 @@
 
 1. Competition must exist (`COMPETITION_NOT_FOUND`)
 2. Only the organizer who owns the competition may list its applications (`ACCESS_DENIED`)
-3. Returns an empty list if no applications have been submitted
-4. Results are ordered by `created_at` descending (newest first)
+3. Returns an empty list if no applications match the filter
+4. Results are ordered by `sort_by` in `sort_order`, with `id` as a stable tiebreaker
+5. `status`, when provided, narrows results to that status only

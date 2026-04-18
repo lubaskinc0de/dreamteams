@@ -1,5 +1,6 @@
 import pytest
 
+from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.manage_my_applications import ApplicationModel, ApplicationsList
 from dreamteams.application.manage_my_applications.list import PAGE_SIZE
 from dreamteams.entities.application.entity import ApplicationStatus
@@ -135,6 +136,64 @@ async def test_list_my_applications_with_pagination(
     # Assert
     result = response.assert_status(200).ensure_content()
     assert result == create_my_applications_list(all_models, page=page)
+
+
+@pytest.mark.parametrize(
+    "status",
+    [ApplicationStatus.PENDING, ApplicationStatus.ACCEPTED, ApplicationStatus.REJECTED],
+)
+async def test_list_my_applications_filters_by_status(
+    api_client: ApiClient,
+    gateway: Gateway,
+    status: ApplicationStatus,
+) -> None:
+    """Filtering by status returns only own applications in that status."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    submitted = await gateway.application.submit_to_n_competitions(
+        6,
+        owner.organizer.auth_id,
+        participant.auth_id,
+    )
+    all_models = await gateway.application.create_mixed_for_participant(
+        [app.id for app in submitted],
+        owner.organizer.auth_id,
+        participant.auth_id,
+    )
+
+    # Act
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        response = await api_client.list_my_applications(status=status)
+
+    # Assert
+    result = response.assert_status(200).ensure_content()
+    assert result == create_my_applications_list(all_models, status=status)
+
+
+@pytest.mark.parametrize("sort_order", [SortOrder.ASC, SortOrder.DESC])
+async def test_list_my_applications_respects_sort_order(
+    api_client: ApiClient,
+    gateway: Gateway,
+    sort_order: SortOrder,
+) -> None:
+    """Results are ordered by created_at in the requested direction."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    all_models = await gateway.application.submit_to_n_competitions(
+        3,
+        owner.organizer.auth_id,
+        participant.auth_id,
+    )
+
+    # Act
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        response = await api_client.list_my_applications(sort_order=sort_order)
+
+    # Assert
+    result = response.assert_status(200).ensure_content()
+    assert result == create_my_applications_list(all_models, sort_order=sort_order)
 
 
 @pytest.mark.parametrize("page", [-2, -1, 0])
