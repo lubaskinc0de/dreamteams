@@ -96,12 +96,13 @@ mapper_registry.map_imperatively(
             Milestone,
             foreign_keys=[milestone_table.c.competition_id],
             cascade="all, delete-orphan",
-            lazy="selectin",
+            passive_deletes=True,
+            lazy="raise_on_sql",
             order_by=asc(milestone_table.c.timestamp),
         ),
         "organizer": relationship(
             Organizer,
-            lazy="selectin",
+            lazy="raise_on_sql",
         ),
     },
 )

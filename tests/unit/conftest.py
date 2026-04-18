@@ -26,48 +26,36 @@ def faker() -> Faker:
 
 
 @pytest.fixture
-def organizer_user(faker: Faker) -> User:
-    """User with organizer role attached."""
+def organizer(faker: Faker) -> Organizer:
+    """Standalone Organizer entity tied to a fresh User."""
     user_id = faker.uuid4(cast_to=None)
-    organizer_id = faker.uuid4(cast_to=None)
-
     user = User(id=user_id, organizer=None)
-
-    organizer = Organizer(
-        id=organizer_id,
+    return Organizer(
+        id=faker.uuid4(cast_to=None),
         user_id=user_id,
         user=user,
         organizer_name=faker.company(),
         phone_number=faker.phone_number(),
         contact_email=faker.email(),
     )
-
-    user.organizer = organizer
-    return user
 
 
 @pytest.fixture
-def different_user(faker: Faker) -> User:
-    """Different user with different organizer role attached."""
+def different_organizer(faker: Faker) -> Organizer:
+    """Different Organizer entity tied to a different fresh User."""
     user_id = faker.uuid4(cast_to=None)
-    organizer_id = faker.uuid4(cast_to=None)
-
     user = User(id=user_id, organizer=None)
-
-    organizer = Organizer(
-        id=organizer_id,
+    return Organizer(
+        id=faker.uuid4(cast_to=None),
         user_id=user_id,
         user=user,
         organizer_name=faker.company(),
         phone_number=faker.phone_number(),
         contact_email=faker.email(),
     )
-
-    user.organizer = organizer
-    return user
 
 
 @pytest.fixture
 def user_without_organizer(faker: Faker) -> User:
-    """User without organizer role."""
+    """User without organizer role (used by participant tests for User.id source)."""
     return User(id=faker.uuid4(cast_to=None), organizer=None)

@@ -19,15 +19,17 @@ mapper_registry.map_imperatively(
     properties={
         "organizer": relationship(
             "Organizer",
-            lazy="selectin",
+            lazy="raise_on_sql",
             cascade="all, delete-orphan",
+            passive_deletes=True,
             uselist=False,
             back_populates="user",
         ),
         "participant": relationship(
             "Participant",
-            lazy="selectin",
+            lazy="raise_on_sql",
             cascade="all, delete-orphan",
+            passive_deletes=True,
             uselist=False,
             back_populates="user",
         ),

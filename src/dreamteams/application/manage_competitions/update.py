@@ -1,13 +1,14 @@
 import structlog
-from opentelemetry import trace
 from pydantic import BaseModel, Field
 
 from dreamteams.application.common.dto.milestone import MilestoneForm
 from dreamteams.application.common.gateway.competition import CompetitionGateway
+from dreamteams.application.common.gateway.organizer import OrganizerGateway
 from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
 from dreamteams.application.common.uow import UoW
+from dreamteams.application.errors.organizer import OrganizerNotFoundError
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import CompetitionId
 from dreamteams.entities.common.vo.domain import Domain
@@ -21,7 +22,6 @@ from dreamteams.entities.competition.venue import CompetitionVenue
 from dreamteams.entities.errors.competition import CompetitionNotFoundError
 
 logger: Logger = structlog.get_logger(__name__)
-_tracer = trace.get_tracer("dreamteams.interactors")
 
 
 class UpdateCompetitionForm(BaseModel):
@@ -46,46 +46,50 @@ class UpdateCompetition:
 
     uow: UoW
     idp: IdProvider
+    organizer_gateway: OrganizerGateway
     competition_gateway: CompetitionGateway
     clock: Clock
 
     async def execute(self, competition_id: CompetitionId, data: UpdateCompetitionForm) -> None:
         """Updates competition by organizer who created it."""
-        with _tracer.start_as_current_span("interactor.update_competition"):
-            user = await self.idp.get_user()
-            logger.debug("Updating competition", competition_id=competition_id, user_id=user.id)
+        user_id = await self.idp.get_user_id()
+        logger.debug("Updating competition", competition_id=competition_id, user_id=user_id)
 
-            competition = await self.competition_gateway.get(competition_id)
-            if competition is None:
-                logger.warning("Competition not found", competition_id=competition_id, user_id=user.id)
-                raise CompetitionNotFoundError
+        competition = await self.competition_gateway.get(competition_id, eager_milestones=True)
+        if competition is None:
+            logger.warning("Competition not found", competition_id=competition_id, user_id=user_id)
+            raise CompetitionNotFoundError
 
-            if data.milestones:
-                await self.competition_gateway.clear_milestones(competition_id)
+        organizer = await self.organizer_gateway.get_by_user_id(user_id)
+        if organizer is None:
+            raise OrganizerNotFoundError
 
-            competition.update(
-                user=user,
-                clock=self.clock,
-                data=UpdateCompetitionData(
-                    title=data.title,
-                    description=data.description,
-                    schedule=data.schedule,
-                    participant_limits=data.participant_limits,
-                    domains=data.domains,
-                    participant_type=data.participant_type,
-                    venue=data.venue,
-                    team_size=data.team_size,
-                    milestones=[
-                        milestone_factory(MilestoneData(milestone.title, milestone.timestamp), self.clock)
-                        for milestone in data.milestones
-                    ]
-                    if data.milestones is not None
-                    else None,
-                    auto_accept=data.auto_accept,
-                    is_archived=data.is_archived,
-                ),
-            )
+        if data.milestones:
+            await self.competition_gateway.clear_milestones(competition_id)
 
-            await self.uow.commit()
+        competition.update(
+            organizer=organizer,
+            clock=self.clock,
+            data=UpdateCompetitionData(
+                title=data.title,
+                description=data.description,
+                schedule=data.schedule,
+                participant_limits=data.participant_limits,
+                domains=data.domains,
+                participant_type=data.participant_type,
+                venue=data.venue,
+                team_size=data.team_size,
+                milestones=[
+                    milestone_factory(MilestoneData(milestone.title, milestone.timestamp), self.clock)
+                    for milestone in data.milestones
+                ]
+                if data.milestones is not None
+                else None,
+                auto_accept=data.auto_accept,
+                is_archived=data.is_archived,
+            ),
+        )
 
-            logger.info("Competition updated", competition_id=competition_id, user_id=user.id)
+        await self.uow.commit()
+
+        logger.info("Competition updated", competition_id=competition_id, user_id=user_id)

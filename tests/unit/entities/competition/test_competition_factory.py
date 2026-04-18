@@ -7,30 +7,29 @@ from dreamteams.entities.competition.entity import Competition, CompetitionData,
 from dreamteams.entities.competition.milestone import milestone_factory
 from dreamteams.entities.competition.schedule import CompetitionSchedule
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
-from dreamteams.entities.user import User
+from dreamteams.entities.user import Organizer
 from tests.unit.composite import milestone_data, valid_competition_data
 
 
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
 @given(valid_competition_data())
 def test_create_competition_with_valid_data(
-    organizer_user: User,
+    organizer: Organizer,
     clock: Clock,
     data: CompetitionData,
 ) -> None:
     """Test creating competition succeeds."""
     competition = competition_factory(
-        user=organizer_user,
+        organizer=organizer,
         data=data,
         clock=clock,
     )
 
-    assert organizer_user.organizer is not None
     assert competition.created_at == competition.updated_at
     assert competition == Competition(
         id=competition.id,
-        organizer_id=organizer_user.organizer.id,
-        organizer=organizer_user.organizer,
+        organizer_id=organizer.id,
+        organizer=organizer,
         title=data.title,
         description=data.description,
         schedule=CompetitionSchedule(
@@ -58,7 +57,7 @@ def test_create_competition_with_valid_data(
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
 @given(valid_competition_data(), st.data())
 def test_competition_milestones_are_unique(
-    organizer_user: User,
+    organizer: Organizer,
     clock: Clock,
     competition_data: CompetitionData,
     data: st.DataObject,
@@ -68,7 +67,7 @@ def test_competition_milestones_are_unique(
 
     with pytest.raises(InvalidCompetitionDataError, match="Milestone timestamps must be unique"):
         competition_factory(
-            user=organizer_user,
+            organizer=organizer,
             data=competition_data,
             clock=clock,
         )
@@ -77,7 +76,7 @@ def test_competition_milestones_are_unique(
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
 @given(valid_competition_data())
 def test_competition_domains_list_is_not_empty(
-    organizer_user: User,
+    organizer: Organizer,
     clock: Clock,
     data: CompetitionData,
 ) -> None:
@@ -86,7 +85,7 @@ def test_competition_domains_list_is_not_empty(
 
     with pytest.raises(InvalidCompetitionDataError, match="Domains list must not be empty"):
         competition_factory(
-            user=organizer_user,
+            organizer=organizer,
             data=data,
             clock=clock,
         )
@@ -97,7 +96,7 @@ def test_competition_domains_list_is_not_empty(
 @given(valid_competition_data())
 def test_competition_description_is_not_empty(
     empty_string: str,
-    organizer_user: User,
+    organizer: Organizer,
     clock: Clock,
     data: CompetitionData,
 ) -> None:
@@ -106,7 +105,7 @@ def test_competition_description_is_not_empty(
 
     with pytest.raises(InvalidCompetitionDataError, match="Description must not be empty"):
         competition_factory(
-            user=organizer_user,
+            organizer=organizer,
             data=data,
             clock=clock,
         )

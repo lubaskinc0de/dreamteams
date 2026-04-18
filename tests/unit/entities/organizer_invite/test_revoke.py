@@ -3,7 +3,7 @@ import pytest
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.invite import InviteAlreadyRevokedError, InviteAlreadyUsedError
 from dreamteams.entities.organizer_invite import OrganizerInvite
-from dreamteams.entities.user import User
+from dreamteams.entities.user import Organizer, User
 
 
 def test_revoke_by_admin_creator_succeeds(
@@ -37,10 +37,10 @@ def test_revoke_different_admin_raises(
 def test_revoke_already_used_invite_raises(
     invite: OrganizerInvite,
     admin_user: User,
-    organizer_user: User,
+    organizer: Organizer,
 ) -> None:
     """Cannot revoke an invite that has already been used."""
-    invite.use(organizer_user)
+    invite.use(organizer)
 
     with pytest.raises(InviteAlreadyUsedError):
         invite.revoke(admin_user)

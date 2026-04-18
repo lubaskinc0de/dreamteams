@@ -35,6 +35,8 @@ services:
                 condition: service_started
         environment:
             - APP_S3_PUBLIC_URL=http://rustfs:9000
+            - APP_DB_HOST=db
+            - APP_DB_PORT=5432
 
     db:
         extends:

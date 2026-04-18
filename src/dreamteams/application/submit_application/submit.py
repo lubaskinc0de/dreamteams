@@ -1,12 +1,12 @@
 from typing import Any
 
 import structlog
-from opentelemetry import trace
 from pydantic import BaseModel
 
 from dreamteams.application.common.gateway.application import ApplicationGateway
 from dreamteams.application.common.gateway.application_form import ApplicationFormGateway
 from dreamteams.application.common.gateway.competition import CompetitionGateway
+from dreamteams.application.common.gateway.participant import ParticipantGateway
 from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
@@ -22,7 +22,6 @@ from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import CompetitionNotFoundError
 
 logger: Logger = structlog.get_logger(__name__)
-_tracer = trace.get_tracer("dreamteams.interactors")
 
 
 class SubmitApplicationInput(BaseModel):
@@ -44,6 +43,7 @@ class SubmitApplication:
 
     uow: UoW
     idp: IdProvider
+    participant_gateway: ParticipantGateway
     competition_gateway: CompetitionGateway
     application_gateway: ApplicationGateway
     application_form_gateway: ApplicationFormGateway
@@ -52,51 +52,51 @@ class SubmitApplication:
 
     async def execute(self, competition_id: CompetitionId, data: SubmitApplicationInput) -> CreatedApplication:
         """Submit a new application to a competition."""
-        with _tracer.start_as_current_span("interactor.submit_application"):
-            user = await self.idp.get_user()
-            logger.debug("Submitting application", competition_id=competition_id, user_id=user.id)
+        user_id = await self.idp.get_user_id()
+        logger.debug("Submitting application", competition_id=competition_id, user_id=user_id)
 
-            if user.participant is None:
-                logger.warning("User has no participant profile", user_id=user.id)
-                raise AccessDeniedError(message="Only participants can submit applications")
+        participant = await self.participant_gateway.get_by_user_id(user_id)
+        if participant is None:
+            logger.warning("User has no participant profile", user_id=user_id)
+            raise AccessDeniedError(message="Only participants can submit applications")
 
-            competition = await self.competition_gateway.get(competition_id)
-            if competition is None:
-                logger.warning("Competition not found", competition_id=competition_id, user_id=user.id)
-                raise CompetitionNotFoundError
+        competition = await self.competition_gateway.get(competition_id)
+        if competition is None:
+            logger.warning("Competition not found", competition_id=competition_id, user_id=user_id)
+            raise CompetitionNotFoundError
 
-            existing = await self.application_gateway.get_by_participant_and_competition(
-                user.participant.id,
-                competition_id,
-            )
-            if existing is not None:
-                logger.warning(
-                    "Application already exists",
-                    competition_id=competition_id,
-                    participant_id=user.participant.id,
-                )
-                raise ApplicationAlreadyExistsError
-
-            accepted_count = await self.application_gateway.count_accepted_by_competition(competition_id)
-            form = await self.application_form_gateway.get_by_competition_id(competition_id)
-
-            application = submit_application_service(
-                data=ApplicationData(domains=data.domains, form_data=data.form_data),
-                user=user,
-                competition=competition,
-                accepted_count=accepted_count,
-                clock=self.clock,
-                form=form,
-            )
-
-            self.uow.add(application)
-            await self.uow.commit()
-            self.metrics.record_application_submitted()
-
-            logger.info(
-                "Application submitted",
-                application_id=application.id,
+        existing = await self.application_gateway.get_by_participant_and_competition(
+            participant.id,
+            competition_id,
+        )
+        if existing is not None:
+            logger.warning(
+                "Application already exists",
                 competition_id=competition_id,
-                participant_id=user.participant.id,
+                participant_id=participant.id,
             )
-            return CreatedApplication(application_id=application.id)
+            raise ApplicationAlreadyExistsError
+
+        accepted_count = await self.application_gateway.count_accepted_by_competition(competition_id)
+        form = await self.application_form_gateway.get_by_competition_id(competition_id)
+
+        application = submit_application_service(
+            data=ApplicationData(domains=data.domains, form_data=data.form_data),
+            participant=participant,
+            competition=competition,
+            accepted_count=accepted_count,
+            clock=self.clock,
+            form=form,
+        )
+
+        self.uow.add(application)
+        await self.uow.commit()
+        self.metrics.record_application_submitted()
+
+        logger.info(
+            "Application submitted",
+            application_id=application.id,
+            competition_id=competition_id,
+            participant_id=participant.id,
+        )
+        return CreatedApplication(application_id=application.id)

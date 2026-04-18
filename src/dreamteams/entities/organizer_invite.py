@@ -57,23 +57,20 @@ class OrganizerInvite(Entity):
         if self.created_by != user.id:
             raise AccessDeniedError(message="You can only read invites you created")
 
-    def use(self, user: User) -> None:
+    def use(self, organizer: Organizer) -> None:
         """Mark this invite as used during organizer registration.
 
         Raises:
             InviteRevokedError: If the invite has been revoked.
             InviteAlreadyUsedError: If the invite has already been used.
-            AccessDeniedError: If the user does not have an organizer role.
 
         """
         if self.is_revoked:
             raise InviteRevokedError
         if self.is_used:
             raise InviteAlreadyUsedError
-        if user.organizer is None:
-            raise AccessDeniedError(message="User must be registered as an organizer to use an invite")
         self.is_used = True
-        self.used_by = user.organizer
+        self.used_by = organizer
 
 
 def ensure_can_list_invites(user: User) -> None:

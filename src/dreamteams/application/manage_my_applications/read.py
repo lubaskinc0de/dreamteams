@@ -2,10 +2,10 @@ from datetime import datetime
 from typing import Any
 
 import structlog
-from opentelemetry import trace
 from pydantic import BaseModel
 
 from dreamteams.application.common.gateway.application import ApplicationGateway
+from dreamteams.application.common.gateway.participant import ParticipantGateway
 from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
@@ -16,7 +16,6 @@ from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.errors.base import AccessDeniedError
 
 logger: Logger = structlog.get_logger(__name__)
-_tracer = trace.get_tracer("dreamteams.interactors")
 
 
 class ApplicationModel(BaseModel):
@@ -36,29 +35,30 @@ class ReadMyApplication:
     """Interactor for reading a single application owned by the current participant."""
 
     idp: IdProvider
+    participant_gateway: ParticipantGateway
     application_gateway: ApplicationGateway
 
     async def execute(self, application_id: ApplicationId) -> ApplicationModel:
         """Read a single application; only the submitting participant may access it."""
-        with _tracer.start_as_current_span("interactor.read_my_application"):
-            user = await self.idp.get_user()
-            logger.debug("Reading own application", application_id=application_id, user_id=user.id)
+        user_id = await self.idp.get_user_id()
+        logger.debug("Reading own application", application_id=application_id, user_id=user_id)
 
-            application = await self.application_gateway.get(application_id)
-            if application is None:
-                logger.warning("Application not found", application_id=application_id, user_id=user.id)
-                raise ApplicationNotFoundError
+        application = await self.application_gateway.get(application_id)
+        if application is None:
+            logger.warning("Application not found", application_id=application_id, user_id=user_id)
+            raise ApplicationNotFoundError
 
-            if user.participant is None or user.participant.id != application.participant_id:
-                logger.warning("Access denied to read application", application_id=application_id, user_id=user.id)
-                raise AccessDeniedError(message="Only the participant who submitted this application can read it")
+        participant = await self.participant_gateway.get_by_user_id(user_id)
+        if participant is None or participant.id != application.participant_id:
+            logger.warning("Access denied to read application", application_id=application_id, user_id=user_id)
+            raise AccessDeniedError(message="Only the participant who submitted this application can read it")
 
-            return ApplicationModel(
-                id=application.id,
-                participant_id=application.participant_id,
-                competition_id=application.competition_id,
-                domains=application.domains,
-                status=application.status,
-                created_at=application.created_at,
-                form_data=application.form_data,
-            )
+        return ApplicationModel(
+            id=application.id,
+            participant_id=application.participant_id,
+            competition_id=application.competition_id,
+            domains=application.domains,
+            status=application.status,
+            created_at=application.created_at,
+            form_data=application.form_data,
+        )

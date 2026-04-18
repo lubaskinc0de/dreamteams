@@ -11,7 +11,7 @@ from dreamteams.entities.application_form.vo.field import Field, FieldType
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.errors.application_form import InvalidApplicationFormDataError
 from dreamteams.entities.errors.base import AccessDeniedError
-from dreamteams.entities.user import User
+from dreamteams.entities.user import Organizer
 from tests.unit.composite import valid_application_form, valid_application_form_data, valid_competition
 from tests.unit.entities.application_form.conftest import STRING_FIELD, make_form, make_form_via_factory
 
@@ -41,40 +41,20 @@ def test_valid_form_is_constructed_correctly() -> None:
 
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
 @given(st.data())
-def test_user_without_organizer_role_is_denied(
-    user_without_organizer: User,
-    organizer_user: User,
-    clock: Clock,
-    data: st.DataObject,
-) -> None:
-    """application_form_factory raises AccessDeniedError for users without an organizer role."""
-    competition = data.draw(valid_competition(organizer_user, clock))
-
-    with pytest.raises(AccessDeniedError):
-        application_form_factory(
-            data=ApplicationFormData(fields=[STRING_FIELD]),
-            competition=competition,
-            user=user_without_organizer,
-            clock=clock,
-        )
-
-
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
-@given(st.data())
 def test_organizer_of_different_competition_is_denied(
-    different_user: User,
-    organizer_user: User,
+    different_organizer: Organizer,
+    organizer: Organizer,
     clock: Clock,
     data: st.DataObject,
 ) -> None:
     """application_form_factory raises AccessDeniedError when organizer does not own the competition."""
-    competition = data.draw(valid_competition(organizer_user, clock))
+    competition = data.draw(valid_competition(organizer, clock))
 
     with pytest.raises(AccessDeniedError):
         application_form_factory(
             data=ApplicationFormData(fields=[STRING_FIELD]),
             competition=competition,
-            user=different_user,
+            organizer=different_organizer,
             clock=clock,
         )
 
@@ -82,14 +62,15 @@ def test_organizer_of_different_competition_is_denied(
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
 @given(st.data())
 def test_factory_creates_correct_form(
-    organizer_user: User,
+    organizer: Organizer,
     clock: Clock,
     data: st.DataObject,
 ) -> None:
     """application_form_factory returns an ApplicationForm linked to the competition."""
-    competition = data.draw(valid_competition(organizer_user, clock))
+    competition = data.draw(valid_competition(organizer, clock))
+    assert organizer is not None
 
-    form = make_form_via_factory(organizer_user, competition, clock, STRING_FIELD, _OTHER_FIELD)
+    form = make_form_via_factory(organizer, competition, clock, STRING_FIELD, _OTHER_FIELD)
 
     assert form == ApplicationForm(
         id=form.id,
@@ -102,15 +83,21 @@ def test_factory_creates_correct_form(
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
 @given(st.data())
 def test_factory_always_succeeds_with_valid_data(
-    organizer_user: User,
+    organizer: Organizer,
     clock: Clock,
     data: st.DataObject,
 ) -> None:
     """application_form_factory succeeds for any valid ApplicationFormData."""
-    competition = data.draw(valid_competition(organizer_user, clock))
+    competition = data.draw(valid_competition(organizer, clock))
     form_data = data.draw(valid_application_form_data())
+    assert organizer is not None
 
-    form = application_form_factory(data=form_data, competition=competition, user=organizer_user, clock=clock)
+    form = application_form_factory(
+        data=form_data,
+        competition=competition,
+        organizer=organizer,
+        clock=clock,
+    )
 
     assert form.competition_id == competition.id
     assert len(form.fields) == len(form_data.fields)
@@ -119,13 +106,13 @@ def test_factory_always_succeeds_with_valid_data(
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
 @given(st.data())
 def test_factory_result_has_unique_field_names(
-    organizer_user: User,
+    organizer: Organizer,
     clock: Clock,
     data: st.DataObject,
 ) -> None:
     """Field names in the created ApplicationForm are always unique."""
-    competition = data.draw(valid_competition(organizer_user, clock))
-    form = data.draw(valid_application_form(organizer_user, clock, competition))
+    competition = data.draw(valid_competition(organizer, clock))
+    form = data.draw(valid_application_form(organizer, clock, competition))
 
     names = [f.name for f in form.fields]
 

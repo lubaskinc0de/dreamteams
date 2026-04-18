@@ -1,7 +1,6 @@
 from collections.abc import AsyncIterator
 
 from dishka import AnyOf, Provider, Scope, WithParents, provide, provide_all
-from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
 from dreamteams.adapters.argon2_password_hasher import Argon2PasswordHasher
@@ -17,6 +16,7 @@ from dreamteams.adapters.db.gateway.auth_user import SAAuthUserGateway
 from dreamteams.adapters.db.gateway.competition import SACompetitionGateway
 from dreamteams.adapters.db.gateway.organizer import SAOrganizerGateway
 from dreamteams.adapters.db.gateway.organizer_invite import SAOrganizerInviteGateway
+from dreamteams.adapters.db.gateway.participant import SAParticipantGateway
 from dreamteams.adapters.db.gateway.user import SAUserGateway
 from dreamteams.adapters.db.pool_metrics import register_pool_metrics
 from dreamteams.application.common.uow import UoW
@@ -34,6 +34,7 @@ class AdapterProvider(Provider):
         WithParents[SAUserGateway],
         WithParents[SAAuthUserGateway],
         WithParents[SAOrganizerGateway],
+        WithParents[SAParticipantGateway],
         WithParents[SACompetitionGateway],
         WithParents[SAOrganizerInviteGateway],
         WithParents[SAApplicationFormGateway],
@@ -57,8 +58,8 @@ class AdapterProvider(Provider):
         engine = create_async_engine(
             config.connection_url,
             future=True,
-            pool_size=100,
-            max_overflow=100,
+            pool_size=50,
+            max_overflow=25,
             pool_timeout=30,
             pool_recycle=1800,
             connect_args={
@@ -67,11 +68,6 @@ class AdapterProvider(Provider):
             },
         )
         register_pool_metrics(engine)
-        SQLAlchemyInstrumentor().instrument(
-            engine=engine.sync_engine,
-            enable_commenter=True,
-            commenter_options={},
-        )
         yield engine
         await engine.dispose()
 

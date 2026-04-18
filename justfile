@@ -56,3 +56,23 @@ build-frontend:
 
 docs:
     mkdocs serve
+
+
+# --- Profiling ---------------------------------------------------------------
+profile-up:
+    PROFILE_BUILD=1 docker compose -f docker/docker-compose.yml --env-file=./.config/.env up --build api -d
+
+# Record a flamegraph from the running api process.
+profile DURATION="30":
+    mkdir -p ./profiling
+    docker exec -u root api py-spy record --pid 1 --duration {{DURATION}} --rate 100 --idle --output /tmp/flame.svg
+    docker cp api:/tmp/flame.svg ./profiling/flame-$(date -u +%Y%m%dT%H%M%SZ).svg
+    ls -lh ./profiling/ | tail -1
+
+# Live top
+profile-top:
+    docker exec -u root -it api py-spy top --pid 1 --rate 100
+
+# Per-thread stack dump at the moment of execution. Useful when something hangs.
+profile-dump:
+    docker exec -u root api py-spy dump --pid 1

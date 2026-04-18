@@ -13,7 +13,7 @@ from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.competition.entity import Competition
 from dreamteams.entities.errors.application import ApplicationAlreadyResolvedError, InvalidApplicationDataError
 from dreamteams.entities.errors.base import AccessDeniedError
-from dreamteams.entities.user import User
+from dreamteams.entities.user import Organizer, Participant
 
 
 class ApplicationStatus(StrEnum):
@@ -36,25 +36,25 @@ class Application(Entity):
     created_at: datetime
     form_data: dict[str, Any] | None = None
 
-    def accept(self, user: User, competition: Competition) -> None:
+    def accept(self, organizer: Organizer, competition: Competition) -> None:
         """Assert organizer access and transition application to ACCEPTED (only from PENDING)."""
-        if not competition.can_delete(user):
+        if not competition.is_owned_by(organizer):
             raise AccessDeniedError(message="Only the organizer who owns this competition can accept its applications")
         if self.status != ApplicationStatus.PENDING:
             raise ApplicationAlreadyResolvedError
         self.status = ApplicationStatus.ACCEPTED
 
-    def reject(self, user: User, competition: Competition) -> None:
+    def reject(self, organizer: Organizer, competition: Competition) -> None:
         """Assert organizer access and transition application to REJECTED (only from PENDING)."""
-        if not competition.can_delete(user):
+        if not competition.is_owned_by(organizer):
             raise AccessDeniedError(message="Only the organizer who owns this competition can reject its applications")
         if self.status != ApplicationStatus.PENDING:
             raise ApplicationAlreadyResolvedError
         self.status = ApplicationStatus.REJECTED
 
-    def can_withdraw(self, user: User) -> None:
-        """Assert the user may withdraw this application, raising on any violation."""
-        if user.participant is None or user.participant.id != self.participant_id:
+    def can_withdraw(self, participant: Participant) -> None:
+        """Assert the participant may withdraw this application, raising on any violation."""
+        if participant.id != self.participant_id:
             raise AccessDeniedError(message="Only the participant who submitted this application can withdraw it")
         if self.status != ApplicationStatus.PENDING:
             raise ApplicationAlreadyResolvedError
@@ -70,15 +70,12 @@ class ApplicationData:
 
 def application_factory(
     data: ApplicationData,
-    user: User,
+    participant: Participant,
     competition: Competition,
     clock: Clock,
     form: ApplicationForm | None = None,
 ) -> Application:
     """Create a new Application."""
-    if user.participant is None:
-        raise AccessDeniedError(message="Only participants can apply to competitions")
-
     if not data.domains:
         raise InvalidApplicationDataError(message="Domains list must not be empty")
 
@@ -91,7 +88,7 @@ def application_factory(
 
     return Application(
         id=uuid4(),
-        participant_id=user.participant.id,
+        participant_id=participant.id,
         competition_id=competition.id,
         domains=data.domains,
         status=status,

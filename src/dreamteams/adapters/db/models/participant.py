@@ -97,19 +97,21 @@ mapper_registry.map_imperatively(
         "user": relationship(
             User,
             back_populates="participant",
-            lazy="selectin",
+            lazy="raise_on_sql",
         ),
         "skills": relationship(
             ParticipantSkill,
             foreign_keys=[participant_skills_table.c.participant_id],
             cascade="all, delete-orphan",
-            lazy="selectin",
+            passive_deletes=True,
+            lazy="raise_on_sql",
         ),
         "contacts": relationship(
             ParticipantContact,
             foreign_keys=[participant_contacts_table.c.participant_id],
             cascade="all, delete-orphan",
-            lazy="selectin",
+            passive_deletes=True,
+            lazy="raise_on_sql",
         ),
     },
 )

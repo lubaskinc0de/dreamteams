@@ -14,7 +14,7 @@ from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionVenue
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
-from dreamteams.entities.user import Organizer, User
+from dreamteams.entities.user import Organizer
 
 type Banner = str
 
@@ -41,22 +41,18 @@ class Competition(Entity):
     created_at: datetime
     updated_at: datetime
 
-    def can_read(self, user: User) -> bool:
-        """Check if user can read this competition."""
-        return user.organizer is not None and self.organizer_id == user.organizer.id
-
-    def can_delete(self, user: User) -> bool:
-        """Check if user can delete this competition."""
-        return user.organizer is not None and self.organizer_id == user.organizer.id
+    def is_owned_by(self, organizer: Organizer) -> bool:
+        """Returns True when the competition is owned by the given organizer."""
+        return self.organizer_id == organizer.id
 
     def update(
         self,
         data: "UpdateCompetitionData",
-        user: User,
+        organizer: Organizer,
         clock: Clock,
     ) -> None:
         """Update competition fields."""
-        if user.organizer is None or self.organizer_id != user.organizer.id:
+        if not self.is_owned_by(organizer):
             raise AccessDeniedError(message="Only the organizer who created this competition can update it")
 
         if not data.description or not data.description.strip():
@@ -120,13 +116,10 @@ class UpdateCompetitionData:
 
 def competition_factory(
     data: CompetitionData,
-    user: User,
+    organizer: Organizer,
     clock: Clock,
 ) -> Competition:
     """Create a new competition."""
-    if user.organizer is None:
-        raise AccessDeniedError(message="Only organizers can create competitions")
-
     if not data.description or not data.description.strip():
         raise InvalidCompetitionDataError(message="Description must not be empty")
 
@@ -142,8 +135,8 @@ def competition_factory(
     now = clock.now()
     return Competition(
         id=uuid4(),
-        organizer_id=user.organizer.id,
-        organizer=user.organizer,
+        organizer_id=organizer.id,
+        organizer=organizer,
         title=data.title,
         banner=None,
         description=data.description,

@@ -26,6 +26,7 @@ from dreamteams.entities.participant.vo.participant_contact import ParticipantCo
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill, SkillLevel
 from dreamteams.entities.user import (
     ExperienceLevel,
+    Organizer,
     Participant,
     ParticipantData,
     UpdateParticipantData,
@@ -202,7 +203,7 @@ def valid_competition_data(draw: st.DrawFn) -> CompetitionData:
 @st.composite
 def valid_competition(
     draw: st.DrawFn,
-    user: User,
+    organizer: Organizer,
     clock: Clock,
     *,
     is_archived: bool = True,
@@ -221,7 +222,7 @@ def valid_competition(
     ``is_open`` and ``is_ended`` are mutually exclusive.
     """
     data = draw(valid_competition_data())
-    competition = competition_factory(data, user, clock)
+    competition = competition_factory(data, organizer, clock)
     competition.is_archived = is_archived
     if is_open:
         competition.schedule = draw(open_schedule())
@@ -398,10 +399,15 @@ def valid_application_form_data(draw: st.DrawFn, min_fields: int = 1) -> Applica
 
 
 @st.composite
-def valid_application_form(draw: st.DrawFn, user: User, clock: Clock, competition: Competition) -> ApplicationForm:
+def valid_application_form(
+    draw: st.DrawFn,
+    organizer: Organizer,
+    clock: Clock,
+    competition: Competition,
+) -> ApplicationForm:
     """Valid ApplicationForm entity created via factory."""
     data = draw(valid_application_form_data())
-    return application_form_factory(data=data, competition=competition, user=user, clock=clock)
+    return application_form_factory(data=data, competition=competition, organizer=organizer, clock=clock)
 
 
 @st.composite

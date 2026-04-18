@@ -1,11 +1,11 @@
 from uuid import uuid4
 
 import structlog
-from opentelemetry import trace
 from pydantic import BaseModel, EmailStr, Field
 
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
 from dreamteams.application.common.gateway.organizer_invite import OrganizerInviteGateway
+from dreamteams.application.common.gateway.user import UserGateway
 from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
@@ -19,7 +19,6 @@ from dreamteams.entities.common.identifiers import OrganizerId, UserId
 from dreamteams.entities.user import Organizer
 
 logger: Logger = structlog.get_logger(__name__)
-_tracer = trace.get_tracer("dreamteams.interactors")
 
 
 class CreatedOrganizer(BaseModel):
@@ -44,6 +43,7 @@ class RegisterOrganizer:
 
     uow: UoW
     idp: IdProvider
+    user_gateway: UserGateway
     user_factory: UserFactory
     organizer_gateway: OrganizerGateway
     organizer_invite_gateway: OrganizerInviteGateway
@@ -51,44 +51,44 @@ class RegisterOrganizer:
 
     async def execute(self, data: OrganizerForm) -> CreatedOrganizer:
         """Creates a new ``User`` and ``Organizer`` role."""
-        with _tracer.start_as_current_span("interactor.register_organizer"):
-            logger.debug("Registering as organizer", **data.model_dump(exclude={"invite_code"}))
+        logger.debug("Registering as organizer", **data.model_dump(exclude={"invite_code"}))
 
-            invite = await self.organizer_invite_gateway.get_by_code(data.invite_code)
-            if invite is None:
-                logger.warning("Invite not found during organizer registration")
-                raise InviteNotFoundError
+        invite = await self.organizer_invite_gateway.get_by_code(data.invite_code)
+        if invite is None:
+            logger.warning("Invite not found during organizer registration")
+            raise InviteNotFoundError
 
-            # Check if organizer with same phone number or email already exists
-            is_unique = await self.organizer_gateway.is_unique(data.phone_number, data.contact_email)
-            if not is_unique:
-                logger.warning(
-                    "Attempt to register organizer with existing credentials",
-                    phone_number=data.phone_number,
-                    contact_email=data.contact_email,
-                )
-                raise OrganizerAlreadyExistsError
-
-            user = await self.idp.get_user_or_none()
-            if user is None:
-                user = await self.user_factory.create_user()
-            organizer_id = uuid4()
-            logger.debug("Generated new organizer id", user_id=user.id, organizer_id=organizer_id)
-            organizer = Organizer(
-                id=organizer_id,
-                user_id=user.id,
-                user=user,
-                organizer_name=data.organizer_name,
+        # Check if organizer with same phone number or email already exists
+        is_unique = await self.organizer_gateway.is_unique(data.phone_number, data.contact_email)
+        if not is_unique:
+            logger.warning(
+                "Attempt to register organizer with existing credentials",
                 phone_number=data.phone_number,
                 contact_email=data.contact_email,
             )
-            logger.debug("Creating role 'Organizer' for user", user_id=user.id)
-            user.make_organizer(organizer)
-            invite.use(user)
+            raise OrganizerAlreadyExistsError
 
-            self.uow.add(organizer)
-            await self.uow.commit()
-            self.metrics.record_registration(role="organizer")
+        user_id = await self.idp.get_user_id_or_none()
+        user = await self.user_gateway.get(user_id) if user_id is not None else None
+        if user is None:
+            user = await self.user_factory.create_user()
+        organizer_id = uuid4()
+        logger.debug("Generated new organizer id", user_id=user.id, organizer_id=organizer_id)
+        organizer = Organizer(
+            id=organizer_id,
+            user_id=user.id,
+            user=user,
+            organizer_name=data.organizer_name,
+            phone_number=data.phone_number,
+            contact_email=data.contact_email,
+        )
+        logger.debug("Creating role 'Organizer' for user", user_id=user.id)
+        user.make_organizer(organizer)
+        invite.use(organizer)
 
-            logger.info("Organizer created", organizer=organizer)
-            return CreatedOrganizer(organizer_id=organizer_id, user_id=user.id)
+        self.uow.add(organizer)
+        await self.uow.commit()
+        self.metrics.record_registration(role="organizer")
+
+        logger.info("Organizer created", organizer=organizer)
+        return CreatedOrganizer(organizer_id=organizer_id, user_id=user.id)

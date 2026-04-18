@@ -1,15 +1,15 @@
 import structlog
-from opentelemetry import trace
 
 from dreamteams.application.common.avatar_storage import AvatarStorage
+from dreamteams.application.common.gateway.user import UserGateway
 from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
 from dreamteams.application.common.metrics import MetricsGateway
 from dreamteams.application.common.uow import UoW
+from dreamteams.application.errors.user import UserNotFoundError
 
 logger: Logger = structlog.get_logger(__name__)
-_tracer = trace.get_tracer("dreamteams.interactors")
 
 
 @interactor
@@ -18,18 +18,22 @@ class DetachAvatar:
 
     uow: UoW
     idp: IdProvider
+    user_gateway: UserGateway
     storage: AvatarStorage
     metrics: MetricsGateway
 
     async def execute(self) -> None:
         """Detach avatar from user profile."""
-        with _tracer.start_as_current_span("interactor.detach_avatar"):
-            user = await self.idp.get_user()
-            if user.avatar is None:
-                return
+        user_id = await self.idp.get_user_id()
+        user = await self.user_gateway.get(user_id)
+        if user is None:
+            raise UserNotFoundError(user_id=user_id)
+        if user.avatar is None:
+            return
 
-            logger.debug("Detaching avatar from user profile", user_id=user.id)
-            await self.storage.delete_avatar(user.id)
-            user.avatar = None
-            await self.uow.commit()
-            self.metrics.record_avatar_detached()
+        logger.debug("Detaching avatar from user profile", user_id=user_id)
+        await self.storage.delete_avatar(user_id)
+        user.avatar = None
+
+        await self.uow.commit()
+        self.metrics.record_avatar_detached()

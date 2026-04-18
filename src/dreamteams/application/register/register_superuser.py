@@ -2,9 +2,9 @@ import asyncio
 from dataclasses import dataclass
 
 import structlog
-from opentelemetry import trace
 from pydantic import BaseModel
 
+from dreamteams.application.common.gateway.user import UserGateway
 from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
@@ -15,7 +15,6 @@ from dreamteams.application.register.shared.user_factory import UserFactory
 from dreamteams.entities.common.identifiers import UserId
 
 logger: Logger = structlog.get_logger(__name__)
-_tracer = trace.get_tracer("dreamteams.interactors")
 
 
 @dataclass(slots=True, frozen=True)
@@ -43,31 +42,32 @@ class RegisterSuperuser:
 
     uow: UoW
     idp: IdProvider
+    user_gateway: UserGateway
     user_factory: UserFactory
     password_hasher: PasswordHasher
     superuser_config: SuperuserConfig
 
     async def execute(self, data: SuperuserForm) -> CreatedSuperuser:
         """Promote the current user to admin, creating a new user if one does not exist yet."""
-        with _tracer.start_as_current_span("interactor.register_superuser"):
-            logger.debug("Attempting superuser registration")
+        logger.debug("Attempting superuser registration")
 
-            matches = await asyncio.to_thread(
-                self.password_hasher.verify,
-                self.superuser_config.password_hash,
-                data.password,
-            )
-            if not matches:
-                logger.warning("Invalid superuser password supplied")
-                raise InvalidSuperuserPasswordError
+        matches = await asyncio.to_thread(
+            self.password_hasher.verify,
+            self.superuser_config.password_hash,
+            data.password,
+        )
+        if not matches:
+            logger.warning("Invalid superuser password supplied")
+            raise InvalidSuperuserPasswordError
 
-            user = await self.idp.get_user_or_none()
-            if user is None:
-                user = await self.user_factory.create_user()
+        user_id = await self.idp.get_user_id_or_none()
+        user = await self.user_gateway.get(user_id) if user_id is not None else None
+        if user is None:
+            user = await self.user_factory.create_user()
 
-            user.is_admin = True
+        user.is_admin = True
 
-            await self.uow.commit()
+        await self.uow.commit()
 
-            logger.info("Superuser created", user_id=user.id)
-            return CreatedSuperuser(user_id=user.id)
+        logger.info("Superuser created", user_id=user.id)
+        return CreatedSuperuser(user_id=user.id)

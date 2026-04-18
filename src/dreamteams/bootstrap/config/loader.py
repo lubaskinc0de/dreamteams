@@ -53,6 +53,7 @@ class Config:
         server = ServerConfig(
             server_port=env("SERVER_PORT", int),
             server_host=env("SERVER_HOST"),
+            workers=optional_env("SERVER_WORKERS", int) or 1,
         )
         s3 = S3Config(
             bucket_name=env("S3_BUCKET_NAME"),

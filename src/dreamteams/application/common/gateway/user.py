@@ -10,5 +10,5 @@ class UserGateway(Protocol):
 
     @abstractmethod
     async def get(self, user_id: UserId) -> User | None:
-        """Retrieves a user entity by its unique identifier, returns None if not found."""
+        """Retrieves a bare user entity by ID. Relationships (organizer/participant) are not loaded."""
         raise NotImplementedError

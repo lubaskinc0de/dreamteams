@@ -1,9 +1,9 @@
 import structlog
-from opentelemetry import trace
 from pydantic import BaseModel, Field
 
 from dreamteams.application.common.dto.participant_contact import ParticipantContactForm
 from dreamteams.application.common.dto.participant_skill import ParticipantSkillForm
+from dreamteams.application.common.gateway.participant import ParticipantGateway
 from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
@@ -18,7 +18,6 @@ from dreamteams.entities.participant.vo.participant_skill import ParticipantSkil
 from dreamteams.entities.user import ExperienceLevel, UpdateParticipantData
 
 logger: Logger = structlog.get_logger(__name__)
-_tracer = trace.get_tracer("dreamteams.interactors")
 
 
 class UpdateParticipantForm(BaseModel):
@@ -40,31 +39,32 @@ class UpdateParticipant:
 
     uow: UoW
     idp: IdProvider
+    participant_gateway: ParticipantGateway
     clock: Clock
 
     async def execute(self, data: UpdateParticipantForm) -> None:
         """Update participant profile fields."""
-        with _tracer.start_as_current_span("interactor.update_participant"):
-            user = await self.idp.get_user()
+        user_id = await self.idp.get_user_id()
+        participant = await self.participant_gateway.get_by_user_id(user_id)
 
-            if user.participant is None:
-                raise ParticipantNotFoundError
+        if participant is None:
+            raise ParticipantNotFoundError
 
-            logger.debug("Updating participant profile", user_id=user.id)
+        logger.debug("Updating participant profile", user_id=user_id)
 
-            user.participant.update(
-                data=UpdateParticipantData(
-                    full_name=data.full_name,
-                    bio=data.bio,
-                    skills=[ParticipantSkill(name=s.name, level=s.level) for s in data.skills],
-                    experience_level=data.experience_level,
-                    preferred_domains=data.preferred_domains,
-                    contacts=[ParticipantContact(title=c.title, url=str(c.url)) for c in data.contacts],
-                    participant_type=data.participant_type,
-                    age=Age(data.age),
-                ),
-                clock=self.clock,
-            )
-            await self.uow.commit()
+        participant.update(
+            data=UpdateParticipantData(
+                full_name=data.full_name,
+                bio=data.bio,
+                skills=[ParticipantSkill(name=s.name, level=s.level) for s in data.skills],
+                experience_level=data.experience_level,
+                preferred_domains=data.preferred_domains,
+                contacts=[ParticipantContact(title=c.title, url=str(c.url)) for c in data.contacts],
+                participant_type=data.participant_type,
+                age=Age(data.age),
+            ),
+            clock=self.clock,
+        )
+        await self.uow.commit()
 
-            logger.info("Participant profile updated", user_id=user.id)
+        logger.info("Participant profile updated", user_id=user_id)

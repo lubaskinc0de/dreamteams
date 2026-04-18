@@ -5,6 +5,7 @@ import structlog
 from opentelemetry import trace
 from sqlalchemy import delete, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from dreamteams.adapters.db.models import competition_table, milestone_table
 from dreamteams.application.common.gateway.competition import CompetitionGateway, CompetitionSortBy
@@ -13,6 +14,7 @@ from dreamteams.application.common.logger import Logger
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
 from dreamteams.entities.competition.entity import Competition
 from dreamteams.entities.competition.milestone import Milestone
+from dreamteams.entities.user import Organizer
 
 _tracer = trace.get_tracer("dreamteams.adapters")
 
@@ -27,9 +29,28 @@ class SACompetitionGateway(CompetitionGateway):
         self._session = session
 
     @override
-    async def get(self, competition_id: CompetitionId) -> Competition | None:
+    async def get(
+        self,
+        competition_id: CompetitionId,
+        *,
+        eager_milestones: bool = False,
+    ) -> Competition | None:
         """Queries the database for a competition by ID using SQLAlchemy session, returns None if not found."""
-        return await self._session.get(Competition, competition_id)
+        query = select(Competition).where(competition_table.c.id == competition_id)
+        if eager_milestones:
+            query = query.options(selectinload(Competition.milestones))  # type: ignore[arg-type]
+        result = await self._session.execute(query)
+        return result.scalar_one_or_none()
+
+    @override
+    async def get_with_organizer(self, competition_id: CompetitionId) -> Competition | None:
+        """Loads a competition with organizer + organizer.user in a selectin chain."""
+        result = await self._session.execute(
+            select(Competition)
+            .where(competition_table.c.id == competition_id)
+            .options(selectinload(Competition.organizer).selectinload(Organizer.user)),  # type: ignore[arg-type]
+        )
+        return result.scalar_one_or_none()
 
     @override
     async def clear_milestones(self, competition_id: CompetitionId) -> None:
@@ -49,6 +70,8 @@ class SACompetitionGateway(CompetitionGateway):
         is_archived: bool | None,
         search: str | None,
         active: bool | None,
+        eager_organizer: bool = False,
+        eager_milestones: bool = False,
     ) -> tuple[list[Competition], int]:
         """List competitions by organizer with pagination and sorting."""
         sort_column = {
@@ -90,6 +113,12 @@ class SACompetitionGateway(CompetitionGateway):
                 .limit(page_size)
                 .offset((page - 1) * page_size)
             )
+            if eager_organizer:
+                query = query.options(
+                    selectinload(Competition.organizer).selectinload(Organizer.user),  # type: ignore[arg-type]
+                )
+            if eager_milestones:
+                query = query.options(selectinload(Competition.milestones))  # type: ignore[arg-type]
 
             result = await self._session.scalars(query)
             competitions = list(result.all())

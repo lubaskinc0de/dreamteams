@@ -45,7 +45,7 @@ def create_app(config: Config) -> FastAPI:
     # OTel added first → outermost → creates span before tracing_middleware reads it
     FastAPIInstrumentor.instrument_app(
         app,
-        excluded_urls="/internal/metrics,/internal/alive,/internal/ready",
+        excluded_urls="/internal/alive,/internal/ready",
     )
     app.middleware("http")(tracing_middleware)
     app.add_middleware(
@@ -64,13 +64,20 @@ def create_app(config: Config) -> FastAPI:
     return app
 
 
+def app_factory() -> FastAPI:
+    """Module-level zero-arg factory used by uvicorn workers (must be import-string-resolvable)."""
+    return create_app(Config.load())
+
+
 def run_api() -> None:
     """Start the FastAPI application server."""
     config = Config.load()
     uvicorn.run(
-        create_app(config),
+        "dreamteams.bootstrap.fast_api:app_factory",
+        factory=True,
         port=config.server.server_port,
         host=config.server.server_host,
+        workers=config.server.workers,
         log_config=log_config,
     )
 

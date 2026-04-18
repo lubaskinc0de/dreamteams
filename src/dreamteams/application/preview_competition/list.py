@@ -1,7 +1,6 @@
 from datetime import datetime
 
 import structlog
-from opentelemetry import trace
 from pydantic import BaseModel, Field
 
 from dreamteams.application.common.avatar_storage import AvatarStorage
@@ -20,7 +19,6 @@ from dreamteams.entities.competition.venue import CompetitionVenue
 
 PAGE_SIZE = 10
 logger: Logger = structlog.get_logger(__name__)
-_tracer = trace.get_tracer("dreamteams.interactors")
 
 
 class PreviewCompetitionsInput(BaseModel):
@@ -75,47 +73,48 @@ class PreviewCompetitions:
 
     async def execute(self, input_data: PreviewCompetitionsInput) -> PreviewCompetitionsList:
         """Interactor for viewing competitions as anonymous user."""
-        with _tracer.start_as_current_span("interactor.preview_competitions"):
-            logger.info("Preview competitions called", page_size=PAGE_SIZE, page=input_data.page)
-            competitions, total = await self.competition_gateway.list(
-                organizer_id=None,
-                page=input_data.page,
-                page_size=PAGE_SIZE,
-                sort_by=CompetitionSortBy.CREATED_AT,
-                sort_order=SortOrder.DESC,
-                is_archived=False,
-                search=None,
-                active=True,
-            )
+        logger.info("Preview competitions called", page_size=PAGE_SIZE, page=input_data.page)
+        competitions, total = await self.competition_gateway.list(
+            organizer_id=None,
+            page=input_data.page,
+            page_size=PAGE_SIZE,
+            sort_by=CompetitionSortBy.CREATED_AT,
+            sort_order=SortOrder.DESC,
+            is_archived=False,
+            search=None,
+            active=True,
+            eager_organizer=True,
+            eager_milestones=True,
+        )
 
-            items = [
-                PreviewCompetitionModel(
-                    id=competition.id,
-                    organizer=PreviewOrganizerModel(
-                        id=competition.organizer.id,
-                        name=competition.organizer.organizer_name,
-                        avatar_url=(
-                            self.avatar_storage.get_url(competition.organizer.user.avatar)
-                            if competition.organizer.user.avatar is not None
-                            else None
-                        ),
+        items = [
+            PreviewCompetitionModel(
+                id=competition.id,
+                organizer=PreviewOrganizerModel(
+                    id=competition.organizer.id,
+                    name=competition.organizer.organizer_name,
+                    avatar_url=(
+                        self.avatar_storage.get_url(competition.organizer.user.avatar)
+                        if competition.organizer.user.avatar is not None
+                        else None
                     ),
-                    title=competition.title,
-                    banner=competition.banner,
-                    description=competition.description,
-                    schedule=competition.schedule,
-                    participant_limits=competition.participant_limits,
-                    domains=competition.domains,
-                    participant_type=competition.participant_type,
-                    venue=competition.venue,
-                    team_size=competition.team_size,
-                    milestones=competition.milestones,
-                    auto_accept=competition.auto_accept,
-                    is_archived=competition.is_archived,
-                    created_at=competition.created_at,
-                    updated_at=competition.updated_at,
-                )
-                for competition in competitions
-            ]
+                ),
+                title=competition.title,
+                banner=competition.banner,
+                description=competition.description,
+                schedule=competition.schedule,
+                participant_limits=competition.participant_limits,
+                domains=competition.domains,
+                participant_type=competition.participant_type,
+                venue=competition.venue,
+                team_size=competition.team_size,
+                milestones=competition.milestones,
+                auto_accept=competition.auto_accept,
+                is_archived=competition.is_archived,
+                created_at=competition.created_at,
+                updated_at=competition.updated_at,
+            )
+            for competition in competitions
+        ]
 
-            return PreviewCompetitionsList(items=items, total=total, page=input_data.page)
+        return PreviewCompetitionsList(items=items, total=total, page=input_data.page)

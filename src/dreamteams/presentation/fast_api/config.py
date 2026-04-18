@@ -7,6 +7,7 @@ class ServerConfig:
 
     server_port: int
     server_host: str
+    workers: int = 1
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)

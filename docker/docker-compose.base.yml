@@ -62,10 +62,16 @@ services:
         build:
             context: ../
             dockerfile: docker/Dockerfile
+            args:
+                # set PROFILE_BUILD=1 in env (or `--build-arg PROFILE_BUILD=1`) to bake py-spy into the image
+                PROFILE_BUILD: ${PROFILE_BUILD:-0}
         env_file:
             - "../.config/.env"
         volumes:
             - "../.config/config.toml:/etc/dreamteams/config.toml"
+        # required for py-spy to attach to the running python process
+        cap_add:
+            - SYS_PTRACE
         healthcheck:
             test:
                 [

@@ -1,18 +1,18 @@
 from abc import abstractmethod
 from typing import Protocol
 
-from dreamteams.entities.user import User
+from dreamteams.entities.common.identifiers import UserId
 
 
 class IdProvider(Protocol):
-    """Protocol for retrieving the currently authenticated user from the context."""
+    """Protocol for retrieving the identifier of the currently authenticated user from the request context."""
 
     @abstractmethod
-    async def get_user(self) -> User:
-        """Returns the User entity representing the currently authenticated user making the request."""
+    async def get_user_id(self) -> UserId:
+        """Returns the UserId of the currently authenticated user; raises ``UnauthorizedError`` otherwise."""
         raise NotImplementedError
 
     @abstractmethod
-    async def get_user_or_none(self) -> User | None:
-        """Returns the User entity representing the currently authenticated user making the request or None."""
+    async def get_user_id_or_none(self) -> UserId | None:
+        """Returns the UserId of the currently authenticated user, or ``None`` if the request is unauthenticated."""
         raise NotImplementedError

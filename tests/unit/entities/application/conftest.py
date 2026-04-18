@@ -6,21 +6,16 @@ from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.participant.vo.age import Age
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill, SkillLevel
-from dreamteams.entities.user import ExperienceLevel, Participant, User
+from dreamteams.entities.user import ExperienceLevel, Participant
 from tests.unit.conftest import NOW
 
 
 @pytest.fixture
-def participant_user(faker: Faker) -> User:
-    """User with participant role attached."""
-    user_id = faker.uuid4(cast_to=None)
-    participant_id = faker.uuid4(cast_to=None)
-
-    user = User(id=user_id, organizer=None)
-
-    participant = Participant(
-        id=participant_id,
-        user_id=user_id,
+def participant(faker: Faker) -> Participant:
+    """Standalone Participant entity."""
+    return Participant(
+        id=faker.uuid4(cast_to=None),
+        user_id=faker.uuid4(cast_to=None),
         full_name=faker.name(),
         bio=faker.text(),
         skills=[ParticipantSkill(name="Python", level=SkillLevel.ADVANCED)],
@@ -32,6 +27,3 @@ def participant_user(faker: Faker) -> User:
         created_at=NOW,
         updated_at=NOW,
     )
-
-    user.participant = participant
-    return user

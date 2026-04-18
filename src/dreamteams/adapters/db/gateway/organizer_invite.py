@@ -2,11 +2,13 @@ from typing import override
 
 from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from dreamteams.adapters.db.models.organizer_invite import organizer_invite_table
 from dreamteams.application.common.gateway.organizer_invite import OrganizerInviteGateway
 from dreamteams.entities.common.identifiers import OrganizerInviteId, UserId
 from dreamteams.entities.organizer_invite import OrganizerInvite
+from dreamteams.entities.user import Organizer
 
 
 class SAOrganizerInviteGateway(OrganizerInviteGateway):
@@ -18,7 +20,12 @@ class SAOrganizerInviteGateway(OrganizerInviteGateway):
     @override
     async def get_by_id(self, invite_id: OrganizerInviteId) -> OrganizerInvite | None:
         """Retrieve an invite by its UUID primary key."""
-        return await self._session.get(OrganizerInvite, invite_id)
+        result = await self._session.execute(
+            select(OrganizerInvite)
+            .where(organizer_invite_table.c.id == invite_id)
+            .options(selectinload(OrganizerInvite.used_by).selectinload(Organizer.user)),  # type: ignore[arg-type]
+        )
+        return result.scalar_one_or_none()
 
     @override
     async def get_by_code(self, code: str) -> OrganizerInvite | None:
@@ -47,6 +54,7 @@ class SAOrganizerInviteGateway(OrganizerInviteGateway):
             .order_by(desc(organizer_invite_table.c.created_at))
             .limit(page_size)
             .offset((page - 1) * page_size)
+            .options(selectinload(OrganizerInvite.used_by).selectinload(Organizer.user))  # type: ignore[arg-type]
         )
 
         result = await self._session.scalars(query)

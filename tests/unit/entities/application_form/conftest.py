@@ -4,7 +4,7 @@ from dreamteams.entities.application_form.entity import ApplicationForm, Applica
 from dreamteams.entities.application_form.vo.field import Field, FieldChoice, FieldType
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.competition.entity import Competition
-from dreamteams.entities.user import User
+from dreamteams.entities.user import Organizer
 from tests.unit.conftest import NOW
 
 
@@ -19,7 +19,7 @@ def make_form(*fields: Field) -> ApplicationForm:
 
 
 def make_form_via_factory(
-    organizer_user: User,
+    organizer: Organizer,
     competition: Competition,
     clock: Clock,
     *fields: Field,
@@ -28,7 +28,7 @@ def make_form_via_factory(
     return application_form_factory(
         data=ApplicationFormData(fields=list(fields)),
         competition=competition,
-        user=organizer_user,
+        organizer=organizer,
         clock=clock,
     )
 

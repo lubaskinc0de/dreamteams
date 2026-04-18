@@ -1,7 +1,9 @@
 from typing import override
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from dreamteams.adapters.db.models import user_table
 from dreamteams.application.common.gateway.user import UserGateway
 from dreamteams.entities.common.identifiers import UserId
 from dreamteams.entities.user import User
@@ -15,5 +17,8 @@ class SAUserGateway(UserGateway):
 
     @override
     async def get(self, user_id: UserId) -> User | None:
-        """Queries the database for a user by ID using SQLAlchemy session, returns None if not found."""
-        return await self._session.get(User, user_id)
+        """Loads a bare user without organizer/participant relationships."""
+        result = await self._session.execute(
+            select(User).where(user_table.c.id == user_id),
+        )
+        return result.scalar_one_or_none()

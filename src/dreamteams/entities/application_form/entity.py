@@ -9,7 +9,7 @@ from dreamteams.entities.common.identifiers import ApplicationFormId, Competitio
 from dreamteams.entities.competition.entity import Competition
 from dreamteams.entities.errors.application_form import InvalidApplicationFormDataError
 from dreamteams.entities.errors.base import AccessDeniedError
-from dreamteams.entities.user import User
+from dreamteams.entities.user import Organizer
 
 
 @model
@@ -40,11 +40,11 @@ class ApplicationFormData:
 def application_form_factory(
     data: ApplicationFormData,
     competition: Competition,
-    user: User,
+    organizer: Organizer,
     clock: Clock,
 ) -> ApplicationForm:
     """Create a new ApplicationForm for a competition."""
-    if user.organizer is None or user.organizer.id != competition.organizer_id:
+    if organizer.id != competition.organizer_id:
         raise AccessDeniedError(message="Only the competition owner can create an application form")
 
     return ApplicationForm(

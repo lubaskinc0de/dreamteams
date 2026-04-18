@@ -1,8 +1,15 @@
 from typing import Protocol
 
+from dreamteams.entities.common.identifiers import UserId
+from dreamteams.entities.user import Organizer
+
 
 class OrganizerGateway(Protocol):
-    """Gateway for checking organizer uniqueness."""
+    """Gateway for reading organizer profiles and checking uniqueness."""
+
+    async def get_by_user_id(self, user_id: UserId) -> Organizer | None:
+        """Return the organizer attached to the given user, or None if user has no organizer role."""
+        ...
 
     async def is_unique(self, phone_number: str, contact_email: str) -> bool:
         """Check if organizer with given phone number or contact email already exists.

@@ -5,6 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from dreamteams.adapters.db.models.organizer import organizer_table
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
+from dreamteams.entities.common.identifiers import UserId
+from dreamteams.entities.user import Organizer
 
 
 class SAOrganizerGateway(OrganizerGateway):
@@ -12,6 +14,14 @@ class SAOrganizerGateway(OrganizerGateway):
 
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
+
+    @override
+    async def get_by_user_id(self, user_id: UserId) -> Organizer | None:
+        """Return the organizer attached to the given user, or None if no organizer role exists."""
+        result = await self._session.execute(
+            select(Organizer).where(organizer_table.c.user_id == user_id),
+        )
+        return result.scalar_one_or_none()
 
     @override
     async def is_unique(self, phone_number: str, contact_email: str) -> bool:
