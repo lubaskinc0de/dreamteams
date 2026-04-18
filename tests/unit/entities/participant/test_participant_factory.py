@@ -1,5 +1,5 @@
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from dreamteams.entities.common.clock import Clock
@@ -9,21 +9,23 @@ from dreamteams.entities.participant.vo.participant_contact import ParticipantCo
 from dreamteams.entities.user import (
     Participant,
     ParticipantData,
-    User,
     participant_factory,
 )
 from tests.unit.composite import participant_contact_data, participant_skill_data, valid_participant_data
+from tests.unit.helpers.facade import Gateway
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture, HealthCheck.too_slow], max_examples=30)
+@settings(max_examples=30)
 @given(valid_participant_data())
 def test_create_participant_with_valid_data(
-    user_without_organizer: User,
+    gateway: Gateway,
     clock: Clock,
     data: ParticipantData,
 ) -> None:
     """Test creating participant succeeds."""
-    participant = participant_factory(data=data, user=user_without_organizer, clock=clock)
+    user = gateway.user.create()
+
+    participant = participant_factory(data=data, user=user, clock=clock)
 
     assert participant == Participant(
         id=participant.id,
@@ -41,87 +43,91 @@ def test_create_participant_with_valid_data(
     )
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture, HealthCheck.too_slow], max_examples=10)
+@settings(max_examples=10)
 @given(valid_participant_data(), st.data())
 def test_participant_skill_names_are_unique(
-    user_without_organizer: User,
+    gateway: Gateway,
     clock: Clock,
     participant_data: ParticipantData,
     data: st.DataObject,
 ) -> None:
     """Test cannot create participant with duplicate skill names."""
+    user = gateway.user.create()
     duplicate_skill = data.draw(participant_skill_data())
     participant_data.skills = [duplicate_skill] * 2
 
     with pytest.raises(InvalidParticipantDataError, match="Skill names must be unique"):
         participant_factory(
             data=participant_data,
-            user=user_without_organizer,
+            user=user,
             clock=clock,
         )
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture, HealthCheck.too_slow], max_examples=10)
+@settings(max_examples=10)
 @given(valid_participant_data(), st.data())
 def test_participant_contact_titles_are_unique(
-    user_without_organizer: User,
+    gateway: Gateway,
     clock: Clock,
     participant_data: ParticipantData,
     data: st.DataObject,
 ) -> None:
     """Test cannot create participant with duplicate contact titles."""
+    user = gateway.user.create()
     contact = data.draw(participant_contact_data())
     participant_data.contacts = [contact, ParticipantContact(title=contact.title, url="https://other.example.com")]
 
     with pytest.raises(InvalidParticipantDataError, match="Contact titles must be unique"):
         participant_factory(
             data=participant_data,
-            user=user_without_organizer,
+            user=user,
             clock=clock,
         )
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture, HealthCheck.too_slow], max_examples=10)
+@settings(max_examples=10)
 @given(valid_participant_data(), st.data())
 def test_participant_contact_urls_are_unique(
-    user_without_organizer: User,
+    gateway: Gateway,
     clock: Clock,
     participant_data: ParticipantData,
     data: st.DataObject,
 ) -> None:
     """Test cannot create participant with duplicate contact URLs."""
+    user = gateway.user.create()
     contact = data.draw(participant_contact_data())
     participant_data.contacts = [contact, ParticipantContact(title="Other Title", url=contact.url)]
 
     with pytest.raises(InvalidParticipantDataError, match="Contact URLs must be unique"):
         participant_factory(
             data=participant_data,
-            user=user_without_organizer,
+            user=user,
             clock=clock,
         )
 
 
 @pytest.mark.parametrize("empty_string", ["", " ", "   "])
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture, HealthCheck.too_slow], max_examples=10)
+@settings(max_examples=10)
 @given(valid_participant_data())
 def test_participant_full_name_is_not_empty(
     empty_string: str,
-    user_without_organizer: User,
+    gateway: Gateway,
     clock: Clock,
     data: ParticipantData,
 ) -> None:
     """Test cannot create participant with empty full name."""
+    user = gateway.user.create()
     data.full_name = empty_string
 
     with pytest.raises(InvalidParticipantDataError, match="Full name must not be empty"):
         participant_factory(
             data=data,
-            user=user_without_organizer,
+            user=user,
             clock=clock,
         )
 
 
-@settings(suppress_health_check=[HealthCheck.too_slow], max_examples=10)
+@settings(max_examples=10)
 @given(st.integers(max_value=-1))
 def test_participant_age_negative_is_invalid(age: int) -> None:
     """Test cannot create Age VO with negative value."""
@@ -129,7 +135,7 @@ def test_participant_age_negative_is_invalid(age: int) -> None:
         Age(age)
 
 
-@settings(suppress_health_check=[HealthCheck.too_slow], max_examples=10)
+@settings(max_examples=10)
 @given(st.integers(min_value=151))
 def test_participant_age_above_maximum_is_invalid(age: int) -> None:
     """Test cannot create Age VO with value above maximum."""
@@ -137,7 +143,7 @@ def test_participant_age_above_maximum_is_invalid(age: int) -> None:
         Age(age)
 
 
-@settings(suppress_health_check=[HealthCheck.too_slow], max_examples=10)
+@settings(max_examples=10)
 @given(st.integers(min_value=0, max_value=150))
 def test_participant_age_valid(age: int) -> None:
     """Test Age VO accepts values in 0-150 range."""

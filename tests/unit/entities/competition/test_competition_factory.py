@@ -1,5 +1,5 @@
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from dreamteams.entities.common.clock import Clock
@@ -7,18 +7,20 @@ from dreamteams.entities.competition.entity import Competition, CompetitionData,
 from dreamteams.entities.competition.milestone import milestone_factory
 from dreamteams.entities.competition.schedule import CompetitionSchedule
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
-from dreamteams.entities.user import Organizer
 from tests.unit.composite import milestone_data, valid_competition_data
+from tests.unit.helpers.facade import Gateway
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
+@settings(max_examples=30)
 @given(valid_competition_data())
 def test_create_competition_with_valid_data(
-    organizer: Organizer,
+    gateway: Gateway,
     clock: Clock,
     data: CompetitionData,
 ) -> None:
     """Test creating competition succeeds."""
+    organizer = gateway.organizer.create()
+
     competition = competition_factory(
         organizer=organizer,
         data=data,
@@ -54,15 +56,16 @@ def test_create_competition_with_valid_data(
     )
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
+@settings(max_examples=30)
 @given(valid_competition_data(), st.data())
 def test_competition_milestones_are_unique(
-    organizer: Organizer,
+    gateway: Gateway,
     clock: Clock,
     competition_data: CompetitionData,
     data: st.DataObject,
 ) -> None:
     """Test cannot create competition with duplicate milestones."""
+    organizer = gateway.organizer.create()
     competition_data.milestones = [data.draw(milestone_data())] * 2
 
     with pytest.raises(InvalidCompetitionDataError, match="Milestone timestamps must be unique"):
@@ -73,14 +76,15 @@ def test_competition_milestones_are_unique(
         )
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
+@settings(max_examples=30)
 @given(valid_competition_data())
 def test_competition_domains_list_is_not_empty(
-    organizer: Organizer,
+    gateway: Gateway,
     clock: Clock,
     data: CompetitionData,
 ) -> None:
     """Test cannot create competition with empty domains list."""
+    organizer = gateway.organizer.create()
     data.domains = []
 
     with pytest.raises(InvalidCompetitionDataError, match="Domains list must not be empty"):
@@ -92,15 +96,16 @@ def test_competition_domains_list_is_not_empty(
 
 
 @pytest.mark.parametrize("empty_string", ["", " ", "   "])
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
+@settings(max_examples=30)
 @given(valid_competition_data())
 def test_competition_description_is_not_empty(
     empty_string: str,
-    organizer: Organizer,
+    gateway: Gateway,
     clock: Clock,
     data: CompetitionData,
 ) -> None:
     """Test cannot create competition with empty description."""
+    organizer = gateway.organizer.create()
     data.description = empty_string
 
     with pytest.raises(InvalidCompetitionDataError, match="Description must not be empty"):

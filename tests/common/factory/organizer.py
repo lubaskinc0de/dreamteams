@@ -2,12 +2,12 @@ from polyfactory.factories.pydantic_factory import ModelFactory
 
 from dreamteams.application.manage_profile.update_organizer import UpdateOrganizerForm
 from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
+from tests.common.factory.providers import generate_ru_phone_number
 
 
 def _generate_organizer_phone_number() -> str:
     """Generate fake organizer phone number."""
-    faker = OrganizerFormFactory.__faker__
-    return "+79" + faker.numerify("#########")
+    return generate_ru_phone_number(OrganizerFormFactory.__faker__)
 
 
 class OrganizerFormFactory(ModelFactory[OrganizerForm]):

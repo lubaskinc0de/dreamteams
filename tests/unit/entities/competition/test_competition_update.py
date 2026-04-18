@@ -1,5 +1,5 @@
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from dreamteams.entities.common.clock import Clock
@@ -7,19 +7,20 @@ from dreamteams.entities.competition.entity import Competition, UpdateCompetitio
 from dreamteams.entities.competition.schedule import CompetitionSchedule
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
-from dreamteams.entities.user import Organizer
 from tests.unit.composite import milestone, valid_competition, valid_competition_update_data
+from tests.unit.helpers.facade import Gateway
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
+@settings(max_examples=30)
 @given(st.data(), valid_competition_update_data())
 def test_update_competition_succeeds(
-    organizer: Organizer,
+    gateway: Gateway,
     clock: Clock,
     data: st.DataObject,
     valid_competition_update_data: UpdateCompetitionData,
 ) -> None:
     """Test updating competition succeeds."""
+    organizer = gateway.organizer.create()
     competition = data.draw(valid_competition(organizer, clock))
 
     competition.update(
@@ -56,15 +57,16 @@ def test_update_competition_succeeds(
     )
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
+@settings(max_examples=30)
 @given(st.data(), valid_competition_update_data())
 def test_competition_milestones_are_unique(
-    organizer: Organizer,
+    gateway: Gateway,
     clock: Clock,
     data: st.DataObject,
     valid_competition_update_data: UpdateCompetitionData,
 ) -> None:
     """Test cannot create competition with duplicate milestones."""
+    organizer = gateway.organizer.create()
     competition = data.draw(valid_competition(organizer, clock))
     valid_competition_update_data.milestones = [data.draw(milestone())] * 2
 
@@ -76,16 +78,17 @@ def test_competition_milestones_are_unique(
         )
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
+@settings(max_examples=30)
 @given(st.data(), valid_competition_update_data())
 def test_only_owner_can_update_competition(
-    organizer: Organizer,
-    different_organizer: Organizer,
+    gateway: Gateway,
     clock: Clock,
     data: st.DataObject,
     valid_competition_update_data: UpdateCompetitionData,
 ) -> None:
     """Test only owner of this competition can update it."""
+    organizer = gateway.organizer.create()
+    different_organizer = gateway.organizer.create()
     competition = data.draw(valid_competition(organizer, clock))
 
     with pytest.raises(AccessDeniedError):
@@ -96,15 +99,16 @@ def test_only_owner_can_update_competition(
         )
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
+@settings(max_examples=30)
 @given(st.data(), valid_competition_update_data())
 def test_competition_domains_are_not_empty(
-    organizer: Organizer,
+    gateway: Gateway,
     clock: Clock,
     data: st.DataObject,
     valid_competition_update_data: UpdateCompetitionData,
 ) -> None:
     """Test cannot update competition with empty domains."""
+    organizer = gateway.organizer.create()
     competition = data.draw(valid_competition(organizer, clock))
     valid_competition_update_data.domains = []
 
@@ -117,16 +121,17 @@ def test_competition_domains_are_not_empty(
 
 
 @pytest.mark.parametrize("empty_string", ["", " ", "   "])
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
+@settings(max_examples=30)
 @given(st.data(), valid_competition_update_data())
 def test_competition_descriptions_are_not_empty(
     empty_string: str,
-    organizer: Organizer,
+    gateway: Gateway,
     clock: Clock,
     data: st.DataObject,
     valid_competition_update_data: UpdateCompetitionData,
 ) -> None:
     """Test cannot update competition with empty description."""
+    organizer = gateway.organizer.create()
     competition = data.draw(valid_competition(organizer, clock))
     valid_competition_update_data.description = empty_string
 

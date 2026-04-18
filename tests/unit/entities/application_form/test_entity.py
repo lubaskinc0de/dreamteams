@@ -1,5 +1,5 @@
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from dreamteams.entities.application_form.entity import (
@@ -11,9 +11,9 @@ from dreamteams.entities.application_form.vo.field import Field, FieldType
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.errors.application_form import InvalidApplicationFormDataError
 from dreamteams.entities.errors.base import AccessDeniedError
-from dreamteams.entities.user import Organizer
 from tests.unit.composite import valid_application_form, valid_application_form_data, valid_competition
 from tests.unit.entities.application_form.conftest import STRING_FIELD, make_form, make_form_via_factory
+from tests.unit.helpers.facade import Gateway
 
 _OTHER_FIELD = Field(name="other", label="Other", type=FieldType.STRING)
 
@@ -39,15 +39,16 @@ def test_valid_form_is_constructed_correctly() -> None:
     assert form.fields == [STRING_FIELD, _OTHER_FIELD]
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
+@settings(max_examples=30)
 @given(st.data())
 def test_organizer_of_different_competition_is_denied(
-    different_organizer: Organizer,
-    organizer: Organizer,
+    gateway: Gateway,
     clock: Clock,
     data: st.DataObject,
 ) -> None:
     """application_form_factory raises AccessDeniedError when organizer does not own the competition."""
+    organizer = gateway.organizer.create()
+    different_organizer = gateway.organizer.create()
     competition = data.draw(valid_competition(organizer, clock))
 
     with pytest.raises(AccessDeniedError):
@@ -59,16 +60,16 @@ def test_organizer_of_different_competition_is_denied(
         )
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
+@settings(max_examples=30)
 @given(st.data())
 def test_factory_creates_correct_form(
-    organizer: Organizer,
+    gateway: Gateway,
     clock: Clock,
     data: st.DataObject,
 ) -> None:
     """application_form_factory returns an ApplicationForm linked to the competition."""
+    organizer = gateway.organizer.create()
     competition = data.draw(valid_competition(organizer, clock))
-    assert organizer is not None
 
     form = make_form_via_factory(organizer, competition, clock, STRING_FIELD, _OTHER_FIELD)
 
@@ -80,17 +81,17 @@ def test_factory_creates_correct_form(
     )
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
+@settings(max_examples=30)
 @given(st.data())
 def test_factory_always_succeeds_with_valid_data(
-    organizer: Organizer,
+    gateway: Gateway,
     clock: Clock,
     data: st.DataObject,
 ) -> None:
     """application_form_factory succeeds for any valid ApplicationFormData."""
+    organizer = gateway.organizer.create()
     competition = data.draw(valid_competition(organizer, clock))
     form_data = data.draw(valid_application_form_data())
-    assert organizer is not None
 
     form = application_form_factory(
         data=form_data,
@@ -103,14 +104,15 @@ def test_factory_always_succeeds_with_valid_data(
     assert len(form.fields) == len(form_data.fields)
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=30)
+@settings(max_examples=30)
 @given(st.data())
 def test_factory_result_has_unique_field_names(
-    organizer: Organizer,
+    gateway: Gateway,
     clock: Clock,
     data: st.DataObject,
 ) -> None:
     """Field names in the created ApplicationForm are always unique."""
+    organizer = gateway.organizer.create()
     competition = data.draw(valid_competition(organizer, clock))
     form = data.draw(valid_application_form(organizer, clock, competition))
 
