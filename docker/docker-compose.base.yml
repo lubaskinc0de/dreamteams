@@ -79,7 +79,11 @@ services:
     db:
         container_name: db
         restart: unless-stopped
-        image: postgres:17
+        image: postgres:18
+        command:
+            - "postgres"
+            - "-c"
+            - "config_file=/etc/postgresql/postgresql.conf"
         env_file:
             - ../.config/.env.pg
         ports:
@@ -89,6 +93,18 @@ services:
             interval: 2s
         volumes:
             - ../.config/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+            - ../.config/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+
+    pgbouncer:
+        container_name: pgbouncer
+        restart: unless-stopped
+        image: edoburu/pgbouncer:v1.23.1-p3
+        env_file:
+            - ../.config/.env.pgbouncer
+        expose:
+            - 6432
+        ports:
+            - 6432:6432
 
     rustfs:
         image: rustfs/rustfs:1.0.0-alpha.82

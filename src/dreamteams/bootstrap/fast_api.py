@@ -8,7 +8,6 @@ from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 
 from dreamteams.adapters.sentry import SentryConfig
 from dreamteams.bootstrap.config.loader import Config
@@ -37,7 +36,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 def create_app(config: Config) -> FastAPI:
     """Create and configure the FastAPI application instance."""
     setup_observability(config.otel)
-    SQLAlchemyInstrumentor().instrument()
 
     app = FastAPI(
         lifespan=lifespan,

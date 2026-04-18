@@ -1,6 +1,7 @@
 from collections.abc import AsyncIterator
 
 from dishka import AnyOf, Provider, Scope, WithParents, provide, provide_all
+from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
 from dreamteams.adapters.argon2_password_hasher import Argon2PasswordHasher
@@ -17,7 +18,7 @@ from dreamteams.adapters.db.gateway.competition import SACompetitionGateway
 from dreamteams.adapters.db.gateway.organizer import SAOrganizerGateway
 from dreamteams.adapters.db.gateway.organizer_invite import SAOrganizerInviteGateway
 from dreamteams.adapters.db.gateway.user import SAUserGateway
-from dreamteams.adapters.metrics import OTelMetricsGateway
+from dreamteams.adapters.db.pool_metrics import register_pool_metrics
 from dreamteams.application.common.uow import UoW
 
 
@@ -42,7 +43,6 @@ class AdapterProvider(Provider):
     auth_provider = provide(WithParents[SimpleAuthProvider], scope=Scope.REQUEST)
     clock = provide(WithParents[SystemClock], scope=Scope.APP)
     password_hasher = provide(WithParents[Argon2PasswordHasher], scope=Scope.APP)
-    metrics_gateway = provide(WithParents[OTelMetricsGateway], scope=Scope.APP)
 
     @provide(scope=Scope.APP)
     async def get_avatar_storage(self, config: S3Config) -> WithParents[S3AvatarStorage]:
@@ -57,6 +57,20 @@ class AdapterProvider(Provider):
         engine = create_async_engine(
             config.connection_url,
             future=True,
+            pool_size=100,
+            max_overflow=100,
+            pool_timeout=30,
+            pool_recycle=1800,
+            connect_args={
+                "statement_cache_size": 0,
+                "prepared_statement_cache_size": 0,
+            },
+        )
+        register_pool_metrics(engine)
+        SQLAlchemyInstrumentor().instrument(
+            engine=engine.sync_engine,
+            enable_commenter=True,
+            commenter_options={},
         )
         yield engine
         await engine.dispose()

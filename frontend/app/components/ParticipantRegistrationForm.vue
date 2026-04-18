@@ -155,10 +155,8 @@ const isLoading = computed(() => participantStore.loading || isUploadingAvatar.v
           v-model="state.participant_type"
           :items="participantTypeOptions"
           value-key="value"
-          :orientation="'vertical'"
+          orientation="horizontal"
           size="xl"
-          class="sm:flex-row sm:gap-6"
-          :ui="{ fieldset: 'flex flex-col gap-3 sm:flex-row sm:gap-6' }"
         />
       </UFormField>
 

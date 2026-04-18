@@ -52,7 +52,7 @@ const isLastStep = computed(() => currentStep.value === stepperItems.value.lengt
 
 const goNext = async () => {
   try {
-    await (formRef.value as any)?.validate(stepFields[currentStep.value]);
+    await (formRef.value as any)?.validate({ name: stepFields[currentStep.value] });
     currentStep.value++;
     stepperRef.value?.next();
   } catch {

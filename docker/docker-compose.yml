@@ -47,8 +47,8 @@ services:
             file: docker-compose.base.yml
             service: api
         depends_on:
-            db:
-                condition: service_healthy
+            pgbouncer:
+                condition: service_started
             migrations:
                 condition: service_completed_successfully
             rustfs:
@@ -61,7 +61,17 @@ services:
             file: docker-compose.base.yml
             service: db
         volumes:
-            - pg_data:/var/lib/postgresql/data/
+            - pg_data:/var/lib/postgresql
+        networks:
+            - "shared"
+
+    pgbouncer:
+        extends:
+            file: docker-compose.base.yml
+            service: pgbouncer
+        depends_on:
+            db:
+                condition: service_healthy
         networks:
             - "shared"
 

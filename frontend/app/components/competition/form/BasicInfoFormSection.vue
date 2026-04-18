@@ -97,9 +97,8 @@ const participantTypeOptions = [
           :model-value="domains"
           @update:model-value="emit('update:domains', $event)"
           :items="domainOptions"
-          orientation="vertical"
+          orientation="horizontal"
           size="xl"
-          :ui="{ fieldset: 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3' }"
         />
       </UFormField>
 
@@ -116,7 +115,6 @@ const participantTypeOptions = [
           @update:model-value="emit('update:participantType', $event)"
           :items="participantTypeOptions"
           size="xl"
-          :ui="{ fieldset: 'flex flex-col gap-2 sm:flex-row sm:gap-4 sm:flex-wrap' }"
         />
       </UFormField>
 

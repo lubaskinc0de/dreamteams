@@ -18,6 +18,17 @@ export default defineAppConfig({
       },
     },
 
+    // Tooltip: override the default single-line truncated bubble to allow
+    // wrapped multi-line help text with comfortable padding and radius.
+    tooltip: {
+      slots: {
+        content:
+          "flex items-start gap-1 bg-default text-default shadow-md rounded-lg ring ring-default max-w-xs px-3 py-2 text-sm leading-snug select-none data-[state=delayed-open]:animate-[scale-in_100ms_ease-out] data-[state=closed]:animate-[scale-out_100ms_ease-in] origin-(--reka-tooltip-content-transform-origin) pointer-events-auto",
+        arrow: "fill-bg stroke-default",
+        text: "whitespace-normal text-wrap",
+      },
+    },
+
     // Toast/Notification configuration
     notifications: {
       position: "top-0 right-0",

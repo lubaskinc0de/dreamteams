@@ -284,8 +284,3 @@
     min-width: 44px;
   }
 }
-
-/* Prevent horizontal scroll globally — elements that would overflow become contained */
-html, body {
-  overflow-x: hidden;
-}
