@@ -52,7 +52,7 @@ class Application(Entity):
             raise ApplicationAlreadyResolvedError
         self.status = ApplicationStatus.REJECTED
 
-    def can_withdraw(self, participant: Participant) -> None:
+    def ensure_can_withdraw(self, participant: Participant) -> None:
         """Assert the participant may withdraw this application, raising on any violation."""
         if participant.id != self.participant_id:
             raise AccessDeniedError(message="Only the participant who submitted this application can withdraw it")

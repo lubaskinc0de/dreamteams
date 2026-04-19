@@ -21,7 +21,7 @@ test:
     just down
 
 test-unit:
-    pytest -vvv tests/unit
+    pytest -vvv tests/unit -n auto
 
 down:
     docker compose -f docker/docker-compose.yml --env-file=./.config/.env down

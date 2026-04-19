@@ -38,7 +38,7 @@ class WithdrawApplication:
         if participant is None:
             raise ParticipantNotFoundError
 
-        application.can_withdraw(participant)
+        application.ensure_can_withdraw(participant)
 
         await self.uow.delete(application)
         await self.uow.commit()

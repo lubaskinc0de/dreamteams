@@ -72,6 +72,7 @@ class RegisterOrganizer:
         user = await self.user_gateway.get(user_id) if user_id is not None else None
         if user is None:
             user = await self.user_factory.create_user()
+
         organizer_id = uuid4()
         logger.debug("Generated new organizer id", user_id=user.id, organizer_id=organizer_id)
         organizer = Organizer(

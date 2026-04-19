@@ -32,6 +32,7 @@ dependencies = [
     "opentelemetry-instrumentation-fastapi==0.61b0",
     "opentelemetry-instrumentation-sqlalchemy==0.61b0",
     "redis[hiredis]==5.2.1",
+    "pytest-xdist==3.8.0",
 ]
 [project.optional-dependencies]
 lint = ['ruff==0.14.8', 'mypy==1.19.0', 'import-linter==2.7', 'typos==1.41.0']

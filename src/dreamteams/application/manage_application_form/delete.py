@@ -41,6 +41,7 @@ class DeleteApplicationForm:
         organizer = await self.organizer_gateway.get_by_user_id(user_id)
         if organizer is None:
             raise OrganizerNotFoundError
+
         if not competition.is_owned_by(organizer):
             logger.warning(
                 "Access denied to delete application form",
