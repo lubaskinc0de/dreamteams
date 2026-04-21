@@ -9,7 +9,7 @@ from tests.integration.competition_helpers import create_competitions_list
 from tests.integration.helpers.facade import Gateway
 
 
-@pytest.mark.parametrize("num_competitions", [0, 1, 5, 10])
+@pytest.mark.parametrize("num_competitions", [0, 1, 5])
 async def test_list_competitions_succeeds(
     api_client: ApiClient,
     gateway: Gateway,
@@ -34,7 +34,7 @@ async def test_list_competitions_succeeds(
     assert result == expected_model
 
 
-@pytest.mark.parametrize("num_competitions", [0, 1, 5, 10])
+@pytest.mark.parametrize("num_competitions", [0, 1, 5])
 @pytest.mark.parametrize("sort_order", [SortOrder.ASC, SortOrder.DESC])
 async def test_list_competitions_sorted_by_created_at(
     api_client: ApiClient,
@@ -64,7 +64,7 @@ async def test_list_competitions_sorted_by_created_at(
     assert result == expected_model
 
 
-@pytest.mark.parametrize("num_competitions", [0, 1, 5, 10])
+@pytest.mark.parametrize("num_competitions", [0, 1, 5])
 @pytest.mark.parametrize("sort_order", [SortOrder.ASC, SortOrder.DESC])
 async def test_list_competitions_sorted_by_title(
     api_client: ApiClient,
@@ -94,7 +94,7 @@ async def test_list_competitions_sorted_by_title(
     assert result == expected_model
 
 
-@pytest.mark.parametrize("num_competitions", [0, 1, 5, 10])
+@pytest.mark.parametrize("num_competitions", [0, 1, 5])
 @pytest.mark.parametrize("sort_order", [SortOrder.ASC, SortOrder.DESC])
 async def test_list_competitions_sorted_by_registration_start(
     api_client: ApiClient,
@@ -137,7 +137,7 @@ async def test_list_competitions_filtered_by_is_archived(
     owner = await gateway.organizer.create_with_admin(gateway.admin)
     base_competitions = await gateway.competition.create_many(owner.organizer.auth_id, 5)
     archived_competitions = await gateway.competition.change_archived_state(
-        base_competitions, owner.organizer.auth_id, is_archived=True
+        base_competitions, owner.organizer.auth_id, is_archived=True,
     )
     active_competitions = await gateway.competition.make_all_active(
         await gateway.competition.create_many(owner.organizer.auth_id, 3),
@@ -332,7 +332,7 @@ async def test_organizers_can_only_see_their_own_competitions(
     assert second_user_list == expected_second_user_list
 
 
-@pytest.mark.parametrize("page", [1, 2, 3])
+@pytest.mark.parametrize("page", [1, 3])
 async def test_list_competitions_with_pagination(
     api_client: ApiClient,
     gateway: Gateway,

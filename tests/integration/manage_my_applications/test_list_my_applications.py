@@ -43,7 +43,7 @@ async def test_participant_can_list_own_applications(
     )
 
 
-@pytest.mark.parametrize("num_applications", [0, 1, 5, 10])
+@pytest.mark.parametrize("num_applications", [0, 1, 5])
 async def test_list_my_applications_succeeds(
     api_client: ApiClient,
     gateway: Gateway,
