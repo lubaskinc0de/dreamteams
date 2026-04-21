@@ -16,16 +16,16 @@ up-db:
     docker compose -f docker/docker-compose.yml --env-file=./.config/.env up db -d
 
 test:
-    just down
-    docker compose -f docker/docker-compose.tests.yml --env-file=./.config/.env up --build --abort-on-container-exit tests
-    just down
+    pytest -vvv -n auto --dist=worksteal
+
+test-cov:
+    pytest -vvv -n auto --dist=worksteal --cov=src/dreamteams --cov-report=term-missing
 
 test-unit:
-    pytest -vvv tests/unit -n auto
+    pytest -vvv tests/unit -n auto --dist=worksteal --cov=src/dreamteams/entities --cov-report=term-missing
 
 down:
     docker compose -f docker/docker-compose.yml --env-file=./.config/.env down
-    docker compose -f docker/docker-compose.tests.yml --env-file=./.config/.env down
 
 clear:
     docker compose -f docker/docker-compose.yml --env-file=./.config/.env down -v

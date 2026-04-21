@@ -22,10 +22,14 @@ class OTelConfig:
     sample_ratio: float = 0.1
     metric_export_interval_ms: int = 10000
     instrument_sqlalchemy: bool = False
+    enabled: bool = True
 
 
 def setup_observability(config: OTelConfig) -> None:
     """Initialize global TracerProvider and MeterProvider — both push to the OTel Collector via OTLP."""
+    if not config.enabled:
+        return
+
     # Per-process unique id so multi-worker setups produce distinct Prometheus timeseries
     # rather than collapsing into one (last-write-wins).
     resource = Resource.create(

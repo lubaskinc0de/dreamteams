@@ -4,7 +4,7 @@ from dreamteams.application.register.register_superuser import CreatedSuperuser
 from tests.integration.api_client import ApiClient
 from tests.integration.helpers.facade import Gateway
 
-_SUPERUSER_PASSWORD = "asd123321"  # noqa: S105
+_SUPERUSER_PASSWORD = "asd123321"
 
 
 async def test_register_superuser(api_client: ApiClient) -> None:

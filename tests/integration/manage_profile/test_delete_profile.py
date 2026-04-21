@@ -18,7 +18,7 @@ async def test_delete_profile(api_client: ApiClient, gateway: Gateway) -> None:
     response.assert_status(200)
 
     with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
-        (await api_client.view_profile()).assert_error(401, "UNAUTHORIZED")
+        (await api_client.view_profile()).assert_error(404, "USER_NOT_FOUND")
 
 
 async def test_delete_user_profile_fails_if_user_does_not_exist(api_client: ApiClient) -> None:

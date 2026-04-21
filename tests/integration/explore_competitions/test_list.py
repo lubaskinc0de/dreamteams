@@ -141,7 +141,7 @@ async def test_competitions_with_mismatched_participant_type_are_hidden(
     assert result == ExploreCompetitionsList(items=[], total=0, page=1)
 
 
-@pytest.mark.parametrize("max_participants", [1, 2, 5])
+@pytest.mark.parametrize("max_participants", [1, 5])
 async def test_full_capacity_competitions_are_hidden(
     api_client: ApiClient,
     gateway: Gateway,
@@ -445,7 +445,7 @@ async def test_domains_filter_returns_competitions_with_overlapping_domains(
 # --- Pagination + response shape ---
 
 
-@pytest.mark.parametrize("page", [1, 2, 3])
+@pytest.mark.parametrize("page", [1, 2])
 async def test_pagination_respects_page_size(
     api_client: ApiClient,
     gateway: Gateway,

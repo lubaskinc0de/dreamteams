@@ -1,8 +1,8 @@
 from importlib.resources import as_file
 from importlib.resources.abc import Traversable
 
+import httpx
 import pytest
-from aiohttp import ClientSession
 
 from tests.integration.api_client import ApiClient
 from tests.integration.helpers.facade import Gateway
@@ -35,7 +35,7 @@ async def test_view_organizer_avatar_succeeds(
     api_client: ApiClient,
     assets: Traversable,
     gateway: Gateway,
-    http_session: ClientSession,
+    http_session: httpx.AsyncClient,
     file_path: str,
 ) -> None:
     """Test view avatar attached to organizer."""
@@ -51,11 +51,10 @@ async def test_view_organizer_avatar_succeeds(
         assert avatar_url is not None
 
     # Act
-    async with http_session.get(avatar_url) as resp:
-        status = resp.status
+    resp = await http_session.get(avatar_url)
 
     # Assert
-    assert status == 200  # noqa: PLR2004
+    assert resp.status_code == 200  # noqa: PLR2004
 
 
 @pytest.mark.parametrize(

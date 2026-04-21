@@ -45,7 +45,7 @@ class UpdateParticipant:
     async def execute(self, data: UpdateParticipantForm) -> None:
         """Update participant profile fields."""
         user_id = await self.idp.get_user_id()
-        participant = await self.participant_gateway.get_by_user_id(user_id)
+        participant = await self.participant_gateway.get_by_user_id(user_id, eager_skills_and_contacts=True)
 
         if participant is None:
             raise ParticipantNotFoundError

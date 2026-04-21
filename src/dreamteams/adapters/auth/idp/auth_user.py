@@ -60,22 +60,7 @@ class WebAuthUserIdProvider(AuthUserIdProvider):
                 )
 
             if not self._config.allow_unverified_email:
-                try:
-                    email_verified: bool = self._get_access_token_data()["email_verified"]
-                except KeyError as e:
-                    logger.debug("Request unauthorized due to corrupted access token")
-                    raise UnauthorizedError(
-                        message="Corrupted access token",
-                        reason=UnauthorizedReason.CORRUPTED_ACCESS_TOKEN,
-                    ) from e
-
-                logger.debug("Email verified status", status=email_verified)
-                if not email_verified:
-                    raise UnauthorizedError(
-                        message="Email is not verified",
-                        reason=UnauthorizedReason.EMAIL_IS_NOT_VERIFIED,
-                    )
-
+                self._ensure_email_verified()
             return user_id
 
     def _get_access_token_data(self) -> dict[str, Any]:
@@ -96,3 +81,20 @@ class WebAuthUserIdProvider(AuthUserIdProvider):
             options={"verify_signature": False, "verify_exp": True},
             algorithms=[self._config.access_token_alg],
         )
+
+    def _ensure_email_verified(self) -> None:
+        try:
+            email_verified: bool = self._get_access_token_data()["email_verified"]
+        except KeyError as e:
+            logger.debug("Request unauthorized due to corrupted access token")
+            raise UnauthorizedError(
+                message="Corrupted access token",
+                reason=UnauthorizedReason.CORRUPTED_ACCESS_TOKEN,
+            ) from e
+
+        logger.debug("Email verified status", status=email_verified)
+        if not email_verified:
+            raise UnauthorizedError(
+                message="Email is not verified",
+                reason=UnauthorizedReason.EMAIL_IS_NOT_VERIFIED,
+            )

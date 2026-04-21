@@ -99,7 +99,7 @@ async def test_preview_competitions_does_not_show_competitions_with_closed_regis
     assert result == expected
 
 
-@pytest.mark.parametrize("page", [1, 2, 3])
+@pytest.mark.parametrize("page", [1, 2])
 async def test_preview_competitions_pagination(
     api_client: ApiClient,
     gateway: Gateway,

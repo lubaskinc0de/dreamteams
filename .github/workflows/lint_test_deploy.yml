@@ -44,12 +44,21 @@ jobs:
               with:
                   persist-credentials: false
 
-            - name: Set up Docker Compose
-              run: |
-                  sudo apt-get install -y docker-compose
+            - name: Set up Python
+              uses: actions/setup-python@v6
+              with:
+                  python-version: "3.13.7"
 
-            - name: Run tests
-              run: docker compose -f docker/docker-compose.tests.yml --env-file=./.config/.env up --build --abort-on-container-exit tests
+            - name: Install uv
+              uses: astral-sh/setup-uv@v7
+              with:
+                  version: "0.9.17"
+
+            - name: Install dependencies
+              run: uv pip install ".[test]" --system
+
+            - name: Run integration tests
+              run: pytest -vvv tests/integration -n auto --dist=loadfile
 
     bump_version:
         name: "Bump version"

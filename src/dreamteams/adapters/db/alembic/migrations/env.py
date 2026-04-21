@@ -1,5 +1,6 @@
 import asyncio
 from logging.config import fileConfig
+from typing import cast
 
 from alembic import context
 from sqlalchemy import URL, pool
@@ -18,10 +19,12 @@ target_metadata = mapper_registry.metadata
 
 
 def get_url() -> str:
-    # Pool sizing is irrelevant for alembic (uses NullPool); pass placeholders.
-    config = DbConfig.from_env(max_total_pool_size=1, max_total_overflow=0)
-    url = config.connection_url
-    return url.render_as_string(hide_password=False)
+    injected = config.attributes.get("db_url")
+    if injected is not None:
+        return cast(str, injected.render_as_string(hide_password=False))
+
+    db_config = DbConfig.from_env(max_total_pool_size=1, max_total_overflow=0)
+    return db_config.connection_url.render_as_string(hide_password=False)
 
 
 def run_migrations_offline() -> None:
