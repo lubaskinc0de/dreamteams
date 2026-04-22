@@ -2,7 +2,7 @@ import pytest
 
 from dreamteams.application.common.gateway.competition import CompetitionSortBy, ExploreSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
-from dreamteams.application.explore_competitions.list import PAGE_SIZE, ExploreCompetitionsList
+from dreamteams.application.submit_application.list_competitions import PAGE_SIZE, ExploreCompetitionsList
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.team_size_range import TeamSizeRange

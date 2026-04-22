@@ -118,19 +118,10 @@ export const createCompetitionSchemas = (t: (key: string) => string) => {
   );
 
   const participantLimitsSchema = z.object({
-    min: z
-      .number()
-      .min(1, t("competition.form.participantLimits.min.minValue")),
     max: z
       .number()
       .min(1, t("competition.form.participantLimits.max.minValue")),
-  }).refine(
-    (data) => data.min <= data.max,
-    {
-      message: t("competition.form.participantLimits.validation.minLessThanMax"),
-      path: ["max"],
-    }
-  );
+  });
 
   const teamSizeSchema = z.object({
     min: z.number().min(1, t("competition.form.teamSize.min.minValue")),
@@ -166,6 +157,11 @@ export const createCompetitionSchemas = (t: (key: string) => string) => {
       .min(1, t("competition.form.milestone.title.required"))
       .max(50, t("competition.form.milestone.title.maxLength")),
     timestamp: z.string().min(1, t("competition.form.milestone.timestamp.required")),
+    description: z
+      .string()
+      .max(300, t("competition.form.milestone.description.maxLength"))
+      .nullable()
+      .optional(),
   }).refine(
     (data) => {
       // timestamp must not be in the past
@@ -188,10 +184,10 @@ export const createCompetitionSchemas = (t: (key: string) => string) => {
     domains: z.array(z.enum(["frontend", "mobile", "backend", "ai", "devops"])).min(1, t("competition.form.domains.required")),
     participant_type: z.enum(["schoolchild", "student", "any"]),
     venue: venueSchema,
-    team_size: teamSizeSchema,
+    team_size: teamSizeSchema.nullable(),
     auto_accept: z.boolean(),
     milestones: z.array(milestoneSchema).optional(),
-    is_team: z.boolean(),
+    is_team: z.boolean().optional(),
   }).refine(
     (data) => {
       // Check that milestone timestamps are unique
@@ -206,33 +202,19 @@ export const createCompetitionSchemas = (t: (key: string) => string) => {
       message: t("competition.form.milestone.validation.duplicateTimestamp"),
       path: ["milestones"],
     }
-  ).refine(
-    (data) => {
-      // If is_team is true, team_size must be valid (min <= max and min >= 2)
-      if (data.is_team) {
-        return data.team_size.min >= 1 && data.team_size.min <= data.team_size.max;
-      }
-      return true;
-    },
-    {
-      message: t("competition.form.teamSize.validation.minLessThanMax"),
-      path: ["team_size"],
+  ).superRefine((data, ctx) => {
+    // Backend invariant: team_size is null ⇔ team_formation_start is null ⇔ team_formation_end is null.
+    // Either all three exist (team competition) or all three are null (individual). A half-configured
+    // state returns 400/INVALID_COMPETITION_DATA, so block it at the Zod layer.
+    const hasTeamSize = data.team_size != null;
+    const tfs = data.schedule.team_formation_start;
+    const hasTeamFormation = tfs != null && tfs !== "";
+    if (hasTeamSize !== hasTeamFormation) {
+      const msg = t("errors.team_size_schedule_pairing");
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: msg, path: ["team_size"] });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: msg, path: ["schedule", "team_formation_start"] });
     }
-  ).refine(
-    (data) => {
-      // If is_team is true, team formation period is required
-      if (data.is_team) {
-        const hasStart = data.schedule.team_formation_start !== null && data.schedule.team_formation_start !== undefined && data.schedule.team_formation_start !== '';
-        const hasEnd = data.schedule.team_formation_end !== null && data.schedule.team_formation_end !== undefined && data.schedule.team_formation_end !== '';
-        return hasStart && hasEnd;
-      }
-      return true;
-    },
-    {
-      message: t("competition.form.schedule.validation.teamFormationRequired"),
-      path: ["schedule.team_formation_start"],
-    }
-  );
+  });
 
   // Update schema - no "date in past" validation, uses is_archived instead of is_team
   const updateScheduleSchema = z.object({
@@ -309,10 +291,20 @@ export const createCompetitionSchemas = (t: (key: string) => string) => {
     domains: z.array(z.enum(["frontend", "mobile", "backend", "ai", "devops"])).min(1, t("competition.form.domains.required")),
     participant_type: z.enum(["schoolchild", "student", "any"]),
     venue: venueSchema,
-    team_size: teamSizeSchema,
+    team_size: teamSizeSchema.nullable(),
     milestones: z.array(updateMilestoneSchema).optional(),
     auto_accept: z.boolean().optional(),
     is_archived: z.boolean().optional(),
+  }).superRefine((data, ctx) => {
+    // Mirror the create-form pairing invariant on update.
+    const hasTeamSize = data.team_size != null;
+    const tfs = data.schedule.team_formation_start;
+    const hasTeamFormation = tfs != null && tfs !== "";
+    if (hasTeamSize !== hasTeamFormation) {
+      const msg = t("errors.team_size_schedule_pairing");
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: msg, path: ["team_size"] });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: msg, path: ["schedule", "team_formation_start"] });
+    }
   });
 
   return {

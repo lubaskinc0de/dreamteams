@@ -5,14 +5,11 @@ import {
   createParticipantSchemas,
   type ParticipantRegistrationSchema,
 } from "~/schemas/participant";
-import { useNotificationsStore } from "~/stores/notifications";
 import { useParticipantStore } from "~/stores/participant";
 
 const participantStore = useParticipantStore();
 const { getErrorMessage, isErrorCode } = useErrorHandler();
 const { t } = useI18n();
-const api = useApi();
-const notifications = useNotificationsStore();
 
 const state = reactive({
   full_name: "",
@@ -21,18 +18,6 @@ const state = reactive({
 });
 
 const { participantRegistrationSchema } = createParticipantSchemas(t);
-
-// Avatar upload state
-const selectedAvatar = ref<File | null>(null);
-const isUploadingAvatar = ref(false);
-
-const handleAvatarUpload = async (file: File) => {
-  selectedAvatar.value = file;
-};
-
-const handleAvatarDelete = () => {
-  selectedAvatar.value = null;
-};
 
 const participantTypeOptions = computed(() => [
   { value: "schoolchild", label: t("form.participantType.options.SCHOOLCHILD") },
@@ -47,27 +32,7 @@ const onSubmit = async (event: FormSubmitEvent<ParticipantRegistrationSchema>) =
   };
 
   await participantStore.registerParticipant(formData);
-
-  if (participantStore.registrationSuccess && selectedAvatar.value) {
-    isUploadingAvatar.value = true;
-    const { error } = await api.attachAvatar(selectedAvatar.value);
-    isUploadingAvatar.value = false;
-
-    if (error) {
-      notifications.add({
-        title: t("apiErrors." + error.code),
-        color: "error",
-        icon: "i-heroicons-exclamation-triangle",
-      });
-    } else {
-      notifications.add({
-        title: t("toast.avatarUploaded.title"),
-        description: t("toast.avatarUploaded.description"),
-        color: "success",
-        icon: "i-heroicons-check-circle",
-      });
-    }
-  }
+  // Avatar is managed on the profile page after registration completes.
 };
 
 const apiErrorMessage = computed(() => getErrorMessage(participantStore.error));
@@ -77,7 +42,7 @@ const showProfileLink = computed(() =>
   isErrorCode(participantStore.error, "AUTH_USER_ALREADY_EXISTS"),
 );
 
-const isLoading = computed(() => participantStore.loading || isUploadingAvatar.value);
+const isLoading = computed(() => participantStore.loading);
 </script>
 
 <template>
@@ -116,16 +81,6 @@ const isLoading = computed(() => participantStore.loading || isUploadingAvatar.v
       :validate-on="['input', 'change']"
       class="space-y-5 w-full"
     >
-      <!-- Avatar Upload Section -->
-      <div class="flex justify-center py-2">
-        <AvatarUpload
-          :loading="isUploadingAvatar"
-          :show-delete="!!selectedAvatar"
-          @upload="handleAvatarUpload"
-          @delete="handleAvatarDelete"
-        />
-      </div>
-
       <!-- Full Name -->
       <UFormField :label="t('form.fullName.label')" name="full_name" required class="w-full">
         <UInput

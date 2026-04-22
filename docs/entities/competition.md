@@ -18,7 +18,7 @@ Represents a hackathon or olympiad event created by an organizer.
 | `domains`            | `list[`[`Domain`](../value-objects/domain.md)`]`         | IT domains relevant to this competition            |
 | `participant_type`   | [`ParticipantType`](../value-objects/participant-type.md)      | Target participant category                        |
 | `venue`              | [`CompetitionVenue`](../value-objects/competition-venue.md)     | Event format and location                          |
-| `team_size`          | [`TeamSizeRange`](../value-objects/team-size-range.md)        | Min and max team size                              |
+| `team_size`          | [`TeamSizeRange`](../value-objects/team-size-range.md) `\| None` | Min and max team size (optional — paired with schedule.team_formation_*) |
 | `milestones`         | `list[`[`Milestone`](../value-objects/milestone.md)`]`      | Custom timeline milestones                         |
 | `auto_accept`        | `bool`                 | Auto-accept applications (default: `False`)        |
 | `is_archived`        | `bool`                 | Whether competition is archived                    |
@@ -33,6 +33,7 @@ Represents a hackathon or olympiad event created by an organizer.
 4. Only the organizer who created the competition can read, update, or delete it
 5. New competitions are created with `is_archived=True` by default
 6. Archived competitions are not visible to participants
+7. `team_size` and `schedule.team_formation_{start,end}` are paired: either all three are set (team competition) or all three are `None` (individual competition). Setting one side without the other raises `InvalidCompetitionDataError`.
 
 ## Relationships
 

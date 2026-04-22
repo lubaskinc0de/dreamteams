@@ -40,7 +40,7 @@ class CompetitionForm(BaseModel):
     domains: list[Domain]
     participant_type: ParticipantType
     venue: CompetitionVenue
-    team_size: TeamSizeRange
+    team_size: TeamSizeRange | None
     auto_accept: bool = False
     milestones: list[MilestoneForm] = Field(default_factory=list)
 

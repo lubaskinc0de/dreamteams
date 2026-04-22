@@ -1,8 +1,11 @@
-from datetime import datetime
-
 import structlog
-from pydantic import BaseModel
 
+from dreamteams.application.common.dto.application_form import (
+    ApplicationFormModel,
+    FieldChoiceModel,
+    FieldModel,
+    to_application_form_model,
+)
 from dreamteams.application.common.gateway.application_form import ApplicationFormGateway
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
@@ -11,38 +14,18 @@ from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
 from dreamteams.application.errors.application_form import ApplicationFormNotFoundError
 from dreamteams.application.errors.organizer import OrganizerNotFoundError
-from dreamteams.entities.application_form.vo.field import FieldType
-from dreamteams.entities.common.identifiers import ApplicationFormId, CompetitionId
+from dreamteams.entities.common.identifiers import CompetitionId
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import CompetitionNotFoundError
 
 logger: Logger = structlog.get_logger(__name__)
 
-
-class FieldChoiceModel(BaseModel):
-    """A single selectable option in a SELECT or MULTISELECT field."""
-
-    value: str
-    label: str
-
-
-class FieldModel(BaseModel):
-    """A single field definition in an application form."""
-
-    name: str
-    label: str
-    type: FieldType
-    required: bool
-    choices: list[FieldChoiceModel] | None
-
-
-class ApplicationFormModel(BaseModel):
-    """Full representation of an application form."""
-
-    id: ApplicationFormId
-    competition_id: CompetitionId
-    created_at: datetime
-    fields: list[FieldModel]
+__all__ = [
+    "ApplicationFormModel",
+    "FieldChoiceModel",
+    "FieldModel",
+    "ReadApplicationForm",
+]
 
 
 @interactor
@@ -76,22 +59,4 @@ class ReadApplicationForm:
             logger.warning("Application form not found", competition_id=competition_id, user_id=user_id)
             raise ApplicationFormNotFoundError
 
-        return ApplicationFormModel(
-            id=form.id,
-            competition_id=form.competition_id,
-            created_at=form.created_at,
-            fields=[
-                FieldModel(
-                    name=f.name,
-                    label=f.label,
-                    type=f.type,
-                    required=f.required,
-                    choices=(
-                        [FieldChoiceModel(value=c.value, label=c.label) for c in f.choices]
-                        if f.choices is not None
-                        else None
-                    ),
-                )
-                for f in form.fields
-            ],
-        )
+        return to_application_form_model(form)

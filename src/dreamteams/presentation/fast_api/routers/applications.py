@@ -4,7 +4,6 @@ from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter, Query
 
-from dreamteams.application.explore_competitions import CreatedApplication, SubmitApplication, SubmitApplicationInput
 from dreamteams.application.manage_applications import (
     AcceptApplication,
     ApplicationsList,
@@ -21,6 +20,13 @@ from dreamteams.application.manage_my_applications import (
 )
 from dreamteams.application.manage_my_applications.list import ApplicationsList as MyApplicationsList
 from dreamteams.application.manage_my_applications.read import ApplicationModel
+from dreamteams.application.submit_application import (
+    ApplicationFormModel,
+    CreatedApplication,
+    ReadApplicationForm,
+    SubmitApplication,
+    SubmitApplicationInput,
+)
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId
 
 competitions_router = APIRouter(
@@ -44,6 +50,15 @@ async def submit_application(
 ) -> CreatedApplication:
     """HTTP endpoint for submitting an application to a competition."""
     return await interactor.execute(competition_id, data)
+
+
+@competitions_router.get("/{competition_id}/applications/form/")
+async def read_application_form_for_submission(
+    interactor: FromDishka[ReadApplicationForm],
+    competition_id: CompetitionId,
+) -> ApplicationFormModel:
+    """HTTP endpoint for a participant to read a competition's application form before submitting."""
+    return await interactor.execute(competition_id)
 
 
 @competitions_router.get("/{competition_id}/applications/")

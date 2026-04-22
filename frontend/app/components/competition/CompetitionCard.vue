@@ -20,7 +20,7 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-const { formatDateRange, formatNumericRange, formatTeamSize, getFormatLabel } = useCompetitionFormatters();
+const { formatDateRange, formatParticipants, formatTeamSize, getFormatLabel } = useCompetitionFormatters();
 
 // Handle card click
 const handleClick = () => {
@@ -78,11 +78,11 @@ const handleDelete = () => {
         <UiInfoRow
           icon="i-heroicons-users"
           :label="t('competitions.card.participants')"
-          :value="formatNumericRange(competition.participant_limits.min, competition.participant_limits.max)"
+          :value="formatParticipants(competition.members_count, competition.participant_limits.max)"
           size="sm"
         />
         <UiInfoRow
-          v-if="!(competition.team_size.min === 1 && competition.team_size.max === 1)"
+          v-if="competition.team_size"
           icon="i-heroicons-user-group"
           :label="t('competitions.card.teamSize')"
           :value="formatTeamSize(competition.team_size)"
@@ -90,8 +90,8 @@ const handleDelete = () => {
         />
         <UiInfoRow
           v-else
-          icon="i-heroicons-user-group"
-          :value="formatTeamSize(competition.team_size)"
+          icon="i-heroicons-user"
+          :value="t('competition.individual')"
           size="sm"
         />
         <UiInfoRow

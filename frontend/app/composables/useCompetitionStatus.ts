@@ -44,7 +44,7 @@ export const useCompetitionStatus = () => {
    * Проверяет, является ли соревнование командным
    */
   const isTeamCompetition = (competition: CompetitionModel | PreviewCompetitionModel) => {
-    return !(competition.team_size.min === 1 && competition.team_size.max === 1);
+    return competition.team_size !== null;
   };
 
   return {

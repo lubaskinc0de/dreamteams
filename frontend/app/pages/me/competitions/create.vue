@@ -50,23 +50,46 @@ const stepFields: string[][] = [
 
 const isLastStep = computed(() => currentStep.value === stepperItems.value.length - 1);
 
+const topAnchor = useTemplateRef<HTMLElement>('topAnchor');
+
+const scrollToTop = () => {
+  if (!import.meta.client) return;
+  // UMain / UPage often owns the scroll container, not window — use scrollIntoView
+  // on a top-of-form anchor so the browser walks up to whichever element scrolls.
+  topAnchor.value?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Belt-and-braces for layouts where window itself scrolls.
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
 const goNext = async () => {
   try {
     await (formRef.value as any)?.validate({ name: stepFields[currentStep.value] });
-    currentStep.value++;
-    stepperRef.value?.next();
-  } catch {
-    // validation errors shown inline
+    // UStepper is v-model'd on currentStep — mutating it moves both. Don't also call
+    // stepperRef.next() or the two sources fight and desync after a validation miss.
+    if (currentStep.value < stepperItems.value.length - 1) {
+      currentStep.value++;
+    }
+    await nextTick();
+    scrollToTop();
+  } catch (err: any) {
+    handleError({ errors: err?.errors ?? [] });
   }
 };
 
 const goPrev = () => {
-  currentStep.value--;
-  stepperRef.value?.prev();
+  if (currentStep.value > 0) {
+    currentStep.value--;
+  }
+  nextTick(scrollToTop);
 };
 
 // Is team competition toggle
 const isTeamCompetition = ref(true);
+
+// UI default for the team-size slider when the user first enables "team competition".
+// A team needs at least 2 members to make sense; 5 is the typical hackathon cap.
+const DEFAULT_TEAM_SIZE = { min: 2, max: 5 } as const;
 
 // Form state
 const formState = reactive<CompetitionForm & { is_team: boolean }>({
@@ -79,7 +102,6 @@ const formState = reactive<CompetitionForm & { is_team: boolean }>({
     team_formation_end: null,
   },
   participant_limits: {
-    min: 1,
     max: 100,
   },
   domains: [],
@@ -88,10 +110,7 @@ const formState = reactive<CompetitionForm & { is_team: boolean }>({
     format: 'online',
     location: null,
   },
-  team_size: {
-    min: 1,
-    max: 5,
-  },
+  team_size: { ...DEFAULT_TEAM_SIZE },
   auto_accept: false,
   milestones: [],
   is_team: true,
@@ -123,8 +142,10 @@ watch(isTeamCompetition, (isTeam) => {
     teamFormationEndTime.value = new Time(0, 0);
     formState.schedule.team_formation_start = null;
     formState.schedule.team_formation_end = null;
-    formState.team_size.min = 1;
-    formState.team_size.max = 5;
+    // Pairing invariant: team_size must be null whenever team_formation dates are null.
+    formState.team_size = null;
+  } else if (formState.team_size === null) {
+    formState.team_size = { min: 1, max: 5 };
   }
 });
 
@@ -173,7 +194,7 @@ const handleSubmit = async () => {
     } else if (competitionStore.error) {
       notifications.add({
         title: t('errors.default.title'),
-        description: competitionStore.error.message,
+        description: getErrorMessage(competitionStore.error) ?? t('errors.default.description'),
         icon: 'i-heroicons-exclamation-triangle',
         color: 'error',
       });
@@ -191,6 +212,7 @@ const handleSubmit = async () => {
 };
 
 const { handleFormError: handleError } = useFormErrorScroll();
+const { getErrorMessage } = useErrorHandler();
 
 const goBack = () => {
   router.push('/me/competitions');
@@ -201,6 +223,7 @@ const goBack = () => {
   <UPage>
     <UPageBody>
       <UContainer class="!max-w-3xl">
+        <div ref="topAnchor" aria-hidden="true" />
         <!-- Header -->
         <div class="mb-6">
           <UButton
@@ -273,10 +296,8 @@ const goBack = () => {
               :team-formation-min-value="teamFormationMinValue"
             />
             <CompetitionFormParticipantsFormSection
-              v-model:participant-limits-min="formState.participant_limits.min"
               v-model:participant-limits-max="formState.participant_limits.max"
-              v-model:team-size-min="formState.team_size.min"
-              v-model:team-size-max="formState.team_size.max"
+              v-model:team-size="formState.team_size"
               :is-team-competition="isTeamCompetition"
             />
           </div>
@@ -299,7 +320,7 @@ const goBack = () => {
           </div>
 
           <!-- Navigation -->
-          <div class="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-3 mt-6">
+          <div class="flex flex-col-reverse sm:flex-row sm:justify-center sm:items-center gap-2 sm:gap-3 mt-6">
             <UButton
               v-if="currentStep > 0"
               icon="i-heroicons-arrow-left"
@@ -311,40 +332,27 @@ const goBack = () => {
               :disabled="isSubmitting"
               class="w-full sm:w-auto justify-center"
             />
-            <div v-else class="hidden sm:block" />
-
-            <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-              <UButton
-                variant="ghost"
-                color="neutral"
-                size="lg"
-                :label="t('common.cancel')"
-                @click="goBack"
-                :disabled="isSubmitting"
-                class="w-full sm:w-auto justify-center"
-              />
-              <UButton
-                v-if="!isLastStep"
-                icon="i-heroicons-arrow-right"
-                trailing
-                color="primary"
-                size="lg"
-                :label="t('competition.create.nextStep')"
-                @click="goNext"
-                class="w-full sm:w-auto justify-center"
-              />
-              <UButton
-                v-else
-                type="submit"
-                icon="i-heroicons-check-circle"
-                color="primary"
-                size="lg"
-                :label="isSubmitting ? t('competition.create.submitting') : t('competition.create.submitButton')"
-                :loading="isSubmitting"
-                :disabled="isSubmitting"
-                class="w-full sm:w-auto justify-center"
-              />
-            </div>
+            <UButton
+              v-if="!isLastStep"
+              icon="i-heroicons-arrow-right"
+              trailing
+              color="primary"
+              size="lg"
+              :label="t('competition.create.nextStep')"
+              @click="goNext"
+              class="w-full sm:w-auto justify-center"
+            />
+            <UButton
+              v-else
+              type="submit"
+              icon="i-heroicons-check-circle"
+              color="primary"
+              size="lg"
+              :label="isSubmitting ? t('competition.create.submitting') : t('competition.create.submitButton')"
+              :loading="isSubmitting"
+              :disabled="isSubmitting"
+              class="w-full sm:w-auto justify-center"
+            />
           </div>
         </UForm>
       </UContainer>

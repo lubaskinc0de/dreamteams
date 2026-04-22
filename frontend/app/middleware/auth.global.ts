@@ -24,12 +24,13 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   // Define protected routes that require authentication
-  const protectedRoutes = ['/me', '/onboarding', '/admin'];
+  const protectedRoutes = ['/me', '/onboarding', '/admin', '/explore'];
   const isProtectedRoute = protectedRoutes.some(route => to.path.startsWith(route));
 
   const isHomeRoute = to.path === '/';
   const isOnboardingRoute = to.path === '/onboarding';
   const isAdminRoute = to.path.startsWith('/admin');
+  const isExploreRoute = to.path.startsWith('/explore');
   const isSuperuserRegisterRoute = to.path.startsWith('/register-superuser');
 
   // If not authenticated and trying to access protected route, throw 401 error
@@ -50,6 +51,21 @@ export default defineNuxtRouteMiddleware(async (to) => {
       statusMessage: 'Forbidden',
       fatal: true,
     });
+  }
+
+  // /explore is participant-only (mirrors backend 403 for non-participants)
+  if (isAuthenticated.value && isExploreRoute && !userStore.isParticipant) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Forbidden',
+      fatal: true,
+    });
+  }
+
+  // Participants get a dedicated /explore browse page; redirect them away
+  // from the generic anon /competitions preview to keep navigation coherent.
+  if (isAuthenticated.value && userStore.isParticipant && to.path === '/competitions') {
+    return navigateTo('/explore', { replace: true });
   }
 
   // If authenticated but needs onboarding, redirect to onboarding flow.

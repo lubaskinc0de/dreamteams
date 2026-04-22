@@ -1,3 +1,4 @@
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
@@ -5,6 +6,8 @@ from dishka import AsyncContainer
 
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.entities.common.clock import Clock
+from dreamteams.entities.competition.schedule import ScheduleData
+from tests.common.factory.competition import CompetitionFormFactory
 from tests.integration.api_client import ApiClient
 from tests.integration.competition_helpers import competition_form_to_model
 from tests.integration.helpers.facade import Gateway
@@ -84,6 +87,39 @@ async def test_read_competition_fails_if_unauthorized(
     response = await api_client.read_competition(comp.created.competition_id)
 
     response.assert_error(401, "UNAUTHORIZED")
+
+
+async def test_competition_without_team_size_reads_back_as_null(
+    gateway: Gateway,
+    competition_form_factory: CompetitionFormFactory,
+    clock: Clock,
+) -> None:
+    """A competition created with team_size=None and no team_formation reads back with all three as null."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    now = datetime.now(tz=UTC)
+    form = competition_form_factory.build(
+        team_size=None,
+        schedule=ScheduleData(
+            registration_start=now + timedelta(days=1),
+            registration_end=now + timedelta(days=10),
+            team_formation_start=None,
+            team_formation_end=None,
+        ),
+    )
+
+    # Act
+    model = await gateway.competition.create_from_form(owner.organizer.auth_id, form)
+
+    # Assert
+    assert model == competition_form_to_model(
+        competition_id=model.id,
+        organizer_id=owner.organizer.created.organizer_id,
+        created_at=model.created_at,
+        updated_at=model.updated_at,
+        form=form,
+        clock=clock,
+    )
 
 
 @pytest.mark.parametrize("accepted_count", [0, 1, 5])

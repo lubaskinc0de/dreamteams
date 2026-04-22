@@ -1,5 +1,7 @@
 # ReadCompetition
 
+**Actor**: Organizer — see [submit_application/read_competition.md](../submit_application/read_competition.md) for the participant variant.
+
 ## Input
 
 | Field | Type | Description | Validation |

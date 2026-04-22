@@ -6,13 +6,9 @@ import {
   type OrganizerRegistrationSchema,
 } from "~/schemas/organizer";
 
-import { useNotificationsStore } from "~/stores/notifications";
-
 const organizerStore = useOrganizerStore();
 const { getErrorMessage, isErrorCode } = useErrorHandler();
 const { t } = useI18n();
-const api = useApi();
-const notifications = useNotificationsStore();
 
 const state = reactive({
   organizer_name: "",
@@ -24,23 +20,6 @@ const {
   organizerRegistrationSchema
 } = createOrganizerSchemas(t);
 
-// Avatar upload state
-const selectedAvatar = ref<File | null>(null);
-const isUploadingAvatar = ref(false);
-const avatarUploadError = ref<string | null>(null);
-
-// Handle avatar upload
-const handleAvatarUpload = async (file: File) => {
-  selectedAvatar.value = file;
-  avatarUploadError.value = null;
-};
-
-// Handle avatar delete
-const handleAvatarDelete = () => {
-  selectedAvatar.value = null;
-  avatarUploadError.value = null;
-};
-
 // Form submission handler
 const onSubmit = async (event: FormSubmitEvent<OrganizerRegistrationSchema>) => {
   const formData: OrganizerForm = {
@@ -50,30 +29,8 @@ const onSubmit = async (event: FormSubmitEvent<OrganizerRegistrationSchema>) => 
   };
 
   await organizerStore.registerOrganizer(formData);
-
-  // If registration is successful and avatar is selected, upload it
-  if (organizerStore.registrationSuccess && selectedAvatar.value) {
-    isUploadingAvatar.value = true;
-    const { error } = await api.attachAvatar(selectedAvatar.value);
-    isUploadingAvatar.value = false;
-
-    if (error) {
-      avatarUploadError.value = getErrorMessage(error);
-      notifications.add({
-        title: t("apiErrors." + error.code),
-        color: "error",
-        icon: "i-heroicons-exclamation-triangle",
-      });
-    } else {
-      notifications.add({
-        title: t("toast.avatarUploaded.title"),
-        description: t("toast.avatarUploaded.description"),
-        color: "success",
-        icon: "i-heroicons-check-circle",
-      });
-    }
-  }
-  // Parent component (onboarding page) will handle redirect on success
+  // Parent component (onboarding page) will handle redirect on success.
+  // Avatar is managed on the profile page after registration completes.
 };
 
 // Error handling using centralized composable
@@ -83,7 +40,7 @@ const showProfileLink = computed(() =>
   isErrorCode(organizerStore.error, "AUTH_USER_ALREADY_EXISTS"),
 );
 
-const isLoading = computed(() => organizerStore.loading || isUploadingAvatar.value);
+const isLoading = computed(() => organizerStore.loading);
 </script>
 
 <template>
@@ -106,16 +63,6 @@ const isLoading = computed(() => organizerStore.loading || isUploadingAvatar.val
     <UForm :schema="organizerRegistrationSchema" :state="state" @submit="onSubmit"
       :validate-on="['input', 'change']"
       class="space-y-5 w-full">
-      <!-- Avatar Upload Section -->
-      <div class="flex justify-center py-2">
-        <AvatarUpload
-          :loading="isUploadingAvatar"
-          :show-delete="!!selectedAvatar"
-          @upload="handleAvatarUpload"
-          @delete="handleAvatarDelete"
-        />
-      </div>
-
       <UFormField :label="t('form.organizerName.label')" name="organizer_name" required :aria-required="true"
         class="w-full">
         <UInput v-model="state.organizer_name" :placeholder="t('form.organizerName.placeholder')"

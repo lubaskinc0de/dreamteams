@@ -11,7 +11,7 @@
 | `domains` | `list[Domain]` | Technical domains | Non-empty list |
 | `participant_type` | `ParticipantType` | Participant type | Enum value |
 | `venue` | `CompetitionVenue` | Format and location | Value object validation |
-| `team_size` | `TeamSizeRange` | Team size range | Value object validation |
+| `team_size` | `TeamSizeRange \| None` | Team size range | Optional — must be set together with `schedule.team_formation_{start,end}` or both omitted |
 | `auto_accept` | `bool` | Auto-accept applications | Default `False` |
 | `milestones` | `list[MilestoneForm]` | Competition milestones | Optional, default [] |
 
@@ -39,3 +39,4 @@
 6. All value object validation rules apply
 7. If milestones are provided, their timestamps must be unique
 8. `auto_accept` defaults to `False`; when `True`, participant applications are accepted immediately
+9. `team_size` and `schedule.team_formation_{start,end}` are a paired group — either all three are provided (team competition) or all three are omitted (individual competition). Any mismatch raises `INVALID_COMPETITION_DATA`.

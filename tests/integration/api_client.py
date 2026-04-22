@@ -12,7 +12,6 @@ from dreamteams.adapters.errors.http.response import ErrorResponse
 from dreamteams.application.common.gateway.application import ApplicationSortBy
 from dreamteams.application.common.gateway.competition import CompetitionSortBy, ExploreSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
-from dreamteams.application.explore_competitions import CreatedApplication, ExploreCompetitionsList
 from dreamteams.application.manage_application_form import ApplicationFormModel, CreatedApplicationForm
 from dreamteams.application.manage_applications import ApplicationsList
 from dreamteams.application.manage_competitions import CompetitionModel, CompetitionsList
@@ -25,6 +24,7 @@ from dreamteams.application.publish_competition import CreatedCompetition
 from dreamteams.application.register.register_organizer import CreatedOrganizer
 from dreamteams.application.register.register_participant import CreatedParticipant
 from dreamteams.application.register.register_superuser import CreatedSuperuser
+from dreamteams.application.submit_application import CreatedApplication, ExploreCompetitionsList
 from dreamteams.entities.application.entity import ApplicationStatus
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId, OrganizerInviteId
 from dreamteams.entities.common.vo.domain import Domain
@@ -312,6 +312,14 @@ class ApiClient:
         response = await self.session.get(f"{COMPETITIONS_URL}/{competition_id}", headers=self._headers)
         return await self._load_response(response, response_type=CompetitionModel)
 
+    async def read_explore_competition(self, competition_id: CompetitionId) -> APIResponse[CompetitionModel]:
+        """Read competition via GET /competitions/explore/{competition_id} (participant)."""
+        response = await self.session.get(
+            f"{COMPETITIONS_URL}/explore/{competition_id}",
+            headers=self._headers,
+        )
+        return await self._load_response(response, response_type=CompetitionModel)
+
     async def update_competition(
         self,
         competition_id: CompetitionId,
@@ -381,6 +389,15 @@ class ApiClient:
         url = f"{COMPETITIONS_URL}/{competition_id}/applications/"
         response = await self.session.post(url, headers=self._headers, json=data)
         return await self._load_response(response, response_type=CreatedApplication)
+
+    async def read_application_form_for_submission(
+        self,
+        competition_id: CompetitionId,
+    ) -> APIResponse[ApplicationFormModel]:
+        """Read application form via GET /competitions/{competition_id}/applications/form/ (participant)."""
+        url = f"{COMPETITIONS_URL}/{competition_id}/applications/form/"
+        response = await self.session.get(url, headers=self._headers)
+        return await self._load_response(response, response_type=ApplicationFormModel)
 
     async def list_applications_by_competition(
         self,

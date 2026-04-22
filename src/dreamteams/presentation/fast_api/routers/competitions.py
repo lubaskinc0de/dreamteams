@@ -4,27 +4,28 @@ from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter, Query
 
-from dreamteams.application.explore_competitions import (
-    ExploreCompetitions,
-    ExploreCompetitionsInput,
-    ExploreCompetitionsList,
-)
 from dreamteams.application.manage_competitions import (
     CompetitionModel,
     CompetitionsList,
     DeleteCompetition,
     ListCompetitions,
     ListCompetitionsInput,
-    ReadCompetition,
     UpdateCompetition,
     UpdateCompetitionForm,
 )
+from dreamteams.application.manage_competitions import ReadCompetition as ReadCompetitionAsOrganizer
 from dreamteams.application.preview_competition.list import (
     PreviewCompetitions,
     PreviewCompetitionsInput,
     PreviewCompetitionsList,
 )
 from dreamteams.application.publish_competition import CompetitionForm, CreateCompetition, CreatedCompetition
+from dreamteams.application.submit_application import (
+    ExploreCompetitions,
+    ExploreCompetitionsInput,
+    ExploreCompetitionsList,
+)
+from dreamteams.application.submit_application import ReadCompetition as ReadCompetitionAsParticipant
 from dreamteams.entities.common.identifiers import CompetitionId
 
 router = APIRouter(
@@ -70,9 +71,18 @@ async def create_competition(
     return await interactor.execute(data)
 
 
+@router.get("/explore/{competition_id}")
+async def read_competition_for_submission(
+    interactor: FromDishka[ReadCompetitionAsParticipant],
+    competition_id: CompetitionId,
+) -> CompetitionModel:
+    """Participant-facing endpoint for reading a single competition by ID."""
+    return await interactor.execute(competition_id)
+
+
 @router.get("/{competition_id}")
 async def read_competition(
-    interactor: FromDishka[ReadCompetition],
+    interactor: FromDishka[ReadCompetitionAsOrganizer],
     competition_id: CompetitionId,
 ) -> CompetitionModel:
     """HTTP endpoint for reading a competition by ID."""

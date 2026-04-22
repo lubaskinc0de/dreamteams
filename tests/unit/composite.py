@@ -105,6 +105,19 @@ def valid_schedule_data(draw: st.DrawFn, min_dt: datetime | None = None) -> Sche
 
 
 @st.composite
+def valid_schedule_data_no_team_formation(draw: st.DrawFn, min_dt: datetime | None = None) -> ScheduleData:
+    """Valid schedule data without team formation period."""
+    r_start = draw(dt_future(min_dt=min_dt))
+    r_end = draw(dt_future(r_start.replace(tzinfo=None) + timedelta(minutes=1)))
+    return ScheduleData(
+        registration_start=r_start,
+        registration_end=r_end,
+        team_formation_start=None,
+        team_formation_end=None,
+    )
+
+
+@st.composite
 def past_schedule(draw: st.DrawFn) -> CompetitionSchedule:
     """CompetitionSchedule with team formation period with dates in past."""
     base_date = draw(dt_past(max_dt=NOW_NAIVE - timedelta(minutes=4)))
@@ -190,12 +203,21 @@ def _deduplicate_milestones(milestones: Any) -> Any:
 def valid_competition_data(draw: st.DrawFn) -> CompetitionData:
     """Valid competition data."""
     max_participants = draw(st.integers(min_value=1, max_value=10_000))
-    min_team, max_team = draw(positive_ordered_pairs())
     venue_format = draw(st.sampled_from(CompetitionFormat))
+
+    has_teams = draw(st.booleans())
+    if has_teams:
+        min_team, max_team = draw(positive_ordered_pairs())
+        team_size: TeamSizeRange | None = TeamSizeRange(min=min_team, max=max_team)
+        schedule = draw(valid_schedule_data())
+    else:
+        team_size = None
+        schedule = draw(valid_schedule_data_no_team_formation())
+
     return CompetitionData(
         title=draw(valid_text()),
         description=draw(valid_text()),
-        schedule=draw(valid_schedule_data()),
+        schedule=schedule,
         participant_limits=ParticipantLimits(max=max_participants),
         domains=draw(st.lists(st.sampled_from(Domain), min_size=1)),
         venue=CompetitionVenue(
@@ -204,7 +226,7 @@ def valid_competition_data(draw: st.DrawFn) -> CompetitionData:
             if venue_format in [CompetitionFormat.OFFLINE, CompetitionFormat.HYBRID]
             else None,
         ),
-        team_size=TeamSizeRange(min=min_team, max=max_team),
+        team_size=team_size,
         participant_type=draw(st.sampled_from(ParticipantType)),
         auto_accept=draw(st.booleans()),
         milestones=_deduplicate_milestones(draw(st.one_of(st.none(), st.lists(milestone_data(), max_size=5)))),
@@ -246,12 +268,21 @@ def valid_competition(
 def valid_competition_update_data(draw: st.DrawFn) -> UpdateCompetitionData:
     """Valid competition update data."""
     max_participants = draw(st.integers(min_value=1, max_value=10_000))
-    min_team, max_team = draw(positive_ordered_pairs())
     venue_format = draw(st.sampled_from(CompetitionFormat))
+
+    has_teams = draw(st.booleans())
+    if has_teams:
+        min_team, max_team = draw(positive_ordered_pairs())
+        team_size: TeamSizeRange | None = TeamSizeRange(min=min_team, max=max_team)
+        schedule = draw(valid_schedule_data())
+    else:
+        team_size = None
+        schedule = draw(valid_schedule_data_no_team_formation())
+
     return UpdateCompetitionData(
         title=draw(valid_text()),
         description=draw(valid_text()),
-        schedule=draw(valid_schedule_data()),
+        schedule=schedule,
         participant_limits=ParticipantLimits(max=max_participants),
         domains=draw(st.lists(st.sampled_from(Domain), min_size=1)),
         venue=CompetitionVenue(
@@ -260,7 +291,7 @@ def valid_competition_update_data(draw: st.DrawFn) -> UpdateCompetitionData:
             if venue_format in [CompetitionFormat.OFFLINE, CompetitionFormat.HYBRID]
             else None,
         ),
-        team_size=TeamSizeRange(min=min_team, max=max_team),
+        team_size=team_size,
         participant_type=draw(st.sampled_from(ParticipantType)),
         milestones=_deduplicate_milestones(draw(st.one_of(st.none(), st.lists(milestone(), max_size=5)))),
         auto_accept=draw(st.booleans()),

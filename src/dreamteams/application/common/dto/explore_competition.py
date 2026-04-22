@@ -34,7 +34,7 @@ class ExploreCompetitionModel(BaseModel):
     domains: list[Domain]
     participant_type: ParticipantType
     venue: CompetitionVenue
-    team_size: TeamSizeRange
+    team_size: TeamSizeRange | None
     milestones: list[Milestone]
     auto_accept: bool
     members_count: int

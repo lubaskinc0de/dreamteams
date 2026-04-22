@@ -26,6 +26,9 @@ import type {
   CreatedApplication,
   ApplicationModel,
   ApplicationsList,
+  ApplicationStatus,
+  ExploreCompetitionsFilters,
+  ExploreCompetitionsList,
 } from "~/types/api";
 
 interface RetryConfig {
@@ -229,6 +232,29 @@ export const useApi = () => {
     }
   };
 
+  const exploreCompetitions = async (
+    filters: ExploreCompetitionsFilters = {},
+  ): Promise<{ data: ExploreCompetitionsList | null; error: ApiError | null }> => {
+    try {
+      const params: Record<string, any> = {
+        page: filters.page ?? 1,
+        sort_by: filters.sort_by ?? "most_popular",
+      };
+      if (filters.search) params.search = filters.search;
+      if (filters.min_team_size !== undefined) params.min_team_size = filters.min_team_size;
+      if (filters.max_team_size !== undefined) params.max_team_size = filters.max_team_size;
+      if (filters.auto_accept !== undefined) params.auto_accept = filters.auto_accept;
+      if (filters.domains && filters.domains.length > 0) params.domains = filters.domains;
+      const data = await apiFetch<ExploreCompetitionsList>(
+        `${apiBase}/api/competitions/explore`,
+        { method: "GET", params },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
   const createCompetition = async (
     form: CompetitionForm,
   ): Promise<{ data: CreatedCompetition | null; error: ApiError | null }> => {
@@ -249,6 +275,25 @@ export const useApi = () => {
     try {
       const data = await apiFetch<CompetitionModel>(
         `${apiBase}/api/competitions/${competitionId}`,
+        { method: "GET" },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  /**
+   * Participant-facing single-competition read. Same CompetitionModel shape as
+   * the organizer endpoint above, but authorisation checks for a participant
+   * profile instead of ownership.
+   */
+  const getExploreCompetition = async (
+    competitionId: string,
+  ): Promise<{ data: CompetitionModel | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<CompetitionModel>(
+        `${apiBase}/api/competitions/explore/${competitionId}`,
         { method: "GET" },
       );
       return { data, error: null };
@@ -435,6 +480,25 @@ export const useApi = () => {
     }
   };
 
+  /**
+   * Participant-facing read of an application form — used by the submission
+   * flow to render fields before POSTing the application. Organizer-side reads
+   * still go through `getApplicationForm` (same response shape, different auth).
+   */
+  const getMyApplicationForm = async (
+    competitionId: string,
+  ): Promise<{ data: ApplicationFormModel | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<ApplicationFormModel>(
+        `${apiBase}/api/competitions/${competitionId}/applications/form/`,
+        { method: "GET" },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
   const createApplicationForm = async (
     competitionId: string,
     form: ApplicationFormInput,
@@ -484,11 +548,19 @@ export const useApi = () => {
   const listApplicationsByCompetition = async (
     competitionId: string,
     page: number = 1,
+    sortOrder: SortOrder = "desc",
+    status?: ApplicationStatus,
   ): Promise<{ data: ApplicationsList | null; error: ApiError | null }> => {
     try {
+      const params: Record<string, any> = {
+        page,
+        sort_by: "created_at",
+        sort_order: sortOrder,
+      };
+      if (status) params.status = status;
       const data = await apiFetch<ApplicationsList>(
         `${apiBase}/api/competitions/${competitionId}/applications/`,
-        { method: "GET", params: { page } },
+        { method: "GET", params },
       );
       return { data, error: null };
     } catch (err: any) {
@@ -498,11 +570,19 @@ export const useApi = () => {
 
   const listMyApplications = async (
     page: number = 1,
+    sortOrder: SortOrder = "desc",
+    status?: ApplicationStatus,
   ): Promise<{ data: ApplicationsList | null; error: ApiError | null }> => {
     try {
+      const params: Record<string, any> = {
+        page,
+        sort_by: "created_at",
+        sort_order: sortOrder,
+      };
+      if (status) params.status = status;
       const data = await apiFetch<ApplicationsList>(
         `${apiBase}/api/applications/`,
-        { method: "GET", params: { page } },
+        { method: "GET", params },
       );
       return { data, error: null };
     } catch (err: any) {
@@ -586,6 +666,7 @@ export const useApi = () => {
     getUserProfile,
     listCompetitions,
     getPreviewCompetitions,
+    exploreCompetitions,
     createCompetition,
     getCompetition,
     updateCompetition,
@@ -601,6 +682,7 @@ export const useApi = () => {
     updateOrganizer,
     registerSuperuser,
     getApplicationForm,
+    getMyApplicationForm,
     createApplicationForm,
     deleteApplicationForm,
     submitApplication,
@@ -611,5 +693,6 @@ export const useApi = () => {
     withdrawApplication,
     acceptApplication,
     rejectApplication,
+    getExploreCompetition,
   };
 };

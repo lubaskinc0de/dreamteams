@@ -35,7 +35,7 @@ class UpdateCompetitionForm(BaseModel):
     domains: list[Domain]
     participant_type: ParticipantType
     venue: CompetitionVenue
-    team_size: TeamSizeRange
+    team_size: TeamSizeRange | None
     milestones: list[MilestoneForm] | None
     auto_accept: bool
     is_archived: bool

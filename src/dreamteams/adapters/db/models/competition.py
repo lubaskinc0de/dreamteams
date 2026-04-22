@@ -56,6 +56,13 @@ class MilestoneDescriptionType(TypeDecorator[MilestoneDescription]):
         return None
 
 
+def _team_size_composite(max_team_size: int | None, min_team_size: int | None) -> TeamSizeRange | None:
+    """Composite factory: NULL columns map to None, otherwise to a validated TeamSizeRange."""
+    if max_team_size is None and min_team_size is None:
+        return None
+    return TeamSizeRange(max=max_team_size, min=min_team_size)  # type: ignore[arg-type]
+
+
 competition_table = Table(
     "competitions",
     mapper_registry.metadata,
@@ -73,8 +80,8 @@ competition_table = Table(
     Column("participant_type", Enum(ParticipantType, native_enum=False), nullable=False),
     Column("format", Enum(CompetitionFormat, native_enum=False), nullable=False),
     Column("location", Text, nullable=True),
-    Column("max_team_size", Integer, nullable=False),
-    Column("min_team_size", Integer, nullable=False),
+    Column("max_team_size", Integer, nullable=True),
+    Column("min_team_size", Integer, nullable=True),
     Column("auto_accept", Boolean, nullable=False, default=False, server_default="false"),
     Column("is_archived", Boolean, nullable=False, default=False),
     Column("created_at", DateTime(timezone=True), nullable=False),
@@ -96,6 +103,23 @@ mapper_registry.map_imperatively(
     milestone_table,
 )
 
+# Composite that maps (NULL, NULL) → None on load; supplies the write-side accessor
+# manually because SQLAlchemy only auto-generates it for dataclass-classed composites.
+_team_size_property = composite(
+    _team_size_composite,
+    competition_table.c.max_team_size,
+    competition_table.c.min_team_size,
+)
+
+
+def _team_size_decompose(ts: TeamSizeRange | None) -> tuple[int | None, int | None]:
+    if ts is None:
+        return (None, None)
+    return (ts.max, ts.min)
+
+
+_team_size_property._generated_composite_accessor = _team_size_decompose  # noqa: SLF001
+
 mapper_registry.map_imperatively(
     Competition,
     competition_table,
@@ -116,11 +140,7 @@ mapper_registry.map_imperatively(
             competition_table.c.format,
             competition_table.c.location,
         ),
-        "team_size": composite(
-            TeamSizeRange,
-            competition_table.c.max_team_size,
-            competition_table.c.min_team_size,
-        ),
+        "team_size": _team_size_property,
         "milestones": relationship(
             Milestone,
             foreign_keys=[milestone_table.c.competition_id],

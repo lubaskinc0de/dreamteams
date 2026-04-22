@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useMyApplicationsStore } from '~/stores/myApplications';
+import type { ApplicationStatus } from '~/types/api';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -16,6 +17,21 @@ const statusColor = (status: string) => {
   if (status === 'rejected') return 'error';
   return 'warning';
 };
+
+const statusTabs = computed(() => [
+  { value: 'all', label: t('applications.filter.all') },
+  { value: 'pending', label: t('applications.filter.pending') },
+  { value: 'accepted', label: t('applications.filter.accepted') },
+  { value: 'rejected', label: t('applications.filter.rejected') },
+]);
+
+const activeTab = computed({
+  get: () => store.statusFilter ?? 'all',
+  set: (val: string) => {
+    const next = val === 'all' ? null : (val as ApplicationStatus);
+    store.setStatusFilter(next);
+  },
+});
 </script>
 
 <template>
@@ -28,6 +44,19 @@ const statusColor = (status: string) => {
             {{ t('myApplications.title') }}
           </h1>
           <UBadge v-if="!store.loading" variant="soft" :label="String(store.total)" />
+        </div>
+
+        <!-- Filters + Sort -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+          <UTabs v-model="activeTab" :items="statusTabs" size="sm" variant="pill" />
+          <UButton
+            :icon="store.sortOrder === 'desc' ? 'i-heroicons-bars-arrow-down' : 'i-heroicons-bars-arrow-up'"
+            variant="soft"
+            color="neutral"
+            size="sm"
+            :label="store.sortOrder === 'desc' ? t('applications.sort.newest') : t('applications.sort.oldest')"
+            @click="store.toggleSortOrder()"
+          />
         </div>
 
         <!-- Error -->

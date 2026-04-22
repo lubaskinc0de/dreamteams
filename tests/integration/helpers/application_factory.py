@@ -5,8 +5,8 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass
 
-from dreamteams.application.explore_competitions import SubmitApplicationInput
 from dreamteams.application.manage_my_applications import ApplicationModel
+from dreamteams.application.submit_application import SubmitApplicationInput
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId
 from tests.common.factory.application import SubmitApplicationInputFactory
 from tests.integration.api_client import ApiClient

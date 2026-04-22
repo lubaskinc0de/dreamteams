@@ -18,22 +18,38 @@ const brandLink = computed(() => {
 // Show avatar for authenticated users with profile
 const showAvatar = computed(() => isAuthenticated.value && hasProfile.value);
 
-// Public navigation items (visible to everyone)
-const publicNavItems = computed<NavigationMenuItem[]>(() => [
-  {
-    label: t('nav.browseCompetitions'),
-    icon: 'i-heroicons-magnifying-glass',
-    to: '/competitions',
-  },
-]);
+// Public "browse" link — shown to anon, organizers, admins. Participants get
+// the /explore variant instead (see participant branch below).
+const browseNavItem = computed<NavigationMenuItem>(() => ({
+  label: t('nav.browseCompetitions'),
+  icon: 'i-heroicons-magnifying-glass',
+  to: '/competitions',
+}));
 
 // Navigation items
 const navItems = computed<NavigationMenuItem[]>(() => {
   if (!isAuthenticated.value || !hasProfile.value) {
-    return publicNavItems.value;
+    return [browseNavItem.value];
   }
 
-  const items = [...publicNavItems.value];
+  const items: NavigationMenuItem[] = [];
+
+  // Participants get /explore instead of /competitions; everyone else sees the
+  // public browse link.
+  if (userStore.isParticipant) {
+    items.push({
+      label: t('nav.explore'),
+      icon: 'i-heroicons-sparkles',
+      to: '/explore',
+    });
+    items.push({
+      label: t('nav.myApplications'),
+      icon: 'i-heroicons-inbox-stack',
+      to: '/me/applications',
+    });
+  } else {
+    items.push(browseNavItem.value);
+  }
 
   if (userStore.isAdmin) {
     items.push({

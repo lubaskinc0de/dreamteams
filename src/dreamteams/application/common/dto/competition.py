@@ -26,7 +26,7 @@ class CompetitionModel(BaseModel):
     domains: list[Domain]
     participant_type: ParticipantType
     venue: CompetitionVenue
-    team_size: TeamSizeRange
+    team_size: TeamSizeRange | None
     milestones: list[Milestone]
     auto_accept: bool
     is_archived: bool

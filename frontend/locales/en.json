@@ -32,7 +32,8 @@
     "default": {
       "title": "An Error Occurred",
       "description": "Something went wrong. Please try again"
-    }
+    },
+    "team_size_schedule_pairing": "Team size and team-formation dates must be set together, or both left empty"
   },
   "nav": {
     "home": "Home",
@@ -50,6 +51,8 @@
     "applicationForms": "Application Forms",
     "applications": "Applications",
     "myCompetitions": "My Competitions",
+    "myApplications": "My Applications",
+    "explore": "Explore",
     "logout": "Sign Out"
   },
   "home": {
@@ -417,7 +420,8 @@
     "success": {
       "title": "Superuser created",
       "description": "The superuser account has been successfully registered.",
-      "userId": "User ID"
+      "userId": "User ID",
+      "goToAdmin": "Open Admin Panel"
     }
   },
   "avatar": {
@@ -663,7 +667,7 @@
       "registration": "Registration",
       "teamFormation": "Team Formation",
       "participants": "Participants",
-      "participantType": "Participant Type",
+      "participantType": "Who participates?",
       "teamSize": "Team Size",
       "venue": "Venue",
       "milestones": "Milestones",
@@ -689,6 +693,7 @@
     }
   },
   "competition": {
+    "individual": "Individual competition",
     "create": {
       "title": "Create Competition",
       "description": "Fill in competition information",
@@ -786,6 +791,9 @@
         "endTime": {
           "label": "End Time"
         },
+        "timeToggle": {
+          "label": "Set time"
+        },
         "registrationStart": {
           "label": "Registration Start",
           "required": "Please specify registration start date"
@@ -803,7 +811,14 @@
           "placeholder": "Not specified"
         },
         "selectDateRange": "Select date range",
-        "lockedNotice": "This date has already passed and cannot be changed",
+        "lockedNotice": {
+          "startOnly": "Registration has already started — the start date can no longer be changed, but you can still adjust the end.",
+          "endOnly": "Registration has already ended — the end date can no longer be changed.",
+          "both": "Registration period is over — neither date can be changed.",
+          "startOnlyTeam": "Team formation has already started — the start date can no longer be changed, but you can still adjust the end.",
+          "endOnlyTeam": "Team formation has already ended — the end date can no longer be changed.",
+          "bothTeam": "Team formation period is over — neither date can be changed."
+        },
         "validation": {
           "registrationEndAfterStart": "Registration end must be after start",
           "teamFormationBothRequired": "Both team formation start and end must be specified",
@@ -814,17 +829,10 @@
         }
       },
       "participantLimits": {
-        "label": "Number of Participants",
-        "min": {
-          "label": "Minimum",
-          "minValue": "Minimum must be at least 1"
-        },
+        "label": "Maximum Participants",
         "max": {
           "label": "Maximum",
           "minValue": "Maximum must be at least 1"
-        },
-        "validation": {
-          "minLessThanMax": "Minimum must be less than or equal to maximum"
         },
         "tooltip": "Total number of individual participants or teams allowed"
       },
@@ -842,7 +850,7 @@
         "tooltip": "Technical areas participants should specialize in"
       },
       "participantType": {
-        "label": "Participant Type",
+        "label": "Who participates?",
         "options": {
           "schoolchild": "School Students",
           "student": "University Students",
@@ -904,6 +912,12 @@
         "datetime": {
           "label": "Milestone Date and Time",
           "tooltip": "When this milestone takes place"
+        },
+        "description": {
+          "label": "Description",
+          "placeholder": "Optional details about this milestone",
+          "maxLength": "Description must not exceed 300 characters",
+          "tooltip": "Optional details shown below the milestone title"
         },
         "addButton": "Add Milestone",
         "removeButton": "Remove",
@@ -1000,7 +1014,17 @@
     "accepting": "Accepting...",
     "rejecting": "Rejecting...",
     "alreadyResolved": "Application already processed",
-    "backToList": "Back to applications"
+    "backToList": "Back to applications",
+    "filter": {
+      "all": "All",
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "rejected": "Rejected"
+    },
+    "sort": {
+      "newest": "Newest first",
+      "oldest": "Oldest first"
+    }
   },
   "myApplications": {
     "title": "My Applications",
@@ -1025,5 +1049,30 @@
     "applying": "Applying...",
     "selectDomains": "Select domains",
     "domainsRequired": "Select at least one domain"
+  },
+  "explore": {
+    "title": "Explore Competitions",
+    "resultsCount": "{count} competitions available",
+    "empty": "No competitions match your filters",
+    "emptyDescription": "Try broadening your search or clearing some filters",
+    "loadMore": "Load more",
+    "sort": {
+      "mostPopular": "Most popular",
+      "newest": "Newest"
+    },
+    "filters": {
+      "title": "Filters",
+      "search": "Search",
+      "searchPlaceholder": "Find by title",
+      "sort": "Sort by",
+      "teamSize": "Team size",
+      "teamSizeMin": "Min",
+      "teamSizeMax": "Max",
+      "autoAccept": "Auto-accept applications",
+      "autoAcceptAny": "Any",
+      "autoAcceptYes": "Yes",
+      "autoAcceptNo": "No",
+      "domains": "Domains"
+    }
   }
 }

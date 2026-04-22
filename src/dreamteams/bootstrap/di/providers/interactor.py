@@ -1,11 +1,10 @@
 from dishka import BaseScope, Provider, Scope, provide, provide_all
 
-from dreamteams.application.explore_competitions import ExploreCompetitions, SubmitApplication
 from dreamteams.application.manage_application_form import (
     CreateApplicationForm,
     DeleteApplicationForm,
-    ReadApplicationForm,
 )
+from dreamteams.application.manage_application_form import ReadApplicationForm as ReadApplicationFormAsOrganizer
 from dreamteams.application.manage_applications import (
     AcceptApplication,
     ListApplicationsByCompetition,
@@ -15,9 +14,9 @@ from dreamteams.application.manage_applications import (
 from dreamteams.application.manage_competitions import (
     DeleteCompetition,
     ListCompetitions,
-    ReadCompetition,
     UpdateCompetition,
 )
+from dreamteams.application.manage_competitions import ReadCompetition as ReadCompetitionAsOrganizer
 from dreamteams.application.manage_invites import IssueInvite, ListInvites, ReadInvite, RevokeInvite
 from dreamteams.application.manage_my_applications import (
     ListMyApplications,
@@ -36,6 +35,9 @@ from dreamteams.application.register.register_organizer import RegisterOrganizer
 from dreamteams.application.register.register_participant import RegisterParticipant
 from dreamteams.application.register.register_superuser import RegisterSuperuser
 from dreamteams.application.register.shared.user_factory import UserFactory
+from dreamteams.application.submit_application import ExploreCompetitions, SubmitApplication
+from dreamteams.application.submit_application import ReadApplicationForm as ReadApplicationFormAsParticipant
+from dreamteams.application.submit_application import ReadCompetition as ReadCompetitionAsParticipant
 
 
 class InteractorProvider(Provider):
@@ -50,7 +52,8 @@ class InteractorProvider(Provider):
         ReadProfile,
         CreateCompetition,
         ListCompetitions,
-        ReadCompetition,
+        ReadCompetitionAsOrganizer,
+        ReadCompetitionAsParticipant,
         DeleteCompetition,
         UpdateCompetition,
         AttachAvatar,
@@ -65,7 +68,8 @@ class InteractorProvider(Provider):
         ReadInvite,
         RevokeInvite,
         CreateApplicationForm,
-        ReadApplicationForm,
+        ReadApplicationFormAsOrganizer,
+        ReadApplicationFormAsParticipant,
         DeleteApplicationForm,
         SubmitApplication,
         ReadMyApplication,

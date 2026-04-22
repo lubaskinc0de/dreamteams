@@ -4,10 +4,18 @@ from hypothesis import strategies as st
 
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.competition.entity import Competition, UpdateCompetitionData
-from dreamteams.entities.competition.schedule import CompetitionSchedule
+from dreamteams.entities.competition.schedule import CompetitionSchedule, ScheduleData
+from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
-from tests.unit.composite import milestone, valid_competition, valid_competition_update_data
+from tests.unit.composite import (
+    milestone,
+    positive_ordered_pairs,
+    valid_competition,
+    valid_competition_update_data,
+    valid_schedule_data,
+    valid_schedule_data_no_team_formation,
+)
 from tests.unit.helpers.facade import Gateway
 
 
@@ -141,3 +149,58 @@ def test_competition_descriptions_are_not_empty(
             organizer,
             clock,
         )
+
+
+@settings(max_examples=30)
+@given(
+    st.data(),
+    valid_competition_update_data(),
+    valid_schedule_data_no_team_formation(),
+    positive_ordered_pairs(),
+)
+def test_update_with_team_size_but_no_team_formation_dates_is_rejected(
+    gateway: Gateway,
+    clock: Clock,
+    data: st.DataObject,
+    valid_competition_update_data: UpdateCompetitionData,
+    schedule: ScheduleData,
+    team_range: tuple[int, int],
+) -> None:
+    """Updating to team_size set with no team_formation_* dates violates the pairing invariant."""
+    # Arrange
+    organizer = gateway.organizer.create()
+    competition = data.draw(valid_competition(organizer, clock))
+    min_team, max_team = team_range
+    valid_competition_update_data.team_size = TeamSizeRange(min=min_team, max=max_team)
+    valid_competition_update_data.schedule = schedule
+
+    # Act / Assert
+    with pytest.raises(
+        InvalidCompetitionDataError,
+        match=r"team_size and schedule\.team_formation_\* must be set together",
+    ):
+        competition.update(valid_competition_update_data, organizer, clock)
+
+
+@settings(max_examples=30)
+@given(st.data(), valid_competition_update_data(), valid_schedule_data())
+def test_update_with_team_formation_dates_but_no_team_size_is_rejected(
+    gateway: Gateway,
+    clock: Clock,
+    data: st.DataObject,
+    valid_competition_update_data: UpdateCompetitionData,
+    schedule: ScheduleData,
+) -> None:
+    """Updating to team_formation_* dates set with no team_size violates the pairing invariant."""
+    # Arrange
+    organizer = gateway.organizer.create()
+    competition = data.draw(valid_competition(organizer, clock))
+    valid_competition_update_data.team_size = None
+    valid_competition_update_data.schedule = schedule
+
+    # Act / Assert
+    with pytest.raises(
+        InvalidCompetitionDataError,
+        match=r"team_size and schedule\.team_formation_\* must be set together",
+    ):
+        competition.update(valid_competition_update_data, organizer, clock)

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { PreviewCompetitionModel } from "~/types/api";
 import { useWindowSize } from "@vueuse/core";
+import { extractMilestoneDescription } from "~/utils/milestone";
 
 /**
  * Competition Detail Modal/Drawer
@@ -23,7 +24,7 @@ const { t } = useI18n();
 const {
   formatDateRange,
   formatDateTime,
-  formatNumericRange,
+  formatParticipants,
   formatTeamSize,
   getFormatLabel,
   getParticipantTypeLabel,
@@ -147,7 +148,7 @@ const handleClose = () => {
                       {{ t('competitionsPreview.card.participants') }}
                     </p>
                     <p class="text-sm text-gray-600 dark:text-gray-400">
-                      {{ formatNumericRange(competition.participant_limits.min, competition.participant_limits.max) }}
+                      {{ formatParticipants(competition.members_count, competition.participant_limits.max) }}
                     </p>
                   </div>
                 </div>
@@ -163,7 +164,7 @@ const handleClose = () => {
                   </div>
                 </div>
                 <div
-                  v-if="!(competition.team_size.min === 1 && competition.team_size.max === 1)"
+                  v-if="competition.team_size"
                   class="flex items-start gap-3"
                 >
                   <UIcon name="i-heroicons-user-group" class="size-6 text-primary-500 mt-0.5 flex-shrink-0" />
@@ -244,6 +245,7 @@ const handleClose = () => {
             :items="competition.milestones.map((milestone) => ({
               date: formatDateTime(milestone.timestamp),
               title: milestone.title,
+              description: extractMilestoneDescription(milestone.description) ?? undefined,
               icon: 'i-heroicons-flag',
             }))"
             color="primary"
@@ -348,7 +350,7 @@ const handleClose = () => {
                     {{ t('competitionsPreview.card.participants') }}
                   </p>
                   <p class="text-xs text-gray-600 dark:text-gray-400">
-                    {{ formatNumericRange(competition.participant_limits.min, competition.participant_limits.max) }}
+                    {{ formatParticipants(competition.members_count, competition.participant_limits.max) }}
                   </p>
                 </div>
               </div>
@@ -364,7 +366,7 @@ const handleClose = () => {
                 </div>
               </div>
               <div
-                v-if="!(competition.team_size.min === 1 && competition.team_size.max === 1)"
+                v-if="competition.team_size"
                 class="flex items-start gap-3"
               >
                 <UIcon name="i-heroicons-user-group" class="size-5 text-primary-500 mt-0.5 flex-shrink-0" />
@@ -421,6 +423,7 @@ const handleClose = () => {
             :items="competition.milestones.map((milestone) => ({
               date: formatDateTime(milestone.timestamp),
               title: milestone.title,
+              description: extractMilestoneDescription(milestone.description) ?? undefined,
               icon: 'i-heroicons-flag',
             }))"
             color="primary"

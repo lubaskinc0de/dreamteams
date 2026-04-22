@@ -12,7 +12,7 @@
 | `domains` | `list[Domain]` | New technical domains | Non-empty list |
 | `participant_type` | `ParticipantType` | New participant type | Enum value |
 | `venue` | `CompetitionVenue` | New location | Value object validation |
-| `team_size` | `TeamSizeRange` | New team size | Value object validation |
+| `team_size` | `TeamSizeRange \| None` | New team size | Optional — must be set together with `schedule.team_formation_{start,end}` or both omitted |
 | `milestones` | `list[MilestoneForm]` | Competition milestones | Can be empty list |
 | `auto_accept` | `bool` | Auto-accept applications | Boolean |
 | `is_archived` | `bool` | Archive status | Boolean |
@@ -36,3 +36,4 @@ No output. Operation succeeds or raises error.
 3. All value object validation rules apply
 4. If milestones are provided, existing ones are cleared first, then new ones added
 5. Milestone timestamps must be unique
+6. `team_size` and `schedule.team_formation_{start,end}` are a paired group — either all three are provided or all three are omitted. Any mismatch raises `INVALID_COMPETITION_DATA`.

@@ -1,7 +1,9 @@
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import pytest
 
+from dreamteams.entities.competition.schedule import ScheduleData
 from tests.common.factory.competition import CompetitionFormFactory
 from tests.common.helpers.competition import (
     INVALID_COMPETITION_DATA_CASES,
@@ -23,6 +25,31 @@ async def test_create_competition_as_organizer_succeeds(
     with api_client.authenticate(auth_user_id=organizer.organizer.auth_id):
         response = await api_client.create_competition(competition_form_factory.build().model_dump(mode="json"))
 
+    response.assert_status(200).ensure_content()
+
+
+async def test_create_competition_without_team_size_or_team_formation_succeeds(
+    api_client: ApiClient,
+    competition_form_factory: CompetitionFormFactory,
+    gateway: Gateway,
+) -> None:
+    """Test creating competition without team_size and team_formation (both omitted together)."""
+    # Arrange
+    organizer = await gateway.organizer.create_with_admin(gateway.admin)
+    now = datetime.now(tz=UTC)
+    schedule = ScheduleData(
+        registration_start=now + timedelta(days=1),
+        registration_end=now + timedelta(days=10),
+        team_formation_start=None,
+        team_formation_end=None,
+    )
+    form = competition_form_factory.build(team_size=None, schedule=schedule)
+
+    # Act
+    with api_client.authenticate(auth_user_id=organizer.organizer.auth_id):
+        response = await api_client.create_competition(form.model_dump(mode="json"))
+
+    # Assert
     response.assert_status(200).ensure_content()
 
 

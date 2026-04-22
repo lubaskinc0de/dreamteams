@@ -71,7 +71,8 @@ const handlePlaceCompetition = () => {
 // Handle register button click on card
 const handleRegister = (competitionId: string) => {
   if (isAuthenticated.value && hasProfile.value) {
-    router.push(`/me/competitions/${competitionId}/application-form`);
+    // Participant submission page (not the organizer-facing form editor at /me/*).
+    router.push(`/competitions/${competitionId}`);
   } else {
     login();
   }

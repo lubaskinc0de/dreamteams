@@ -5,7 +5,7 @@
 | Code | HTTP Status | Description | Metadata |
 |------|-------------|-------------|----------|
 | `COMPETITION_NOT_FOUND` | 404 | Competition does not exist | None |
-| `INVALID_COMPETITION_DATA` | 400 | Competition data fails validation | None |
+| `INVALID_COMPETITION_DATA` | 400 | Competition data fails validation (e.g. empty description, invalid team size, mismatched `team_size` / `schedule.team_formation_*` pairing) | None |
 
 ## Related
 

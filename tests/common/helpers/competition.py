@@ -99,6 +99,21 @@ INVALID_COMPETITION_DATA_CASES: list[tuple[dict[str, Any], str]] = [
         },
         "INVALID_COMPETITION_DATA",
     ),
+    # Pairing invariant: schedule has no team_formation but team_size is set (from factory base)
+    (
+        {
+            "schedule": {
+                "registration_start": timedelta(days=1),
+                "registration_end": timedelta(days=10),
+            },
+        },
+        "INVALID_COMPETITION_DATA",
+    ),
+    # Pairing invariant: team_size is None but schedule.team_formation_* are set (from factory base)
+    (
+        {"team_size": None},
+        "INVALID_COMPETITION_DATA",
+    ),
     # Milestones: duplicate timestamps
     (
         {

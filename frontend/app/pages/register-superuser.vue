@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const { t } = useI18n();
 const api = useApi();
+const { checkAuthStatus } = useAuth();
 
 useSeoMeta({
   title: t("superuserRegister.title"),
@@ -21,9 +22,8 @@ const submit = async () => {
 
   const { data, error: apiError } = await api.registerSuperuser(password.value);
 
-  loading.value = false;
-
   if (apiError) {
+    loading.value = false;
     const key = `apiErrors.${apiError.code}`;
     error.value = t(key) !== key ? t(key) : apiError.message;
     return;
@@ -32,7 +32,12 @@ const submit = async () => {
   if (data) {
     createdUserId.value = data.user_id;
     password.value = "";
+    // Refresh auth state so userStore.isAdmin picks up is_admin=true,
+    // otherwise the global middleware will bounce /admin/* to /onboarding.
+    await checkAuthStatus();
   }
+
+  loading.value = false;
 };
 </script>
 
@@ -63,8 +68,8 @@ const submit = async () => {
                 {{ createdUserId }}
               </p>
             </div>
-            <UButton to="/" icon="i-heroicons-home" size="lg">
-              {{ t("common.backToHome") }}
+            <UButton to="/admin/invites" icon="i-heroicons-shield-check" size="lg">
+              {{ t("superuserRegister.success.goToAdmin") }}
             </UButton>
           </div>
 

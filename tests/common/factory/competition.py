@@ -14,7 +14,7 @@ from dreamteams.entities.competition.venue import CompetitionFormat, Competition
 
 
 def _competition_schedule_provider() -> ScheduleData:
-    """Provider for CompetitionSchedule with random but valid dates."""
+    """Provider for CompetitionSchedule with random but valid dates, including team formation."""
     now = datetime.now(tz=UTC)
     random_ = CompetitionFormFactory.__random__
     reg_start_offset = random_.randint(1, 10)
@@ -23,12 +23,9 @@ def _competition_schedule_provider() -> ScheduleData:
     registration_start = now + timedelta(days=reg_start_offset)
     registration_end = registration_start + timedelta(days=reg_duration)
 
-    team_formation_start = None
-    team_formation_end = None
-    if random_.choice([True, False]):
-        team_formation_duration = random_.randint(1, 7)
-        team_formation_start = registration_end
-        team_formation_end = team_formation_start + timedelta(days=team_formation_duration)
+    team_formation_duration = random_.randint(1, 7)
+    team_formation_start = registration_end
+    team_formation_end = team_formation_start + timedelta(days=team_formation_duration)
 
     return ScheduleData(
         registration_start=registration_start,

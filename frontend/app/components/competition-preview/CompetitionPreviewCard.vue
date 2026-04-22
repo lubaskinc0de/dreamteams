@@ -15,7 +15,7 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const {
   formatDateRange,
-  formatNumericRange,
+  formatParticipants,
   formatTeamSize,
   getFormatLabel,
 } = useCompetitionFormatters();
@@ -62,11 +62,11 @@ const handleCardClick = () => {
       <div class="flex flex-wrap gap-x-5 gap-y-2">
         <UiInfoRow
           icon="i-heroicons-users"
-          :value="`${formatNumericRange(competition.participant_limits.min, competition.participant_limits.max)} ${t('competitionsPreview.card.participantsSuffix')}`"
+          :value="`${formatParticipants(competition.members_count, competition.participant_limits.max)} ${t('competitionsPreview.card.participantsSuffix')}`"
           size="sm"
         />
         <UiInfoRow
-          v-if="!(competition.team_size.min === 1 && competition.team_size.max === 1)"
+          v-if="competition.team_size"
           icon="i-heroicons-user-group"
           :value="formatTeamSize(competition.team_size)"
           size="sm"

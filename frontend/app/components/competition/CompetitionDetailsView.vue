@@ -35,6 +35,7 @@ const { t } = useI18n();
         :participant-limits="competition.participant_limits"
         :participant-type="competition.participant_type"
         :team-size="competition.team_size"
+        :members-count="competition.members_count"
       />
 
       <!-- Venue Section -->

@@ -36,12 +36,14 @@ onMounted(async () => {
   }
   competition.value = comp;
 
-  // Try to load the application form (may not exist or may be inaccessible)
-  const { data: form, error: formErr } = await api.getApplicationForm(competitionId.value);
+  // Load the participant-facing application form. APPLICATION_FORM_NOT_FOUND
+  // means the competition has no form — submit flow then sends form_data: null.
+  // Other errors (401/403/404 competition) are swallowed here; the submit call
+  // surfaces the authoritative error.
+  const { data: form } = await api.getMyApplicationForm(competitionId.value);
   if (form) {
     applicationForm.value = { fields: form.fields };
   }
-  // Silently ignore form errors (NOT_FOUND = no form, ACCESS_DENIED = organizer-only)
 });
 
 // Apply modal state

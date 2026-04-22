@@ -5,6 +5,7 @@ import { useNotificationsStore } from '~/stores/notifications';
 import { CalendarDate, Time, parseAbsoluteToLocal, today, getLocalTimeZone } from '@internationalized/date';
 import { createCompetitionSchemas } from '~/schemas/competition';
 import { combineDateTime } from '~/utils/dateTime';
+import { extractMilestoneDescription } from '~/utils/milestone';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -71,7 +72,6 @@ const formState = ref<UpdateCompetitionForm>({
     team_formation_end: null,
   },
   participant_limits: {
-    min: 1,
     max: 100,
   },
   domains: [],
@@ -151,9 +151,10 @@ watch(isTeamCompetition, (isTeam) => {
     formState.value.schedule.team_formation_start = null;
     formState.value.schedule.team_formation_end = null;
 
-    // Reset team size to 1-1 for individual
-    formState.value.team_size.min = 1;
-    formState.value.team_size.max = 1;
+    // Pairing invariant: team_size must be null when team_formation dates are null.
+    formState.value.team_size = null;
+  } else if (formState.value.team_size === null) {
+    formState.value.team_size = { min: 1, max: 5 };
   }
 });
 
@@ -193,17 +194,18 @@ const initializeForm = (comp: any) => {
   formState.value.schedule.registration_end = comp.schedule.registration_end;
   formState.value.schedule.team_formation_start = comp.schedule.team_formation_start;
   formState.value.schedule.team_formation_end = comp.schedule.team_formation_end;
-  formState.value.participant_limits.min = comp.participant_limits.min;
   formState.value.participant_limits.max = comp.participant_limits.max;
   formState.value.domains = [...comp.domains];
   formState.value.participant_type = comp.participant_type;
   formState.value.venue.format = comp.venue.format;
   formState.value.venue.location = comp.venue.location;
-  formState.value.team_size.min = comp.team_size.min;
-  formState.value.team_size.max = comp.team_size.max;
+  formState.value.team_size = comp.team_size
+    ? { min: comp.team_size.min, max: comp.team_size.max }
+    : null;
   formState.value.milestones = comp.milestones.map((m: any) => ({
     title: m.title,
     timestamp: m.timestamp,
+    description: extractMilestoneDescription(m.description),
   }));
   formState.value.auto_accept = comp.auto_accept;
   formState.value.is_archived = comp.is_archived;
@@ -270,12 +272,14 @@ const initializeForm = (comp: any) => {
 
   // Parse and set milestones for UI components
   milestones.value = comp.milestones.map((m: any) => {
+    const description = extractMilestoneDescription(m.description);
     try {
       const dt = parseAbsoluteToLocal(m.timestamp);
       return {
         title: m.title,
         date: new CalendarDate(dt.year, dt.month, dt.day),
         time: new Time(dt.hour, dt.minute),
+        description,
       };
     } catch (e) {
       console.error('Failed to parse milestone date:', e);
@@ -285,6 +289,7 @@ const initializeForm = (comp: any) => {
         title: m.title,
         date: new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate()),
         time: new Time(date.getHours(), date.getMinutes()),
+        description,
       };
     }
   });
@@ -338,7 +343,7 @@ const handleSubmit = async () => {
     } else if (result.error) {
       notifications.add({
         title: t('errors.default.title'),
-        description: result.error.message,
+        description: getErrorMessage(result.error) ?? t('errors.default.description'),
         icon: 'i-heroicons-exclamation-triangle',
         color: 'error',
       });
@@ -357,6 +362,7 @@ const handleSubmit = async () => {
 
 // Handle form error
 const { handleFormError: handleError } = useFormErrorScroll();
+const { getErrorMessage } = useErrorHandler();
 </script>
 
 <template>
@@ -435,10 +441,8 @@ const { handleFormError: handleError } = useFormErrorScroll();
 
               <!-- Participants -->
               <CompetitionFormParticipantsFormSection
-                v-model:participant-limits-min="formState.participant_limits.min"
                 v-model:participant-limits-max="formState.participant_limits.max"
-                v-model:team-size-min="formState.team_size.min"
-                v-model:team-size-max="formState.team_size.max"
+                v-model:team-size="formState.team_size"
                 :is-team-competition="isTeamCompetition"
               />
 

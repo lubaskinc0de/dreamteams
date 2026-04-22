@@ -1,5 +1,7 @@
 # ReadApplicationForm
 
+**Actor**: Organizer — see [submit_application/read_application_form.md](../submit_application/read_application_form.md) for the participant variant.
+
 ## Input
 
 | Field | Type | Description | Validation |

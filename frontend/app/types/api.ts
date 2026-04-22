@@ -194,7 +194,6 @@ export interface CompetitionSchedule {
 }
 
 export interface ParticipantLimits {
-  min: number;
   max: number;
 }
 
@@ -208,14 +207,25 @@ export interface CompetitionVenue {
   location: string | null;
 }
 
+export interface MilestoneDescription {
+  value: string;
+}
+
 export interface MilestoneForm {
   title: string;
   timestamp: string;
+  // Wire form: backend expects the raw string (Pydantic MilestoneForm schema),
+  // never the {value: ...} VO shape.
+  description: string | null;
 }
 
 export interface Milestone {
   title: string;
   timestamp: string;
+  // Wire read shape: backend serializes the MilestoneDescription value object
+  // as { value: "..." }. Unwrap via `milestone.description?.value ?? null` at
+  // call sites — prefer `extractMilestoneDescription()` helper.
+  description: MilestoneDescription | null;
 }
 
 export interface CompetitionForm {
@@ -226,7 +236,7 @@ export interface CompetitionForm {
   domains: Domain[];
   participant_type: ParticipantType;
   venue: CompetitionVenue;
-  team_size: TeamSizeRange;
+  team_size: TeamSizeRange | null;
   auto_accept: boolean;
   milestones?: MilestoneForm[];
 }
@@ -239,7 +249,7 @@ export interface UpdateCompetitionForm {
   domains: Domain[];
   participant_type: ParticipantType;
   venue: CompetitionVenue;
-  team_size: TeamSizeRange;
+  team_size: TeamSizeRange | null;
   milestones: MilestoneForm[];
   auto_accept: boolean;
   is_archived: boolean;
@@ -256,10 +266,11 @@ export interface CompetitionModel {
   domains: Domain[];
   participant_type: ParticipantType;
   venue: CompetitionVenue;
-  team_size: TeamSizeRange;
+  team_size: TeamSizeRange | null;
   milestones: Milestone[];
   auto_accept: boolean;
   is_archived: boolean;
+  members_count: number;
   created_at: string;
   updated_at: string;
 }
@@ -292,15 +303,36 @@ export interface PreviewCompetitionModel {
   domains: Domain[];
   participant_type: ParticipantType;
   venue: CompetitionVenue;
-  team_size: TeamSizeRange;
+  team_size: TeamSizeRange | null;
   milestones: Milestone[];
   is_archived: boolean;
+  members_count: number;
   created_at: string;
   updated_at: string;
 }
 
 export interface PreviewCompetitionsList {
   items: PreviewCompetitionModel[];
+  total: number;
+  page: number;
+}
+
+export type ExploreSortBy = "most_popular" | "newest";
+
+export interface ExploreCompetitionsFilters {
+  page?: number;
+  sort_by?: ExploreSortBy;
+  search?: string;
+  min_team_size?: number;
+  max_team_size?: number;
+  auto_accept?: boolean;
+  domains?: Domain[];
+}
+
+export type ExploreCompetitionModel = PreviewCompetitionModel;
+
+export interface ExploreCompetitionsList {
+  items: ExploreCompetitionModel[];
   total: number;
   page: number;
 }

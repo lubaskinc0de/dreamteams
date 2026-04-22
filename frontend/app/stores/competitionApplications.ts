@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import type { ApplicationModel, ApplicationsList, ApiError } from "~/types/api";
+import type { ApplicationModel, ApiError, ApplicationStatus, SortOrder } from "~/types/api";
 
 export const useCompetitionApplicationsStore = defineStore("competitionApplications", {
   state: () => ({
@@ -10,6 +10,8 @@ export const useCompetitionApplicationsStore = defineStore("competitionApplicati
     currentApplication: null as ApplicationModel | null,
     acting: false,
     error: null as ApiError | null,
+    sortOrder: "desc" as SortOrder,
+    statusFilter: null as ApplicationStatus | null,
   }),
 
   actions: {
@@ -18,7 +20,12 @@ export const useCompetitionApplicationsStore = defineStore("competitionApplicati
       this.error = null;
 
       const api = useApi();
-      const { data, error } = await api.listApplicationsByCompetition(competitionId, page);
+      const { data, error } = await api.listApplicationsByCompetition(
+        competitionId,
+        page,
+        this.sortOrder,
+        this.statusFilter ?? undefined,
+      );
 
       if (error) {
         this.error = error;
@@ -29,6 +36,18 @@ export const useCompetitionApplicationsStore = defineStore("competitionApplicati
       }
 
       this.loading = false;
+    },
+
+    async setStatusFilter(competitionId: string, status: ApplicationStatus | null) {
+      this.statusFilter = status;
+      this.page = 1;
+      await this.fetchApplications(competitionId, 1);
+    },
+
+    async toggleSortOrder(competitionId: string) {
+      this.sortOrder = this.sortOrder === "desc" ? "asc" : "desc";
+      this.page = 1;
+      await this.fetchApplications(competitionId, 1);
     },
 
     async fetchApplication(applicationId: string) {

@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import type { ApplicationModel, SubmitApplicationForm, CreatedApplication, ApiError } from "~/types/api";
+import type { ApplicationModel, SubmitApplicationForm, CreatedApplication, ApiError, ApplicationStatus, SortOrder } from "~/types/api";
 
 export const useMyApplicationsStore = defineStore("myApplications", {
   state: () => ({
@@ -11,6 +11,8 @@ export const useMyApplicationsStore = defineStore("myApplications", {
     submitting: false,
     withdrawing: false,
     error: null as ApiError | null,
+    sortOrder: "desc" as SortOrder,
+    statusFilter: null as ApplicationStatus | null,
   }),
 
   actions: {
@@ -19,7 +21,11 @@ export const useMyApplicationsStore = defineStore("myApplications", {
       this.error = null;
 
       const api = useApi();
-      const { data, error } = await api.listMyApplications(page);
+      const { data, error } = await api.listMyApplications(
+        page,
+        this.sortOrder,
+        this.statusFilter ?? undefined,
+      );
 
       if (error) {
         this.error = error;
@@ -30,6 +36,18 @@ export const useMyApplicationsStore = defineStore("myApplications", {
       }
 
       this.loading = false;
+    },
+
+    async setStatusFilter(status: ApplicationStatus | null) {
+      this.statusFilter = status;
+      this.page = 1;
+      await this.fetchMyApplications(1);
+    },
+
+    async toggleSortOrder() {
+      this.sortOrder = this.sortOrder === "desc" ? "asc" : "desc";
+      this.page = 1;
+      await this.fetchMyApplications(1);
     },
 
     async fetchMyApplication(applicationId: string) {
