@@ -107,7 +107,12 @@ const handleWithdraw = async () => {
               <!-- Competition -->
               <div>
                 <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('myApplications.competition') }}</p>
-                <p class="text-sm font-mono text-gray-700 dark:text-gray-300">{{ app.competition_id }}</p>
+                <NuxtLink
+                  :to="`/competitions/${app.competition_id}`"
+                  class="text-sm text-primary-600 dark:text-primary-400 hover:underline"
+                >
+                  {{ app.competition_name }}
+                </NuxtLink>
               </div>
 
               <!-- Domains -->

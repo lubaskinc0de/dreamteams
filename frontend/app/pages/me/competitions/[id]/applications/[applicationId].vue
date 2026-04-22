@@ -115,9 +115,49 @@ const handleReject = async () => {
 
             <div class="space-y-4">
               <!-- Participant -->
-              <div>
+              <div class="space-y-3">
                 <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('applications.participant') }}</p>
-                <p class="text-sm font-mono text-gray-700 dark:text-gray-300">{{ app.participant_id }}</p>
+                <div class="flex items-center gap-2">
+                  <span class="text-base font-semibold text-gray-900 dark:text-white">{{ app.participant.full_name }}</span>
+                  <UBadge size="xs" variant="subtle" :label="t('competition.participantTypes.' + app.participant.participant_type)" />
+                  <UBadge size="xs" variant="soft" :label="String(app.participant.age)" />
+                </div>
+                <p v-if="app.participant.bio" class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">{{ app.participant.bio }}</p>
+
+                <div v-if="app.participant.experience_level" class="text-sm">
+                  <span class="text-gray-500">{{ t('applications.participantExperience') }}:</span>
+                  <span class="ml-1 font-medium">{{ app.participant.experience_level }}</span>
+                </div>
+
+                <div v-if="app.participant.preferred_domains.length > 0">
+                  <p class="text-xs text-gray-500 mb-1">{{ t('applications.participantDomains') }}</p>
+                  <div class="flex flex-wrap gap-1">
+                    <UBadge v-for="d in app.participant.preferred_domains" :key="d" size="xs" variant="outline" :label="d" />
+                  </div>
+                </div>
+
+                <div v-if="app.participant.skills.length > 0">
+                  <p class="text-xs text-gray-500 mb-1">{{ t('applications.participantSkills') }}</p>
+                  <div class="flex flex-wrap gap-1">
+                    <UBadge v-for="s in app.participant.skills" :key="s.name" size="xs" variant="outline" :label="`${s.name} · ${s.level}`" />
+                  </div>
+                </div>
+
+                <div v-if="app.participant.contacts.length > 0">
+                  <p class="text-xs text-gray-500 mb-1">{{ t('applications.participantContacts') }}</p>
+                  <ul class="space-y-1 text-sm">
+                    <li v-for="c in app.participant.contacts" :key="c.url" class="flex gap-2">
+                      <span class="text-gray-500 min-w-24">{{ c.title }}</span>
+                      <a :href="c.url" target="_blank" rel="noopener" class="text-primary-600 dark:text-primary-400 hover:underline break-all">{{ c.url }}</a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Competition -->
+              <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ t('applications.competition') }}</p>
+                <p class="text-sm text-gray-700 dark:text-gray-300">{{ app.competition_name }}</p>
               </div>
 
               <!-- Domains -->

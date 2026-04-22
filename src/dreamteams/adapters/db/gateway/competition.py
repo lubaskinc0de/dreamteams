@@ -196,7 +196,7 @@ class SACompetitionGateway(CompetitionGateway):
                 .offset((page - 1) * page_size)
                 .options(selectinload(Competition.milestones))  # type: ignore[arg-type]
             )
-            result = list((await self._session.execute(query)).all())
+            result = (await self._session.execute(query)).all()
             rows = [_to_competition_model(row[0], row.members_count) for row in result]
             total = result[0].total if result else 0
             return rows, total
@@ -232,7 +232,7 @@ class SACompetitionGateway(CompetitionGateway):
                     selectinload(Competition.milestones),  # type: ignore[arg-type]
                 )
             )
-            result = list((await self._session.execute(query)).all())
+            result = (await self._session.execute(query)).all()
             rows = [self._to_preview(row[0], row.members_count) for row in result]
             total = result[0].total if result else 0
             return rows, total
@@ -311,7 +311,7 @@ class SACompetitionGateway(CompetitionGateway):
                     selectinload(Competition.milestones),  # type: ignore[arg-type]
                 )
             )
-            result = list((await self._session.execute(query)).all())
+            result = (await self._session.execute(query)).all()
             rows = [self._to_explore(row[0], row.members_count) for row in result]
             total = result[0].total if result else 0
             return rows, total

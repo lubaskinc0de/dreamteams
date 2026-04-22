@@ -95,8 +95,8 @@ const activeTab = computed({
             <div class="flex items-center justify-between">
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">
-                  <span class="text-xs text-gray-400">
-                    {{ t('myApplications.competition') }}: <span class="font-mono">{{ app.competition_id }}</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    {{ app.competition_name }}
                   </span>
                 </div>
                 <div class="flex flex-wrap gap-1">

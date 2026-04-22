@@ -1,12 +1,12 @@
 from dreamteams.application.common.gateway.application import ApplicationSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
-from dreamteams.application.manage_my_applications import ApplicationModel, ApplicationsList
+from dreamteams.application.manage_my_applications import ApplicationsList, MyApplicationModel
 from dreamteams.application.manage_my_applications.list import PAGE_SIZE
 from dreamteams.entities.application.entity import ApplicationStatus
 
 
 def create_my_applications_list(
-    applications: list[ApplicationModel],
+    applications: list[MyApplicationModel],
     page: int = 1,
     page_size: int = PAGE_SIZE,
     *,

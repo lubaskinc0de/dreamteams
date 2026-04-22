@@ -13,11 +13,11 @@ from dreamteams.application.common.gateway.application import ApplicationSortBy
 from dreamteams.application.common.gateway.competition import CompetitionSortBy, ExploreSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.manage_application_form import ApplicationFormModel, CreatedApplicationForm
-from dreamteams.application.manage_applications import ApplicationsList
+from dreamteams.application.manage_applications import ApplicationModel, ApplicationsList
 from dreamteams.application.manage_competitions import CompetitionModel, CompetitionsList
 from dreamteams.application.manage_invites import InviteIssued, InviteModel, InvitesList
-from dreamteams.application.manage_my_applications import ApplicationModel
 from dreamteams.application.manage_my_applications import ApplicationsList as MyApplicationsList
+from dreamteams.application.manage_my_applications import MyApplicationModel
 from dreamteams.application.manage_profile import ProfileModel
 from dreamteams.application.preview_competition.list import PreviewCompetitionsList
 from dreamteams.application.publish_competition import CreatedCompetition
@@ -439,10 +439,10 @@ class ApiClient:
         response = await self.session.get(APPLICATIONS_URL + "/", headers=self._headers, params=params)
         return await self._load_response(response, response_type=MyApplicationsList)
 
-    async def read_my_application(self, application_id: ApplicationId) -> APIResponse[ApplicationModel]:
+    async def read_my_application(self, application_id: ApplicationId) -> APIResponse[MyApplicationModel]:
         """Read own application via GET /applications/{application_id}/my/."""
         response = await self.session.get(f"{APPLICATIONS_URL}/{application_id}/my/", headers=self._headers)
-        return await self._load_response(response, response_type=ApplicationModel)
+        return await self._load_response(response, response_type=MyApplicationModel)
 
     async def read_application(self, application_id: ApplicationId) -> APIResponse[ApplicationModel]:
         """Read application (organizer) via GET /applications/{application_id}/."""

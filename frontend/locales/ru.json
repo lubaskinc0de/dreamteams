@@ -966,8 +966,8 @@
       "label": "Идентификатор поля",
       "placeholder": "например: tshirt_size"
     },
-    "fieldLabel": {
-      "label": "Отображаемое название",
+    "fieldName": {
+      "label": "Вопрос",
       "placeholder": "например: Размер футболки"
     },
     "fieldType": {
@@ -982,10 +982,6 @@
     "addChoice": "Добавить вариант",
     "choiceValue": {
       "label": "Значение",
-      "placeholder": "например: S"
-    },
-    "choiceLabel": {
-      "label": "Отображение",
       "placeholder": "например: Маленький"
     },
     "createdAt": "Создана",
@@ -1005,6 +1001,11 @@
       "rejected": "Отклонена"
     },
     "participant": "Участник",
+    "participantExperience": "Опыт",
+    "participantDomains": "Предпочитаемые направления",
+    "participantSkills": "Навыки",
+    "participantContacts": "Контакты",
+    "competition": "Соревнование",
     "domains": "Направления",
     "submittedAt": "Подана",
     "formData": "Данные формы",

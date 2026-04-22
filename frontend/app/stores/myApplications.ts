@@ -1,13 +1,13 @@
 import { defineStore } from "pinia";
-import type { ApplicationModel, SubmitApplicationForm, CreatedApplication, ApiError, ApplicationStatus, SortOrder } from "~/types/api";
+import type { MyApplicationModel, SubmitApplicationForm, CreatedApplication, ApiError, ApplicationStatus, SortOrder } from "~/types/api";
 
 export const useMyApplicationsStore = defineStore("myApplications", {
   state: () => ({
-    applications: [] as ApplicationModel[],
+    applications: [] as MyApplicationModel[],
     total: 0,
     page: 1,
     loading: false,
-    currentApplication: null as ApplicationModel | null,
+    currentApplication: null as MyApplicationModel | null,
     submitting: false,
     withdrawing: false,
     error: null as ApiError | null,

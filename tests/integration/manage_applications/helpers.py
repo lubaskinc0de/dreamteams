@@ -1,8 +1,7 @@
 from dreamteams.application.common.gateway.application import ApplicationSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
-from dreamteams.application.manage_applications import ApplicationsList
+from dreamteams.application.manage_applications import ApplicationModel, ApplicationsList
 from dreamteams.application.manage_applications.list import PAGE_SIZE
-from dreamteams.application.manage_my_applications import ApplicationModel
 from dreamteams.entities.application.entity import ApplicationStatus
 
 

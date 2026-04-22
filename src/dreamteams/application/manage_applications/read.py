@@ -1,14 +1,15 @@
 import structlog
 
+from dreamteams.application.common.dto.application import ApplicationModel, ParticipantInfo
 from dreamteams.application.common.gateway.application import ApplicationGateway
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
+from dreamteams.application.common.gateway.participant import ParticipantGateway
 from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
 from dreamteams.application.errors.application import ApplicationNotFoundError
 from dreamteams.application.errors.organizer import OrganizerNotFoundError
-from dreamteams.application.manage_my_applications.read import ApplicationModel
 from dreamteams.entities.common.identifiers import ApplicationId
 from dreamteams.entities.errors.base import AccessDeniedError
 
@@ -23,6 +24,7 @@ class ReadApplication:
     organizer_gateway: OrganizerGateway
     application_gateway: ApplicationGateway
     competition_gateway: CompetitionGateway
+    participant_gateway: ParticipantGateway
 
     async def execute(self, application_id: ApplicationId) -> ApplicationModel:
         """Read a single application; only the organizer who owns the competition may access it."""
@@ -44,12 +46,27 @@ class ReadApplication:
                 message="Only the organizer who owns this competition can read its applications",
             )
 
+        participant = await self.participant_gateway.get(application.participant_id, eager_skills_and_contacts=True)
+        if participant is None:
+            raise ApplicationNotFoundError
+
         return ApplicationModel(
             id=application.id,
-            participant_id=application.participant_id,
             competition_id=application.competition_id,
+            competition_name=competition.title,
             domains=application.domains,
             status=application.status,
             created_at=application.created_at,
             form_data=application.form_data,
+            participant=ParticipantInfo(
+                id=participant.id,
+                full_name=participant.full_name,
+                bio=participant.bio,
+                participant_type=participant.participant_type,
+                age=participant.age.value,
+                skills=participant.skills,
+                experience_level=participant.experience_level,
+                preferred_domains=participant.preferred_domains,
+                contacts=participant.contacts,
+            ),
         )

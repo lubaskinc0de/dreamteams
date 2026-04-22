@@ -400,26 +400,26 @@ const activeFilterCount = computed(() => {
             <UFormField
               v-for="field in applicationForm.fields"
               :key="field.name"
-              :label="field.label"
+              :label="field.name"
               :required="field.required"
             >
               <UInput
                 v-if="field.type === 'string'"
                 v-model="formAnswers[field.name]"
-                :placeholder="field.label"
+                :placeholder="field.name"
                 class="w-full"
               />
               <UInput
                 v-else-if="field.type === 'int'"
                 v-model.number="formAnswers[field.name]"
                 type="number"
-                :placeholder="field.label"
+                :placeholder="field.name"
                 class="w-full"
               />
               <USelect
                 v-else-if="field.type === 'select'"
                 v-model="formAnswers[field.name]"
-                :items="(field.choices ?? []).map(c => ({ value: c.value, label: c.label }))"
+                :items="(field.choices ?? []).map(c => ({ value: c.value, label: c.value }))"
                 value-key="value"
                 label-key="label"
                 class="w-full"
@@ -428,7 +428,7 @@ const activeFilterCount = computed(() => {
                 <UCheckbox
                   v-for="choice in (field.choices ?? [])"
                   :key="choice.value"
-                  :label="choice.label"
+                  :label="choice.value"
                   :model-value="(formAnswers[field.name] ?? []).includes(choice.value)"
                   @update:model-value="(checked) => {
                     const current = formAnswers[field.name] ?? [];

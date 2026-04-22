@@ -22,12 +22,9 @@ class FieldListType(TypeDecorator[list[Field]]):
         return [
             {
                 "name": f.name,
-                "label": f.label,
                 "type": f.type.value,
                 "required": f.required,
-                "choices": (
-                    [{"value": c.value, "label": c.label} for c in f.choices] if f.choices is not None else None
-                ),
+                "choices": ([{"value": c.value} for c in f.choices] if f.choices is not None else None),
             }
             for f in value
         ]
@@ -42,14 +39,9 @@ class FieldListType(TypeDecorator[list[Field]]):
             fields.append(
                 Field(
                     name=raw["name"],
-                    label=raw["label"],
                     type=FieldType(raw["type"]),
                     required=raw["required"],
-                    choices=(
-                        tuple(FieldChoice(value=c["value"], label=c["label"]) for c in choices)
-                        if choices is not None
-                        else None
-                    ),
+                    choices=(tuple(FieldChoice(value=c["value"]) for c in choices) if choices is not None else None),
                 ),
             )
         return fields

@@ -1,33 +1,18 @@
-from datetime import datetime
-from typing import Any
-
 import structlog
-from pydantic import BaseModel
 
+from dreamteams.application.common.dto.application import MyApplicationModel
 from dreamteams.application.common.gateway.application import ApplicationGateway
+from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.participant import ParticipantGateway
 from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
 from dreamteams.application.errors.application import ApplicationNotFoundError
-from dreamteams.entities.application.entity import ApplicationStatus
-from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId, ParticipantId
-from dreamteams.entities.common.vo.domain import Domain
+from dreamteams.entities.common.identifiers import ApplicationId
 from dreamteams.entities.errors.base import AccessDeniedError
+from dreamteams.entities.errors.competition import CompetitionNotFoundError
 
 logger: Logger = structlog.get_logger(__name__)
-
-
-class ApplicationModel(BaseModel):
-    """Full representation of a registration application."""
-
-    id: ApplicationId
-    participant_id: ParticipantId
-    competition_id: CompetitionId
-    domains: list[Domain]
-    status: ApplicationStatus
-    created_at: datetime
-    form_data: dict[str, Any] | None
 
 
 @interactor
@@ -37,8 +22,9 @@ class ReadMyApplication:
     idp: IdProvider
     participant_gateway: ParticipantGateway
     application_gateway: ApplicationGateway
+    competition_gateway: CompetitionGateway
 
-    async def execute(self, application_id: ApplicationId) -> ApplicationModel:
+    async def execute(self, application_id: ApplicationId) -> MyApplicationModel:
         """Read a single application; only the submitting participant may access it."""
         user_id = await self.idp.get_user_id()
         logger.debug("Reading own application", application_id=application_id, user_id=user_id)
@@ -53,10 +39,15 @@ class ReadMyApplication:
             logger.warning("Access denied to read application", application_id=application_id, user_id=user_id)
             raise AccessDeniedError(message="Only the participant who submitted this application can read it")
 
-        return ApplicationModel(
+        competition = await self.competition_gateway.get(application.competition_id)
+        if competition is None:
+            raise CompetitionNotFoundError
+
+        return MyApplicationModel(
             id=application.id,
             participant_id=application.participant_id,
             competition_id=application.competition_id,
+            competition_name=competition.title,
             domains=application.domains,
             status=application.status,
             created_at=application.created_at,

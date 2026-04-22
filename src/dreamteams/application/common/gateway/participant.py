@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Protocol
 
-from dreamteams.entities.common.identifiers import UserId
+from dreamteams.entities.common.identifiers import ParticipantId, UserId
 from dreamteams.entities.user import Participant
 
 
@@ -20,5 +20,18 @@ class ParticipantGateway(Protocol):
         Skills and contacts are only eager-loaded when ``eager_skills_and_contacts=True``;
         accessing them on the returned entity without this flag raises ``StatementError``
         because both collections are mapped with ``lazy='raise_on_sql'``.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get(
+        self,
+        participant_id: ParticipantId,
+        *,
+        eager_skills_and_contacts: bool = False,
+    ) -> Participant | None:
+        """Return the participant by their entity ID, or None if not found.
+
+        Skills and contacts are only eager-loaded when ``eager_skills_and_contacts=True``.
         """
         raise NotImplementedError

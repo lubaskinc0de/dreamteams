@@ -6,6 +6,7 @@ from fastapi import APIRouter, Query
 
 from dreamteams.application.manage_applications import (
     AcceptApplication,
+    ApplicationModel,
     ApplicationsList,
     ListApplicationsByCompetition,
     ListApplicationsByCompetitionInput,
@@ -15,11 +16,11 @@ from dreamteams.application.manage_applications import (
 from dreamteams.application.manage_my_applications import (
     ListMyApplications,
     ListMyApplicationsInput,
+    MyApplicationModel,
     ReadMyApplication,
     WithdrawApplication,
 )
 from dreamteams.application.manage_my_applications.list import ApplicationsList as MyApplicationsList
-from dreamteams.application.manage_my_applications.read import ApplicationModel
 from dreamteams.application.submit_application import (
     ApplicationFormModel,
     CreatedApplication,
@@ -84,7 +85,7 @@ async def list_my_applications(
 async def read_my_application(
     interactor: FromDishka[ReadMyApplication],
     application_id: ApplicationId,
-) -> ApplicationModel:
+) -> MyApplicationModel:
     """HTTP endpoint for a participant to read their own application."""
     return await interactor.execute(application_id)
 

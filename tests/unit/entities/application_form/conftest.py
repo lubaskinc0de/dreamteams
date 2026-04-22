@@ -33,25 +33,23 @@ def make_form_via_factory(
     )
 
 
-STRING_FIELD = Field(name="bio", label="Short bio", type=FieldType.STRING)
-INT_FIELD = Field(name="age", label="Your age", type=FieldType.INT)
+STRING_FIELD = Field(name="bio", type=FieldType.STRING)
+INT_FIELD = Field(name="age", type=FieldType.INT)
 SELECT_FIELD = Field(
     name="size",
-    label="T-shirt size",
     type=FieldType.SELECT,
     choices=(
-        FieldChoice(value="S", label="Small"),
-        FieldChoice(value="M", label="Medium"),
-        FieldChoice(value="L", label="Large"),
+        FieldChoice(value="S"),
+        FieldChoice(value="M"),
+        FieldChoice(value="L"),
     ),
 )
 MULTISELECT_FIELD = Field(
     name="roles",
-    label="Preferred roles",
     type=FieldType.MULTISELECT,
     choices=(
-        FieldChoice(value="frontend", label="Frontend"),
-        FieldChoice(value="backend", label="Backend"),
-        FieldChoice(value="design", label="Design"),
+        FieldChoice(value="frontend"),
+        FieldChoice(value="backend"),
+        FieldChoice(value="design"),
     ),
 )

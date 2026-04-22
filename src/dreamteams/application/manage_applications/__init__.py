@@ -4,6 +4,7 @@ Actor: Organizer
 Organizer reads, lists, accepts, and rejects applications for their competitions.
 """
 
+from dreamteams.application.common.dto.application import ApplicationModel
 from dreamteams.application.manage_applications.accept import AcceptApplication
 from dreamteams.application.manage_applications.list import (
     ApplicationsList,
@@ -15,6 +16,7 @@ from dreamteams.application.manage_applications.reject import RejectApplication
 
 __all__ = [
     "AcceptApplication",
+    "ApplicationModel",
     "ApplicationsList",
     "ListApplicationsByCompetition",
     "ListApplicationsByCompetitionInput",

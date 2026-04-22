@@ -25,14 +25,12 @@ class FieldChoiceForm(BaseModel):
     """A single selectable option for SELECT or MULTISELECT fields."""
 
     value: str
-    label: str
 
 
 class FieldForm(BaseModel):
     """A single input field definition."""
 
     name: str
-    label: str
     type: FieldType
     required: bool = True
     choices: list[FieldChoiceForm] | None = None
@@ -88,14 +86,9 @@ class CreateApplicationForm:
         domain_fields = [
             DomainField(
                 name=f.name,
-                label=f.label,
                 type=f.type,
                 required=f.required,
-                choices=(
-                    tuple(FieldChoice(value=c.value, label=c.label) for c in f.choices)
-                    if f.choices is not None
-                    else None
-                ),
+                choices=(tuple(FieldChoice(value=c.value) for c in f.choices) if f.choices is not None else None),
             )
             for f in data.fields
         ]

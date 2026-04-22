@@ -1,7 +1,7 @@
 import pytest
 
 from dreamteams.application.common.gateway.sorting import SortOrder
-from dreamteams.application.manage_my_applications import ApplicationModel, ApplicationsList
+from dreamteams.application.manage_my_applications import ApplicationsList, MyApplicationModel
 from dreamteams.application.manage_my_applications.list import PAGE_SIZE
 from dreamteams.entities.application.entity import ApplicationStatus
 from tests.integration.api_client import ApiClient
@@ -28,10 +28,11 @@ async def test_participant_can_list_own_applications(
     result = response.assert_status(200).ensure_content()
     assert result == ApplicationsList(
         items=[
-            ApplicationModel(
+            MyApplicationModel(
                 id=application_id,
                 participant_id=result.items[0].participant_id,
                 competition_id=comp.created.competition_id,
+                competition_name=comp.form.title,
                 domains=result.items[0].domains,
                 status=ApplicationStatus.PENDING,
                 created_at=result.items[0].created_at,

@@ -26,8 +26,8 @@ from tests.unit.composite import (
 )
 from tests.unit.helpers.facade import Gateway
 
-_CHOICES = (FieldChoice(value="S", label="Small"), FieldChoice(value="M", label="Medium"))
-_MULTI_CHOICES = (FieldChoice(value="fe", label="Frontend"), FieldChoice(value="be", label="Backend"))
+_CHOICES = (FieldChoice(value="S"), FieldChoice(value="M"))
+_MULTI_CHOICES = (FieldChoice(value="fe"), FieldChoice(value="be"))
 
 
 def _make_form(
@@ -553,7 +553,7 @@ def test_missing_required_field_is_rejected(
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
     competition.participant_limits = ParticipantLimits(max=1000)
-    form = _make_form(organizer, competition, clock, Field(name="bio", label="Bio", type=FieldType.STRING))
+    form = _make_form(organizer, competition, clock, Field(name="bio", type=FieldType.STRING))
     app_data = data.draw(valid_application_data(domains=competition.domains))
     app_data.form_data = {}
 
@@ -585,8 +585,8 @@ def test_optional_field_can_be_omitted(
         organizer,
         competition,
         clock,
-        Field(name="bio", label="Bio", type=FieldType.STRING, required=True),
-        Field(name="age", label="Age", type=FieldType.INT, required=False),
+        Field(name="bio", type=FieldType.STRING, required=True),
+        Field(name="age", type=FieldType.INT, required=False),
     )
     app_data = data.draw(valid_application_data(domains=competition.domains))
     app_data.form_data = {"bio": "hello"}
@@ -616,7 +616,7 @@ def test_extra_form_key_is_rejected(
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
     competition.participant_limits = ParticipantLimits(max=1000)
-    form = _make_form(organizer, competition, clock, Field(name="bio", label="Bio", type=FieldType.STRING))
+    form = _make_form(organizer, competition, clock, Field(name="bio", type=FieldType.STRING))
     app_data = data.draw(valid_application_data(domains=competition.domains))
     app_data.form_data = {"bio": "hi", "ghost": "x"}
 
@@ -646,7 +646,7 @@ def test_string_field_rejects_non_string_value(
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
     competition.participant_limits = ParticipantLimits(max=1000)
-    form = _make_form(organizer, competition, clock, Field(name="bio", label="Bio", type=FieldType.STRING))
+    form = _make_form(organizer, competition, clock, Field(name="bio", type=FieldType.STRING))
     app_data = data.draw(valid_application_data(domains=competition.domains))
     app_data.form_data = {"bio": bad_value}
 
@@ -674,7 +674,7 @@ def test_int_field_rejects_bool_value(
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
     competition.participant_limits = ParticipantLimits(max=1000)
-    form = _make_form(organizer, competition, clock, Field(name="age", label="Age", type=FieldType.INT))
+    form = _make_form(organizer, competition, clock, Field(name="age", type=FieldType.INT))
     app_data = data.draw(valid_application_data(domains=competition.domains))
     app_data.form_data = {"age": True}
 
@@ -706,7 +706,7 @@ def test_select_field_rejects_unknown_choice(
         organizer,
         competition,
         clock,
-        Field(name="size", label="Size", type=FieldType.SELECT, choices=_CHOICES),
+        Field(name="size", type=FieldType.SELECT, choices=_CHOICES),
     )
     app_data = data.draw(valid_application_data(domains=competition.domains))
     app_data.form_data = {"size": "XL"}
@@ -739,7 +739,7 @@ def test_multiselect_field_rejects_empty_list(
         organizer,
         competition,
         clock,
-        Field(name="roles", label="Roles", type=FieldType.MULTISELECT, choices=_MULTI_CHOICES),
+        Field(name="roles", type=FieldType.MULTISELECT, choices=_MULTI_CHOICES),
     )
     app_data = data.draw(valid_application_data(domains=competition.domains))
     app_data.form_data = {"roles": []}
@@ -772,7 +772,7 @@ def test_multiselect_field_rejects_invalid_item(
         organizer,
         competition,
         clock,
-        Field(name="roles", label="Roles", type=FieldType.MULTISELECT, choices=_MULTI_CHOICES),
+        Field(name="roles", type=FieldType.MULTISELECT, choices=_MULTI_CHOICES),
     )
     app_data = data.draw(valid_application_data(domains=competition.domains))
     app_data.form_data = {"roles": ["fe", "unknown"]}

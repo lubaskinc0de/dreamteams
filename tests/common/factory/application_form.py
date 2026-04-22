@@ -16,37 +16,33 @@ def _field_forms_provider() -> list[FieldForm]:
     candidates: list[FieldForm] = [
         FieldForm(
             name="bio",
-            label="Short bio",
             type=FieldType.STRING,
             required=True,
             choices=None,
         ),
         FieldForm(
             name="age",
-            label="Your age",
             type=FieldType.INT,
             required=False,
             choices=None,
         ),
         FieldForm(
             name="size",
-            label="T-shirt size",
             type=FieldType.SELECT,
             required=True,
             choices=[
-                FieldChoiceForm(value="s", label="Small"),
-                FieldChoiceForm(value="m", label="Medium"),
-                FieldChoiceForm(value="l", label="Large"),
+                FieldChoiceForm(value="s"),
+                FieldChoiceForm(value="m"),
+                FieldChoiceForm(value="l"),
             ],
         ),
         FieldForm(
             name="roles",
-            label="Preferred roles",
             type=FieldType.MULTISELECT,
             required=False,
             choices=[
-                FieldChoiceForm(value="frontend", label="Frontend"),
-                FieldChoiceForm(value="backend", label="Backend"),
+                FieldChoiceForm(value="frontend"),
+                FieldChoiceForm(value="backend"),
             ],
         ),
     ]
@@ -59,7 +55,6 @@ def _field_forms_provider() -> list[FieldForm]:
         chosen = [
             FieldForm(
                 name=faker.slug()[:20],
-                label=faker.word().capitalize(),
                 type=FieldType.STRING,
                 required=True,
                 choices=None,

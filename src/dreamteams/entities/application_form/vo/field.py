@@ -18,14 +18,11 @@ class FieldChoice:
     """A single selectable option for SELECT or MULTISELECT fields."""
 
     value: str
-    label: str
 
     def __post_init__(self) -> None:
         """Validate FieldChoice invariants."""
         if not self.value or self.value.isspace():
             raise InvalidApplicationFormDataError(message="Choice value must not be empty")
-        if not self.label or self.label.isspace():
-            raise InvalidApplicationFormDataError(message="Choice label must not be empty")
 
 
 @dataclass(frozen=True, slots=True)
@@ -33,7 +30,6 @@ class Field:
     """A single input field in an ApplicationForm."""
 
     name: str
-    label: str
     type: FieldType
     required: bool = True
     choices: tuple[FieldChoice, ...] | None = None
@@ -42,8 +38,6 @@ class Field:
         """Validate Field invariants."""
         if not self.name or self.name.isspace():
             raise InvalidApplicationFormDataError(message="Field name must not be empty")
-        if not self.label or self.label.isspace():
-            raise InvalidApplicationFormDataError(message="Field label must not be empty")
 
         if self.type in (FieldType.SELECT, FieldType.MULTISELECT):
             if not self.choices:

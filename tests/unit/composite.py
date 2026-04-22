@@ -409,8 +409,8 @@ def valid_application_data(draw: st.DrawFn, domains: list[Domain] | None = None)
 
 @st.composite
 def valid_field_choice(draw: st.DrawFn) -> FieldChoice:
-    """Valid FieldChoice with non-blank value and label."""
-    return FieldChoice(value=draw(valid_text()), label=draw(valid_text()))
+    """Valid FieldChoice with non-blank value."""
+    return FieldChoice(value=draw(valid_text()))
 
 
 @st.composite
@@ -418,14 +418,13 @@ def valid_field(draw: st.DrawFn, field_type: FieldType | None = None) -> Field:
     """Valid Field. Generates choices for SELECT/MULTISELECT types."""
     ft = field_type if field_type is not None else draw(st.sampled_from(list(FieldType)))
     name = draw(valid_text())
-    label = draw(valid_text())
     required = draw(st.booleans())
     if ft in (FieldType.SELECT, FieldType.MULTISELECT):
         choices = draw(
             st.lists(valid_field_choice(), min_size=1, max_size=5, unique_by=lambda c: c.value),
         )
-        return Field(name=name, label=label, type=ft, required=required, choices=tuple(choices))
-    return Field(name=name, label=label, type=ft, required=required)
+        return Field(name=name, type=ft, required=required, choices=tuple(choices))
+    return Field(name=name, type=ft, required=required)
 
 
 @st.composite

@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from dreamteams.application.manage_my_applications import ApplicationModel
+from dreamteams.application.manage_my_applications import MyApplicationModel
 from dreamteams.entities.application.entity import ApplicationStatus
 from tests.integration.api_client import ApiClient
 from tests.integration.helpers.facade import Gateway
@@ -10,7 +10,7 @@ async def test_participant_can_read_own_application(
     api_client: ApiClient,
     gateway: Gateway,
 ) -> None:
-    """Participant who submitted an application can read it and receives the full ApplicationModel."""
+    """Participant who submitted an application can read it and receives the full MyApplicationModel."""
     # Arrange
     owner = await gateway.organizer.create_with_admin(gateway.admin)
     participant = await gateway.participant.create()
@@ -23,10 +23,11 @@ async def test_participant_can_read_own_application(
 
     # Assert
     result = response.assert_status(200).ensure_content()
-    assert result == ApplicationModel(
+    assert result == MyApplicationModel(
         id=application_id,
         participant_id=result.participant_id,
         competition_id=comp.created.competition_id,
+        competition_name=comp.form.title,
         domains=result.domains,
         status=ApplicationStatus.PENDING,
         created_at=result.created_at,

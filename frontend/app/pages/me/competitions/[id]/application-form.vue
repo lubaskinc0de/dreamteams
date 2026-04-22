@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { useApplicationFormStore } from '~/stores/applicationForm';
 import { useNotificationsStore } from '~/stores/notifications';
-import type { ApplicationFormInput, FieldForm, FieldChoiceForm, FieldType } from '~/types/api';
-import { uniqueSlugs } from '~/utils/slug';
+import type { ApplicationFormInput, FieldForm, FieldType } from '~/types/api';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -40,13 +39,14 @@ const handleDelete = async () => {
   }
 };
 
-// Build form state. Machine-readable `name` is generated from `label` at
-// submit time (uniqueSlugs), so the builder UI no longer exposes it.
+// Backend only stores `name` (and choices[*].value) — no human-readable label.
+// The builder shows `name` as a single free-form input; the same value is used
+// as the displayed label for participants when the form is rendered.
 interface FieldDraft {
-  label: string;
+  name: string;
   type: FieldType;
   required: boolean;
-  choices: { value: string; label: string }[];
+  choices: { value: string }[];
 }
 
 const fieldTypes: { value: FieldType; label: string }[] = [
@@ -57,11 +57,11 @@ const fieldTypes: { value: FieldType; label: string }[] = [
 ];
 
 const newFields = ref<FieldDraft[]>([
-  { label: '', type: 'string', required: true, choices: [] },
+  { name: '', type: 'string', required: true, choices: [] },
 ]);
 
 const addField = () => {
-  newFields.value.push({ label: '', type: 'string', required: true, choices: [] });
+  newFields.value.push({ name: '', type: 'string', required: true, choices: [] });
 };
 
 const removeField = (index: number) => {
@@ -69,7 +69,7 @@ const removeField = (index: number) => {
 };
 
 const addChoice = (field: FieldDraft) => {
-  field.choices.push({ value: '', label: '' });
+  field.choices.push({ value: '' });
 };
 
 const removeChoice = (field: FieldDraft, index: number) => {
@@ -94,13 +94,11 @@ const builderTabs = computed(() => [
 const handleCreate = async () => {
   isCreating.value = true;
 
-  const names = uniqueSlugs(newFields.value.map((f) => f.label));
-  const fields: FieldForm[] = newFields.value.map((f, i) => ({
-    name: names[i]!,
-    label: f.label,
+  const fields: FieldForm[] = newFields.value.map((f) => ({
+    name: f.name,
     type: f.type,
     required: f.required,
-    choices: needsChoices(f.type) ? f.choices : null,
+    choices: needsChoices(f.type) ? f.choices.map((c) => ({ value: c.value })) : null,
   }));
 
   const input: ApplicationFormInput = { fields };
@@ -115,7 +113,7 @@ const handleCreate = async () => {
       icon: 'i-heroicons-check-circle',
       color: 'success',
     });
-    newFields.value = [{ label: '', type: 'string', required: true, choices: [] }];
+    newFields.value = [{ name: '', type: 'string', required: true, choices: [] }];
   } else if (formStore.error) {
     notifications.add({
       title: t('apiErrors.' + formStore.error.code),
@@ -189,7 +187,7 @@ const handleCreate = async () => {
                 <div class="flex items-start justify-between gap-4">
                   <div class="flex-1">
                     <div class="flex items-center gap-2 mb-1">
-                      <span class="font-medium text-gray-900 dark:text-white">{{ field.label }}</span>
+                      <span class="font-medium text-gray-900 dark:text-white">{{ field.name }}</span>
                       <UBadge size="sm" variant="soft" :label="t('applicationForm.fieldType.' + field.type)" />
                       <UBadge v-if="field.required" size="sm" color="error" variant="soft" :label="t('applicationForm.fieldRequired')" />
                     </div>
@@ -199,7 +197,7 @@ const handleCreate = async () => {
                         :key="choice.value"
                         size="sm"
                         variant="outline"
-                        :label="`${choice.label} (${choice.value})`"
+                        :label="choice.value"
                       />
                     </div>
                   </div>
@@ -248,10 +246,10 @@ const handleCreate = async () => {
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <UFormField :label="t('applicationForm.fieldLabel.label')" class="md:col-span-2">
+                      <UFormField :label="t('applicationForm.fieldName.label')" class="md:col-span-2">
                         <UInput
-                          v-model="field.label"
-                          :placeholder="t('applicationForm.fieldLabel.placeholder')"
+                          v-model="field.name"
+                          :placeholder="t('applicationForm.fieldName.placeholder')"
                           class="w-full"
                         />
                       </UFormField>
@@ -283,11 +281,6 @@ const handleCreate = async () => {
                         <UInput
                           v-model="choice.value"
                           :placeholder="t('applicationForm.choiceValue.placeholder')"
-                          class="flex-1"
-                        />
-                        <UInput
-                          v-model="choice.label"
-                          :placeholder="t('applicationForm.choiceLabel.placeholder')"
                           class="flex-1"
                         />
                         <UButton
@@ -344,26 +337,26 @@ const handleCreate = async () => {
                 <div v-else class="space-y-4">
                   <div v-for="(field, index) in newFields" :key="index">
                     <UFormField
-                      :label="field.label || `Field ${index + 1}`"
+                      :label="field.name || `Field ${index + 1}`"
                       :required="field.required"
                     >
                       <UInput
                         v-if="field.type === 'string'"
-                        :placeholder="field.label"
+                        :placeholder="field.name"
                         disabled
                         class="w-full"
                       />
                       <UInput
                         v-else-if="field.type === 'int'"
                         type="number"
-                        :placeholder="field.label"
+                        :placeholder="field.name"
                         disabled
                         class="w-full"
                       />
                       <USelect
                         v-else-if="field.type === 'select'"
-                        :items="field.choices.map(c => ({ label: c.label || c.value, value: c.value }))"
-                        :placeholder="field.label"
+                        :items="field.choices.map(c => ({ label: c.value, value: c.value }))"
+                        :placeholder="field.name"
                         disabled
                         class="w-full"
                       />
@@ -371,7 +364,7 @@ const handleCreate = async () => {
                         <UCheckbox
                           v-for="choice in field.choices"
                           :key="choice.value"
-                          :label="choice.label || choice.value"
+                          :label="choice.value"
                           disabled
                         />
                         <span v-if="field.choices.length === 0" class="text-sm text-gray-400 italic">

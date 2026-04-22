@@ -5,7 +5,8 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass
 
-from dreamteams.application.manage_my_applications import ApplicationModel
+from dreamteams.application.manage_applications import ApplicationModel
+from dreamteams.application.manage_my_applications import MyApplicationModel
 from dreamteams.application.submit_application import SubmitApplicationInput
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId
 from tests.common.factory.application import SubmitApplicationInputFactory
@@ -52,7 +53,7 @@ class ApplicationGateway:
         self,
         application_id: ApplicationId,
         participant_auth_id: str,
-    ) -> ApplicationModel:
+    ) -> MyApplicationModel:
         """Read a single application as the participant who submitted it."""
         with self.api_client.authenticate(auth_user_id=participant_auth_id):
             return (await self.api_client.read_my_application(application_id)).assert_status(200).ensure_content()
@@ -79,7 +80,7 @@ class ApplicationGateway:
         participant_auth_id: str,
         *,
         auto_accept: bool = False,
-    ) -> list[ApplicationModel]:
+    ) -> list[MyApplicationModel]:
         """Create ``n`` fresh competitions, submit an application to each, and return participant-view models."""
         comps: list[CompetitionCreated] = [
             await self.competition_gateway.create_active(owner_auth_id, auto_accept=auto_accept) for _ in range(n)
@@ -169,7 +170,7 @@ class ApplicationGateway:
         application_ids: list[ApplicationId],
         organizer_auth_id: str,
         participant_auth_id: str,
-    ) -> list[ApplicationModel]:
+    ) -> list[MyApplicationModel]:
         """Same distribution as ``create_mixed`` but returns participant-view models."""
         await self.create_mixed(application_ids, organizer_auth_id)
         return await asyncio.gather(

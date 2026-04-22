@@ -10,6 +10,7 @@ from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dreamteams.adapters.db.models import competition_table
+from dreamteams.application.common.dto.milestone import MilestoneForm
 from dreamteams.application.manage_competitions import CompetitionModel
 from dreamteams.application.manage_competitions.update import UpdateCompetitionForm
 from dreamteams.application.publish_competition.create import CompetitionForm
@@ -17,6 +18,7 @@ from dreamteams.entities.common.identifiers import CompetitionId
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
+from dreamteams.entities.competition.schedule import ScheduleData
 from tests.common.factory.competition import CompetitionFormFactory, UpdateCompetitionFormFactory
 from tests.integration.api_client import ApiClient
 from tests.integration.helpers.models import CompetitionCreated
@@ -178,7 +180,25 @@ class CompetitionGateway:
         competition_model = await self.read(competition_id, organizer_auth_id)
         await self.make_all_active([competition_model], organizer_auth_id)
 
-        update_form = self.update_competition_form_factory.build(
+        update_form = UpdateCompetitionForm(
+            title=competition_model.title,
+            description=competition_model.description,
+            schedule=ScheduleData(
+                registration_start=competition_model.schedule.registration_start,
+                registration_end=competition_model.schedule.registration_end,
+                team_formation_start=competition_model.schedule.team_formation_start,
+                team_formation_end=competition_model.schedule.team_formation_end,
+            ),
+            venue=competition_model.venue,
+            team_size=competition_model.team_size,
+            milestones=[
+                MilestoneForm(
+                    title=m.title,
+                    timestamp=m.timestamp,
+                    description=m.description.value if m.description is not None else None,
+                )
+                for m in competition_model.milestones
+            ],
             participant_type=participant_type,
             participant_limits=ParticipantLimits(max=max_participants),
             is_archived=False,

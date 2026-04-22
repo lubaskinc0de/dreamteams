@@ -10,19 +10,12 @@ from tests.unit.composite import valid_text
 def test_blank_value_is_rejected(blank: str) -> None:
     """Blank choice value raises InvalidApplicationFormDataError."""
     with pytest.raises(InvalidApplicationFormDataError, match="Choice value must not be empty"):
-        FieldChoice(value=blank, label="Valid")
+        FieldChoice(value=blank)
 
 
-@pytest.mark.parametrize("blank", ["", "   ", "\t"])
-def test_blank_label_is_rejected(blank: str) -> None:
-    """Blank choice label raises InvalidApplicationFormDataError."""
-    with pytest.raises(InvalidApplicationFormDataError, match="Choice label must not be empty"):
-        FieldChoice(value="valid", label=blank)
+@given(value=valid_text())
+def test_non_blank_value_is_accepted(value: str) -> None:
+    """Any non-blank value produces a valid FieldChoice."""
+    choice = FieldChoice(value=value)
 
-
-@given(value=valid_text(), label=valid_text())
-def test_non_blank_value_and_label_are_accepted(value: str, label: str) -> None:
-    """Any non-blank value and label produce a valid FieldChoice."""
-    choice = FieldChoice(value=value, label=label)
-
-    assert choice == FieldChoice(value=value, label=label)
+    assert choice == FieldChoice(value=value)

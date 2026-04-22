@@ -1,7 +1,10 @@
 from uuid import uuid4
 
-from dreamteams.application.manage_my_applications import ApplicationModel
+from dreamteams.application.common.dto.application import ParticipantInfo
+from dreamteams.application.manage_applications import ApplicationModel
 from dreamteams.entities.application.entity import ApplicationStatus
+from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
+from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
 from tests.integration.api_client import ApiClient
 from tests.integration.helpers.facade import Gateway
 
@@ -25,12 +28,29 @@ async def test_organizer_can_read_application(
     result = response.assert_status(200).ensure_content()
     assert result == ApplicationModel(
         id=application_id,
-        participant_id=result.participant_id,
         competition_id=comp.created.competition_id,
+        competition_name=comp.form.title,
         domains=result.domains,
         status=ApplicationStatus.PENDING,
         created_at=result.created_at,
         form_data=None,
+        participant=ParticipantInfo(
+            id=result.participant.id,
+            full_name=participant.form.full_name,
+            bio=participant.form.bio,
+            participant_type=participant.form.participant_type,
+            age=participant.form.age,
+            skills=sorted(
+                [ParticipantSkill(name=s.name, level=s.level) for s in participant.form.skills],
+                key=lambda s: s.name,
+            ),
+            experience_level=participant.form.experience_level,
+            preferred_domains=participant.form.preferred_domains,
+            contacts=sorted(
+                [ParticipantContact(title=c.title, url=str(c.url)) for c in participant.form.contacts],
+                key=lambda c: c.title,
+            ),
+        ),
     )
 
 

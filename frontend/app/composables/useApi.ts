@@ -26,6 +26,8 @@ import type {
   CreatedApplication,
   ApplicationModel,
   ApplicationsList,
+  MyApplicationModel,
+  MyApplicationsList,
   ApplicationStatus,
   ExploreCompetitionsFilters,
   ExploreCompetitionsList,
@@ -572,7 +574,7 @@ export const useApi = () => {
     page: number = 1,
     sortOrder: SortOrder = "desc",
     status?: ApplicationStatus,
-  ): Promise<{ data: ApplicationsList | null; error: ApiError | null }> => {
+  ): Promise<{ data: MyApplicationsList | null; error: ApiError | null }> => {
     try {
       const params: Record<string, any> = {
         page,
@@ -580,7 +582,7 @@ export const useApi = () => {
         sort_order: sortOrder,
       };
       if (status) params.status = status;
-      const data = await apiFetch<ApplicationsList>(
+      const data = await apiFetch<MyApplicationsList>(
         `${apiBase}/api/applications/`,
         { method: "GET", params },
       );
@@ -592,9 +594,9 @@ export const useApi = () => {
 
   const readMyApplication = async (
     applicationId: string,
-  ): Promise<{ data: ApplicationModel | null; error: ApiError | null }> => {
+  ): Promise<{ data: MyApplicationModel | null; error: ApiError | null }> => {
     try {
-      const data = await apiFetch<ApplicationModel>(
+      const data = await apiFetch<MyApplicationModel>(
         `${apiBase}/api/applications/${applicationId}/my/`,
         { method: "GET" },
       );

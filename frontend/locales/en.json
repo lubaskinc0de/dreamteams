@@ -966,8 +966,8 @@
       "label": "Field identifier",
       "placeholder": "e.g. tshirt_size"
     },
-    "fieldLabel": {
-      "label": "Display label",
+    "fieldName": {
+      "label": "Question",
       "placeholder": "e.g. T-shirt size"
     },
     "fieldType": {
@@ -982,10 +982,6 @@
     "addChoice": "Add choice",
     "choiceValue": {
       "label": "Value",
-      "placeholder": "e.g. S"
-    },
-    "choiceLabel": {
-      "label": "Display",
       "placeholder": "e.g. Small"
     },
     "createdAt": "Created",
@@ -1005,6 +1001,11 @@
       "rejected": "Rejected"
     },
     "participant": "Participant",
+    "participantExperience": "Experience",
+    "participantDomains": "Preferred domains",
+    "participantSkills": "Skills",
+    "participantContacts": "Contacts",
+    "competition": "Competition",
     "domains": "Domains",
     "submittedAt": "Submitted",
     "formData": "Form data",

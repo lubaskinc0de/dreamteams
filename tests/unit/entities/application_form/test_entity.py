@@ -15,7 +15,7 @@ from tests.unit.composite import valid_application_form, valid_application_form_
 from tests.unit.entities.application_form.conftest import STRING_FIELD, make_form, make_form_via_factory
 from tests.unit.helpers.facade import Gateway
 
-_OTHER_FIELD = Field(name="other", label="Other", type=FieldType.STRING)
+_OTHER_FIELD = Field(name="other", type=FieldType.STRING)
 
 
 def test_empty_fields_list_is_rejected() -> None:
@@ -26,7 +26,7 @@ def test_empty_fields_list_is_rejected() -> None:
 
 def test_duplicate_field_names_are_rejected() -> None:
     """ApplicationForm with duplicate field names raises InvalidApplicationFormDataError."""
-    dup = Field(name="bio", label="Duplicate", type=FieldType.STRING)
+    dup = Field(name="bio", type=FieldType.STRING)
 
     with pytest.raises(InvalidApplicationFormDataError, match="unique names"):
         make_form(STRING_FIELD, dup)

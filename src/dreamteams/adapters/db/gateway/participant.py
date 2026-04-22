@@ -6,7 +6,7 @@ from sqlalchemy.orm import selectinload
 
 from dreamteams.adapters.db.models import participant_table
 from dreamteams.application.common.gateway.participant import ParticipantGateway
-from dreamteams.entities.common.identifiers import UserId
+from dreamteams.entities.common.identifiers import ParticipantId, UserId
 from dreamteams.entities.user import Participant
 
 
@@ -25,6 +25,23 @@ class SAParticipantGateway(ParticipantGateway):
     ) -> Participant | None:
         """Load the participant attached to a user; eager-load skills/contacts only when requested."""
         query = select(Participant).where(participant_table.c.user_id == user_id)
+        if eager_skills_and_contacts:
+            query = query.options(
+                selectinload(Participant.skills),  # type: ignore[arg-type]
+                selectinload(Participant.contacts),  # type: ignore[arg-type]
+            )
+        result = await self._session.execute(query)
+        return result.scalar_one_or_none()
+
+    @override
+    async def get(
+        self,
+        participant_id: ParticipantId,
+        *,
+        eager_skills_and_contacts: bool = False,
+    ) -> Participant | None:
+        """Load the participant by their entity ID; eager-load skills/contacts only when requested."""
+        query = select(Participant).where(participant_table.c.id == participant_id)
         if eager_skills_and_contacts:
             query = query.options(
                 selectinload(Participant.skills),  # type: ignore[arg-type]

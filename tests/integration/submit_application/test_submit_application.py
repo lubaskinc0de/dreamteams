@@ -44,7 +44,7 @@ async def test_participant_can_submit_application_with_form_data(
 
     comp = await gateway.competition.create_active(owner.organizer.auth_id, domains=[Domain.BACKEND])
     bio_form = ApplicationFormInput(
-        fields=[FieldForm(name="bio", label="Bio", type=FieldType.STRING, required=True, choices=None)],
+        fields=[FieldForm(name="bio", type=FieldType.STRING, required=True, choices=None)],
     )
     await gateway.application_form.create(comp.created.competition_id, owner.organizer.auth_id, bio_form)
 

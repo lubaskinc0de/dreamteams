@@ -149,8 +149,8 @@ async def test_application_form_field_names_must_be_unique(
     comp = await gateway.competition.create(owner.organizer.auth_id)
     data = {
         "fields": [
-            {"name": "bio", "label": "Bio", "type": "string", "required": True, "choices": None},
-            {"name": "bio", "label": "Biography", "type": "string", "required": False, "choices": None},
+            {"name": "bio", "type": "string", "required": True, "choices": None},
+            {"name": "bio", "type": "string", "required": False, "choices": None},
         ],
     }
 
@@ -172,7 +172,7 @@ async def test_select_field_without_choices_is_invalid(
     comp = await gateway.competition.create(owner.organizer.auth_id)
     data = {
         "fields": [
-            {"name": "size", "label": "T-shirt size", "type": "select", "required": True, "choices": None},
+            {"name": "size", "type": "select", "required": True, "choices": None},
         ],
     }
 
@@ -196,10 +196,9 @@ async def test_string_field_with_choices_is_invalid(
         "fields": [
             {
                 "name": "bio",
-                "label": "Bio",
                 "type": "string",
                 "required": True,
-                "choices": [{"value": "x", "label": "X"}],
+                "choices": [{"value": "x"}],
             },
         ],
     }
@@ -224,12 +223,11 @@ async def test_select_field_with_valid_choices_is_accepted(
         fields=[
             FieldForm(
                 name="role",
-                label="Your role",
                 type=FieldType.SELECT,
                 required=True,
                 choices=[
-                    FieldChoiceForm(value="dev", label="Developer"),
-                    FieldChoiceForm(value="des", label="Designer"),
+                    FieldChoiceForm(value="dev"),
+                    FieldChoiceForm(value="des"),
                 ],
             ),
         ],

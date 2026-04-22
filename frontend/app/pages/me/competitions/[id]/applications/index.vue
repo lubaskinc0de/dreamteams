@@ -108,7 +108,10 @@ const activeTab = computed({
             <div class="flex items-center justify-between">
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">
-                  <span class="text-xs text-gray-400 font-mono truncate">{{ app.participant_id }}</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    {{ app.participant.full_name }}
+                  </span>
+                  <UBadge size="xs" variant="subtle" :label="t('competition.participantTypes.' + app.participant.participant_type)" />
                 </div>
                 <div class="flex flex-wrap gap-1">
                   <UBadge

@@ -342,12 +342,10 @@ export type FieldType = "string" | "int" | "select" | "multiselect";
 
 export interface FieldChoiceForm {
   value: string;
-  label: string;
 }
 
 export interface FieldForm {
   name: string;
-  label: string;
   type: FieldType;
   required?: boolean;
   choices?: FieldChoiceForm[] | null;
@@ -363,12 +361,10 @@ export interface CreatedApplicationForm {
 
 export interface FieldChoiceModel {
   value: string;
-  label: string;
 }
 
 export interface FieldModel {
   name: string;
-  label: string;
   type: FieldType;
   required: boolean;
   choices: FieldChoiceModel[] | null;
@@ -393,14 +389,48 @@ export interface CreatedApplication {
   application_id: string;
 }
 
-export interface ApplicationModel {
+// Participant profile nested inside organizer-facing ApplicationModel.
+// Same shape as the participant block in GET /users/profile/.
+export interface ParticipantInfo {
+  id: string;
+  full_name: string;
+  bio: string | null;
+  participant_type: ParticipantRoleType;
+  age: number;
+  skills: ParticipantSkill[];
+  experience_level: ExperienceLevel | null;
+  preferred_domains: ParticipantDomain[];
+  contacts: ParticipantContact[];
+}
+
+// Participant-facing application view (GET /applications/ and /applications/{id}/my/).
+export interface MyApplicationModel {
   id: string;
   participant_id: string;
   competition_id: string;
+  competition_name: string;
   domains: Domain[];
   status: ApplicationStatus;
   created_at: string;
   form_data: Record<string, any> | null;
+}
+
+export interface MyApplicationsList {
+  items: MyApplicationModel[];
+  total: number;
+  page: number;
+}
+
+// Organizer-facing application view (GET /competitions/{id}/applications/ and /applications/{id}/).
+export interface ApplicationModel {
+  id: string;
+  competition_id: string;
+  competition_name: string;
+  domains: Domain[];
+  status: ApplicationStatus;
+  created_at: string;
+  form_data: Record<string, any> | null;
+  participant: ParticipantInfo;
 }
 
 export interface ApplicationsList {

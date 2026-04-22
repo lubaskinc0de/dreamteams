@@ -2,6 +2,7 @@ from abc import abstractmethod
 from enum import StrEnum, auto
 from typing import Protocol
 
+from dreamteams.application.common.dto.application import ApplicationModel, MyApplicationModel
 from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.entities.application.entity import Application, ApplicationStatus
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId, ParticipantId
@@ -31,24 +32,12 @@ class ApplicationGateway(Protocol):
         raise NotImplementedError
 
     @abstractmethod
-    async def list_by_competition(  # noqa: PLR0913
-        self,
-        competition_id: CompetitionId,
-        *,
-        page: int,
-        page_size: int,
-        sort_by: ApplicationSortBy,
-        sort_order: SortOrder,
-        status: ApplicationStatus | None,
-    ) -> tuple[list[Application], int]:
-        """List applications for a competition with pagination, sorting, and optional status filter.
-
-        Returns tuple of (applications list, total count).
-        """
+    async def count_accepted_by_competition(self, competition_id: CompetitionId) -> int:
+        """Count applications with ACCEPTED status for a given competition."""
         raise NotImplementedError
 
     @abstractmethod
-    async def list_by_participant(  # noqa: PLR0913
+    async def list_by_participant_with_competition(  # noqa: PLR0913
         self,
         participant_id: ParticipantId,
         *,
@@ -57,14 +46,27 @@ class ApplicationGateway(Protocol):
         sort_by: ApplicationSortBy,
         sort_order: SortOrder,
         status: ApplicationStatus | None,
-    ) -> tuple[list[Application], int]:
-        """List applications submitted by a participant with pagination, sorting, and optional status filter.
+    ) -> tuple[list[MyApplicationModel], int]:
+        """List a participant's applications joined with competition name, returning read models directly.
 
-        Returns tuple of (applications list, total count).
+        Returns tuple of (models list, total count).
         """
         raise NotImplementedError
 
     @abstractmethod
-    async def count_accepted_by_competition(self, competition_id: CompetitionId) -> int:
-        """Count applications with ACCEPTED status for a given competition."""
+    async def list_by_competition_with_participant(  # noqa: PLR0913
+        self,
+        competition_id: CompetitionId,
+        competition_name: str,
+        *,
+        page: int,
+        page_size: int,
+        sort_by: ApplicationSortBy,
+        sort_order: SortOrder,
+        status: ApplicationStatus | None,
+    ) -> tuple[list[ApplicationModel], int]:
+        """List a competition's applications with full participant info, returning read models directly.
+
+        Fetches participants in a single batch query. Returns tuple of (models list, total count).
+        """
         raise NotImplementedError
