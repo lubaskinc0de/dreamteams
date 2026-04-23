@@ -14,7 +14,9 @@
     "personalAccount": "Personal Account",
     "backToHome": "Back to Home",
     "retry": "Retry",
-    "creating": "Creating..."
+    "creating": "Creating...",
+    "showMore": "Show more",
+    "showLess": "Show less"
   },
   "errors": {
     "unauthorized": {
@@ -344,6 +346,7 @@
       "label": "Age",
       "placeholder": "Your age",
       "required": "Age is required",
+      "positive": "Age must be a positive number",
       "invalid": "Age is out of allowed range"
     },
     "contactEmail": {
@@ -760,7 +763,8 @@
       "prevStep": "Back",
       "validation": {
         "errorsFound": "Found {count} errors",
-        "scrollToErrors": "Please check the form fields"
+        "scrollToErrors": "Please check the form fields",
+        "alertTitle": "Can't save — fix the errors below"
       },
       "stepLabel": "Step {current} of {total}"
     },
@@ -1025,10 +1029,14 @@
       "rejected": "Rejected"
     },
     "participant": "Participant",
+    "participantAge": "Age",
+    "participantBio": "About",
     "participantExperience": "Experience",
     "participantDomains": "Preferred domains",
     "participantSkills": "Skills",
     "participantContacts": "Contacts",
+    "notProvided": "Not provided",
+    "applicationDetails": "Application",
     "competition": "Competition",
     "domains": "Domains",
     "submittedAt": "Submitted",
@@ -1073,7 +1081,8 @@
     "applyButton": "Apply",
     "applying": "Applying...",
     "selectDomains": "Select domains",
-    "domainsRequired": "Select at least one domain"
+    "domainsRequired": "Select at least one domain",
+    "onlyParticipantsCanApply": "Only participants can submit applications"
   },
   "explore": {
     "title": "Explore Competitions",

@@ -26,8 +26,11 @@ onMounted(() => {
   reset();
 });
 
-const { login, isAuthenticated, hasProfile } = useAuth();
-const router = useRouter();
+const { login } = useAuth();
+const userStore = useUserStore();
+
+// Organizers can't apply — hide Register CTA for them on cards and in the detail modal.
+const canRegister = computed(() => !userStore.isOrganizer);
 
 // Modal state for competition details
 const selectedCompetition = ref<PreviewCompetitionModel | null>(null);
@@ -68,14 +71,10 @@ const handlePlaceCompetition = () => {
   login();
 };
 
-// Handle register button click on card
-const handleRegister = (competitionId: string) => {
-  if (isAuthenticated.value && hasProfile.value) {
-    // Participant submission page (not the organizer-facing form editor at /me/*).
-    router.push(`/competitions/${competitionId}`);
-  } else {
-    login();
-  }
+// Register CTA on /competitions/ just funnels into auth — participants actually
+// browse via /explore/. The _ arg keeps the event payload signature intact.
+const handleRegister = (_competitionId: string) => {
+  login();
 };
 
 // Smooth scroll to content
@@ -181,6 +180,7 @@ useHead({
           :competitions="competitions"
           :loading="loading"
           :has-more="hasMore"
+          :can-register="canRegister"
           @register="handleRegister"
           @load-more="loadMore"
           @view-details="handleViewDetails"
@@ -192,6 +192,7 @@ useHead({
     <CompetitionPreviewDetailModal
       :competition="selectedCompetition"
       :open="isDetailModalOpen"
+      :can-register="canRegister"
       @close="handleCloseDetailModal"
       @register="handleRegister"
     />

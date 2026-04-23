@@ -48,7 +48,10 @@ export const createParticipantSchemas = (t: (key: string) => string) => {
     { message: t("form.participantType.required") },
   );
 
-  const ageSchema = z.number({ message: t("form.age.required") }).int();
+  const ageSchema = z
+    .number({ message: t("form.age.required") })
+    .int()
+    .positive(t("form.age.positive"));
 
   const privacyConsentSchema = z
     .boolean()

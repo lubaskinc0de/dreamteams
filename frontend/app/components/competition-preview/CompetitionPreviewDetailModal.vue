@@ -12,9 +12,12 @@ import { extractMilestoneDescription } from "~/utils/milestone";
 interface Props {
   competition: PreviewCompetitionModel | null;
   open: boolean;
+  canRegister?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  canRegister: true,
+});
 const emit = defineEmits<{
   close: [];
   register: [id: string];
@@ -45,46 +48,35 @@ const handleRegister = () => {
     emit("register", props.competition.id);
   }
 };
-
-const handleClose = () => {
-  emit("close");
-};
 </script>
 
 <template>
-  <!-- Desktop: Wide Modal -->
+  <!-- Desktop: UModal with built-in header/body/footer — body scrolls internally,
+       footer stays pinned. Using default (non-scrollable) mode on purpose: the
+       theme gives content a fixed max-h and body gets overflow-y-auto, which is
+       what keeps long content from bleeding past the footer. -->
   <UModal
     v-if="!isMobile && competition"
     v-model:open="isOpen"
-    scrollable
+    :close="{ size: 'xl' }"
     :ui="{
       content: 'sm:max-w-5xl',
+      header: 'items-start p-4 sm:p-6 lg:p-8',
+      body: 'p-4 sm:p-6 lg:p-8',
+      footer: 'justify-center p-4 sm:p-6 lg:p-8',
     }"
   >
-    <template #content>
-    <div class="relative bg-white dark:bg-gray-900">
-      <!-- Header -->
-      <div class="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-        <div class="flex items-start justify-between gap-4">
-          <div class="flex-1 min-w-0">
-            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white leading-tight mb-4">
-              {{ competition.title }}
-            </h2>
-            <CompetitionDomainBadges :domains="competition.domains" size="md" />
-          </div>
-          <UButton
-            icon="i-heroicons-x-mark"
-            color="neutral"
-            variant="ghost"
-            size="xl"
-            square
-            @click="handleClose"
-          />
-        </div>
+    <template #header>
+      <div class="flex-1 min-w-0 pr-8">
+        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white leading-tight mb-4">
+          {{ competition.title }}
+        </h2>
+        <CompetitionDomainBadges :domains="competition.domains" size="md" />
       </div>
+    </template>
 
-      <!-- Scrollable Content -->
-      <div class="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
+    <template #body>
+      <div class="space-y-8">
         <!-- Description -->
         <section>
           <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
@@ -252,22 +244,18 @@ const handleClose = () => {
           />
         </section>
       </div>
+    </template>
 
-      <!-- Footer Actions -->
-      <div class="sticky bottom-0 z-10 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-        <div class="flex justify-center">
-          <UButton
-            :label="t('competitionsPreview.detail.registerButton')"
-            icon="i-heroicons-bolt"
-            trailing
-            color="primary"
-            size="lg"
-            class="w-full sm:w-auto justify-center"
-            @click="handleRegister"
-          />
-        </div>
-      </div>
-    </div>
+    <template v-if="canRegister" #footer>
+      <UButton
+        :label="t('competitionsPreview.detail.registerButton')"
+        icon="i-heroicons-bolt"
+        trailing
+        color="primary"
+        size="lg"
+        class="w-full sm:w-auto justify-center"
+        @click="handleRegister"
+      />
     </template>
   </UModal>
 
@@ -453,7 +441,7 @@ const handleClose = () => {
       </div>
     </template>
 
-    <template #footer>
+    <template v-if="canRegister" #footer>
       <div class="flex justify-center">
         <UButton
           :label="t('competitionsPreview.detail.registerButton')"

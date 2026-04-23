@@ -3,9 +3,12 @@ import type { PreviewCompetitionModel } from "~/types/api";
 
 interface Props {
   competition: PreviewCompetitionModel;
+  canRegister?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  canRegister: true,
+});
 
 const emit = defineEmits<{
   register: [id: string];
@@ -91,8 +94,9 @@ const handleCardClick = () => {
       </div>
     </div>
 
-    <!-- CTA -->
+    <!-- CTA — hidden for organizers (they can't apply to competitions) -->
     <UButton
+      v-if="canRegister"
       :label="t('competitionsPreview.card.registerButton')"
       icon="i-heroicons-bolt"
       trailing

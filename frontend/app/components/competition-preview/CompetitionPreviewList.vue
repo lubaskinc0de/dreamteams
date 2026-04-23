@@ -11,9 +11,12 @@ interface Props {
   competitions: PreviewCompetitionModel[];
   loading: boolean;
   hasMore: boolean;
+  canRegister?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  canRegister: true,
+});
 const emit = defineEmits(["register", "load-more", "view-details"]);
 
 const sentinelEl = useTemplateRef<HTMLElement>("sentinelEl");
@@ -37,6 +40,7 @@ onMounted(() => {
         v-for="competition in competitions"
         :key="competition.id"
         :competition="competition"
+        :can-register="canRegister"
         @register="emit('register', $event)"
         @click="emit('view-details', $event)"
       />

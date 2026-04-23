@@ -14,7 +14,9 @@
     "personalAccount": "Личный кабинет",
     "backToHome": "Вернуться на главную",
     "retry": "Повторить",
-    "creating": "Создание..."
+    "creating": "Создание...",
+    "showMore": "Показать полностью",
+    "showLess": "Свернуть"
   },
   "errors": {
     "unauthorized": {
@@ -344,6 +346,7 @@
       "label": "Возраст",
       "placeholder": "Ваш возраст",
       "required": "Укажите возраст",
+      "positive": "Возраст должен быть положительным числом",
       "invalid": "Возраст вне допустимого диапазона"
     },
     "contactEmail": {
@@ -760,7 +763,8 @@
       },
       "validation": {
         "errorsFound": "Найдено ошибок: {count}",
-        "scrollToErrors": "Проверьте заполнение полей формы"
+        "scrollToErrors": "Проверьте заполнение полей формы",
+        "alertTitle": "Не удалось сохранить — исправьте ошибки"
       },
       "stepLabel": "Шаг {current} из {total}"
     },
@@ -1025,10 +1029,14 @@
       "rejected": "Отклонена"
     },
     "participant": "Участник",
+    "participantAge": "Возраст",
+    "participantBio": "О себе",
     "participantExperience": "Опыт",
     "participantDomains": "Предпочитаемые направления",
     "participantSkills": "Навыки",
     "participantContacts": "Контакты",
+    "notProvided": "Не указано",
+    "applicationDetails": "Заявка",
     "competition": "Соревнование",
     "domains": "Направления",
     "submittedAt": "Подана",
@@ -1073,7 +1081,8 @@
     "applyButton": "Подать заявку",
     "applying": "Подача заявки...",
     "selectDomains": "Выберите направления",
-    "domainsRequired": "Выберите хотя бы одно направление"
+    "domainsRequired": "Выберите хотя бы одно направление",
+    "onlyParticipantsCanApply": "Только участники могут подавать заявки"
   },
   "explore": {
     "title": "Подборка соревнований",

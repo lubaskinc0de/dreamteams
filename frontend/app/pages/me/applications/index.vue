@@ -92,29 +92,28 @@ const activeTab = computed({
             class="cursor-pointer hover:shadow-md transition-shadow"
             @click="router.push(`/me/applications/${app.id}`)"
           >
-            <div class="flex items-center justify-between">
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-1">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white truncate">
-                    {{ app.competition_name }}
-                  </span>
-                </div>
-                <div class="flex flex-wrap gap-1">
+            <div class="flex items-center justify-between gap-4">
+              <div class="flex-1 min-w-0 space-y-2">
+                <p class="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                  {{ app.competition_name }}
+                </p>
+                <div class="flex flex-wrap gap-1.5">
                   <UBadge
                     v-for="domain in app.domains"
                     :key="domain"
-                    size="xs"
+                    size="sm"
                     variant="soft"
                     :label="domain"
                   />
                 </div>
-                <p class="text-xs text-gray-400 mt-1">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
                   {{ t('myApplications.submittedAt') }}: {{ new Date(app.created_at).toLocaleDateString() }}
                 </p>
               </div>
               <UBadge
                 :color="statusColor(app.status)"
                 variant="subtle"
+                size="md"
                 :label="t('myApplications.status.' + app.status)"
               />
             </div>

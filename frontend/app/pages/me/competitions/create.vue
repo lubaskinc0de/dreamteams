@@ -62,9 +62,24 @@ const scrollToTop = () => {
   document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
+// Inline alert errors shown above the form when a step validation or submit fails.
+// Kept visible until the user advances or fixes them — a transient toast is easy to miss.
+const submissionErrors = ref<Array<{ name?: string; message: string }>>([]);
+
+const collectErrors = (errs: Array<{ name?: string; message?: string }>) =>
+  errs
+    .map((e) => ({ name: e.name, message: (e.message ?? '').trim() }))
+    .filter((e) => e.message.length > 0);
+
 const goNext = async () => {
+  // UForm keeps errors from previous validation runs in its internal ref. After a failed
+  // submit on the last step, stale errors (e.g. milestone date in past) would still be in
+  // `errors.value`, and validate() throws if the combined list is non-empty — even when the
+  // fields for the current step are all valid. Clearing before re-validating fixes that.
+  (formRef.value as any)?.clear?.();
   try {
     await (formRef.value as any)?.validate({ name: stepFields[currentStep.value] });
+    submissionErrors.value = [];
     // UStepper is v-model'd on currentStep — mutating it moves both. Don't also call
     // stepperRef.next() or the two sources fight and desync after a validation miss.
     if (currentStep.value < stepperItems.value.length - 1) {
@@ -73,11 +88,14 @@ const goNext = async () => {
     await nextTick();
     scrollToTop();
   } catch (err: any) {
+    submissionErrors.value = collectErrors(err?.errors ?? []);
     handleError({ errors: err?.errors ?? [] });
   }
 };
 
 const goPrev = () => {
+  submissionErrors.value = [];
+  (formRef.value as any)?.clear?.();
   if (currentStep.value > 0) {
     currentStep.value--;
   }
@@ -211,8 +229,15 @@ const handleSubmit = async () => {
   }
 };
 
-const { handleFormError: handleError } = useFormErrorScroll();
+const { handleFormError: baseHandleError } = useFormErrorScroll();
 const { getErrorMessage } = useErrorHandler();
+
+const handleError = async (event: any) => {
+  submissionErrors.value = collectErrors(event?.errors ?? []);
+  await baseHandleError(event);
+  await nextTick();
+  scrollToTop();
+};
 
 const goBack = () => {
   router.push('/me/competitions');
@@ -261,6 +286,25 @@ const goBack = () => {
           disabled
           class="hidden md:flex mb-8"
         />
+
+        <!-- Inline validation alert — persistent, unlike the toast the user may miss -->
+        <UAlert
+          v-if="submissionErrors.length > 0"
+          :title="t('competition.create.validation.alertTitle')"
+          color="error"
+          variant="soft"
+          icon="i-heroicons-exclamation-triangle"
+          class="mb-4"
+          :close="false"
+        >
+          <template #description>
+            <ul class="list-disc pl-5 space-y-1 text-sm">
+              <li v-for="(err, i) in submissionErrors" :key="i">
+                {{ err.message }}
+              </li>
+            </ul>
+          </template>
+        </UAlert>
 
         <!-- Form (wraps all steps for unified validation) -->
         <UForm

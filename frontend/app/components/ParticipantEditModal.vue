@@ -188,6 +188,8 @@ const apiError = computed(() => getErrorMessage(participantStore.error));
               v-model.number="state.age"
               :placeholder="t('form.age.placeholder')"
               type="number"
+              :min="1"
+              :step="1"
               size="xl"
               class="w-full"
             />
