@@ -1,3 +1,4 @@
+import json
 from dataclasses import dataclass
 
 import structlog
@@ -7,13 +8,16 @@ from dreamteams_common.errors import AppError
 from dreamteams_common.interactor import interactor
 from dreamteams_common.logger import Logger
 from dreamteams_common.uow import UoW
+from dreamteams_exporter.application.common.dto.export_row import EXPORT_HEADERS, ExportRow
 from dreamteams_exporter.application.common.gateway.applications import ApplicationsGateway
 from dreamteams_exporter.application.common.gateway.export_job import ExportJobGateway
 from dreamteams_exporter.application.common.idp import IdProvider
 from dreamteams_exporter.application.common.rate_limiter import ExportRateLimiter
 from dreamteams_exporter.application.common.spreadsheet_exporter import SpreadsheetExporter
 from dreamteams_exporter.application.errors.job import JobNotFoundError
+from dreamteams_exporter.entities.application.entity import Application
 from dreamteams_exporter.entities.common.identifiers import ExportJobId
+from dreamteams_exporter.entities.common.vo.participant_contact import ParticipantContact
 from dreamteams_exporter.entities.errors.user import InvalidRoleError
 from dreamteams_exporter.entities.export_job.entity import ExportApplicationsJob
 
@@ -30,9 +34,31 @@ class ProcessExportJobInput:
 logger: Logger = structlog.get_logger(__name__)
 
 
+def _format_contacts(contacts: list[ParticipantContact]) -> str:
+    return ", ".join(f"{c.title}: {c.url}" for c in contacts)
+
+
+def _to_export_row(application: Application) -> ExportRow:
+    """Project an Application entity into the flattened row exported to the sheet."""
+    return ExportRow(
+        application_id=str(application.id),
+        competition_name=application.competition_name,
+        domains=", ".join(application.domains),
+        status=application.status.value,
+        created_at=application.created_at.isoformat(),
+        form_data=json.dumps(application.form_data, ensure_ascii=False) if application.form_data is not None else "",
+        participant_id=str(application.participant.id),
+        full_name=application.participant.full_name,
+        bio=application.participant.bio or "",
+        participant_type=application.participant.participant_type,
+        age=str(application.participant.age),
+        contacts=_format_contacts(application.participant.contacts),
+    )
+
+
 @interactor
 class ExportApplicationsToSheets:
-    """Interactor that builds the Excel export for a previously-created job and persists it."""
+    """Interactor that builds the spreadsheet export for a previously-created job and persists it."""
 
     uow: UoW
     idp: IdProvider
@@ -72,7 +98,10 @@ class ExportApplicationsToSheets:
         logger.info("Export finished", job_id=job.id, file_url=url)
 
     async def _stream_to_spreadsheet(self, job: ExportApplicationsJob) -> str:
-        session = await self.spreadsheet_exporter.start(key=f"exports/{job.id}.csv")
+        session = await self.spreadsheet_exporter.start(
+            key=f"exports/{job.id}.csv",
+            headers=EXPORT_HEADERS,
+        )
         try:
             page = 1
             while True:
@@ -82,7 +111,7 @@ class ExportApplicationsToSheets:
                     page=page,
                     page_size=_PAGE_SIZE,
                 )
-                await session.write_rows(batch.items)
+                await session.write_rows(_to_export_row(app) for app in batch.items)
                 if not batch.has_next:
                     break
                 page += 1

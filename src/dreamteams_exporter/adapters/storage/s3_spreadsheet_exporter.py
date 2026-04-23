@@ -1,60 +1,24 @@
-# ruff: noqa: RUF001 — the Russian column headers intentionally use Cyrillic letters.
 import csv
 import io
-import json
 from collections.abc import Iterable
 from typing import Any, override
 from urllib.parse import quote
 
 import aioboto3
+from adaptix import Retort, name_mapping
 
 from dreamteams_exporter.adapters.storage.config import S3Config
+from dreamteams_exporter.application.common.dto.export_row import ExportRow
 from dreamteams_exporter.application.common.spreadsheet_exporter import (
     SpreadsheetExporter,
     SpreadsheetSession,
 )
-from dreamteams_exporter.entities.application.entity import Application
-from dreamteams_exporter.entities.common.vo.participant_contact import ParticipantContact
 
 _CONTENT_TYPE = "text/csv; charset=utf-8"
 _PART_SIZE = 5 * 1024 * 1024  # S3's minimum for non-final multipart parts
 _UTF8_BOM = b"\xef\xbb\xbf"  # lets Excel detect UTF-8 when opening the CSV
 
-_HEADER_ROW: tuple[str, ...] = (
-    "ID заявки",
-    "Название соревнования",
-    "Направления",
-    "Статус",
-    "Дата подачи",
-    "Данные формы",
-    "ID участника",
-    "ФИО",
-    "О себе",
-    "Тип участника",
-    "Возраст",
-    "Контакты",
-)
-
-
-def _format_contacts(contacts: list[ParticipantContact]) -> str:
-    return ", ".join(f"{c.title}: {c.url}" for c in contacts)
-
-
-def _row_for(application: Application) -> tuple[str, ...]:
-    return (
-        str(application.id),
-        application.competition_name,
-        ", ".join(application.domains),
-        application.status.value,
-        application.created_at.isoformat(),
-        json.dumps(application.form_data, ensure_ascii=False) if application.form_data is not None else "",
-        str(application.participant.id),
-        application.participant.full_name,
-        application.participant.bio or "",
-        application.participant.participant_type,
-        str(application.participant.age),
-        _format_contacts(application.participant.contacts),
-    )
+_retort = Retort(recipe=[name_mapping(ExportRow, as_list=True)])
 
 
 class CsvS3SpreadsheetSession(SpreadsheetSession):
@@ -66,6 +30,7 @@ class CsvS3SpreadsheetSession(SpreadsheetSession):
         config: S3Config,
         key: str,
         upload_id: str,
+        headers: list[str],
     ) -> None:
         self._aws_session = aws_session
         self._config = config
@@ -76,18 +41,18 @@ class CsvS3SpreadsheetSession(SpreadsheetSession):
         self._parts: list[dict[str, Any]] = []
         self._closed = False
         self._buffer.extend(_UTF8_BOM)
-        self._encode_row(_HEADER_ROW)
+        self._encode_cells(headers)
 
-    def _encode_row(self, row: tuple[str, ...]) -> None:
+    def _encode_cells(self, cells: list[str]) -> None:
         sink = io.StringIO()
-        csv.writer(sink).writerow(row)
+        csv.writer(sink).writerow(cells)
         self._buffer.extend(sink.getvalue().encode("utf-8"))
 
     @override
-    async def write_rows(self, rows: Iterable[Application]) -> None:
-        """Encodes rows into CSV lines and flushes full parts to S3 when the buffer crosses the threshold."""
-        for application in rows:
-            self._encode_row(_row_for(application))
+    async def write_rows(self, rows: Iterable[ExportRow]) -> None:
+        """Serialises rows into CSV lines and flushes full 5 MB parts to S3 as the buffer fills."""
+        for row in rows:
+            self._encode_cells(_retort.dump(row, ExportRow))
 
         while len(self._buffer) >= _PART_SIZE:
             part = bytes(self._buffer[:_PART_SIZE])
@@ -157,7 +122,7 @@ class CsvS3SpreadsheetSession(SpreadsheetSession):
 
 
 class CsvS3SpreadsheetExporter(SpreadsheetExporter):
-    """Exports applications as UTF-8 CSV, streamed to S3 via multipart upload as rows arrive."""
+    """Streams ``ExportRow`` batches as UTF-8 CSV into S3 via multipart upload."""
 
     def __init__(self, config: S3Config) -> None:
         self._config = config
@@ -167,8 +132,8 @@ class CsvS3SpreadsheetExporter(SpreadsheetExporter):
         )
 
     @override
-    async def start(self, *, key: str) -> SpreadsheetSession:
-        """Creates an S3 multipart upload and returns a session ready to accept rows."""
+    async def start(self, *, key: str, headers: list[str]) -> SpreadsheetSession:
+        """Creates an S3 multipart upload, seeds the header row, and returns a session ready to accept rows."""
         async with self._aws_session.client(
             service_name="s3",
             endpoint_url=self._config.endpoint_url,
@@ -179,4 +144,10 @@ class CsvS3SpreadsheetExporter(SpreadsheetExporter):
                 Key=key,
                 ContentType=_CONTENT_TYPE,
             )
-        return CsvS3SpreadsheetSession(self._aws_session, self._config, key, create["UploadId"])
+        return CsvS3SpreadsheetSession(
+            self._aws_session,
+            self._config,
+            key,
+            create["UploadId"],
+            headers,
+        )
