@@ -88,12 +88,18 @@ enable_error_code = [
 ]
 
 files = ["src/", "tests/"]
-exclude = ["src/dreamteams/adapters/db/alembic/migrations/versions/"]
+exclude = [
+    "src/dreamteams/adapters/db/alembic/migrations/versions/",
+    "src/dreamteams_exporter/adapters/db/alembic/migrations/versions/",
+]
 
 [tool.ruff]
 line-length = 120
 include = ["pyproject.toml", "src/**/*.py", "tests/**/*.py"]
-exclude = ["src/dreamteams/adapters/db/alembic/**/*.py"]
+exclude = [
+    "src/dreamteams/adapters/db/alembic/**/*.py",
+    "src/dreamteams_exporter/adapters/db/alembic/**/*.py",
+]
 
 [tool.ruff.lint]
 select = ['ALL']
