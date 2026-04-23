@@ -74,10 +74,13 @@ export const useAuth = () => {
   };
 
   /**
-   * Redirect to logout page
+   * Logs out both the IdP (ZITADEL) and oauth2-proxy.
+   * nginx `/logout` redirects → IdP end_session → oauth2-proxy sign_out → `/`.
+   * Without this full chain the IdP session survives and the next login
+   * silently reuses it instead of prompting.
    */
   const logout = () => {
-    window.location.href = `${apiBase}/oauth2/sign_out?rd=/`;
+    window.location.href = '/logout';
   };
 
   return {

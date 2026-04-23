@@ -5,7 +5,7 @@ const userStore = useUserStore();
 const { navigateTo } = useNavigation();
 const { getErrorMessage } = useErrorHandler();
 const { t } = useI18n();
-const config = useRuntimeConfig();
+const { logout: handleLogout } = useAuth();
 const api = useApi();
 const notifications = useNotificationsStore();
 
@@ -116,11 +116,6 @@ const handleDelete = async () => {
     handleLogout()
   }
   isDeleteModalOpen.value = false;
-};
-
-// Logout handler
-const handleLogout = () => {
-  window.location.href = `${config.public.apiBase}/oauth2/sign_out?rd=/`;
 };
 
 onMounted(async () => {

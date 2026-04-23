@@ -301,6 +301,16 @@
       "hint": "Contact an administrator to get an invite code"
     },
     "dataProtection": "All data is protected and not shared with third parties",
+    "privacyConsent": {
+      "label": "I agree to the processing of my personal data in accordance with the",
+      "link": "Privacy Policy",
+      "required": "You must agree to the processing of personal data to register"
+    },
+    "termsConsent": {
+      "label": "I have read and accept the",
+      "link": "Terms of Service",
+      "required": "You must accept the Terms of Service to register"
+    },
     "fullName": {
       "label": "Full Name",
       "placeholder": "Your full name",
@@ -553,7 +563,21 @@
     "copyright": "© 2025 DreamTeams. All rights reserved",
     "support": "Support",
     "quickLinks": "Quick Links",
-    "contact": "Contact"
+    "contact": "Contact",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "cookiePolicy": "Cookie Policy"
+  },
+  "cookieBanner": {
+    "title": "We use cookies",
+    "description": "This site uses cookies that are required for its operation and authentication. By continuing to use the site, you agree to their use.",
+    "learnMore": "Learn more",
+    "accept": "Accept",
+    "decline": "Decline",
+    "readPolicy": "Read the policy",
+    "requiredHeadline": "Consent required",
+    "requiredTitle": "The site cannot work without cookies",
+    "requiredDescription": "DreamTeams requires cookies to work properly — including for authentication and session persistence. Without them, some features are unavailable. Please accept cookies to continue."
   },
   "theme": {
     "light": "Light Theme",

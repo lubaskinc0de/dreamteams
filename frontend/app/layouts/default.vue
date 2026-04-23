@@ -2,13 +2,8 @@
 import type { NavigationMenuItem } from '@nuxt/ui';
 
 const { t } = useI18n();
-const { isAuthenticated, hasProfile, login } = useAuth();
+const { isAuthenticated, hasProfile, login, logout: handleLogout } = useAuth();
 const userStore = useUserStore();
-const config = useRuntimeConfig();
-
-const handleLogout = () => {
-  window.location.href = `${config.public.apiBase}/oauth2/sign_out?rd=/`;
-};
 
 // Brand link destination depends on auth state
 const brandLink = computed(() => {
@@ -208,6 +203,15 @@ const handleLogin = async () => {
             <div class="flex flex-col gap-2">
               <NuxtLink to="/" class="text-sm text-gray-600 dark:text-gray-300 hover:text-primary-400 transition-colors">
                 {{ t("nav.home") }}
+              </NuxtLink>
+              <NuxtLink to="/legal/terms-of-service" class="text-sm text-gray-600 dark:text-gray-300 hover:text-primary-400 transition-colors">
+                {{ t("footer.termsOfService") }}
+              </NuxtLink>
+              <NuxtLink to="/legal/privacy-policy" class="text-sm text-gray-600 dark:text-gray-300 hover:text-primary-400 transition-colors">
+                {{ t("footer.privacyPolicy") }}
+              </NuxtLink>
+              <NuxtLink to="/legal/cookie-policy" class="text-sm text-gray-600 dark:text-gray-300 hover:text-primary-400 transition-colors">
+                {{ t("footer.cookiePolicy") }}
               </NuxtLink>
               <a href="mailto:structnull@yandex.ru" class="text-sm text-gray-600 dark:text-gray-300 hover:text-primary-400 transition-colors">
                 {{ t("footer.support") }}

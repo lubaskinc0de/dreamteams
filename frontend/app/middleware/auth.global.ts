@@ -1,3 +1,5 @@
+import { useCookieConsent } from "~/composables/useCookieConsent";
+
 /**
  * Global authentication middleware
  * Manages authentication flow and onboarding redirects
@@ -7,6 +9,15 @@ export default defineNuxtRouteMiddleware(async (to) => {
   // Skip middleware on server-side
   if (import.meta.server) {
     return;
+  }
+
+  // Cookie consent gate: if the user explicitly declined, keep them on the
+  // "cookies required" page until they accept. Legal pages stay reachable so
+  // they can review the policy before deciding.
+  const { isDeclined } = useCookieConsent();
+  const cookieAllowed = to.path === "/cookies-required" || to.path.startsWith("/legal");
+  if (isDeclined.value && !cookieAllowed) {
+    return navigateTo("/cookies-required", { replace: true });
   }
 
   const { isAuthenticated, needsOnboarding, hasProfile, isLoading } = useAuth();
@@ -68,9 +79,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return navigateTo('/explore', { replace: true });
   }
 
+  // Legal + cookie-required pages are always reachable regardless of auth/onboarding state.
+  const isPublicInfoRoute = to.path.startsWith('/legal') || to.path === '/cookies-required';
+
   // If authenticated but needs onboarding, redirect to onboarding flow.
   // Admins are allowed to visit /admin even without a role (to issue themselves an invite first).
-  if (isAuthenticated.value && needsOnboarding.value && !isOnboardingRoute && !isSuperuserRegisterRoute && !(isAdminRoute && userStore.isAdmin)) {
+  if (isAuthenticated.value && needsOnboarding.value && !isOnboardingRoute && !isSuperuserRegisterRoute && !isPublicInfoRoute && !(isAdminRoute && userStore.isAdmin)) {
     return navigateTo('/onboarding', { replace: true });
   }
 

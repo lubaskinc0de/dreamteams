@@ -15,6 +15,8 @@ const state = reactive({
   full_name: "",
   participant_type: "" as string,
   age: null as number | null,
+  privacy_consent: false,
+  terms_consent: false,
 });
 
 const { participantRegistrationSchema } = createParticipantSchemas(t);
@@ -115,6 +117,34 @@ const isLoading = computed(() => participantStore.loading);
         />
       </UFormField>
 
+      <UFormField name="privacy_consent" required class="w-full">
+        <UCheckbox v-model="state.privacy_consent" :aria-label="t('form.privacyConsent.label')">
+          <template #label>
+            <span class="text-sm text-gray-700 dark:text-gray-300">
+              {{ t('form.privacyConsent.label') }}
+              <NuxtLink to="/legal/privacy-policy" target="_blank"
+                class="text-primary-500 hover:text-primary-400 underline">
+                {{ t('form.privacyConsent.link') }}
+              </NuxtLink>
+            </span>
+          </template>
+        </UCheckbox>
+      </UFormField>
+
+      <UFormField name="terms_consent" required class="w-full">
+        <UCheckbox v-model="state.terms_consent" :aria-label="t('form.termsConsent.label')">
+          <template #label>
+            <span class="text-sm text-gray-700 dark:text-gray-300">
+              {{ t('form.termsConsent.label') }}
+              <NuxtLink to="/legal/terms-of-service" target="_blank"
+                class="text-primary-500 hover:text-primary-400 underline">
+                {{ t('form.termsConsent.link') }}
+              </NuxtLink>
+            </span>
+          </template>
+        </UCheckbox>
+      </UFormField>
+
       <div class="pt-2">
         <UButton
           type="submit"
@@ -131,11 +161,6 @@ const isLoading = computed(() => participantStore.loading);
               : t("form.submitButton.register")
           }}
         </UButton>
-
-        <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 justify-center mt-3">
-          <UIcon name="i-heroicons-shield-check" />
-          <span>{{ t("form.dataProtection") }}</span>
-        </div>
       </div>
     </UForm>
   </div>

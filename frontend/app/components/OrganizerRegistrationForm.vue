@@ -14,6 +14,8 @@ const state = reactive({
   organizer_name: "",
   phone_number: "+7",
   invite_code: "",
+  privacy_consent: false,
+  terms_consent: false,
 });
 
 const {
@@ -92,6 +94,34 @@ const isLoading = computed(() => organizerStore.loading);
           icon="i-heroicons-key" size="xl" :aria-label="t('form.inviteCode.label')" class="w-full" />
       </UFormField>
 
+      <UFormField name="privacy_consent" required class="w-full">
+        <UCheckbox v-model="state.privacy_consent" :aria-label="t('form.privacyConsent.label')">
+          <template #label>
+            <span class="text-sm text-gray-700 dark:text-gray-300">
+              {{ t('form.privacyConsent.label') }}
+              <NuxtLink to="/legal/privacy-policy" target="_blank"
+                class="text-primary-500 hover:text-primary-400 underline">
+                {{ t('form.privacyConsent.link') }}
+              </NuxtLink>
+            </span>
+          </template>
+        </UCheckbox>
+      </UFormField>
+
+      <UFormField name="terms_consent" required class="w-full">
+        <UCheckbox v-model="state.terms_consent" :aria-label="t('form.termsConsent.label')">
+          <template #label>
+            <span class="text-sm text-gray-700 dark:text-gray-300">
+              {{ t('form.termsConsent.label') }}
+              <NuxtLink to="/legal/terms-of-service" target="_blank"
+                class="text-primary-500 hover:text-primary-400 underline">
+                {{ t('form.termsConsent.link') }}
+              </NuxtLink>
+            </span>
+          </template>
+        </UCheckbox>
+      </UFormField>
+
       <div class="pt-2">
         <UButton type="submit" :loading="isLoading" :disabled="isLoading"
           :aria-busy="isLoading" block size="xl" icon="i-heroicons-check-circle" :trailing="false">
@@ -101,11 +131,6 @@ const isLoading = computed(() => organizerStore.loading);
               : t("form.submitButton.register")
           }}
         </UButton>
-
-        <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 justify-center mt-3" role="note">
-          <UIcon name="i-heroicons-shield-check" aria-hidden="true" />
-          <span>{{ t("form.dataProtection") }}</span>
-        </div>
       </div>
     </UForm>
   </div>

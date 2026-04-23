@@ -28,6 +28,8 @@ services:
             - 4180:8000
         volumes:
             - ../.config/oauth2-proxy.toml:/etc/oauth2-proxy/oauth2-proxy.toml
+        extra_hosts:
+            - "127.0.0.1.sslip.io:host-gateway"
         healthcheck:
             test:
                 [
@@ -44,6 +46,8 @@ services:
             start_period: 2s
         depends_on:
             redis:
+                condition: service_healthy
+            zitadel-proxy:
                 condition: service_healthy
         networks:
             - "shared"
@@ -166,12 +170,85 @@ services:
         networks:
             - "shared"
 
+    zitadel-api:
+        image: ghcr.io/zitadel/zitadel:v4.13.1
+        container_name: zitadel-api
+        restart: unless-stopped
+        user: "0"
+        command: ["start-from-init", "--masterkeyFromEnv"]
+        env_file:
+            - ../.config/.env.zitadel
+        volumes:
+            - zitadel_bootstrap:/zitadel/bootstrap:rw
+        healthcheck:
+            test: ["CMD", "/app/zitadel", "ready"]
+            interval: 5s
+            timeout: 10s
+            retries: 24
+            start_period: 20s
+        depends_on:
+            db:
+                condition: service_healthy
+        networks:
+            - "shared"
+
+    zitadel-login:
+        image: ghcr.io/zitadel/zitadel-login:v4.13.1
+        container_name: zitadel-login
+        restart: unless-stopped
+        user: "0"
+        environment:
+            ZITADEL_API_URL: http://zitadel-api:8080
+            NEXT_PUBLIC_BASE_PATH: /ui/v2/login
+            ZITADEL_SERVICE_USER_TOKEN_FILE: /zitadel/bootstrap/login-client.pat
+            CUSTOM_REQUEST_HEADERS: "Host:127.0.0.1.sslip.io,X-Forwarded-Proto:http"
+        volumes:
+            - zitadel_bootstrap:/zitadel/bootstrap:ro
+        healthcheck:
+            test:
+                - CMD
+                - /bin/sh
+                - -c
+                - node /app/healthcheck.mjs http://localhost:3000/ui/v2/login/healthy
+            interval: 5s
+            timeout: 10s
+            retries: 24
+            start_period: 20s
+        depends_on:
+            zitadel-api:
+                condition: service_healthy
+        networks:
+            - "shared"
+
+    zitadel-proxy:
+        image: nginx:1.29.3
+        container_name: zitadel-proxy
+        restart: unless-stopped
+        ports:
+            - "8080:80"
+        volumes:
+            - ../.config/zitadel-proxy.conf:/etc/nginx/nginx.conf:ro
+        healthcheck:
+            test: ["CMD", "nginx", "-t", "-q"]
+            interval: 5s
+            timeout: 5s
+            retries: 6
+            start_period: 5s
+        depends_on:
+            zitadel-api:
+                condition: service_healthy
+            zitadel-login:
+                condition: service_healthy
+        networks:
+            - "shared"
+
 volumes:
     pg_data:
     grafana_data:
     loki_data:
     redis_data:
     rustfs_data:
+    zitadel_bootstrap:
 
 networks:
     shared:

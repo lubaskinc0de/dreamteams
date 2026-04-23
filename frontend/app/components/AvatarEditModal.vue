@@ -74,13 +74,6 @@ const handleDelete = () => {
   uploadError.value = null;
   isOpen.value = false;
 };
-
-// Handle cancel
-const handleCancel = () => {
-  selectedFile.value = null;
-  uploadError.value = null;
-  isOpen.value = false;
-};
 </script>
 
 <template>
@@ -142,7 +135,7 @@ const handleCancel = () => {
       </div>
     </template>
 
-    <template #footer="{ close }">
+    <template #footer>
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
         <UButton
           v-if="previewUrl"
@@ -154,26 +147,16 @@ const handleCancel = () => {
         >
           {{ t("avatar.deleteButton") }}
         </UButton>
-        <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto sm:ml-auto">
-          <UButton
-            color="neutral"
-            variant="outline"
-            @click="handleCancel"
-            class="w-full sm:w-auto"
-          >
-            {{ t("common.cancel") }}
-          </UButton>
-          <UButton
-            v-if="selectedFile"
-            color="primary"
-            variant="solid"
-            icon="i-heroicons-check"
-            @click="handleUpload"
-            class="w-full sm:w-auto"
-          >
-            {{ t("common.save") }}
-          </UButton>
-        </div>
+        <UButton
+          v-if="selectedFile"
+          color="primary"
+          variant="solid"
+          icon="i-heroicons-check"
+          @click="handleUpload"
+          class="w-full sm:w-auto sm:ml-auto"
+        >
+          {{ t("common.save") }}
+        </UButton>
       </div>
     </template>
   </UModal>

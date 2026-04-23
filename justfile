@@ -28,6 +28,13 @@ down:
     docker compose -f docker/docker-compose.yml --env-file=./.config/.env down
 
 clear:
+    docker compose -f docker/docker-compose.yml --env-file=./.config/.env down
+    docker compose -f docker/docker-compose.yml --env-file=./.config/.env up db -d --wait
+    docker compose -f docker/docker-compose.yml --env-file=./.config/.env exec -T db psql -U postgres -d postgres < ./.config/reset-app-db.sql
+    docker compose -f docker/docker-compose.yml --env-file=./.config/.env down
+    docker volume rm -f docker_redis_data docker_rustfs_data
+
+clear-all:
     docker compose -f docker/docker-compose.yml --env-file=./.config/.env down -v
 
 lint:
@@ -50,6 +57,10 @@ generate-migration NAME:
 
 cookie-secret:
     echo "OAUTH2_PROXY_COOKIE_SECRET=$(openssl rand -base64 32)"
+
+zitadel-console:
+    @echo "ZITADEL console: http://127.0.0.1.sslip.io:8080/ui/console"
+    @echo "Default login:  zitadel-admin@zitadel.127.0.0.1.sslip.io / Password1!"
 
 build-frontend:
     cd ./frontend; npm run generate

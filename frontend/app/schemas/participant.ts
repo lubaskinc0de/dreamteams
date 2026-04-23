@@ -50,6 +50,18 @@ export const createParticipantSchemas = (t: (key: string) => string) => {
 
   const ageSchema = z.number({ message: t("form.age.required") }).int();
 
+  const privacyConsentSchema = z
+    .boolean()
+    .refine((val) => val === true, {
+      message: t("form.privacyConsent.required"),
+    });
+
+  const termsConsentSchema = z
+    .boolean()
+    .refine((val) => val === true, {
+      message: t("form.termsConsent.required"),
+    });
+
   const participantRegistrationSchema = z.object({
     full_name: fullNameSchema,
     participant_type: participantTypeSchema,
@@ -61,6 +73,8 @@ export const createParticipantSchemas = (t: (key: string) => string) => {
       .optional(),
     skills: z.array(skillSchema).optional(),
     contacts: z.array(contactSchema).optional(),
+    privacy_consent: privacyConsentSchema,
+    terms_consent: termsConsentSchema,
   });
 
   const participantUpdateSchema = z.object({
@@ -85,6 +99,8 @@ export const createParticipantSchemas = (t: (key: string) => string) => {
     experienceLevelSchema,
     participantTypeSchema,
     ageSchema,
+    privacyConsentSchema,
+    termsConsentSchema,
     participantRegistrationSchema,
     participantUpdateSchema,
   };
