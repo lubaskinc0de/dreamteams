@@ -120,9 +120,13 @@ ignore = [
 [tool.uv]
 add-bounds = "exact"
 
+[tool.uv.build-backend]
+module-name = ["dreamteams", "dreamteams_common", "dreamteams_exporter"]
+
 [[project.authors]]
 name = 'lubaskinc0de'
 email = 'lubaskincorporation@gmail.com'
 
 [project.scripts]
 dreamteams = "dreamteams.bootstrap.cli:main"
+dreamteams-exporter = "dreamteams_exporter.bootstrap.cli:main"

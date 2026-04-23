@@ -1,5 +1,8 @@
 [importlinter]
-root_package = dreamteams
+root_packages =
+    dreamteams
+    dreamteams_common
+    dreamteams_exporter
 
 [importlinter:contract:1]
 name=Entities doesn't import application, adapters, presentation or bootstrap
@@ -38,3 +41,66 @@ source_modules=
     dreamteams.presentation
 forbidden_modules=
     dreamteams.bootstrap
+
+[importlinter:contract:5]
+name=Shared library doesn't import any bounded context
+type=forbidden
+source_modules=
+    dreamteams_common
+forbidden_modules=
+    dreamteams
+    dreamteams_exporter
+
+[importlinter:contract:6]
+name=Exporter entities doesn't import application, adapters, presentation or bootstrap
+type=forbidden
+source_modules=
+    dreamteams_exporter.entities
+forbidden_modules=
+    dreamteams_exporter.application
+    dreamteams_exporter.adapters
+    dreamteams_exporter.presentation
+    dreamteams_exporter.bootstrap
+
+[importlinter:contract:7]
+name=Exporter application doesn't import adapters, presentation or bootstrap
+type=forbidden
+source_modules=
+    dreamteams_exporter.application
+forbidden_modules=
+    dreamteams_exporter.adapters
+    dreamteams_exporter.presentation
+    dreamteams_exporter.bootstrap
+
+[importlinter:contract:8]
+name=Exporter adapters doesn't import presentation or bootstrap
+type=forbidden
+source_modules=
+    dreamteams_exporter.adapters
+forbidden_modules=
+    dreamteams_exporter.presentation
+    dreamteams_exporter.bootstrap
+
+[importlinter:contract:9]
+name=Exporter presentation doesn't import bootstrap
+type=forbidden
+source_modules=
+    dreamteams_exporter.presentation
+forbidden_modules=
+    dreamteams_exporter.bootstrap
+
+[importlinter:contract:10]
+name=Exporter context doesn't import main context
+type=forbidden
+source_modules=
+    dreamteams_exporter
+forbidden_modules=
+    dreamteams
+
+[importlinter:contract:11]
+name=Main context doesn't import exporter context
+type=forbidden
+source_modules=
+    dreamteams
+forbidden_modules=
+    dreamteams_exporter
