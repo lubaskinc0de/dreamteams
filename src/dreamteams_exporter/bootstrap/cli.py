@@ -1,19 +1,31 @@
 import argparse
+import contextlib
 
+import alembic.config
 
-def run_worker() -> None:
-    """Starts the FastStream worker subscribed to NATS subjects for export jobs."""
-    raise NotImplementedError
+from dreamteams_exporter.adapters.db.alembic.config import get_alembic_config_path
+from dreamteams_exporter.bootstrap.fast_api import run_api
+from dreamteams_exporter.bootstrap.faststream import run_worker
 
 
 def run_migrations() -> None:
     """Applies all pending Alembic migrations to the exporter schema."""
-    raise NotImplementedError
+    alembic_path_gen = get_alembic_config_path()
+    alembic_path = str(next(alembic_path_gen))
+    alembic.config.main(argv=["-c", alembic_path, "upgrade", "head"])
+
+    with contextlib.suppress(StopIteration):
+        next(alembic_path_gen)
 
 
 def autogenerate_migrations(message: str) -> None:
     """Generates a new Alembic migration by detecting schema changes in the exporter models."""
-    raise NotImplementedError(message)
+    alembic_path_gen = get_alembic_config_path()
+    alembic_path = str(next(alembic_path_gen))
+    alembic.config.main(argv=["-c", alembic_path, "revision", "--autogenerate", "-m", message])
+
+    with contextlib.suppress(StopIteration):
+        next(alembic_path_gen)
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -24,6 +36,7 @@ def create_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+  %(prog)s run api                                  # Run the internal FastAPI server
   %(prog)s run worker                               # Run the FastStream NATS worker
   %(prog)s migrations autogenerate "Add job table"  # Create migration
   %(prog)s migrations apply                         # Apply migrations
@@ -34,7 +47,8 @@ Examples:
 
     run_parser = subparsers.add_parser("run", help="Run services")
     run_subparsers = run_parser.add_subparsers(dest="subcommand", help="service to run", required=True)
-    run_subparsers.add_parser("worker", help="Run FastStream NATS worker")
+    run_subparsers.add_parser("api", help="Run the internal FastAPI server")
+    run_subparsers.add_parser("worker", help="Run the FastStream NATS worker")
 
     migrations_parser = subparsers.add_parser("migrations", help="Database migrations")
     migrations_subparsers = migrations_parser.add_subparsers(
@@ -57,7 +71,9 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.command == "run":
-        if args.subcommand == "worker":
+        if args.subcommand == "api":
+            run_api()
+        elif args.subcommand == "worker":
             run_worker()
         else:
             parser.error(f"Unknown run subcommand: {args.subcommand}")

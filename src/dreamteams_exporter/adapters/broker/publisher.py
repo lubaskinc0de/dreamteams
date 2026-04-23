@@ -2,6 +2,7 @@ from typing import override
 
 from faststream.nats import NatsBroker
 
+from dreamteams_exporter.adapters.auth.model import AuthUserId
 from dreamteams_exporter.adapters.broker.config import NatsConfig
 from dreamteams_exporter.adapters.http.config import DreamteamsApiConfig
 from dreamteams_exporter.application.common.event_bus import JobEventBus
@@ -16,12 +17,12 @@ class NatsJobEventBus(JobEventBus):
         broker: NatsBroker,
         nats_config: NatsConfig,
         api_config: DreamteamsApiConfig,
-        auth_token: str,
+        user_id: AuthUserId,
     ) -> None:
         self._broker = broker
         self._nats_config = nats_config
         self._auth_header_name = api_config.auth_header_name
-        self._auth_token = auth_token
+        self._user_id = user_id
 
     @override
     async def publish_process(self, job_id: ExportJobId) -> None:
@@ -30,5 +31,5 @@ class NatsJobEventBus(JobEventBus):
             {"job_id": str(job_id)},
             subject=self._nats_config.process_subject,
             stream=self._nats_config.stream_name,
-            headers={self._auth_header_name: self._auth_token},
+            headers={self._auth_header_name: self._user_id},
         )

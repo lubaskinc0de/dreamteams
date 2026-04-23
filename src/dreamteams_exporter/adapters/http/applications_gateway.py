@@ -4,6 +4,7 @@ from typing import override
 import aiohttp
 from adaptix import ExtraSkip, Retort, name_mapping
 
+from dreamteams_exporter.adapters.auth.model import AuthUserId
 from dreamteams_exporter.adapters.http.config import DreamteamsApiConfig
 from dreamteams_exporter.application.common.dto.application import ApplicationsPage
 from dreamteams_exporter.application.common.gateway.applications import ApplicationsGateway
@@ -37,11 +38,11 @@ class HttpApplicationsGateway(ApplicationsGateway):
         self,
         session: aiohttp.ClientSession,
         config: DreamteamsApiConfig,
-        auth_token: str,
+        user_id: AuthUserId,
     ) -> None:
         self._session = session
         self._config = config
-        self._auth_token = auth_token
+        self._user_id = user_id
 
     @override
     async def list(
@@ -54,7 +55,7 @@ class HttpApplicationsGateway(ApplicationsGateway):
     ) -> ApplicationsPage:
         """Fetches one page of applications for the given competition + status."""
         url = f"{self._config.base_url}/competitions/{competition_id}/applications/"
-        headers = {self._config.auth_header_name: self._auth_token}
+        headers = {self._config.auth_header_name: self._user_id}
         params: dict[str, str | int] = {
             "page": page,
             "page_size": page_size,

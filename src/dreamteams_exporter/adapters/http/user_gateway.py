@@ -4,6 +4,7 @@ from uuid import UUID
 import aiohttp
 from adaptix import ExtraSkip, P, Retort, loader, name_mapping
 
+from dreamteams_exporter.adapters.auth.model import AuthUserId
 from dreamteams_exporter.adapters.http.config import DreamteamsApiConfig
 from dreamteams_exporter.application.errors.auth import UnauthorizedError
 from dreamteams_exporter.entities.user import User
@@ -43,10 +44,10 @@ class HttpUserGateway:
         self._session = session
         self._config = config
 
-    async def get_me(self, auth_token: str) -> User:
+    async def get_me(self, user_id: AuthUserId) -> User:
         """Issues ``GET {base}/users/me`` with the caller's ``X-Auth-User`` header forwarded verbatim."""
         url = f"{self._config.base_url}/users/me"
-        headers = {self._config.auth_header_name: auth_token}
+        headers = {self._config.auth_header_name: user_id}
 
         async with self._session.get(url, headers=headers) as response:
             if response.status in (401, 403):
