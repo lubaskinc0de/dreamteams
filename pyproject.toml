@@ -34,7 +34,6 @@ dependencies = [
     "redis[hiredis]==7.4.0",
     "pytest-xdist==3.8.0",
     "faststream[nats]==0.6.7",
-    "openpyxl==3.1.5",
     "opentelemetry-instrumentation-aiohttp-client==0.61b0",
 ]
 [project.optional-dependencies]

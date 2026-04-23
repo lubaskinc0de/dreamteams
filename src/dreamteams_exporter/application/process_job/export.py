@@ -72,7 +72,7 @@ class ExportApplicationsToSheets:
         logger.info("Export finished", job_id=job.id, file_url=url)
 
     async def _stream_to_spreadsheet(self, job: ExportApplicationsJob) -> str:
-        session = await self.spreadsheet_exporter.start(key=f"exports/{job.id}.xlsx")
+        session = await self.spreadsheet_exporter.start(key=f"exports/{job.id}.csv")
         try:
             page = 1
             while True:
