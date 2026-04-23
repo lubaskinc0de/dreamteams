@@ -33,6 +33,9 @@ dependencies = [
     "opentelemetry-instrumentation-sqlalchemy==0.61b0",
     "redis[hiredis]==7.4.0",
     "pytest-xdist==3.8.0",
+    "faststream[nats]==0.6.7",
+    "openpyxl==3.1.5",
+    "opentelemetry-instrumentation-aiohttp-client==0.61b0",
 ]
 [project.optional-dependencies]
 lint = ['ruff==0.14.8', 'mypy==1.19.0', 'import-linter==2.7', 'typos==1.41.0']
