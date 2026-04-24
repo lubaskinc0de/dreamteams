@@ -5,7 +5,7 @@ Bounded context responsible for exporting a competition's applications to a CSV 
 ## What it does
 
 1. An authenticated caller asks for an export — `POST /exports/`.
-2. The exporter persists a pending job and publishes a NATS message on `exporter.jobs.process`.
+2. The exporter persists a pending job in Redis and publishes a NATS message on `exporter.jobs.process`.
 3. A FastStream worker picks the message up, streams applications from the main context, serialises them into CSV, and streams the bytes straight to S3 via multipart upload.
 4. The caller polls `GET /exports/{job_id}` for the finished URL.
 

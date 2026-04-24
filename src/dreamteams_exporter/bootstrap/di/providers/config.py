@@ -3,7 +3,6 @@ from dishka import BaseScope, Provider, Scope, from_context
 from dreamteams_common.observability.config import OTelConfig
 from dreamteams_exporter.adapters.broker.config import NatsConfig
 from dreamteams_exporter.adapters.cache.config import CacheConfig
-from dreamteams_exporter.adapters.db.config import DbConfig
 from dreamteams_exporter.adapters.http.config import DreamteamsApiConfig
 from dreamteams_exporter.adapters.storage.config import S3Config
 from dreamteams_exporter.bootstrap.config.loader import Config
@@ -18,7 +17,6 @@ class ConfigProvider(Provider):
 
     configs = (
         from_context(Config)
-        + from_context(DbConfig)
         + from_context(CacheConfig)
         + from_context(NatsConfig)
         + from_context(S3Config)

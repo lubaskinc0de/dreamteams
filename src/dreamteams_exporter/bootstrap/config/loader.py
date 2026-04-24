@@ -9,7 +9,6 @@ from adaptix import Retort
 from dreamteams_common.observability.config import OTelConfig
 from dreamteams_exporter.adapters.broker.config import NatsConfig
 from dreamteams_exporter.adapters.cache.config import CacheConfig
-from dreamteams_exporter.adapters.db.config import DbConfig
 from dreamteams_exporter.adapters.http.config import DreamteamsApiConfig
 from dreamteams_exporter.adapters.storage.config import S3Config
 from dreamteams_exporter.bootstrap.config.sentry import SentryConfig
@@ -23,7 +22,6 @@ _retort = Retort()
 class Config:
     """Fully-loaded exporter configuration, read once from TOML at bootstrap."""
 
-    db: DbConfig
     cache: CacheConfig
     nats: NatsConfig
     s3: S3Config
@@ -42,4 +40,5 @@ class Config:
 
         with Path(config_path).open("rb") as fh:
             data = toml_rs.load(fh)
+
         return _retort.load(data, cls)

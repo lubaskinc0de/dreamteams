@@ -5,8 +5,8 @@ import structlog
 from dreamteams_common.clock import Clock
 from dreamteams_common.interactor import interactor
 from dreamteams_common.logger import Logger
-from dreamteams_common.uow import UoW
 from dreamteams_exporter.application.common.event_bus import JobEventBus
+from dreamteams_exporter.application.common.gateway.export_job import ExportJobGateway
 from dreamteams_exporter.application.common.idp import IdProvider
 from dreamteams_exporter.entities.common.identifiers import CompetitionId, ExportJobId
 from dreamteams_exporter.entities.common.vo.application_status import ApplicationStatus
@@ -36,7 +36,7 @@ logger: Logger = structlog.get_logger(__name__)
 class CreateExportApplicationsJob:
     """Interactor that persists a new export job and publishes it for processing."""
 
-    uow: UoW
+    gateway: ExportJobGateway
     idp: IdProvider
     event_bus: JobEventBus
     clock: Clock
@@ -58,8 +58,7 @@ class CreateExportApplicationsJob:
             application_status=data.application_status,
             clock=self.clock,
         )
-        self.uow.add(job)
-        await self.uow.commit()
+        await self.gateway.create(job)
 
         await self.event_bus.publish_process(job.id)
         return CreatedExportJob(job_id=job.id)
