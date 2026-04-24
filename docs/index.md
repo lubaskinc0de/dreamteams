@@ -88,3 +88,10 @@ All API errors follow a standardized format. See the [Error Reference](errors/in
 - [Applications](errors/application-management.md)
 - [Participants & Media](errors/participant-media.md)
 - [Generic](errors/generic.md)
+- [Exporter](exporter/errors.md)
+
+---
+
+## Bounded Contexts
+
+- [Exporter](exporter/index.md) — the CSV export service. Lives in `src/dreamteams_exporter/` as a sibling package; communicates with the main context over the wire, never via Python imports.

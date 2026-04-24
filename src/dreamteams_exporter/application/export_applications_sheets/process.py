@@ -18,7 +18,6 @@ from dreamteams_exporter.application.errors.job import JobNotFoundError
 from dreamteams_exporter.entities.application.entity import Application
 from dreamteams_exporter.entities.common.identifiers import ExportJobId
 from dreamteams_exporter.entities.common.vo.participant_contact import ParticipantContact
-from dreamteams_exporter.entities.errors.user import InvalidRoleError
 from dreamteams_exporter.entities.export_job.entity import ExportApplicationsJob
 
 _PAGE_SIZE = 100
@@ -71,9 +70,6 @@ class ExportApplicationsToSheets:
     async def execute(self, data: ProcessExportJobInput) -> None:
         """Build the spreadsheet for the given job, stream it out, and mark the job succeeded or failed."""
         user = await self.idp.get_user()
-        if user.organizer_id is None:
-            raise InvalidRoleError(message="Only organizers may export applications")
-
         await self.rate_limiter.check_and_record(user.user_id)
 
         job = await self.job_gateway.get(data.job_id)

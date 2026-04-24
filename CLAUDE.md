@@ -180,3 +180,23 @@ GitHub Actions workflow in `.github/workflows/lint_test_deploy.yml`:
 6. Add integration tests in `tests/integration/{feature}/`
 
 **Logging**: Use structlog. Get logger with `structlog.get_logger(__name__)`. All logs output as JSON with automatic trace ID injection when configured.
+
+## Bounded Contexts
+
+`src/` holds three sibling Python packages — not one monolith:
+
+- **`dreamteams`** — the main app (users, organizers, competitions, applications, invites).
+- **`dreamteams_exporter`** — the export-to-spreadsheet service. Owns its own schema (`exporter`), its own alembic chain, FastAPI on a separate internal port, and a FastStream NATS worker. See `src/dreamteams_exporter/README.md`.
+- **`dreamteams_common`** — shared primitives only: `AppError`, `@interactor`, `UoW` protocol, `Clock`/`SystemClock`, `Logger` alias, structlog bootstrap, `OTelConfig` + `setup_observability`. Nothing domain-specific.
+
+**Import-linter enforces the boundaries.** All 11 contracts in `.importlinter`:
+
+- Each context's 4 layer-boundary contracts (entities ↛ application/adapters/presentation/bootstrap, etc.).
+- `dreamteams_exporter` ↛ `dreamteams` and `dreamteams` ↛ `dreamteams_exporter` — the two contexts never import each other's Python. They communicate over the wire (HTTP + NATS).
+- `dreamteams_common` ↛ `dreamteams` | `dreamteams_exporter` — the shared lib can't reach downward into either context.
+
+If you see an import-linter failure, the fix is almost always at the protocol/DTO layer — duplicate the tiny transport shape into each context (the cost of a few extra dataclasses is much lower than the cost of giving up the boundary).
+
+**Running both contexts locally**: `just up` starts main + exporter + Postgres + Redis + NATS + S3 in one compose network. Both app containers bind internal-only ports; Nginx proxies only main's public surface.
+
+**Adding a third bounded context**: scaffold as `src/dreamteams_<name>/` with the same 5-layer tree, register it in `pyproject.toml` (`[tool.uv.build-backend] module-name`), add the 4 layer contracts plus 2 cross-context forbidden contracts to `.importlinter`, and have it talk to the others via HTTP or NATS — never via Python imports. Shared primitives that genuinely belong to every context go in `dreamteams_common`; anything else stays local.

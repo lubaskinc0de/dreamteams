@@ -10,6 +10,7 @@ from dreamteams_exporter.application.common.event_bus import JobEventBus
 from dreamteams_exporter.application.common.idp import IdProvider
 from dreamteams_exporter.entities.common.identifiers import CompetitionId, ExportJobId
 from dreamteams_exporter.entities.common.vo.application_status import ApplicationStatus
+from dreamteams_exporter.entities.errors.user import InvalidRoleError
 from dreamteams_exporter.entities.export_job.factory import export_job_factory
 
 
@@ -43,6 +44,8 @@ class CreateExportApplicationsJob:
     async def execute(self, data: CreateExportJobInput) -> CreatedExportJob:
         """Persist a pending job for the authenticated user and publish it for processing."""
         user = await self.idp.get_user()
+        if user.organizer_id is None:
+            raise InvalidRoleError(message="Only organizers may export applications")
         logger.info(
             "Creating export job",
             user_id=user.user_id,
