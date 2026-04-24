@@ -51,7 +51,7 @@ NUXT_PUBLIC_USE_MOCK=true  # Set to 'false' for real API
 The app implements a **three-state authentication model**:
 
 1. **Unauthenticated** - user not logged in via OAuth2
-2. **Authenticated, needs onboarding** - logged in via Keycloak but no profile/organizer created
+2. **Authenticated, needs onboarding** - logged in via Authentik but no profile/organizer created
 3. **Authenticated, has profile** - fully onboarded user
 
 **Flow Implementation:**

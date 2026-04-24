@@ -1,5 +1,5 @@
 -- Reset the app's schema in the `postgres` database without touching the
--- `zitadel` database
+-- `authentik` database
 
 DROP SCHEMA IF EXISTS public CASCADE;
 CREATE SCHEMA public;

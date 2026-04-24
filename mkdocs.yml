@@ -61,7 +61,7 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Setup:
-    - ZITADEL: zitadel-setup.md
+    - Authentik: authentik-setup.md
   - Entities:
     - entities/index.md
     - User: entities/user.md

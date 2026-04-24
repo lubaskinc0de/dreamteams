@@ -33,7 +33,7 @@ export const useAuth = () => {
       const { data, error } = await api.getUserProfile();
 
       if (error) {
-        // 401 or 404 USER_HAS_NO_ROLE means user is in Keycloak but hasn't created profile
+        // 401 or 404 USER_HAS_NO_ROLE means the user is authenticated but hasn't created a profile yet
         if (error.code === 'UNAUTHORIZED' || error.code === 'USER_HAS_NO_ROLE') {
           needsOnboarding.value = true;
           hasProfile.value = false;
@@ -74,8 +74,8 @@ export const useAuth = () => {
   };
 
   /**
-   * Logs out both the IdP (ZITADEL) and oauth2-proxy.
-   * nginx `/logout` redirects → IdP end_session → oauth2-proxy sign_out → `/`.
+   * Logs out both Authentik and oauth2-proxy.
+   * nginx `/logout` redirects -> oauth2-proxy sign_out -> Authentik end-session -> `/`.
    * Without this full chain the IdP session survives and the next login
    * silently reuses it instead of prompting.
    */

@@ -33,6 +33,6 @@ ALTER DEFAULT PRIVILEGES FOR ROLE migrations IN SCHEMA public
 ALTER DEFAULT PRIVILEGES FOR ROLE migrations IN SCHEMA public
     GRANT USAGE ON SEQUENCES TO app_user;
 
--- Сreating user + database for ZITADEL
-CREATE USER zitadel WITH PASSWORD 'zitadel-password' CREATEDB;
-CREATE DATABASE zitadel OWNER zitadel;
+-- Сreating user + database for Authentik
+CREATE USER authentik WITH PASSWORD 'authentik-password' CREATEDB;
+CREATE DATABASE authentik OWNER authentik;

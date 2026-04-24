@@ -58,9 +58,10 @@ generate-migration NAME:
 cookie-secret:
     echo "OAUTH2_PROXY_COOKIE_SECRET=$(openssl rand -base64 32)"
 
-zitadel-console:
-    @echo "ZITADEL console: http://127.0.0.1.sslip.io:8080/ui/console"
-    @echo "Default login:  zitadel-admin@zitadel.127.0.0.1.sslip.io / Password1!"
+authentik-console:
+    @echo "Authentik setup:  http://127.0.0.1.sslip.io:8080/if/flow/initial-setup/"
+    @echo "Authentik admin:  http://127.0.0.1.sslip.io:8080/if/admin/"
+    @echo "Default user:     akadmin (password chosen during initial setup)"
 
 build-frontend:
     cd ./frontend; npm run generate

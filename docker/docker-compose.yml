@@ -47,7 +47,7 @@ services:
         depends_on:
             redis:
                 condition: service_healthy
-            zitadel-proxy:
+            authentik-server:
                 condition: service_healthy
         networks:
             - "shared"
@@ -170,75 +170,55 @@ services:
         networks:
             - "shared"
 
-    zitadel-api:
-        image: ghcr.io/zitadel/zitadel:v4.13.1
-        container_name: zitadel-api
+    authentik-server:
+        image: ghcr.io/goauthentik/server:2026.2.2
+        container_name: authentik-server
         restart: unless-stopped
-        user: "0"
-        command: ["start-from-init", "--masterkeyFromEnv"]
+        command: ["server"]
         env_file:
-            - ../.config/.env.zitadel
-        volumes:
-            - zitadel_bootstrap:/zitadel/bootstrap:rw
+            - ../.config/.env.authentik
+        ports:
+            - "8080:9000"
         healthcheck:
-            test: ["CMD", "/app/zitadel", "ready"]
-            interval: 5s
+            test:
+                [
+                    "CMD",
+                    "python",
+                    "-c",
+                    "import urllib.request; urllib.request.urlopen('http://localhost:9000/-/health/ready/', timeout=2)"
+                ]
+            interval: 10s
             timeout: 10s
-            retries: 24
-            start_period: 20s
+            retries: 12
+            start_period: 30s
         depends_on:
             db:
                 condition: service_healthy
+        volumes:
+            - authentik_data:/data
+            - authentik_templates:/templates
         networks:
             - "shared"
 
-    zitadel-login:
-        image: ghcr.io/zitadel/zitadel-login:v4.13.1
-        container_name: zitadel-login
+    authentik-worker:
+        image: ghcr.io/goauthentik/server:2026.2.2
+        container_name: authentik-worker
         restart: unless-stopped
-        user: "0"
-        environment:
-            ZITADEL_API_URL: http://zitadel-api:8080
-            NEXT_PUBLIC_BASE_PATH: /ui/v2/login
-            ZITADEL_SERVICE_USER_TOKEN_FILE: /zitadel/bootstrap/login-client.pat
-            CUSTOM_REQUEST_HEADERS: "Host:127.0.0.1.sslip.io,X-Forwarded-Proto:http"
-        volumes:
-            - zitadel_bootstrap:/zitadel/bootstrap:ro
+        command: ["worker"]
+        env_file:
+            - ../.config/.env.authentik
+        depends_on:
+            db:
+                condition: service_healthy
         healthcheck:
-            test:
-                - CMD
-                - /bin/sh
-                - -c
-                - node /app/healthcheck.mjs http://localhost:3000/ui/v2/login/healthy
-            interval: 5s
+            test: ["CMD", "ak", "healthcheck"]
+            interval: 10s
             timeout: 10s
-            retries: 24
+            retries: 12
             start_period: 20s
-        depends_on:
-            zitadel-api:
-                condition: service_healthy
-        networks:
-            - "shared"
-
-    zitadel-proxy:
-        image: nginx:1.29.3
-        container_name: zitadel-proxy
-        restart: unless-stopped
-        ports:
-            - "8080:80"
         volumes:
-            - ../.config/zitadel-proxy.conf:/etc/nginx/nginx.conf:ro
-        healthcheck:
-            test: ["CMD", "nginx", "-t", "-q"]
-            interval: 5s
-            timeout: 5s
-            retries: 6
-            start_period: 5s
-        depends_on:
-            zitadel-api:
-                condition: service_healthy
-            zitadel-login:
-                condition: service_healthy
+            - authentik_data:/data
+            - authentik_templates:/templates
         networks:
             - "shared"
 
@@ -248,7 +228,8 @@ volumes:
     loki_data:
     redis_data:
     rustfs_data:
-    zitadel_bootstrap:
+    authentik_data:
+    authentik_templates:
 
 networks:
     shared:

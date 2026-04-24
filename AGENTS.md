@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-DreamTeams is a competition management platform built with a strict Clean Architecture approach, inheriting from the "crudik" template. The backend is Python-based using FastAPI, SQLAlchemy, and Dishka for dependency injection. The application manages users, organizers, and competitions with multi-layer authentication via Keycloak and OAuth2-Proxy.
+DreamTeams is a competition management platform built with a strict Clean Architecture approach, inheriting from the "crudik" template. The backend is Python-based using FastAPI, SQLAlchemy, and Dishka for dependency injection. The application manages users, organizers, and competitions with multi-layer authentication via Authentik and OAuth2-Proxy.
 
 ## Development Commands
 
@@ -91,16 +91,16 @@ The project enforces strict layer boundaries via `import-linter` (configured in 
 
 ## Authentication Flow
 
-Multi-layer architecture: **Client → Nginx → OAuth2-Proxy → Keycloak → Application**
+Multi-layer architecture: **Client → Nginx → OAuth2-Proxy → Authentik → Application**
 
 1. Nginx intercepts all requests with `auth_request /oauth2/auth`
 2. OAuth2-Proxy validates session cookie (stored in Redis)
-3. If unauthenticated, redirects to Keycloak OIDC login
+3. If unauthenticated, redirects to Authentik OIDC login
 4. After successful auth, OAuth2-Proxy sets user ID header
 5. Nginx forwards configured header to application
 6. Application resolves `AuthUser` → `User` via database lookup
 
-**User Linking**: When creating users, `UserFactory` (in `application/register/shared/user_factory.py`) creates both `User` entity and `AuthUser` record linking the Keycloak user ID to the application user ID.
+**User Linking**: When creating users, `UserFactory` (in `application/register/shared/user_factory.py`) creates both `User` entity and `AuthUser` record linking the Authentik subject to the application user ID.
 
 **Header Configuration**: User ID header name is configurable in `.config/config.toml` under `[auth].user_id_header`.
 
