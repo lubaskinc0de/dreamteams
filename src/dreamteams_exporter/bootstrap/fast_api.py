@@ -27,7 +27,7 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
 def create_app(config: Config) -> FastAPI:
     """Builds the exporter's internal FastAPI app with DI, OTel, and error handlers wired in."""
     setup_observability(config.otel)
-    if config.sentry.dsn is not None:
+    if config.sentry.dsn:
         sentry_sdk.init(config.sentry.dsn)
 
     app = FastAPI(lifespan=_lifespan)

@@ -32,7 +32,7 @@ clear:
     docker compose -f docker/docker-compose.yml --env-file=./.config/.env up db -d --wait
     docker compose -f docker/docker-compose.yml --env-file=./.config/.env exec -T db psql -U postgres -d postgres < ./.config/reset-app-db.sql
     docker compose -f docker/docker-compose.yml --env-file=./.config/.env down
-    docker volume rm -f docker_redis_data docker_rustfs_data
+    docker volume rm -f docker_redis_data docker_nats_data docker_rustfs_data
 
 clear-all:
     docker compose -f docker/docker-compose.yml --env-file=./.config/.env down -v

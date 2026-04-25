@@ -15,7 +15,7 @@ from dreamteams_exporter.presentation.faststream.handlers import include_handler
 def create_worker(config: Config) -> FastStream:
     """Builds the FastStream worker with DI, OTel, and NATS subscribers wired in."""
     setup_observability(config.otel)
-    if config.sentry.dsn is not None:
+    if config.sentry.dsn:
         sentry_sdk.init(config.sentry.dsn)
 
     broker = NatsBroker(config.nats.url)

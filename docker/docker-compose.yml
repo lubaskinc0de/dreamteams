@@ -7,9 +7,12 @@ services:
             - "80:80"
         volumes:
             - ../.config/nginx.conf:/etc/nginx/nginx.conf
+            - ../.config/nginx-snippets:/etc/nginx/snippets:ro
             - ../frontend/.output/public:/usr/share/nginx/html:ro
         depends_on:
             api:
+                condition: service_healthy
+            exporter-api:
                 condition: service_healthy
             oauth2-proxy:
                 condition: service_healthy
@@ -67,6 +70,19 @@ services:
         networks:
             - "shared"
 
+    nats:
+        image: nats:2.11-alpine
+        container_name: nats
+        restart: unless-stopped
+        command: ["-js", "-sd", "/data", "-m", "8222"]
+        ports:
+            - 4222:4222
+            - 8222:8222
+        volumes:
+            - nats_data:/data
+        networks:
+            - "shared"
+
     migrations:
         command: ["dreamteams", "migrations", "apply"]
         container_name: migrations
@@ -113,6 +129,65 @@ services:
                 condition: service_started
             migrations:
                 condition: service_completed_successfully
+            rustfs:
+                condition: service_started
+        networks:
+            - "shared"
+
+    exporter-api:
+        container_name: exporter-api
+        restart: unless-stopped
+        command: ["dreamteams-exporter", "run", "api"]
+        build:
+            context: ../
+            dockerfile: docker/Dockerfile
+            args:
+                PROFILE_BUILD: ${PROFILE_BUILD:-0}
+        environment:
+            EXPORTER_CONFIG_PATH: /etc/dreamteams-exporter/config.toml
+        volumes:
+            - "../.config/exporter.toml:/etc/dreamteams-exporter/config.toml"
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "curl",
+                    "-f",
+                    "http://localhost:8001/internal/ready",
+                ]
+            interval: 4s
+        depends_on:
+            api:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+            nats:
+                condition: service_started
+            rustfs:
+                condition: service_started
+        networks:
+            - "shared"
+
+    exporter-worker:
+        container_name: exporter-worker
+        restart: unless-stopped
+        command: ["dreamteams-exporter", "run", "worker"]
+        build:
+            context: ../
+            dockerfile: docker/Dockerfile
+            args:
+                PROFILE_BUILD: ${PROFILE_BUILD:-0}
+        environment:
+            EXPORTER_CONFIG_PATH: /etc/dreamteams-exporter/config.toml
+        volumes:
+            - "../.config/exporter.toml:/etc/dreamteams-exporter/config.toml"
+        depends_on:
+            api:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+            nats:
+                condition: service_started
             rustfs:
                 condition: service_started
         networks:
@@ -227,6 +302,7 @@ volumes:
     grafana_data:
     loki_data:
     redis_data:
+    nats_data:
     rustfs_data:
     authentik_data:
     authentik_templates:

@@ -1,0 +1,39 @@
+[cache]
+url = "redis://redis:6379/3"
+rate_limit_window_seconds = 3600
+rate_limit_max = 10
+
+[nats]
+url = "nats://nats:4222"
+stream_name = "exporter"
+process_subject = "exporter.jobs.process"
+process_consumer = "exporter-worker"
+
+[s3]
+bucket_name = "exports"
+endpoint_url = "http://rustfs:9000"
+access_key = "admin0"
+secret_key = "admin0"
+region = "us-east-1"
+public_url = "http://localhost/s3/exports"
+
+[dreamteams_api]
+base_url = "http://api:5000/api"
+auth_header_name = "X-Auth-User"
+timeout_seconds = 10.0
+
+[server]
+host = "0.0.0.0"
+port = 8001
+workers = 1
+
+[otel]
+endpoint = "http://otel-collector:4318"
+service_name = "dreamteams-exporter"
+sample_ratio = 0.1
+metric_export_interval_ms = 10000
+instrument_sqlalchemy = false
+enabled = false
+
+[sentry]
+dsn = ""

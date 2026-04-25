@@ -29,6 +29,10 @@ Participants and unauthenticated callers are rejected with `INVALID_ROLE`.
   - [ExportApplicationsToSheets](usecase/export_applications_to_sheets.md) — worker builds the CSV and uploads to S3 (NATS, asynchronous).
   - [ReadExportApplicationsJob](usecase/read_export_job.md) — owner polls the job's status (HTTP, synchronous).
 
+## Frontend API
+
+- [Public HTTP API](public-http-api.md) — frontend-facing routes, payloads, polling flow, and error codes.
+
 ## Errors
 
 - [Error Reference](errors.md) — exporter-specific error codes.
