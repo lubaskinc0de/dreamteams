@@ -13,7 +13,7 @@ dependencies = [
     "sqlalchemy[postgresql-asyncpg]==2.0.44",
     "alembic==1.17.2",
     "aiohttp==3.13.2",
-    "adaptix==3.0.0b11",
+    "adaptix==3.0.0b12",
     "toml-rs==0.1.0",
     "structlog==25.5.0",
     "pyjwt==2.10.1",
@@ -124,7 +124,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101", "S105", "S106", "S311", "PLR0913"]
+"tests/*" = ["S101", "S105", "S106", "S311", "PLR0913", "PLR2004"]
 
 [tool.uv]
 add-bounds = "exact"

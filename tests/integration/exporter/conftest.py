@@ -101,7 +101,7 @@ async def exporter_client(
 @pytest.fixture
 async def export_job_gateway(exporter_container: AsyncContainer) -> ExportJobGateway:
     """Exporter job gateway resolved from the exporter Dishka container."""
-    return await exporter_container.get(ExportJobGateway)
+    return await exporter_container.get(ExportJobGateway)  # type: ignore[no-any-return]
 
 
 @pytest.fixture

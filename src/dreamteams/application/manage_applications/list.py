@@ -17,12 +17,14 @@ from dreamteams.entities.errors.competition import CompetitionNotFoundError
 
 logger: Logger = structlog.get_logger(__name__)
 PAGE_SIZE = 20
+MAX_PAGE_SIZE = 100
 
 
 class ListApplicationsByCompetitionInput(BaseModel):
     """Input parameters for listing applications of a competition."""
 
     page: int = Field(ge=1, default=1)
+    page_size: int = Field(ge=1, le=MAX_PAGE_SIZE, default=PAGE_SIZE)
     sort_by: ApplicationSortBy = ApplicationSortBy.CREATED_AT
     sort_order: SortOrder = SortOrder.DESC
     status: ApplicationStatus | None = None
@@ -57,6 +59,7 @@ class ListApplicationsByCompetition:
             competition_id=competition_id,
             user_id=user_id,
             page=input_data.page,
+            page_size=input_data.page_size,
             sort_by=input_data.sort_by,
             sort_order=input_data.sort_order,
             status=input_data.status,
@@ -80,7 +83,7 @@ class ListApplicationsByCompetition:
             competition_id,
             competition.title,
             page=input_data.page,
-            page_size=PAGE_SIZE,
+            page_size=input_data.page_size,
             sort_by=input_data.sort_by,
             sort_order=input_data.sort_order,
             status=input_data.status,

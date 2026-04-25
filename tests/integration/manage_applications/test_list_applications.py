@@ -3,7 +3,7 @@ from uuid import uuid4
 import pytest
 
 from dreamteams.application.common.gateway.sorting import SortOrder
-from dreamteams.application.manage_applications.list import PAGE_SIZE
+from dreamteams.application.manage_applications.list import MAX_PAGE_SIZE, PAGE_SIZE
 from dreamteams.entities.application.entity import ApplicationStatus
 from tests.common.factory.application import SubmitApplicationInputFactory
 from tests.integration.api_client import ApiClient
@@ -143,6 +143,42 @@ async def test_list_applications_with_pagination(
     assert result == create_applications_list(all_models, page=page)
 
 
+@pytest.mark.parametrize(("page", "page_size", "num_applications"), [(2, 4, 9)])
+async def test_list_applications_respects_page_size(
+    api_client: ApiClient,
+    gateway: Gateway,
+    submit_application_input_factory: SubmitApplicationInputFactory,
+    page: int,
+    page_size: int,
+    num_applications: int,
+) -> None:
+    """Applications list uses the caller-provided page size."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+    submit_input = submit_application_input_factory.build(domains=[comp.form.domains[0]], form_data=None)
+    submitted_ids = await gateway.application.create_for_competition(
+        num_applications,
+        comp.created.competition_id,
+        submit_input,
+    )
+    all_models = [
+        await gateway.application.read_as_organizer(app_id, owner.organizer.auth_id) for app_id in submitted_ids
+    ]
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.list_applications_by_competition(
+            comp.created.competition_id,
+            page=page,
+            page_size=page_size,
+        )
+
+    # Assert
+    result = response.assert_status(200).ensure_content()
+    assert result == create_applications_list(all_models, page=page, page_size=page_size)
+
+
 @pytest.mark.parametrize(
     "status",
     [ApplicationStatus.PENDING, ApplicationStatus.ACCEPTED, ApplicationStatus.REJECTED],
@@ -226,6 +262,28 @@ async def test_list_applications_with_invalid_page_fails(
         response = await api_client.list_applications_by_competition(
             comp.created.competition_id,
             page=page,
+        )
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+@pytest.mark.parametrize("page_size", [-1, 0, MAX_PAGE_SIZE + 1])
+async def test_list_applications_with_invalid_page_size_fails(
+    api_client: ApiClient,
+    gateway: Gateway,
+    page_size: int,
+) -> None:
+    """Requesting an invalid page size is rejected with VALIDATION_ERROR."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.list_applications_by_competition(
+            comp.created.competition_id,
+            page_size=page_size,
         )
 
     # Assert

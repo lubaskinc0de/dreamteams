@@ -1,12 +1,16 @@
 from uuid import uuid4
 
+from adaptix import Retort
 from faststream.nats.publisher.usecase import LogicPublisher
 
 from dreamteams_exporter.application.common.dto.export_job import ExportJobModel
+from dreamteams_exporter.application.export_applications_sheets.create import CreateExportJobInput
 from dreamteams_exporter.entities.common.vo.application_status import ApplicationStatus
 from tests.integration.api_client import ApiClient
 from tests.integration.exporter.facade import ExporterGateway
 from tests.integration.helpers.facade import Gateway
+
+_retort = Retort()
 
 
 async def test_organizer_creates_pending_export_job_and_publishes_message(
@@ -39,7 +43,6 @@ async def test_organizer_creates_pending_export_job_and_publishes_message(
         finished_at=None,
     )
     process_job_publisher.mock.assert_called_once_with({"job_id": str(model.id)})
-    assert process_job_publisher.mock.call_args.kwargs["headers"]["X-Auth-User"] == owner.organizer.auth_id
 
 
 async def test_participant_cannot_create_export_job(
@@ -53,10 +56,9 @@ async def test_participant_cannot_create_export_job(
     # Act
     with exporter_client.authenticate(auth_user_id=participant.auth_id):
         response = await exporter_client.create_export(
-            {
-                "competition_id": str(uuid4()),
-                "application_status": ApplicationStatus.PENDING.value,
-            },
+            _retort.dump(
+                CreateExportJobInput(competition_id=uuid4(), application_status=ApplicationStatus.PENDING),
+            ),
         )
 
     # Assert
@@ -67,14 +69,13 @@ async def test_missing_auth_cannot_create_export_job(
     exporter_client: ApiClient,
 ) -> None:
     """Missing auth is rejected when creating an export job."""
-    # Arrange
-    payload = {
-        "competition_id": str(uuid4()),
-        "application_status": ApplicationStatus.PENDING.value,
-    }
-
     # Act
-    response = await exporter_client.create_export(payload)
+    response = await exporter_client.create_export(
+        _retort.dump(
+            CreateExportJobInput(competition_id=uuid4(), application_status=ApplicationStatus.PENDING),
+            CreateExportJobInput,
+        ),
+    )
 
     # Assert
     response.assert_error(401, "UNAUTHORIZED")

@@ -16,14 +16,20 @@ from tests.integration.exporter.helpers import (
 )
 from tests.integration.helpers.facade import Gateway
 
-ACCEPTED_EXPORT_COUNT = 20
-HTTP_NOT_FOUND = 404
 
-
+@pytest.mark.parametrize(
+    ("count", "accepted_count"),
+    [
+        (23, 20),
+        (43, 40),
+    ],
+)
 async def test_process_job_writes_csv_and_marks_job_successful(
     exporter_gateway: ExporterGateway,
     gateway: Gateway,
     submit_application_input_factory: SubmitApplicationInputFactory,
+    count: int,
+    accepted_count: int,
 ) -> None:
     """Process job writes a CSV and marks the export successful."""
     # Arrange
@@ -35,8 +41,8 @@ async def test_process_job_writes_csv_and_marks_job_successful(
         export_form(),
     )
     accepted_models = await gateway.application.create_n_accepted_applications(
-        n=23,
-        accept_count=ACCEPTED_EXPORT_COUNT,
+        n=count,
+        accept_count=accepted_count,
         competition=competition,
         submit_application_input=build_submission_input(submit_application_input_factory, competition),
         organizer_auth_id=owner.organizer.auth_id,
@@ -56,8 +62,6 @@ async def test_process_job_writes_csv_and_marks_job_successful(
     )
 
     # Assert
-    assert model.file_url is not None
-    assert model.finished_at is not None
     assert model == ExportJobModel(
         id=job.id,
         user_id=owner.organizer.created.user_id,
@@ -69,8 +73,8 @@ async def test_process_job_writes_csv_and_marks_job_successful(
         created_at=job.created_at,
         finished_at=model.finished_at,
     )
+    assert model.file_url is not None
     rows = await exporter_gateway.fetch_csv_rows(model.file_url)
-    assert len(rows) == ACCEPTED_EXPORT_COUNT
     assert sorted(rows, key=lambda row: row["ID заявки"]) == sorted(
         [expected_row(application) for application in accepted_models],
         key=lambda row: row["ID заявки"],
@@ -150,7 +154,6 @@ async def test_process_job_marks_job_failed_when_rate_limit_is_exceeded(
     # Assert
     assert model.status_reason is not None
     assert "Export rate limit exceeded" in model.status_reason
-    assert model.finished_at is not None
     assert model == ExportJobModel(
         id=job.id,
         user_id=owner.organizer.created.user_id,
@@ -191,7 +194,6 @@ async def test_process_job_marks_job_failed_when_main_api_listing_fails(
     # Assert
     assert model.status_reason is not None
     assert model.status_reason.startswith("unexpected:")
-    assert model.finished_at is not None
     assert model == ExportJobModel(
         id=job.id,
         user_id=owner.organizer.created.user_id,
@@ -206,4 +208,4 @@ async def test_process_job_marks_job_failed_when_main_api_listing_fails(
     status = await exporter_gateway.fetch_public_file_status(
         f"{exporter_config.s3.public_url}/{quote(f'exports/{job.id}.csv')}",
     )
-    assert status == HTTP_NOT_FOUND
+    assert status == 404

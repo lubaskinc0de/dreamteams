@@ -80,7 +80,9 @@ class ApplicationGateway:
         organizer_auth_id: str,
     ) -> list[ApplicationModel]:
         """Read multiple applications as the competition organizer."""
-        return list(await asyncio.gather(*[self.read_as_organizer(app_id, organizer_auth_id) for app_id in application_ids]))
+        return list(
+            await asyncio.gather(*[self.read_as_organizer(app_id, organizer_auth_id) for app_id in application_ids]),
+        )
 
     async def create_n_accepted_applications(
         self,
@@ -90,8 +92,12 @@ class ApplicationGateway:
         submit_application_input: SubmitApplicationInput,
         organizer_auth_id: str,
     ) -> list[ApplicationModel]:
-        """Create ``n`` applications for a competition and accept the first ``accept_count``; returns accepted models."""
-        application_ids = await self.create_for_competition(n, competition.created.competition_id, submit_application_input)
+        """Create ``n`` applications for a competition and accept the first ``accept_count``."""
+        application_ids = await self.create_for_competition(
+            n,
+            competition.created.competition_id,
+            submit_application_input,
+        )
         accepted_ids = application_ids[:accept_count]
         await asyncio.gather(*[self.accept(app_id, organizer_auth_id) for app_id in accepted_ids])
         return await self.read_multiple_as_organizer(accepted_ids, organizer_auth_id)

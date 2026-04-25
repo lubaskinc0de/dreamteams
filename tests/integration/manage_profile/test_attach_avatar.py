@@ -54,7 +54,7 @@ async def test_view_organizer_avatar_succeeds(
     resp = await http_session.get(avatar_url)
 
     # Assert
-    assert resp.status_code == 200  # noqa: PLR2004
+    assert resp.status_code == 200
 
 
 @pytest.mark.parametrize(

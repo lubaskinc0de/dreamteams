@@ -28,21 +28,38 @@ async def test_owner_reads_seeded_pending_export_job(
     assert model == job
 
 
-async def test_owner_reads_seeded_finished_export_jobs(
+async def test_owner_reads_seeded_successful_export_job(
     exporter_gateway: ExporterGateway,
     gateway: Gateway,
 ) -> None:
-    """Owner reads successful and failed export jobs."""
+    """Owner reads a successful export job."""
     # Arrange
     owner = await gateway.organizer.create_with_admin(gateway.admin)
     competition = await gateway.competition.create(owner.organizer.auth_id)
-    success_job = await exporter_gateway.seed(
+    job = await exporter_gateway.seed(
         user_id=owner.organizer.created.user_id,
         competition_id=competition.created.competition_id,
         application_status=ApplicationStatus.ACCEPTED,
         finished_status="success",
     )
-    failed_job = await exporter_gateway.seed(
+
+    # Act
+    response = await exporter_gateway.read(auth_user_id=owner.organizer.auth_id, job_id=job.id)
+
+    # Assert
+    model = response.assert_status(200).ensure_content()
+    assert model == job
+
+
+async def test_owner_reads_seeded_failed_export_job(
+    exporter_gateway: ExporterGateway,
+    gateway: Gateway,
+) -> None:
+    """Owner reads a failed export job."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    competition = await gateway.competition.create(owner.organizer.auth_id)
+    job = await exporter_gateway.seed(
         user_id=owner.organizer.created.user_id,
         competition_id=competition.created.competition_id,
         application_status=ApplicationStatus.REJECTED,
@@ -51,14 +68,11 @@ async def test_owner_reads_seeded_finished_export_jobs(
     )
 
     # Act
-    success_response = await exporter_gateway.read(auth_user_id=owner.organizer.auth_id, job_id=success_job.id)
-    failed_response = await exporter_gateway.read(auth_user_id=owner.organizer.auth_id, job_id=failed_job.id)
+    response = await exporter_gateway.read(auth_user_id=owner.organizer.auth_id, job_id=job.id)
 
     # Assert
-    success_model = success_response.assert_status(200).ensure_content()
-    failed_model = failed_response.assert_status(200).ensure_content()
-    assert success_model == success_job
-    assert failed_model == failed_job
+    model = response.assert_status(200).ensure_content()
+    assert model == job
 
 
 async def test_other_organizer_cannot_read_export_job(

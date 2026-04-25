@@ -49,7 +49,6 @@ class ExporterGateway:
                                 competition_id=competition_id,
                                 application_status=application_status,
                             ),
-                            CreateExportJobInput,
                         ),
                     )
                 )

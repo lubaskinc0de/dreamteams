@@ -55,7 +55,7 @@ def expected_row(application: ApplicationModel) -> dict[str, str]:
         "ID участника": str(application.participant.id),
         "ФИО": application.participant.full_name,
         "О себе": application.participant.bio or "",
-        "Тип участника": application.participant.participant_type,
+        "Тип участника": application.participant.participant_type.value,
         "Возраст": str(application.participant.age),
         "Контакты": ", ".join(f"{c.title}: {c.url}" for c in application.participant.contacts),
     }

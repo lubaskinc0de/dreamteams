@@ -18,6 +18,35 @@ from dreamteams_exporter.entities.user import User
 from tests.integration.api_client import ApiClient
 
 
+def _to_exporter_contact(contact: MainParticipantContact) -> ParticipantContact:
+    return ParticipantContact(title=contact.title, url=contact.url)
+
+
+def _to_exporter_participant(participant: ParticipantInfo) -> Participant:
+    return Participant(
+        id=participant.id,
+        full_name=participant.full_name,
+        bio=participant.bio,
+        participant_type=participant.participant_type.value,
+        age=participant.age,
+        contacts=[_to_exporter_contact(c) for c in participant.contacts],
+    )
+
+
+def to_exporter_application(application: ApplicationModel) -> Application:
+    """Map main application DTO into the exporter-local application projection."""
+    return Application(
+        id=application.id,
+        competition_id=application.competition_id,
+        competition_name=application.competition_name,
+        domains=[d.value for d in application.domains],
+        status=ApplicationStatus(application.status.value),
+        created_at=application.created_at,
+        form_data=application.form_data,
+        participant=_to_exporter_participant(application.participant),
+    )
+
+
 @dataclass(slots=True)
 class FakeHttpUserGateway(HttpUserGateway):
     """Test replacement for the exporter's user gateway backed by the main app ApiClient."""
@@ -58,6 +87,7 @@ class FakeApplicationsGateway(HttpApplicationsGateway):
             response = await self.api_client.list_applications_by_competition(
                 competition_id,
                 page=page,
+                page_size=page_size,
                 status=MainApplicationStatus(status.value),
             )
             payload = response.assert_status(200).ensure_content()
@@ -68,34 +98,3 @@ class FakeApplicationsGateway(HttpApplicationsGateway):
             page_size=page_size,
             total=payload.total,
         )
-
-
-def to_exporter_contact(contact: MainParticipantContact) -> ParticipantContact:
-    """Map main participant contact DTO into the exporter-local DTO."""
-    return ParticipantContact(title=contact.title, url=str(contact.url))
-
-
-def to_exporter_participant(participant: ParticipantInfo) -> Participant:
-    """Map main participant DTO into the exporter-local participant projection."""
-    return Participant(
-        id=participant.id,
-        full_name=participant.full_name,
-        bio=participant.bio,
-        participant_type=participant.participant_type.value,
-        age=participant.age,
-        contacts=[to_exporter_contact(contact) for contact in participant.contacts],
-    )
-
-
-def to_exporter_application(application: ApplicationModel) -> Application:
-    """Map main application DTO into the exporter-local application projection."""
-    return Application(
-        id=application.id,
-        competition_id=application.competition_id,
-        competition_name=application.competition_name,
-        domains=[domain.value for domain in application.domains],
-        status=ApplicationStatus(application.status.value),
-        created_at=application.created_at,
-        form_data=application.form_data,
-        participant=to_exporter_participant(application.participant),
-    )

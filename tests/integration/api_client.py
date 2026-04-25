@@ -407,6 +407,7 @@ class ApiClient:
         self,
         competition_id: CompetitionId,
         page: int = 1,
+        page_size: int | None = None,
         *,
         sort_by: ApplicationSortBy = ApplicationSortBy.CREATED_AT,
         sort_order: SortOrder = SortOrder.DESC,
@@ -419,6 +420,8 @@ class ApiClient:
             "sort_by": sort_by.value,
             "sort_order": sort_order.value,
         }
+        if page_size is not None:
+            params["page_size"] = page_size
         if status is not None:
             params["status"] = status.value
         response = await self.session.get(url, headers=self._headers, params=params)

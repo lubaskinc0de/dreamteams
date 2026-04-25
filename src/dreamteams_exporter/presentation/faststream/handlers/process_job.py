@@ -27,7 +27,7 @@ class ProcessJobMessage:
     job_id: UUID
 
 
-@router.subscriber(
+@router.subscriber(  # type: ignore[untyped-decorator]
     PROCESS_SUBJECT,
     stream=PROCESS_STREAM,
     durable=PROCESS_CONSUMER,
