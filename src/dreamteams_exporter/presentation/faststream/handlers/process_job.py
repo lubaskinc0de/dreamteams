@@ -3,7 +3,7 @@ from uuid import UUID
 
 import structlog
 from dishka_faststream import FromDishka, inject
-from faststream.nats import NatsRouter
+from faststream.nats import NatsRouter, PullSub
 
 from dreamteams_common.logger import Logger
 from dreamteams_exporter.application.export_applications_sheets.process import (
@@ -31,6 +31,7 @@ class ProcessJobMessage:
     PROCESS_SUBJECT,
     stream=PROCESS_STREAM,
     durable=PROCESS_CONSUMER,
+    pull_sub=PullSub(batch_size=1),
 )
 @inject
 async def handle_process_job(

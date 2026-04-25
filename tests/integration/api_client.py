@@ -28,6 +28,9 @@ from dreamteams.application.submit_application import CreatedApplication, Explor
 from dreamteams.entities.application.entity import ApplicationStatus
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId, OrganizerInviteId
 from dreamteams.entities.common.vo.domain import Domain
+from dreamteams_exporter.application.common.dto.export_job import ExportJobModel
+from dreamteams_exporter.application.export_applications_sheets.create import CreatedExportJob
+from dreamteams_exporter.entities.common.identifiers import ExportJobId
 
 retort = Retort()
 
@@ -38,6 +41,7 @@ COMPETITIONS_URL = "/competitions"
 INVITES_URL = "/invites"
 PARTICIPANT_URL = "/participants"
 APPLICATIONS_URL = "/applications"
+EXPORTS_URL = "/exports"
 
 
 @dataclass
@@ -473,3 +477,13 @@ class ApiClient:
         """Update organizer profile via PUT /users/me/organizer."""
         response = await self.session.put(f"{USERS_URL}/me/organizer", headers=self._headers, json=data)
         return await self._load_response(response, response_type=None)
+
+    async def create_export(self, data: dict[str, Any]) -> APIResponse[CreatedExportJob]:
+        """Create export job via POST /exports/."""
+        response = await self.session.post(f"{EXPORTS_URL}/", headers=self._headers, json=data)
+        return await self._load_response(response, response_type=CreatedExportJob)
+
+    async def read_export(self, job_id: ExportJobId) -> APIResponse[ExportJobModel]:
+        """Read export job via GET /exports/{job_id}."""
+        response = await self.session.get(f"{EXPORTS_URL}/{job_id}", headers=self._headers)
+        return await self._load_response(response, response_type=ExportJobModel)

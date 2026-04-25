@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Iterable
 from dataclasses import dataclass
 
 from dreamteams.application.manage_applications import ApplicationModel
@@ -72,6 +73,28 @@ class ApplicationGateway:
         """Withdraw an application as the participant."""
         with self.api_client.authenticate(auth_user_id=participant_auth_id):
             (await self.api_client.withdraw_application(application_id)).assert_status(200)
+
+    async def read_multiple_as_organizer(
+        self,
+        application_ids: Iterable[ApplicationId],
+        organizer_auth_id: str,
+    ) -> list[ApplicationModel]:
+        """Read multiple applications as the competition organizer."""
+        return list(await asyncio.gather(*[self.read_as_organizer(app_id, organizer_auth_id) for app_id in application_ids]))
+
+    async def create_n_accepted_applications(
+        self,
+        n: int,
+        accept_count: int,
+        competition: CompetitionCreated,
+        submit_application_input: SubmitApplicationInput,
+        organizer_auth_id: str,
+    ) -> list[ApplicationModel]:
+        """Create ``n`` applications for a competition and accept the first ``accept_count``; returns accepted models."""
+        application_ids = await self.create_for_competition(n, competition.created.competition_id, submit_application_input)
+        accepted_ids = application_ids[:accept_count]
+        await asyncio.gather(*[self.accept(app_id, organizer_auth_id) for app_id in accepted_ids])
+        return await self.read_multiple_as_organizer(accepted_ids, organizer_auth_id)
 
     async def submit_to_n_competitions(
         self,

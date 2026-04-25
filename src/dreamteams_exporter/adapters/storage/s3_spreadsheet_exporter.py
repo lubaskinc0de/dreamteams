@@ -1,11 +1,13 @@
 import csv
 import io
+import json
 from collections.abc import Iterable
 from typing import Any, override
 from urllib.parse import quote
 
 import aioboto3
 from adaptix import Retort, name_mapping
+from botocore.exceptions import ClientError
 
 from dreamteams_exporter.adapters.storage.config import S3Config
 from dreamteams_exporter.application.common.dto.export_row import ExportRow
@@ -130,6 +132,35 @@ class CsvS3SpreadsheetExporter(SpreadsheetExporter):
             aws_access_key_id=config.access_key,
             aws_secret_access_key=config.secret_key,
         )
+
+    async def ensure_bucket(self) -> None:
+        """Creates the S3 bucket if it does not exist and applies a public-read policy."""
+        async with self._aws_session.client(
+            service_name="s3",
+            endpoint_url=self._config.endpoint_url,
+            region_name=self._config.region,
+        ) as s3_client:
+            try:
+                await s3_client.create_bucket(Bucket=self._config.bucket_name)
+            except ClientError as exc:
+                if exc.response.get("Error", {}).get("Code") != "BucketAlreadyOwnedByYou":
+                    raise
+            await s3_client.put_bucket_policy(
+                Bucket=self._config.bucket_name,
+                Policy=json.dumps(
+                    {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Effect": "Allow",
+                                "Principal": "*",
+                                "Action": ["s3:GetObject"],
+                                "Resource": [f"arn:aws:s3:::{self._config.bucket_name}/*"],
+                            },
+                        ],
+                    },
+                ),
+            )
 
     @override
     async def start(self, *, key: str, headers: list[str]) -> SpreadsheetSession:

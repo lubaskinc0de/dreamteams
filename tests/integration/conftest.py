@@ -126,7 +126,7 @@ def rustfs_bucket() -> str:
 @pytest.fixture
 def app_config(
     test_db_url: str,
-    redis_testcontainer: RedisContainer,
+    redis_url: str,
     rustfs: RustFsContainer,
     rustfs_bucket: str,
 ) -> Config:
@@ -178,16 +178,18 @@ def app_config(
         ),
         sentry=SentryConfig(dsn=None),
         cache=CacheConfig(
-            url=_redis_url(redis_testcontainer),
+            url=redis_url,
             auth_user_ttl_seconds=60,
             auth_user_ttl_jitter_seconds=0,
         ),
     )
 
 
-def _redis_url(rc: RedisContainer) -> str:
-    host = rc.get_container_host_ip()
-    port = rc.get_exposed_port(6379)
+@pytest.fixture(scope="session")
+def redis_url(redis_testcontainer: RedisContainer) -> str:
+    """Redis connection URL for the shared testcontainer."""
+    host = redis_testcontainer.get_container_host_ip()
+    port = redis_testcontainer.get_exposed_port(6379)
     return f"redis://{host}:{port}/0"
 
 

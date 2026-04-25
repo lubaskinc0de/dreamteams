@@ -1,6 +1,6 @@
-from typing import override
+from typing import Any, override
 
-from faststream.nats import NatsMessage
+from faststream.message import StreamMessage
 
 from dreamteams_exporter.adapters.auth.model import AuthUserId
 from dreamteams_exporter.adapters.http.config import DreamteamsApiConfig
@@ -19,7 +19,7 @@ class MessageIdProvider(IdProvider):
 
     def __init__(
         self,
-        message: NatsMessage,
+        message: StreamMessage[Any],
         user_gateway: HttpUserGateway,
         api_config: DreamteamsApiConfig,
     ) -> None:

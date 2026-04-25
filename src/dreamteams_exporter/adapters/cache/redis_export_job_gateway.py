@@ -2,7 +2,6 @@ import json
 from typing import override
 
 from adaptix import Retort
-from adaptix.conversion import impl_converter, link_function
 from redis.asyncio import Redis
 
 from dreamteams_exporter.application.common.dto.export_job import ExportJobModel
@@ -28,13 +27,18 @@ def _load_job(payload: str | bytes) -> ExportApplicationsJob:
     return _retort.load(json.loads(raw_payload), ExportApplicationsJob)
 
 
-@impl_converter(
-    recipe=[
-        link_function(lambda job: job.status.kind.value, "status_kind"),
-        link_function(lambda job: job.status.reason, "status_reason"),
-    ],
-)
-def _to_model(job: ExportApplicationsJob) -> ExportJobModel: ...
+def _to_model(job: ExportApplicationsJob) -> ExportJobModel:
+    return ExportJobModel(
+        id=job.id,
+        user_id=job.user_id,
+        competition_id=job.competition_id,
+        application_status=job.application_status,
+        status_kind=job.status.kind.value,
+        status_reason=job.status.reason,
+        file_url=job.file_url,
+        created_at=job.created_at,
+        finished_at=job.finished_at,
+    )
 
 
 class RedisExportJobGateway(ExportJobGateway):

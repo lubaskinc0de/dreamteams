@@ -3,6 +3,7 @@ from collections.abc import AsyncIterator
 from aiohttp import ClientSession
 from dishka import Provider, Scope, provide
 from faststream.nats import NatsBroker
+from faststream.nats.publisher.usecase import LogicPublisher
 from redis.asyncio import Redis
 
 from dreamteams_common.clock import Clock, SystemClock
@@ -13,6 +14,7 @@ from dreamteams_exporter.adapters.cache.redis_rate_limiter import RedisExportRat
 from dreamteams_exporter.adapters.http.config import DreamteamsApiConfig
 from dreamteams_exporter.adapters.http.session import aiohttp_session
 from dreamteams_exporter.adapters.http.user_gateway import HttpUserGateway
+from dreamteams_exporter.adapters.storage.config import S3Config
 from dreamteams_exporter.adapters.storage.s3_spreadsheet_exporter import CsvS3SpreadsheetExporter
 from dreamteams_exporter.application.common.gateway.export_job import ExportJobGateway
 from dreamteams_exporter.application.common.rate_limiter import ExportRateLimiter
@@ -26,7 +28,13 @@ class AdapterProvider(Provider):
     rate_limiter = provide(RedisExportRateLimiter, scope=Scope.APP, provides=ExportRateLimiter)
     user_gateway = provide(HttpUserGateway, scope=Scope.APP)
     export_job_gateway = provide(RedisExportJobGateway, scope=Scope.APP, provides=ExportJobGateway)
-    spreadsheet_exporter = provide(CsvS3SpreadsheetExporter, scope=Scope.APP, provides=SpreadsheetExporter)
+
+    @provide(scope=Scope.APP)
+    async def get_spreadsheet_exporter(self, config: S3Config) -> AsyncIterator[SpreadsheetExporter]:
+        """Ensures the S3 bucket exists on startup, then yields the exporter for the process lifetime."""
+        exporter = CsvS3SpreadsheetExporter(config)
+        await exporter.ensure_bucket()
+        yield exporter
 
     @provide(scope=Scope.APP)
     async def get_redis(self, config: CacheConfig) -> AsyncIterator[Redis]:
@@ -56,3 +64,8 @@ class AdapterProvider(Provider):
             yield broker
         finally:
             await broker.stop()
+
+    @provide(scope=Scope.APP)
+    def get_process_job_publisher(self, broker: NatsBroker, config: NatsConfig) -> LogicPublisher:
+        """Publisher used by the HTTP path to enqueue process-job messages."""
+        return broker.publisher(config.process_subject, stream=config.stream_name)
