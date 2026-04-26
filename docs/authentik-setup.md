@@ -46,7 +46,7 @@ After that, the admin UI is available at `http://127.0.0.1.sslip.io:8080/if/admi
    - Client type: `Confidential`
    - Client ID: `dreamteams-oauth2-proxy`
    - Redirect URIs: `http://localhost/oauth2/callback`
-   - Scopes: `openid`, `email`, `profile`
+   - Scopes: `openid`, `email`, `profile`, `offline_access`
 5. Save and copy the generated client secret.
 
 ### 3. Create the application

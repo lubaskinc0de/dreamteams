@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import type { ApplicationModel, ApiError, ApplicationStatus, SortOrder } from "~/types/api";
+import { useNotificationsStore } from "~/stores/notifications";
 
 export const useCompetitionApplicationsStore = defineStore("competitionApplications", {
   state: () => ({
@@ -12,9 +13,22 @@ export const useCompetitionApplicationsStore = defineStore("competitionApplicati
     error: null as ApiError | null,
     sortOrder: "desc" as SortOrder,
     statusFilter: null as ApplicationStatus | null,
+    exporting: false,
+    exportErrorMessage: null as string | null,
   }),
 
   actions: {
+    getExportErrorMessage(error: ApiError | null): string {
+      const { $i18n } = useNuxtApp();
+      if (!error) {
+        return $i18n.t("apiErrors.UNKNOWN_ERROR");
+      }
+
+      const key = `apiErrors.${error.code}`;
+      const translated = $i18n.t(key);
+      return translated !== key ? translated : (error.message || $i18n.t("apiErrors.UNKNOWN_ERROR"));
+    },
+
     async fetchApplications(competitionId: string, page: number = 1) {
       this.loading = true;
       this.error = null;
@@ -120,6 +134,70 @@ export const useCompetitionApplicationsStore = defineStore("competitionApplicati
 
     clearError() {
       this.error = null;
+    },
+
+    async exportApplications(competitionId: string): Promise<boolean> {
+      const { $i18n } = useNuxtApp();
+      const notifications = useNotificationsStore();
+      const api = useApi();
+
+      this.exporting = true;
+      this.exportErrorMessage = null;
+
+      const exportStatus = this.statusFilter ?? "accepted";
+      const { data: createdJob, error } = await api.createExportJob({
+        competition_id: competitionId,
+        application_status: exportStatus,
+      });
+
+      if (error || !createdJob) {
+        this.exporting = false;
+        this.exportErrorMessage = this.getExportErrorMessage(error);
+        return false;
+      }
+
+      const pollDelayMs = 1500;
+
+      while (true) {
+        await new Promise((resolve) => setTimeout(resolve, pollDelayMs));
+
+        const { data: job, error: pollError } = await api.readExportJob(createdJob.job_id);
+
+        if (pollError || !job) {
+          this.exporting = false;
+          this.exportErrorMessage = this.getExportErrorMessage(pollError);
+          return false;
+        }
+
+        if (job.status_kind === "pending") {
+          continue;
+        }
+
+        this.exporting = false;
+
+        if (job.status_kind === "failed") {
+          this.exportErrorMessage = job.status_reason ?? $i18n.t("apiErrors.UNKNOWN_ERROR");
+          notifications.add({
+            title: $i18n.t("applications.export.failedTitle"),
+            description: this.exportErrorMessage,
+            icon: "i-heroicons-exclamation-circle",
+            color: "error",
+          });
+          return false;
+        }
+
+        if (job.file_url) {
+          window.open(job.file_url, "_blank", "noopener,noreferrer");
+        }
+
+        notifications.add({
+          title: $i18n.t("applications.export.successTitle"),
+          description: $i18n.t("applications.export.successDescription"),
+          icon: "i-heroicons-arrow-down-tray",
+          color: "success",
+        });
+        return true;
+      }
     },
   },
 });

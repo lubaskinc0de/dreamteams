@@ -1,7 +1,13 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
-  devtools: { enabled: true },
+  devtools: {
+    enabled: true,
+
+    timeline: {
+      enabled: true,
+    },
+  },
 
   modules: ["@nuxt/ui", "@pinia/nuxt", "@nuxtjs/i18n"],
 
@@ -33,6 +39,17 @@ export default defineNuxtConfig({
       ignore: ['/me', '/onboarding', '/start'],
       crawlLinks: true,
       failOnError: false,
+    },
+  },
+
+  vite: {
+    server: {
+      hmr:
+        process.env.NUXT_DEV_PROXY === "1"
+          ? {
+              clientPort: 80,
+            }
+          : undefined,
     },
   },
 

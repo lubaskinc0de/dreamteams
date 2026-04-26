@@ -19,6 +19,10 @@ import type {
   InviteModel,
   InvitesList,
   CreatedSuperuser,
+  ApplicationStatus,
+  CreateExportJobInput,
+  CreatedExportJob,
+  ExportJobModel,
 } from "~/types/api";
 
 // Mock invite code accepted in mock mode
@@ -1107,7 +1111,8 @@ export const useMockApi = () => {
   };
 
   const MOCK_SUPERUSER_PASSWORD = "superuser123";
-  let mockSuperuserCreated = false;
+let mockSuperuserCreated = false;
+const mockExportJobs = new Map<string, ExportJobModel>();
 
   const registerSuperuser = async (
     password: string,
@@ -1139,6 +1144,80 @@ export const useMockApi = () => {
     mockSuperuserCreated = true;
     return {
       data: { user_id: crypto.randomUUID() },
+      error: null,
+    };
+  };
+
+  const createExportJob = async (
+    input: CreateExportJobInput,
+  ): Promise<{ data: CreatedExportJob | null; error: ApiError | null }> => {
+    await delay(300);
+
+    const allowedStatuses: ApplicationStatus[] = ["pending", "accepted", "rejected"];
+    if (!allowedStatuses.includes(input.application_status)) {
+      return {
+        data: null,
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Invalid application status",
+          meta: null,
+        },
+      };
+    }
+
+    const jobId = crypto.randomUUID();
+    const now = new Date().toISOString();
+    mockExportJobs.set(jobId, {
+      id: jobId,
+      user_id: "123e4567-e89b-12d3-a456-426614174000",
+      competition_id: input.competition_id,
+      application_status: input.application_status,
+      status_kind: "pending",
+      status_reason: null,
+      file_url: null,
+      created_at: now,
+      finished_at: null,
+    });
+
+    setTimeout(() => {
+      const job = mockExportJobs.get(jobId);
+      if (!job) {
+        return;
+      }
+
+      mockExportJobs.set(jobId, {
+        ...job,
+        status_kind: "success",
+        file_url: `/mock-exports/${jobId}.csv`,
+        finished_at: new Date().toISOString(),
+      });
+    }, 1200);
+
+    return {
+      data: { job_id: jobId },
+      error: null,
+    };
+  };
+
+  const readExportJob = async (
+    jobId: string,
+  ): Promise<{ data: ExportJobModel | null; error: ApiError | null }> => {
+    await delay(250);
+
+    const job = mockExportJobs.get(jobId);
+    if (!job) {
+      return {
+        data: null,
+        error: {
+          code: "EXPORT_JOB_NOT_FOUND",
+          message: "Export job not found",
+          meta: null,
+        },
+      };
+    }
+
+    return {
+      data: job,
       error: null,
     };
   };
@@ -1181,6 +1260,8 @@ export const useMockApi = () => {
     withdrawApplication: notImplemented,
     acceptApplication: notImplemented,
     rejectApplication: notImplemented,
+    createExportJob,
+    readExportJob,
     getExploreCompetition: notImplemented,
   };
 };

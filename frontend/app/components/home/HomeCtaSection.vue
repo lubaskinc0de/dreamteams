@@ -22,7 +22,7 @@ const { t } = useI18n();
         <p class="text-lg sm:text-xl md:text-2xl text-gray-600 dark:text-gray-400 mb-8 sm:mb-10">
           {{ t('home.cta.description') }}
         </p>
-        <div class="flex justify-center">
+        <div class="flex flex-col sm:flex-row justify-center gap-3">
           <UButton
             @click="navigateTo('/competitions')"
             color="primary"
@@ -33,6 +33,17 @@ const { t } = useI18n();
             :ui="{ base: 'justify-center' }"
           >
             {{ t('home.findHackathonButton') }}
+          </UButton>
+          <UButton
+            @click="navigateTo('/onboarding')"
+            color="neutral"
+            variant="soft"
+            size="xl"
+            icon="i-heroicons-building-office-2"
+            class="min-w-[200px]"
+            :ui="{ base: 'justify-center' }"
+          >
+            {{ t('home.registerButton') }}
           </UButton>
         </div>
       </div>

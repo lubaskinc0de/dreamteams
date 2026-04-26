@@ -31,6 +31,9 @@ import type {
   ApplicationStatus,
   ExploreCompetitionsFilters,
   ExploreCompetitionsList,
+  CreateExportJobInput,
+  CreatedExportJob,
+  ExportJobModel,
 } from "~/types/api";
 
 interface RetryConfig {
@@ -662,6 +665,34 @@ export const useApi = () => {
     }
   };
 
+  const createExportJob = async (
+    input: CreateExportJobInput,
+  ): Promise<{ data: CreatedExportJob | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<CreatedExportJob>(`${apiBase}/api/exports/`, {
+        method: "POST",
+        body: input,
+        headers: { "Content-Type": "application/json" },
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const readExportJob = async (
+    jobId: string,
+  ): Promise<{ data: ExportJobModel | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<ExportJobModel>(`${apiBase}/api/exports/${jobId}`, {
+        method: "GET",
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
   return {
     checkAuth,
     registerOrganizer,
@@ -695,6 +726,8 @@ export const useApi = () => {
     withdrawApplication,
     acceptApplication,
     rejectApplication,
+    createExportJob,
+    readExportJob,
     getExploreCompetition,
   };
 };

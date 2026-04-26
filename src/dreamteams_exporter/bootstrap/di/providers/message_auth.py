@@ -1,8 +1,10 @@
 from dishka import Provider, Scope, WithParents, provide
 
 from dreamteams_exporter.adapters.auth.model import AuthUserId
+from dreamteams_exporter.adapters.broker.publisher import NatsJobEventBus
 from dreamteams_exporter.adapters.http.applications_gateway import HttpApplicationsGateway
 from dreamteams_exporter.adapters.idp.message_idp import MessageIdProvider
+from dreamteams_exporter.application.common.event_bus import JobEventBus
 
 
 class MessageAuthProvider(Provider):
@@ -10,6 +12,7 @@ class MessageAuthProvider(Provider):
 
     id_provider = provide(WithParents[MessageIdProvider], scope=Scope.REQUEST)
     applications_gateway = provide(WithParents[HttpApplicationsGateway], scope=Scope.REQUEST)
+    event_bus = provide(NatsJobEventBus, scope=Scope.REQUEST, provides=JobEventBus)
 
     @provide(scope=Scope.REQUEST)
     def get_user_id(self, idp: MessageIdProvider) -> AuthUserId:

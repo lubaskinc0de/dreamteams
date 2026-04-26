@@ -12,6 +12,7 @@ const route = useRoute();
 const router = useRouter();
 const competitionStore = useCompetitionStore();
 const notifications = useNotificationsStore();
+const { navigateBack } = useBackNavigation();
 
 // SEO Meta tags
 useSeoMeta({
@@ -36,7 +37,7 @@ const competition = computed(() => competitionStore.currentCompetition);
 
 // Navigate back to detail page
 const goBack = () => {
-  router.push(`/me/competitions/${competitionId.value}`);
+  navigateBack({ fallback: () => `/me/competitions/${competitionId.value}` });
 };
 
 // ===== FORM STATE =====

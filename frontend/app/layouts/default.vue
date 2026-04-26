@@ -61,8 +61,12 @@ const navItems = computed<NavigationMenuItem[]>(() => {
       children: [
         { label: t('nav.competitions'), icon: 'i-heroicons-list-bullet', to: '/me/competitions' },
         { label: t('nav.applicationForms'), icon: 'i-heroicons-document-text', to: '/me/competitions/application-form' },
-        { label: t('nav.applications'), icon: 'i-heroicons-users', to: '/me/competitions/applications' },
       ],
+    });
+    items.push({
+      label: t('nav.applications'),
+      icon: 'i-heroicons-users',
+      to: '/me/competitions/applications',
     });
   }
 

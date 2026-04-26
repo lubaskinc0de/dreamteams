@@ -11,6 +11,7 @@ const appStore = useMyApplicationsStore();
 const notifications = useNotificationsStore();
 const { hasProfile } = useAuth();
 const userStore = useUserStore();
+const { navigateBack } = useBackNavigation('/explore');
 const {
   getDomainLabel,
   getFormatLabel,
@@ -112,7 +113,7 @@ const handleApply = async () => {
             color="neutral"
             variant="ghost"
             :label="t('common.back')"
-            @click="router.push('/explore')"
+            @click="navigateBack()"
           />
         </div>
 
@@ -214,7 +215,7 @@ const handleApply = async () => {
                       color="neutral"
                       variant="ghost"
                       :label="t('common.cancel')"
-                      @click="router.push('/explore')"
+                      @click="navigateBack()"
                     />
                     <UButton
                       color="primary"

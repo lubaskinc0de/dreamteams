@@ -9,6 +9,7 @@ const competitionStore = useCompetitionStore();
 const notifications = useNotificationsStore();
 const { getDomainLabel } = useCompetitionFormatters();
 const { getRegistrationStatus } = useCompetitionStatus();
+const { navigateBack } = useBackNavigation('/me/competitions');
 
 // SEO Meta tags
 useSeoMeta({
@@ -29,7 +30,7 @@ const competition = computed(() => competitionStore.currentCompetition);
 
 // Navigate back
 const goBack = () => {
-  router.push('/me/competitions');
+  navigateBack();
 };
 
 // Navigate to edit page
@@ -93,6 +94,7 @@ const handleDelete = async () => {
                 variant="subtle"
                 size="lg"
                 :label="t('competition.detail.archivedBadge')"
+                class="hidden sm:inline-flex"
               />
               <UBadge
                 v-else
@@ -100,6 +102,7 @@ const handleDelete = async () => {
                 variant="subtle"
                 size="lg"
                 :label="getRegistrationStatus(competition).label"
+                class="hidden sm:inline-flex"
               />
             </div>
 

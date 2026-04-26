@@ -11,6 +11,7 @@ const { t } = useI18n();
 const router = useRouter();
 const competitionStore = useCompetitionStore();
 const notifications = useNotificationsStore();
+const { navigateBack } = useBackNavigation('/me/competitions');
 
 useSeoMeta({
   title: t('seo.createCompetition.title'),
@@ -240,7 +241,7 @@ const handleError = async (event: any) => {
 };
 
 const goBack = () => {
-  router.push('/me/competitions');
+  navigateBack();
 };
 </script>
 

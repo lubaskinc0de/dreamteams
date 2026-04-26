@@ -8,6 +8,7 @@ const route = useRoute();
 const router = useRouter();
 const formStore = useApplicationFormStore();
 const notifications = useNotificationsStore();
+const { navigateBack } = useBackNavigation('/me/competitions/application-form');
 
 const competitionId = computed(() => route.params.id as string);
 
@@ -134,7 +135,7 @@ const handleCreate = async () => {
             icon="i-heroicons-arrow-left"
             color="neutral"
             variant="ghost"
-            @click="router.push('/me/competitions/application-form')"
+            @click="navigateBack()"
           />
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
             {{ t('applicationForm.title') }}

@@ -7,6 +7,7 @@ const route = useRoute();
 const router = useRouter();
 const store = useMyApplicationsStore();
 const notifications = useNotificationsStore();
+const { navigateBack } = useBackNavigation('/me/applications');
 
 const applicationId = computed(() => route.params.id as string);
 
@@ -58,7 +59,7 @@ const handleWithdraw = async () => {
             icon="i-heroicons-arrow-left"
             color="neutral"
             variant="ghost"
-            @click="router.push('/me/applications')"
+            @click="navigateBack()"
           />
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
             {{ t('myApplications.backToList') }}

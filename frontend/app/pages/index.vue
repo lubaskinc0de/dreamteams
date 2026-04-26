@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Feature, Stat } from "~/types/ui";
+import type { Feature } from "~/types/ui";
 
 // Get i18n
 const { t } = useI18n();
@@ -47,8 +47,37 @@ useSeoMeta({
   twitterCard: "summary_large_image",
 });
 
-// Features with type safety and i18n
-const features: Feature[] = [
+const organizerFeatures: Feature[] = [
+  {
+    icon: "i-heroicons-building-office-2",
+    title: t("home.features.organizers.title"),
+    description: t("home.features.organizers.description"),
+    badge: {
+      label: t("home.features.organizers.badge"),
+      color: "warning" as const,
+    },
+  },
+  {
+    icon: "i-heroicons-document-text",
+    title: t("home.features.forms.title"),
+    description: t("home.features.forms.description"),
+    badge: {
+      label: t("home.features.forms.badge"),
+      color: "neutral" as const,
+    },
+  },
+  {
+    icon: "i-heroicons-document-arrow-down",
+    title: t("home.features.applications.title"),
+    description: t("home.features.applications.description"),
+    badge: {
+      label: t("home.features.applications.badge"),
+      color: "primary" as const,
+    },
+  },
+];
+
+const participantFeatures: Feature[] = [
   {
     icon: "i-heroicons-rectangle-stack",
     title: t("home.features.aggregator.title"),
@@ -59,105 +88,40 @@ const features: Feature[] = [
     },
   },
   {
-    icon: "i-heroicons-user-group",
-    title: t("home.features.teams.title"),
-    description: t("home.features.teams.description"),
-    badge: { label: t("home.features.teams.badge"), color: "info" as const },
+    icon: "i-heroicons-user-circle",
+    title: t("home.features.participants.title"),
+    description: t("home.features.participants.description"),
+    badge: { label: t("home.features.participants.badge"), color: "info" as const },
   },
   {
-    icon: "i-heroicons-chart-bar",
-    title: t("home.features.organizers.title"),
-    description: t("home.features.organizers.description"),
+    icon: "i-heroicons-paper-airplane",
+    title: t("home.features.submissions.title"),
+    description: t("home.features.submissions.description"),
     badge: {
-      label: t("home.features.organizers.badge"),
-      color: "warning" as const,
+      label: t("home.features.submissions.badge"),
+      color: "success" as const,
     },
   },
 ];
 
-// Stats with type safety and i18n
-const stats: Stat[] = [
-  {
-    icon: "i-heroicons-trophy",
-    value: t("home.stats.competitions.value"),
-    label: t("home.stats.competitions.label"),
-    color: "text-primary-400",
-  },
+const roadmapItems = [
   {
     icon: "i-heroicons-user-group",
-    value: t("home.stats.teams.value"),
-    label: t("home.stats.teams.label"),
-    color: "text-info-400",
+    title: t("home.roadmap.teamFormation.title"),
+    description: t("home.roadmap.teamFormation.description"),
+    status: t("home.roadmap.planned"),
   },
   {
-    icon: "i-heroicons-users",
-    value: t("home.stats.participants.value"),
-    label: t("home.stats.participants.label"),
-    color: "text-warning-400",
-  },
-];
-
-// Why we're the best
-const whyBest = [
-  {
-    icon: "i-heroicons-star",
-    title: t("home.whyBest.unique.title"),
-    description: t("home.whyBest.unique.description"),
-  },
-  {
-    icon: "i-heroicons-chart-bar-square",
-    title: t("home.whyBest.demand.title"),
-    description: t("home.whyBest.demand.description"),
-  },
-  {
-    icon: "i-heroicons-shield-check",
-    title: t("home.whyBest.transparent.title"),
-    description: t("home.whyBest.transparent.description"),
+    icon: "i-heroicons-paper-airplane",
+    title: t("home.roadmap.submissions.title"),
+    description: t("home.roadmap.submissions.description"),
+    status: t("home.roadmap.planned"),
   },
   {
     icon: "i-heroicons-trophy",
-    title: t("home.whyBest.rating.title"),
-    description: t("home.whyBest.rating.description"),
-  },
-];
-
-// Testimonials from participants and organizers
-const testimonials = [
-  {
-    name: t("home.testimonials.participants.alex.name"),
-    role: t("home.testimonials.participants.alex.role"),
-    avatar: "https://i.pravatar.cc/150?img=12",
-    text: t("home.testimonials.participants.alex.text"),
-  },
-  {
-    name: t("home.testimonials.participants.maria.name"),
-    role: t("home.testimonials.participants.maria.role"),
-    avatar: "https://i.pravatar.cc/150?img=47",
-    text: t("home.testimonials.participants.maria.text"),
-  },
-  {
-    name: t("home.testimonials.participants.dmitry.name"),
-    role: t("home.testimonials.participants.dmitry.role"),
-    avatar: "https://i.pravatar.cc/150?img=33",
-    text: t("home.testimonials.participants.dmitry.text"),
-  },
-  {
-    name: t("home.testimonials.organizers.techlab.name"),
-    role: t("home.testimonials.organizers.techlab.role"),
-    avatar: "https://i.pravatar.cc/150?img=60",
-    text: t("home.testimonials.organizers.techlab.text"),
-  },
-  {
-    name: t("home.testimonials.organizers.innohub.name"),
-    role: t("home.testimonials.organizers.innohub.role"),
-    avatar: "https://i.pravatar.cc/150?img=15",
-    text: t("home.testimonials.organizers.innohub.text"),
-  },
-  {
-    name: t("home.testimonials.organizers.devfest.name"),
-    role: t("home.testimonials.organizers.devfest.role"),
-    avatar: "https://i.pravatar.cc/150?img=68",
-    text: t("home.testimonials.organizers.devfest.text"),
+    title: t("home.roadmap.winnerElection.title"),
+    description: t("home.roadmap.winnerElection.description"),
+    status: t("home.roadmap.planned"),
   },
 ];
 </script>
@@ -171,13 +135,13 @@ const testimonials = [
     <HomeAboutSection />
 
     <!-- Features Section -->
-    <HomeFeaturesSection :features="features" />
+    <HomeFeaturesSection
+      :organizer-features="organizerFeatures"
+      :participant-features="participantFeatures"
+    />
 
-    <!-- Why We're the Best Section -->
-    <HomeWhyBestSection :items="whyBest" />
-
-    <!-- Testimonials Section -->
-    <HomeTestimonialsSection :testimonials="testimonials" />
+    <!-- Roadmap -->
+    <HomeRoadmapSection :items="roadmapItems" />
 
     <!-- Call to Action Section -->
     <HomeCtaSection />

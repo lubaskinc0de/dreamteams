@@ -6,6 +6,7 @@ definePageMeta({ layout: "default" });
 const { locale, t: i18nT } = useI18n();
 const isEn = computed(() => locale.value === "en");
 const T = (ru: string, en: string) => (isEn.value ? en : ru);
+const { navigateBack } = useBackNavigation("/");
 
 useHead({
   title: () => T(
@@ -39,11 +40,15 @@ const meta = computed(() => [
 <template>
   <UPage>
     <UContainer class="!max-w-4xl py-10 sm:py-12">
-      <NuxtLink to="/"
-        class="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors mb-8">
-        <UIcon name="i-heroicons-chevron-left" class="size-4" />
-        {{ T("На главную", "Back to home") }}
-      </NuxtLink>
+      <UButton
+        icon="i-heroicons-chevron-left"
+        color="neutral"
+        variant="ghost"
+        class="mb-8"
+        @click="navigateBack()"
+      >
+        {{ T("Назад", "Back") }}
+      </UButton>
 
       <header class="mb-10">
         <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary-500 mb-4">

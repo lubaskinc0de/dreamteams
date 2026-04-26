@@ -23,7 +23,7 @@ const { t } = useI18n();
       <div class="text-center mb-8 sm:mb-12 md:mb-16 fade-in-scroll">
         <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4">
           <span class="text-primary-600 dark:text-primary-400">
-            {{ t('home.whyBest.title') }}
+            {{ t('home.current.title') }}
           </span>
         </h2>
       </div>

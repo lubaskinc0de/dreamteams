@@ -6,37 +6,53 @@ const { t } = useI18n();
 </script>
 
 <template>
-  <section class="relative overflow-hidden py-16 sm:py-24 lg:py-32 bg-gradient-to-br from-primary-50 to-primary-100/50 dark:from-primary-950/30 dark:to-primary-900/20">
-    <!-- Background Decoration -->
-    <div class="absolute top-0 right-0 w-72 h-72 sm:w-96 sm:h-96 bg-primary-500/20 rounded-full blur-3xl animate-pulse"></div>
-    <div class="absolute bottom-0 left-0 w-72 h-72 sm:w-96 sm:h-96 bg-primary-500/20 rounded-full blur-3xl animate-pulse [animation-delay:1000ms]"></div>
+  <section class="relative overflow-hidden min-h-[34rem] sm:min-h-[40rem] bg-white dark:bg-gray-950">
+    <div class="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-primary-100/40 dark:from-gray-950 dark:via-gray-900 dark:to-primary-950/30" />
+    <div class="absolute -top-16 left-[8%] h-40 w-40 rounded-full bg-primary-400/20 blur-3xl animate-pulse" />
+    <div class="absolute top-[18%] right-[12%] h-56 w-56 rounded-full bg-primary-300/15 blur-3xl animate-pulse [animation-delay:900ms]" />
+    <div class="absolute bottom-[10%] left-[22%] h-48 w-48 rounded-full bg-primary-500/10 blur-3xl animate-pulse [animation-delay:1600ms]" />
+    <div class="absolute -bottom-20 right-[18%] h-64 w-64 rounded-full bg-primary-400/12 blur-3xl animate-pulse [animation-delay:500ms]" />
 
-    <UContainer>
-      <div class="text-left sm:text-center max-w-4xl mx-auto">
-        <!-- Brand Name -->
-        <h1 class="text-[clamp(2.5rem,12vw,6rem)] sm:text-7xl md:text-8xl lg:text-9xl font-extrabold mb-6 sm:mb-8 scale-in-scroll">
-          <span class="text-primary-600 dark:text-primary-400 whitespace-nowrap">
+    <UContainer class="relative z-10 flex min-h-[34rem] sm:min-h-[40rem] items-center py-16 sm:py-24">
+      <div class="max-w-4xl">
+        <p class="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-primary-600 dark:text-primary-300 fade-in-scroll">
+          {{ t('nav.brandSubtitle') }}
+        </p>
+        <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold mb-6 text-gray-900 dark:text-white scale-in-scroll">
+          <span class="whitespace-nowrap">
             {{ t('home.title') }}
           </span>
         </h1>
 
-        <!-- CTA Text -->
-        <p class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-gray-700 dark:text-gray-300 mb-8 sm:mb-10 max-w-3xl sm:mx-auto fade-in-scroll">
-          {{ t('home.ctaText') }}
+        <p class="max-w-3xl text-lg sm:text-xl lg:text-2xl font-medium text-gray-900 dark:text-gray-100 mb-4 fade-in-scroll">
+          {{ t('home.heroTitle') }}
+        </p>
+        <p class="max-w-3xl text-base sm:text-lg text-gray-600 dark:text-gray-300 mb-8 fade-in-scroll">
+          {{ t('home.heroDescription') }}
         </p>
 
-        <!-- CTA Button -->
-        <div class="fade-in-scroll flex flex-col sm:flex-row justify-start sm:justify-center">
+        <div class="fade-in-scroll flex flex-col sm:flex-row gap-3 justify-start">
           <UButton
             @click="navigateTo('/competitions')"
             size="xl"
             icon="i-heroicons-magnifying-glass"
             color="primary"
             variant="solid"
-            class="w-full sm:w-auto sm:min-w-[200px]"
+            class="w-full sm:w-auto sm:min-w-[220px]"
             :ui="{ base: 'justify-center' }"
           >
             {{ t('home.findHackathonButton') }}
+          </UButton>
+          <UButton
+            @click="navigateTo('/onboarding')"
+            size="xl"
+            icon="i-heroicons-building-office-2"
+            color="neutral"
+            variant="soft"
+            class="w-full sm:w-auto sm:min-w-[220px]"
+            :ui="{ base: 'justify-center' }"
+          >
+            {{ t('home.registerButton') }}
           </UButton>
         </div>
       </div>

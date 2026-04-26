@@ -2,7 +2,6 @@ set windows-powershell := true
 
 up:
     just down
-    just build-frontend
     docker compose -f docker/docker-compose.yml --env-file=./.config/.env up --build
 
 up-server:
@@ -25,6 +24,10 @@ test-unit:
     pytest -vvv tests/unit -n auto --dist=worksteal --cov=src/dreamteams/entities --cov-report=term-missing
 
 down:
+    docker compose -f docker/docker-compose.yml --env-file=./.config/.env stop frontend migrations api exporter-api exporter-worker
+    docker compose -f docker/docker-compose.yml --env-file=./.config/.env rm -f frontend migrations api exporter-api exporter-worker
+
+down-all:
     docker compose -f docker/docker-compose.yml --env-file=./.config/.env down
 
 clear:

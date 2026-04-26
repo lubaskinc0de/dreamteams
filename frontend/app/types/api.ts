@@ -94,7 +94,10 @@ export type ErrorCode =
   | "INVALID_APPLICATION_DATA"
   | "COMPETITION_NOT_ACTIVE"
   | "PARTICIPANT_LIMITS_EXCEEDED"
-  | "PARTICIPANT_TYPE_MISMATCH";
+  | "PARTICIPANT_TYPE_MISMATCH"
+  | "INVALID_ROLE"
+  | "EXPORT_JOB_NOT_FOUND"
+  | "EXPORT_RATE_LIMIT_EXCEEDED";
 
 export interface CreatedSuperuser {
   user_id: string;
@@ -437,4 +440,27 @@ export interface ApplicationsList {
   items: ApplicationModel[];
   total: number;
   page: number;
+}
+
+export type ExportJobStatusKind = "pending" | "success" | "failed";
+
+export interface CreateExportJobInput {
+  competition_id: string;
+  application_status: ApplicationStatus;
+}
+
+export interface CreatedExportJob {
+  job_id: string;
+}
+
+export interface ExportJobModel {
+  id: string;
+  user_id: string;
+  competition_id: string;
+  application_status: ApplicationStatus;
+  status_kind: ExportJobStatusKind;
+  status_reason: string | null;
+  file_url: string | null;
+  created_at: string;
+  finished_at: string | null;
 }

@@ -6,6 +6,7 @@ const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const store = useCompetitionApplicationsStore();
+const { navigateBack } = useBackNavigation('/me/competitions/applications');
 
 const competitionId = computed(() => route.params.id as string);
 
@@ -39,6 +40,24 @@ const activeTab = computed({
     store.setStatusFilter(competitionId.value, next);
   },
 });
+
+const exportLabel = computed(() => {
+  if (store.exporting) {
+    return t('applications.export.exporting');
+  }
+
+  if (store.statusFilter === null) {
+    return t('applications.export.buttonAcceptedDefault');
+  }
+
+  return t('applications.export.button');
+});
+
+const exportHint = computed(() => (
+  store.statusFilter === null
+    ? t('applications.export.allHint')
+    : t(`applications.export.hint.${store.statusFilter}`)
+));
 </script>
 
 <template>
@@ -51,7 +70,7 @@ const activeTab = computed({
             icon="i-heroicons-arrow-left"
             color="neutral"
             variant="ghost"
-            @click="router.push('/me/competitions/applications')"
+            @click="navigateBack()"
           />
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
             {{ t('applications.title') }}
@@ -62,15 +81,42 @@ const activeTab = computed({
         <!-- Filters + Sort -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
           <UTabs v-model="activeTab" :items="statusTabs" size="sm" variant="pill" />
-          <UButton
-            :icon="store.sortOrder === 'desc' ? 'i-heroicons-bars-arrow-down' : 'i-heroicons-bars-arrow-up'"
-            variant="soft"
-            color="neutral"
-            size="sm"
-            :label="store.sortOrder === 'desc' ? t('applications.sort.newest') : t('applications.sort.oldest')"
-            @click="store.toggleSortOrder(competitionId)"
-          />
+          <div class="flex flex-col items-stretch sm:items-end gap-2">
+            <div class="flex flex-wrap justify-end gap-2">
+              <UButton
+                icon="i-heroicons-arrow-down-tray"
+                variant="soft"
+                color="primary"
+                size="sm"
+                :loading="store.exporting"
+                :disabled="store.exporting"
+                :label="exportLabel"
+                @click="store.exportApplications(competitionId)"
+              />
+              <UButton
+                :icon="store.sortOrder === 'desc' ? 'i-heroicons-bars-arrow-down' : 'i-heroicons-bars-arrow-up'"
+                variant="soft"
+                color="neutral"
+                size="sm"
+                :label="store.sortOrder === 'desc' ? t('applications.sort.newest') : t('applications.sort.oldest')"
+                @click="store.toggleSortOrder(competitionId)"
+              />
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              {{ exportHint }}
+            </p>
+          </div>
         </div>
+
+        <UAlert
+          v-if="store.exportErrorMessage"
+          color="error"
+          variant="soft"
+          :title="t('applications.export.failedTitle')"
+          :description="store.exportErrorMessage"
+          icon="i-heroicons-exclamation-circle"
+          class="mb-4"
+        />
 
         <!-- Error -->
         <UAlert

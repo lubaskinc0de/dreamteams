@@ -7,6 +7,7 @@ const route = useRoute();
 const router = useRouter();
 const store = useCompetitionApplicationsStore();
 const notifications = useNotificationsStore();
+const { navigateBack } = useBackNavigation();
 
 const competitionId = computed(() => route.params.id as string);
 const applicationId = computed(() => route.params.applicationId as string);
@@ -75,7 +76,7 @@ const handleReject = async () => {
             icon="i-heroicons-arrow-left"
             color="neutral"
             variant="ghost"
-            @click="router.push(`/me/competitions/${competitionId}/applications`)"
+            @click="navigateBack({ fallback: `/me/competitions/${competitionId}/applications` })"
           />
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
             {{ t('applications.backToList') }}
