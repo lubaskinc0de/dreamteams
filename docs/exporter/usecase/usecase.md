@@ -44,4 +44,4 @@ ReadExportApplicationsJob
 2. Each job is private to its creator — another user, even another organizer, cannot read or observe it.
 3. Rate limiting is per user, enforced at processing time: each accepted job that enters the worker counts against the 10-per-rolling-hour budget. Over-budget jobs are marked `failed` with `EXPORT_RATE_LIMIT_EXCEEDED`.
 4. Failures are recorded on the job (`status_kind = failed`, `status_reason = <message>`); the caller retries by creating a new job.
-5. The spreadsheet uses fixed application/participant columns plus application-form columns in form-defined order. Form field names become CSV column names.
+5. The spreadsheet uses fixed application/participant columns plus application-form columns in form-defined order. Form field names become CSV column names before the final `Дата` column.

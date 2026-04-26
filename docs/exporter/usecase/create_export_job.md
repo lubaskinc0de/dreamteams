@@ -9,7 +9,7 @@ Accepts an organizer's export request, persists a pending [ExportApplicationsJob
 | Field | Type | Description |
 |-------|------|-------------|
 | `competition_id` | `CompetitionId` | The competition to export |
-| `application_status` | `ApplicationStatus` | Filter — only applications in this status are included |
+| `application_status` | `ApplicationStatus \| None` | Optional filter. When omitted or `None`, all applications are included |
 
 ## Output
 
@@ -31,4 +31,4 @@ Accepts an organizer's export request, persists a pending [ExportApplicationsJob
 |-----------|-----------|
 | `UNAUTHORIZED` | No caller identity is attached to the request |
 | `INVALID_ROLE` | Caller is not an organizer |
-| `VALIDATION_ERROR` | `competition_id` or `application_status` missing / malformed |
+| `VALIDATION_ERROR` | `competition_id` is missing / malformed, or `application_status` is malformed |

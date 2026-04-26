@@ -18,7 +18,7 @@ export type ExportJobStatusKind = "pending" | "success" | "failed";
 
 export interface CreateExportJobInput {
   competition_id: string;
-  application_status: ApplicationStatus;
+  application_status?: ApplicationStatus | null;
 }
 
 export interface CreatedExportJob {
@@ -29,7 +29,7 @@ export interface ExportJobModel {
   id: string;
   user_id: string;
   competition_id: string;
-  application_status: ApplicationStatus;
+  application_status: ApplicationStatus | null;
   status_kind: ExportJobStatusKind;
   status_reason: string | null;
   file_url: string | null;
@@ -51,6 +51,14 @@ Body:
 {
   "competition_id": "9c6caa6e-8314-4a18-8bb3-28cc8a7e0d2a",
   "application_status": "accepted"
+}
+```
+
+Omit `application_status` or send `null` to export all applications without status filtering:
+
+```json
+{
+  "competition_id": "9c6caa6e-8314-4a18-8bb3-28cc8a7e0d2a"
 }
 ```
 
@@ -77,7 +85,7 @@ Response `200` while processing:
   "id": "8ae64f99-b6e5-4d46-8f29-af55d2fc22db",
   "user_id": "8d45a02d-b7e4-46d8-ae1d-7c53b9bd0cbb",
   "competition_id": "9c6caa6e-8314-4a18-8bb3-28cc8a7e0d2a",
-  "application_status": "accepted",
+  "application_status": null,
   "status_kind": "pending",
   "status_reason": null,
   "file_url": null,
@@ -103,6 +111,12 @@ Response `200` after success:
 ```
 
 When `status_kind` is `success`, render `file_url` as the download/open link. When `status_kind` is `failed`, show `status_reason` if present.
+
+CSV columns are exported in this order:
+
+```text
+ФИО, Соревнование, Статус, Направления, Возраст, Тип участника, Контакты, <application form fields>, Дата
+```
 
 ## Frontend Flow
 

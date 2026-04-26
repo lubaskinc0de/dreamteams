@@ -19,7 +19,7 @@ The [ExportApplicationsJob](../entities/export-job.md) read model:
 | `id` | `ExportJobId` | Job identifier |
 | `user_id` | `UserId` | Owner |
 | `competition_id` | `CompetitionId` | Competition being exported |
-| `application_status` | `ApplicationStatus` | The filter the job was created with |
+| `application_status` | `ApplicationStatus \| None` | The filter the job was created with; `None` means unfiltered |
 | `status_kind` | `str` | `pending` / `success` / `failed` |
 | `status_reason` | `str \| None` | Diagnostic reason when `status_kind == failed` |
 | `file_url` | `str \| None` | Populated once `status_kind == success` |

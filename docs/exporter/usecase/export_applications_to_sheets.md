@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Consumes a pending [ExportApplicationsJob](../entities/export-job.md), builds the spreadsheet for that job's competition + status filter, persists the result file, and records the outcome on the job.
+Consumes a pending [ExportApplicationsJob](../entities/export-job.md), builds the spreadsheet for that job's competition and optional status filter, persists the result file, and records the outcome on the job.
 
 ## Input
 
@@ -18,10 +18,10 @@ No return value — the observable effect is the updated job row (and the persis
 
 1. Rate limit: at most 10 successfully-started jobs per user in any rolling 1-hour window. On breach, the job is marked failed with `EXPORT_RATE_LIMIT_EXCEEDED`. Each job that reaches this interactor counts against the budget whether it ultimately succeeds or fails.
 2. The job must exist and be in `pending` status; otherwise `EXPORT_JOB_NOT_FOUND`.
-3. The competition application form is read before the spreadsheet session starts. If a form exists, its field names are appended to the CSV header in form-defined order.
-4. Applications are fetched in batches (page size 100) filtered by `job.competition_id` and `job.application_status`. The batch loop is visible business logic in the interactor.
+3. The competition application form is read before the spreadsheet session starts. If a form exists, its field names are inserted into the CSV header in form-defined order before the final `Дата` column.
+4. Applications are fetched in batches (page size 100) filtered by `job.competition_id` and, when set, `job.application_status`. If `job.application_status is None`, all statuses are exported. The batch loop is visible business logic in the interactor.
 5. Rows are streamed into the spreadsheet exporter session as each batch arrives — the interactor never materialises the full application list in memory.
-6. Exported fixed columns are competition name, domains, status, submission date, participant full name, participant type, age, and contacts. Application IDs, participant IDs, the JSON form-data column, and participant bio are not exported.
+6. Exported columns are `ФИО`, `Соревнование`, `Статус`, `Направления`, `Возраст`, `Тип участника`, `Контакты`, application form fields, and `Дата`. Application IDs, participant IDs, the JSON form-data column, and participant bio are not exported.
 7. Submission dates are formatted as `dd.mm.yyyy hh:mm`. Form answer lists are formatted as comma-separated strings.
 8. On success: `job.mark_success(file_url, clock)` is committed and the file URL is logged.
 9. On any failure (domain error or unexpected exception): `job.mark_failed(reason, clock)` is committed with a short diagnostic `reason`, the in-progress session is aborted, and the exception is re-raised so the worker's retry policy can handle it.

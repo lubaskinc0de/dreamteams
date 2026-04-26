@@ -11,7 +11,7 @@ Represents a single organizer-initiated export of a competition's applications t
 | `id` | `ExportJobId` (UUID) | Unique job identifier |
 | `user_id` | `UserId` (UUID) | The organizer who requested the export (soft reference) |
 | `competition_id` | `CompetitionId` (UUID) | The competition whose applications are being exported (soft reference) |
-| `application_status` | `ApplicationStatus` | Filter — only applications in this status are exported |
+| `application_status` | `ApplicationStatus \| None` | Optional filter; `None` exports all applications |
 | `status` | [`JobStatus`](../value-objects/job-status.md) | Current state of the job (pending / success / failed) |
 | `file_url` | `str \| None` | URL of the uploaded CSV once `status.kind == success`; otherwise `None` |
 | `created_at` | `datetime` | Timestamp the job was accepted |
