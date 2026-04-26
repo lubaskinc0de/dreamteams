@@ -104,6 +104,12 @@ nav:
       - Revoke Invite: usecase/manage_invites/revoke_invite.md
       - Read Invite: usecase/manage_invites/read_invite.md
       - List Invites: usecase/manage_invites/list_invites.md
+    - Manage Users:
+      - Overview: usecase/manage_users/usecase.md
+      - Block User: usecase/manage_users/block_user.md
+      - Unblock User: usecase/manage_users/unblock_user.md
+      - List Users: usecase/manage_users/list_users.md
+      - Read User By Admin: usecase/manage_users/read_user_by_admin.md
     - Publish Competition:
       - Overview: usecase/publish_competition/usecase.md
       - Create Competition: usecase/publish_competition/create_competition.md
