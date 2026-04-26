@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui';
+import { useBlockedAccount } from "~/composables/useBlockedAccount";
 
 const { t } = useI18n();
 const { isAuthenticated, hasProfile, login, logout: handleLogout } = useAuth();
+const { isAccountBlocked } = useBlockedAccount();
 const userStore = useUserStore();
 
 // Brand link destination depends on auth state
@@ -101,7 +103,18 @@ const handleLogin = async () => {
 
       <template #right>
         <!-- Show avatar for authenticated users -->
-        <template v-if="showAvatar">
+        <template v-if="isAccountBlocked">
+          <UButton
+            @click="handleLogout"
+            color="neutral"
+            variant="ghost"
+            size="md"
+            icon="i-heroicons-arrow-right-on-rectangle"
+            square
+            :aria-label="t('nav.logout')"
+          />
+        </template>
+        <template v-else-if="showAvatar">
           <NotificationBell />
           <NuxtLink to="/me" :aria-label="t('nav.profile')">
             <UAvatar

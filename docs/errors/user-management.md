@@ -6,6 +6,7 @@
 
 | Code | HTTP Status | Description | Metadata |
 |------|-------------|-------------|----------|
+| `ACCOUNT_BLOCKED` | 403 | Blocked user attempted to access an authenticated endpoint | `reason`, `blocked_at` |
 | `USER_NOT_FOUND` | 404 | Attempting to access a user that does not exist | `user_id` |
 | `AUTH_USER_ALREADY_EXISTS` | 409 | Attempting to create an auth user that already exists | `auth_user_id` |
 
@@ -20,5 +21,6 @@
 ## Related
 
 - [User entity](../entities/user.md)
+- [User Bans](../user-bans.md)
 - [Organizer entity](../entities/organizer.md)
 - [Register Organizer use case](../usecase/register/register_organizer.md)

@@ -29,6 +29,12 @@ The platform follows strict **Clean Architecture** with five layers enforced by 
 
 ---
 
+## Public API Notes
+
+- [User Bans](user-bans.md) — admin block/unblock endpoints, blocked-account errors, and public visibility behavior
+
+---
+
 ## Core Flows
 
 ### Organizer Registration

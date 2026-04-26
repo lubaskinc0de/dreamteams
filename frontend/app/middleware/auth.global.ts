@@ -1,4 +1,5 @@
 import { useCookieConsent } from "~/composables/useCookieConsent";
+import { useBlockedAccount } from "~/composables/useBlockedAccount";
 
 /**
  * Global authentication middleware
@@ -21,6 +22,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   const { isAuthenticated, needsOnboarding, hasProfile, isLoading } = useAuth();
+  const { isAccountBlocked } = useBlockedAccount();
 
   // Wait for auth to finish loading before making any decisions
   if (isLoading.value) {
@@ -40,9 +42,19 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   const isHomeRoute = to.path === '/';
   const isOnboardingRoute = to.path === '/onboarding';
+  const isAccountRestrictedRoute = to.path === "/account-restricted";
   const isAdminRoute = to.path.startsWith('/admin');
   const isExploreRoute = to.path.startsWith('/explore');
   const isSuperuserRegisterRoute = to.path.startsWith('/register-superuser');
+  const isPublicInfoRoute = to.path.startsWith('/legal') || to.path === '/cookies-required';
+
+  if (isAccountBlocked.value && !isAccountRestrictedRoute && !isPublicInfoRoute) {
+    return navigateTo("/account-restricted", { replace: true });
+  }
+
+  if (!isAccountBlocked.value && isAccountRestrictedRoute) {
+    return navigateTo(isAuthenticated.value && hasProfile.value ? "/me" : "/", { replace: true });
+  }
 
   // If not authenticated and trying to access protected route, throw 401 error
   if (!isAuthenticated.value && isProtectedRoute) {
@@ -78,9 +90,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (isAuthenticated.value && userStore.isParticipant && to.path === '/competitions') {
     return navigateTo('/explore', { replace: true });
   }
-
-  // Legal + cookie-required pages are always reachable regardless of auth/onboarding state.
-  const isPublicInfoRoute = to.path.startsWith('/legal') || to.path === '/cookies-required';
 
   // If authenticated but needs onboarding, redirect to onboarding flow.
   // Admins are allowed to visit /admin even without a role (to issue themselves an invite first).

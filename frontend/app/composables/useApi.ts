@@ -35,6 +35,7 @@ import type {
   CreatedExportJob,
   ExportJobModel,
 } from "~/types/api";
+import { useBlockedAccount } from "~/composables/useBlockedAccount";
 
 interface RetryConfig {
   timeout: number;
@@ -81,6 +82,7 @@ export const useApi = () => {
   const config = useRuntimeConfig();
   const apiBase = config.public.apiBase;
   const useMock = config.public.useMock;
+  const { isAccountBlocked, accountBlockedError, blockFromError } = useBlockedAccount();
 
   // If mock mode is enabled, use mock API
   if (useMock === "true" || useMock.toString() === "true") {
@@ -95,23 +97,36 @@ export const useApi = () => {
   };
 
   /** $fetch with timeout and automatic exponential-backoff retries. */
-  const apiFetch = <T>(
-    url: string,
-    options?: Parameters<typeof $fetch>[1],
-  ): Promise<T> =>
-    retryFetch(
-      () => $fetch<T>(url, { timeout: retryCfg.timeout, ...options }),
-      retryCfg,
-    );
+  const redirectToBlockedPage = () => {
+    if (!import.meta.client) {
+      return;
+    }
+
+    const route = useRoute();
+    if (route.path !== "/account-restricted") {
+      void navigateTo("/account-restricted", { replace: true });
+    }
+  };
 
   const handleApiError = (error: any): ApiError => {
+    if (isAccountBlocked.value) {
+      return accountBlockedError.value;
+    }
+
     // Structured API error response with a known error code
     if (error.data && typeof error.data === "object" && error.data.code) {
-      return {
+      const apiError = {
         code: error.data.code,
         message: error.data.message || "An unexpected error occurred",
         meta: error.data.meta || null,
       };
+
+      if (apiError.code === "ACCOUNT_BLOCKED") {
+        blockFromError(apiError);
+        redirectToBlockedPage();
+      }
+
+      return apiError;
     }
 
     // Server responded but without a structured body (e.g. 500 plain-text)
@@ -130,6 +145,23 @@ export const useApi = () => {
       message: error.message || "Network error occurred",
       meta: null,
     };
+  };
+
+  const apiFetch = <T>(
+    url: string,
+    options?: Parameters<typeof $fetch>[1],
+  ): Promise<T> => {
+    if (isAccountBlocked.value) {
+      return Promise.reject({
+        status: 403,
+        data: accountBlockedError.value,
+      });
+    }
+
+    return retryFetch(
+      () => $fetch<T>(url, { timeout: retryCfg.timeout, ...options }),
+      retryCfg,
+    );
   };
 
   /**

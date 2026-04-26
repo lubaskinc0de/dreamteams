@@ -67,6 +67,7 @@ export interface InvitesList {
 export type ErrorCode =
   | "VALIDATION_ERROR"
   | "UNAUTHORIZED"
+  | "ACCOUNT_BLOCKED"
   | "AUTH_USER_ALREADY_EXISTS"
   | "ORGANIZER_ALREADY_EXISTS"
   | "ORGANIZER_NOT_FOUND"

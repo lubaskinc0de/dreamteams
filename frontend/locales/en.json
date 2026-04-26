@@ -387,6 +387,7 @@
   },
   "apiErrors": {
     "UNAUTHORIZED": "Please log in",
+    "ACCOUNT_BLOCKED": "Your account has been restricted",
     "USER_NOT_FOUND": "User not found",
     "USER_HAS_NO_ROLE": "User has no role assigned",
     "AUTH_USER_ALREADY_EXISTS": "You are already registered on the platform",
@@ -421,6 +422,17 @@
     "INVALID_ROLE": "Access denied for your current role",
     "EXPORT_JOB_NOT_FOUND": "Export job not found",
     "EXPORT_RATE_LIMIT_EXCEEDED": "Too many export attempts. Please try again later"
+  },
+  "accountRestricted": {
+    "headline": "Account status",
+    "title": "Account is restricted",
+    "description": "Access to authenticated DreamTeams features has been suspended for this session. You can review the terms or sign out.",
+    "reason": "Reason",
+    "blockedAt": "Restricted at",
+    "accountId": "Account ID",
+    "notProvided": "Not provided",
+    "tosLink": "Terms of Service",
+    "signOut": "Sign out"
   },
   "superuserRegister": {
     "title": "Superuser Registration",
