@@ -1,6 +1,6 @@
 from polyfactory.factories import DataclassFactory
 
-from dreamteams.entities.user import Avatar, Organizer, Participant, User
+from dreamteams.entities.user import Avatar, BanStatus, Organizer, Participant, User
 
 
 class UserFactory(DataclassFactory[User]):
@@ -12,3 +12,4 @@ class UserFactory(DataclassFactory[User]):
     participant: Participant | None = None
     avatar: Avatar | None = None
     is_admin = False
+    ban_status = BanStatus()

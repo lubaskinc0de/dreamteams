@@ -181,6 +181,7 @@ def app_config(
             url=redis_url,
             auth_user_ttl_seconds=60,
             auth_user_ttl_jitter_seconds=0,
+            blocked_user_ttl_seconds=86400,
         ),
     )
 

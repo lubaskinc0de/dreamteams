@@ -26,7 +26,7 @@ from dreamteams.application.register.register_participant import CreatedParticip
 from dreamteams.application.register.register_superuser import CreatedSuperuser
 from dreamteams.application.submit_application import CreatedApplication, ExploreCompetitionsList
 from dreamteams.entities.application.entity import ApplicationStatus
-from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId, OrganizerInviteId
+from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId, OrganizerInviteId, UserId
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams_exporter.application.common.dto.export_job import ExportJobModel
 from dreamteams_exporter.application.export_applications_sheets.create import CreatedExportJob
@@ -42,6 +42,7 @@ INVITES_URL = "/invites"
 PARTICIPANT_URL = "/participants"
 APPLICATIONS_URL = "/applications"
 EXPORTS_URL = "/exports"
+ADMIN_USERS_URL = "/admin/users"
 
 
 @dataclass
@@ -208,6 +209,16 @@ class ApiClient:
         """Register as participant via POST /participants/."""
         response = await self.session.post(PARTICIPANT_URL, headers=self._headers, json=data)
         return await self._load_response(response, response_type=CreatedParticipant)
+
+    async def block_user(self, user_id: UserId, data: dict[str, Any]) -> APIResponse[None]:
+        """Block a user via POST /admin/users/{user_id}/block."""
+        response = await self.session.post(f"{ADMIN_USERS_URL}/{user_id}/block", headers=self._headers, json=data)
+        return await self._load_response(response, response_type=None)
+
+    async def unblock_user(self, user_id: UserId) -> APIResponse[None]:
+        """Unblock a user via POST /admin/users/{user_id}/unblock."""
+        response = await self.session.post(f"{ADMIN_USERS_URL}/{user_id}/unblock", headers=self._headers)
+        return await self._load_response(response, response_type=None)
 
     async def view_profile(self) -> APIResponse[ProfileModel]:
         """View user profile via GET /users/me."""

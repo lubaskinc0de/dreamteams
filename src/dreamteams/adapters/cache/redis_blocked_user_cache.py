@@ -3,6 +3,7 @@ from typing import override
 
 import structlog
 from adaptix import Retort
+from adaptix.load_error import LoadError
 from redis.asyncio import Redis
 from redis.exceptions import RedisError
 
@@ -44,7 +45,7 @@ class RedisBlockedUserCache(BlockedUserCache):
             return None
         try:
             return _retort.load(json.loads(raw), BanStatus)
-        except Exception:
+        except (json.JSONDecodeError, LoadError, TypeError, UnicodeDecodeError):
             logger.warning("blocked_user_cache hit but value is malformed", user_id=user_id, raw=raw)
             return None
 

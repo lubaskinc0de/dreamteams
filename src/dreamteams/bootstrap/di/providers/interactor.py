@@ -29,6 +29,7 @@ from dreamteams.application.manage_profile.delete import DeleteProfile
 from dreamteams.application.manage_profile.detach_avatar import DetachAvatar
 from dreamteams.application.manage_profile.update_organizer import UpdateOrganizer
 from dreamteams.application.manage_profile.update_participant import UpdateParticipant
+from dreamteams.application.manage_users import BlockUser, UnblockUser
 from dreamteams.application.preview_competition.list import PreviewCompetitions
 from dreamteams.application.publish_competition import CreateCompetition
 from dreamteams.application.register.register_organizer import RegisterOrganizer
@@ -79,5 +80,7 @@ class InteractorProvider(Provider):
         ListApplicationsByCompetition,
         AcceptApplication,
         RejectApplication,
+        BlockUser,
+        UnblockUser,
     )
     user_factory = provide(UserFactory)

@@ -10,7 +10,13 @@ from sqlalchemy import ColumnElement, Subquery, and_, asc, delete, desc, exists,
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from dreamteams.adapters.db.models import application_table, competition_table, milestone_table, organizer_table, user_table
+from dreamteams.adapters.db.models import (
+    application_table,
+    competition_table,
+    milestone_table,
+    organizer_table,
+    user_table,
+)
 from dreamteams.application.common.avatar_storage import AvatarStorage
 from dreamteams.application.common.dto.competition import CompetitionModel
 from dreamteams.application.common.dto.explore_competition import ExploreCompetitionModel, ExploreOrganizerModel
