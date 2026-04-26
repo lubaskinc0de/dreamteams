@@ -1,4 +1,4 @@
-from sqlalchemy import UUID, Boolean, Column, DateTime, Table, Text
+from sqlalchemy import UUID, Boolean, Column, DateTime, Table, Text, func
 from sqlalchemy.orm import composite, relationship
 
 from dreamteams.adapters.db.models.base import mapper_registry
@@ -13,6 +13,7 @@ user_table = Table(
     Column("is_blocked", Boolean, nullable=False, server_default="false"),
     Column("blocked_reason", Text, nullable=True),
     Column("blocked_at", DateTime(timezone=True), nullable=True),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
 )
 
 

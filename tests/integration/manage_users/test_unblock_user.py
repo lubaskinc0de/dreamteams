@@ -9,8 +9,7 @@ async def test_admin_can_unblock_user(api_client: ApiClient, gateway: Gateway) -
     # Arrange
     admin = await gateway.admin.create()
     participant = await gateway.participant.create()
-    with api_client.authenticate(auth_user_id=admin.auth_id):
-        (await api_client.block_user(participant.created.user_id, {"reason": "policy"})).assert_status(200)
+    await gateway.admin.block_user(admin.auth_id, participant.created.user_id, reason="policy")
 
     # Act
     with api_client.authenticate(auth_user_id=admin.auth_id):
@@ -25,8 +24,7 @@ async def test_unblocked_user_can_access_again(api_client: ApiClient, gateway: G
     # Arrange
     admin = await gateway.admin.create()
     participant = await gateway.participant.create()
-    with api_client.authenticate(auth_user_id=admin.auth_id):
-        (await api_client.block_user(participant.created.user_id, {"reason": "policy"})).assert_status(200)
+    await gateway.admin.block_user(admin.auth_id, participant.created.user_id, reason="policy")
     with api_client.authenticate(auth_user_id=participant.auth_id):
         (await api_client.view_profile()).assert_error(403, "ACCOUNT_BLOCKED")
     with api_client.authenticate(auth_user_id=admin.auth_id):
@@ -45,8 +43,7 @@ async def test_non_admin_cannot_unblock_user(api_client: ApiClient, gateway: Gat
     # Arrange
     owner = await gateway.organizer.create_with_admin(gateway.admin)
     participant = await gateway.participant.create()
-    with api_client.authenticate(auth_user_id=owner.admin.auth_id):
-        (await api_client.block_user(participant.created.user_id, {"reason": "policy"})).assert_status(200)
+    await gateway.admin.block_user(owner.admin.auth_id, participant.created.user_id, reason="policy")
 
     # Act
     with api_client.authenticate(auth_user_id=owner.organizer.auth_id):

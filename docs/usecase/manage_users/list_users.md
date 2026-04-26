@@ -12,7 +12,7 @@ Returns a paginated list of users for the admin interface. The list is designed 
 | `search` | `str \| None` | Search by organizer name, participant full name, or user ID when the value is a UUID | Optional |
 | `is_admin` | `bool \| None` | Filter by admin flag | Optional |
 | `is_blocked` | `bool \| None` | Filter by ban status | Optional |
-| `role` | `str \| None` | Filter by assigned role | One of `organizer`, `participant`, `unassigned` |
+| `role` | `str \| None` | Filter by assigned role | One of `organizer`, `participant` |
 
 ## Output
 
@@ -44,7 +44,7 @@ Returns a paginated list of users for the admin interface. The list is designed 
 
 1. Only admin users (`User.is_admin = True`) can list users
 2. Returns users regardless of ban state unless `is_blocked` is provided
-3. Returns users with or without organizer and participant roles
+3. Returns users with organizer or participant roles
 4. Returns empty `items` if no users match the filters
 5. Search is case-insensitive for organizer and participant names
 6. Pagination uses the same response shape as other list interactors

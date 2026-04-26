@@ -2,6 +2,7 @@ from uuid import uuid4
 
 from dreamteams.application.common.gateway.competition import CompetitionSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
+from dreamteams.presentation.fast_api.routers.admin_users import BlockUserRequest
 from tests.integration.api_client import ApiClient
 from tests.integration.competition_helpers import competitions_list_to_preview_list, create_competitions_list
 from tests.integration.helpers.facade import Gateway
@@ -16,7 +17,10 @@ async def test_admin_can_block_user(api_client: ApiClient, gateway: Gateway) -> 
 
     # Act
     with api_client.authenticate(auth_user_id=admin.auth_id):
-        response = await api_client.block_user(participant.created.user_id, {"reason": "policy"})
+        response = await api_client.block_user(
+            participant.created.user_id,
+            BlockUserRequest(reason="policy").model_dump(),
+        )
 
     # Assert
     response.assert_status(200)
@@ -30,8 +34,7 @@ async def test_blocked_user_gets_account_blocked_on_next_request(
     # Arrange
     admin = await gateway.admin.create()
     participant = await gateway.participant.create()
-    with api_client.authenticate(auth_user_id=admin.auth_id):
-        (await api_client.block_user(participant.created.user_id, {"reason": "policy"})).assert_status(200)
+    await gateway.admin.block_user(admin.auth_id, participant.created.user_id, reason="policy")
 
     # Act
     with api_client.authenticate(auth_user_id=participant.auth_id):
@@ -47,8 +50,7 @@ async def test_block_includes_reason_in_error_meta(api_client: ApiClient, gatewa
     admin = await gateway.admin.create()
     participant = await gateway.participant.create()
     reason = "Repeated abuse"
-    with api_client.authenticate(auth_user_id=admin.auth_id):
-        (await api_client.block_user(participant.created.user_id, {"reason": reason})).assert_status(200)
+    await gateway.admin.block_user(admin.auth_id, participant.created.user_id, reason=reason)
 
     # Act
     with api_client.authenticate(auth_user_id=participant.auth_id):
@@ -68,7 +70,10 @@ async def test_non_admin_cannot_block_user(api_client: ApiClient, gateway: Gatew
 
     # Act
     with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
-        response = await api_client.block_user(participant.created.user_id, {"reason": "policy"})
+        response = await api_client.block_user(
+            participant.created.user_id,
+            BlockUserRequest(reason="policy").model_dump(),
+        )
 
     # Assert
     response.assert_error(403, "ACCESS_DENIED")
@@ -80,7 +85,10 @@ async def test_unauthenticated_cannot_block_user(api_client: ApiClient, gateway:
     participant = await gateway.participant.create()
 
     # Act
-    response = await api_client.block_user(participant.created.user_id, {"reason": "policy"})
+    response = await api_client.block_user(
+        participant.created.user_id,
+        BlockUserRequest(reason="policy").model_dump(),
+    )
 
     # Assert
     response.assert_error(401, "UNAUTHORIZED")
@@ -94,7 +102,10 @@ async def test_block_nonexistent_user_returns_not_found(api_client: ApiClient, g
 
     # Act
     with api_client.authenticate(auth_user_id=admin.auth_id):
-        response = await api_client.block_user(nonexistent_user_id, {"reason": "policy"})
+        response = await api_client.block_user(
+            nonexistent_user_id,
+            BlockUserRequest(reason="policy").model_dump(),
+        )
 
     # Assert
     response.assert_error(404, "USER_NOT_FOUND")
@@ -121,8 +132,7 @@ async def test_blocked_organizers_competitions_hidden_from_preview(
         visible_owner.form,
         visible_owner.created.organizer_id,
     )
-    with api_client.authenticate(auth_user_id=owner.admin.auth_id):
-        (await api_client.block_user(owner.organizer.created.user_id, {"reason": "policy"})).assert_status(200)
+    await gateway.admin.block_user(owner.admin.auth_id, owner.organizer.created.user_id, reason="policy")
 
     # Act
     response = await api_client.list_preview_competitions()
@@ -149,8 +159,7 @@ async def test_blocked_participants_applications_hidden_from_list(
         owner.organizer.auth_id,
     )
     expected = create_applications_list([visible_application])
-    with api_client.authenticate(auth_user_id=owner.admin.auth_id):
-        (await api_client.block_user(blocked_participant.created.user_id, {"reason": "policy"})).assert_status(200)
+    await gateway.admin.block_user(owner.admin.auth_id, blocked_participant.created.user_id, reason="policy")
 
     # Act
     with api_client.authenticate(auth_user_id=owner.organizer.auth_id):

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from uuid import uuid4
 
@@ -62,6 +62,7 @@ class User(Entity):
     avatar: Avatar | None = None
     is_admin: bool = False
     ban_status: BanStatus = field(default_factory=BanStatus)
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     def block(self, admin: "User", reason: str | None, clock: Clock) -> None:
         """Block this user account. Admin only."""

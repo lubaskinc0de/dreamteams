@@ -12,6 +12,7 @@ from dreamteams.adapters.errors.http.response import ErrorResponse
 from dreamteams.application.common.gateway.application import ApplicationSortBy
 from dreamteams.application.common.gateway.competition import CompetitionSortBy, ExploreSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
+from dreamteams.application.common.gateway.user import UserRoleFilter
 from dreamteams.application.manage_application_form import ApplicationFormModel, CreatedApplicationForm
 from dreamteams.application.manage_applications import ApplicationModel, ApplicationsList
 from dreamteams.application.manage_competitions import CompetitionModel, CompetitionsList
@@ -19,6 +20,7 @@ from dreamteams.application.manage_invites import InviteIssued, InviteModel, Inv
 from dreamteams.application.manage_my_applications import ApplicationsList as MyApplicationsList
 from dreamteams.application.manage_my_applications import MyApplicationModel
 from dreamteams.application.manage_profile import ProfileModel
+from dreamteams.application.manage_users import AdminUserDetails, UsersList
 from dreamteams.application.preview_competition.list import PreviewCompetitionsList
 from dreamteams.application.publish_competition import CreatedCompetition
 from dreamteams.application.register.register_organizer import CreatedOrganizer
@@ -219,6 +221,33 @@ class ApiClient:
         """Unblock a user via POST /admin/users/{user_id}/unblock."""
         response = await self.session.post(f"{ADMIN_USERS_URL}/{user_id}/unblock", headers=self._headers)
         return await self._load_response(response, response_type=None)
+
+    async def list_admin_users(
+        self,
+        *,
+        page: int = 1,
+        search: str | None = None,
+        is_admin: bool | None = None,
+        is_blocked: bool | None = None,
+        role: UserRoleFilter | str | None = None,
+    ) -> APIResponse[UsersList]:
+        """List users via GET /admin/users/."""
+        params: dict[str, str | int | bool] = {"page": page}
+        if search is not None:
+            params["search"] = search
+        if is_admin is not None:
+            params["is_admin"] = str(is_admin).lower()
+        if is_blocked is not None:
+            params["is_blocked"] = str(is_blocked).lower()
+        if role is not None:
+            params["role"] = role.value if isinstance(role, UserRoleFilter) else role
+        response = await self.session.get(f"{ADMIN_USERS_URL}/", headers=self._headers, params=params)
+        return await self._load_response(response, response_type=UsersList)
+
+    async def read_admin_user(self, user_id: UserId) -> APIResponse[AdminUserDetails]:
+        """Read user via GET /admin/users/{user_id}."""
+        response = await self.session.get(f"{ADMIN_USERS_URL}/{user_id}", headers=self._headers)
+        return await self._load_response(response, response_type=AdminUserDetails)
 
     async def view_profile(self) -> APIResponse[ProfileModel]:
         """View user profile via GET /users/me."""

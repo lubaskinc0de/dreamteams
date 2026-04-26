@@ -1,9 +1,21 @@
+from typing import Annotated
+
 from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from pydantic import BaseModel
 
-from dreamteams.application.manage_users import BlockUser, BlockUserForm, UnblockUser, UnblockUserForm
+from dreamteams.application.manage_users import (
+    AdminUserDetails,
+    BlockUser,
+    BlockUserForm,
+    ListUsers,
+    ListUsersInput,
+    ReadUserByAdmin,
+    UnblockUser,
+    UnblockUserForm,
+    UsersList,
+)
 from dreamteams.entities.common.identifiers import UserId
 
 router = APIRouter(
@@ -17,6 +29,24 @@ class BlockUserRequest(BaseModel):
     """Request body for blocking a user account."""
 
     reason: str | None = None
+
+
+@router.get("/")
+async def list_users(
+    interactor: FromDishka[ListUsers],
+    input_data: Annotated[ListUsersInput, Query()],
+) -> UsersList:
+    """List users. Admin only."""
+    return await interactor.execute(input_data)
+
+
+@router.get("/{user_id}")
+async def read_user(
+    interactor: FromDishka[ReadUserByAdmin],
+    user_id: UserId,
+) -> AdminUserDetails:
+    """Read full user details. Admin only."""
+    return await interactor.execute(user_id)
 
 
 @router.post("/{user_id}/block")

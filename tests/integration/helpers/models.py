@@ -1,6 +1,7 @@
 """Shared result models for gateway helpers."""
 
 from dataclasses import dataclass
+from datetime import datetime
 
 from dreamteams.application.publish_competition import CreatedCompetition
 from dreamteams.application.publish_competition.create import CompetitionForm
@@ -16,6 +17,7 @@ class AdminCreated:
 
     auth_id: str
     user_id: UserId
+    created_at: datetime
 
 
 @dataclass
