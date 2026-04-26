@@ -52,7 +52,11 @@ const navItems = computed<NavigationMenuItem[]>(() => {
     items.push({
       label: t('nav.adminPanel'),
       icon: 'i-heroicons-shield-check',
-      to: '/admin/invites',
+      to: '/admin/users',
+      children: [
+        { label: t('admin.users.nav'), icon: 'i-heroicons-users', to: '/admin/users' },
+        { label: t('admin.invites.nav'), icon: 'i-heroicons-ticket', to: '/admin/invites' },
+      ],
     });
   }
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 definePageMeta({ layout: "default" });
-await navigateTo("/admin/invites", { replace: true });
+await navigateTo("/admin/users", { replace: true });
 </script>
 
 <template>

@@ -8,6 +8,11 @@ const { t } = useI18n();
 const notifications = useNotificationsStore();
 const invitesStore = useInvitesStore();
 
+const adminNavItems = computed(() => [
+  { label: t("admin.users.nav"), icon: "i-heroicons-users", to: "/admin/users" },
+  { label: t("admin.invites.nav"), icon: "i-heroicons-ticket", to: "/admin/invites" },
+]);
+
 // Create invite modal state
 const isCreateModalOpen = ref(false);
 const displayName = ref("");
@@ -131,21 +136,24 @@ const totalPages = computed(() =>
 <template>
   <UContainer class="py-8">
     <!-- Page header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-      <div>
-        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100">
-          {{ t("admin.invites.title") }}
-        </h1>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-          {{ t("admin.invites.subtitle", { total: invitesStore.total }) }}
-        </p>
+    <div class="flex flex-col gap-4 mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100">
+            {{ t("admin.invites.title") }}
+          </h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            {{ t("admin.invites.subtitle", { total: invitesStore.total }) }}
+          </p>
+        </div>
+        <UButton
+          icon="i-heroicons-plus"
+          :label="t('admin.invites.createButton')"
+          class="w-full sm:w-auto justify-center"
+          @click="openCreateModal"
+        />
       </div>
-      <UButton
-        icon="i-heroicons-plus"
-        :label="t('admin.invites.createButton')"
-        class="w-full sm:w-auto justify-center"
-        @click="openCreateModal"
-      />
+      <UNavigationMenu :items="adminNavItems" variant="pill" class="w-full sm:w-auto" />
     </div>
 
     <!-- Error alert -->

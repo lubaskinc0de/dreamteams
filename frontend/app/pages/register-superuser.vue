@@ -68,7 +68,7 @@ const submit = async () => {
                 {{ createdUserId }}
               </p>
             </div>
-            <UButton to="/admin/invites" icon="i-heroicons-shield-check" size="lg">
+            <UButton to="/admin/users" icon="i-heroicons-shield-check" size="lg">
               {{ t("superuserRegister.success.goToAdmin") }}
             </UButton>
           </div>

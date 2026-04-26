@@ -379,7 +379,7 @@ onMounted(async () => {
                         <UIcon name="i-heroicons-shield-check" class="text-4xl text-primary-500" />
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('profile.adminInfo.title') }}</h3>
                         <p class="text-sm text-gray-600 dark:text-gray-400">{{ t('profile.adminInfo.description') }}</p>
-                        <UButton size="xl" icon="i-heroicons-cog-6-tooth" to="/admin/invites">
+                        <UButton size="xl" icon="i-heroicons-cog-6-tooth" to="/admin/users">
                           {{ t('nav.adminPanel') }}
                         </UButton>
                       </div>

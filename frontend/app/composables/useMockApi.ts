@@ -18,6 +18,11 @@ import type {
   CreatedInvite,
   InviteModel,
   InvitesList,
+  AdminBlockUserInput,
+  AdminUserDetails,
+  AdminUserListItem,
+  AdminUsersFilters,
+  AdminUsersList,
   CreatedSuperuser,
   ApplicationStatus,
   CreateExportJobInput,
@@ -117,6 +122,77 @@ let mockInvites: InviteModel[] = [
   },
 ];
 let mockInviteCounter = 4;
+
+let mockAdminUsers: AdminUserDetails[] = [
+  {
+    user: {
+      id: "123e4567-e89b-12d3-a456-426614174000",
+      avatar_url: null,
+      is_admin: true,
+      ban_status: {
+        is_blocked: false,
+        reason: null,
+        blocked_at: null,
+      },
+    },
+    organizer: {
+      id: "123e4567-e89b-12d3-a456-426614174001",
+      user_id: "123e4567-e89b-12d3-a456-426614174000",
+      organizer_name: "IT-компания TechHub",
+      phone_number: "+79991234567",
+      contact_email: "ivan@example.com",
+    },
+    participant: null,
+  },
+  {
+    user: {
+      id: "223e4567-e89b-12d3-a456-426614174000",
+      avatar_url: "https://i.pravatar.cc/150?img=12",
+      is_admin: false,
+      ban_status: {
+        is_blocked: true,
+        reason: "Spam in applications",
+        blocked_at: "2026-04-15T09:30:00Z",
+      },
+    },
+    organizer: null,
+    participant: {
+      full_name: "Анна Смирнова",
+      participant_type: "student",
+      age: 21,
+      bio: "Frontend developer interested in product hackathons.",
+      skills: [
+        { name: "Vue", level: "ADVANCED" },
+        { name: "TypeScript", level: "INTERMEDIATE" },
+      ],
+      experience_level: "MID",
+      preferred_domains: ["frontend", "ai"],
+      contacts: [{ title: "GitHub", url: "https://github.com/anna" }],
+      created_at: "2026-02-03T10:00:00Z",
+      updated_at: "2026-04-14T12:20:00Z",
+    },
+  },
+  {
+    user: {
+      id: "323e4567-e89b-12d3-a456-426614174000",
+      avatar_url: null,
+      is_admin: false,
+      ban_status: {
+        is_blocked: false,
+        reason: null,
+        blocked_at: null,
+      },
+    },
+    organizer: {
+      id: "323e4567-e89b-12d3-a456-426614174001",
+      user_id: "323e4567-e89b-12d3-a456-426614174000",
+      organizer_name: "Future Labs",
+      phone_number: "+79995550123",
+      contact_email: "events@futurelabs.example",
+    },
+    participant: null,
+  },
+];
 
 // Mock preview competitions data
 const mockPreviewCompetitions: PreviewCompetitionModel[] = [
@@ -1076,6 +1152,129 @@ export const useMockApi = () => {
     };
   };
 
+  const listAdminUsers = async (
+    filters: AdminUsersFilters = {},
+  ): Promise<{ data: AdminUsersList | null; error: ApiError | null }> => {
+    await delay(300);
+
+    const page = filters.page ?? 1;
+    if (page < 1) {
+      return {
+        data: null,
+        error: { code: "VALIDATION_ERROR", message: "Invalid page", meta: null },
+      };
+    }
+
+    let filtered = mockAdminUsers;
+
+    if (filters.search) {
+      const query = filters.search.toLowerCase();
+      filtered = filtered.filter((item) =>
+        item.user.id === filters.search ||
+        item.organizer?.organizer_name.toLowerCase().includes(query) ||
+        item.participant?.full_name.toLowerCase().includes(query),
+      );
+    }
+
+    if (filters.is_admin !== undefined) {
+      filtered = filtered.filter((item) => item.user.is_admin === filters.is_admin);
+    }
+
+    if (filters.is_blocked !== undefined) {
+      filtered = filtered.filter(
+        (item) => item.user.ban_status.is_blocked === filters.is_blocked,
+      );
+    }
+
+    if (filters.role === "organizer") {
+      filtered = filtered.filter((item) => item.organizer !== null);
+    } else if (filters.role === "participant") {
+      filtered = filtered.filter((item) => item.participant !== null);
+    }
+
+    const pageSize = 20;
+    const start = (page - 1) * pageSize;
+    const items: AdminUserListItem[] = filtered
+      .slice(start, start + pageSize)
+      .map((item) => ({
+        id: item.user.id,
+        is_admin: item.user.is_admin,
+        ban_status: item.user.ban_status,
+        organizer_name: item.organizer?.organizer_name ?? null,
+        participant_full_name: item.participant?.full_name ?? null,
+      }));
+
+    return {
+      data: {
+        items,
+        total: filtered.length,
+        page,
+      },
+      error: null,
+    };
+  };
+
+  const readAdminUser = async (
+    userId: string,
+  ): Promise<{ data: AdminUserDetails | null; error: ApiError | null }> => {
+    await delay(250);
+
+    const user = mockAdminUsers.find((item) => item.user.id === userId);
+    if (!user) {
+      return {
+        data: null,
+        error: { code: "USER_NOT_FOUND", message: "User not found", meta: null },
+      };
+    }
+
+    return { data: user, error: null };
+  };
+
+  const blockAdminUser = async (
+    userId: string,
+    input: AdminBlockUserInput,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    await delay(400);
+
+    const user = mockAdminUsers.find((item) => item.user.id === userId);
+    if (!user) {
+      return {
+        data: null,
+        error: { code: "USER_NOT_FOUND", message: "User not found", meta: null },
+      };
+    }
+
+    user.user.ban_status = {
+      is_blocked: true,
+      reason: input.reason,
+      blocked_at: new Date().toISOString(),
+    };
+
+    return { data: {}, error: null };
+  };
+
+  const unblockAdminUser = async (
+    userId: string,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    await delay(400);
+
+    const user = mockAdminUsers.find((item) => item.user.id === userId);
+    if (!user) {
+      return {
+        data: null,
+        error: { code: "USER_NOT_FOUND", message: "User not found", meta: null },
+      };
+    }
+
+    user.user.ban_status = {
+      is_blocked: false,
+      reason: null,
+      blocked_at: null,
+    };
+
+    return { data: {}, error: null };
+  };
+
   const registerParticipant = async (
     form: ParticipantForm,
   ): Promise<{ data: CreatedParticipant | null; error: ApiError | null }> => {
@@ -1142,6 +1341,7 @@ const mockExportJobs = new Map<string, ExportJobModel>();
     }
 
     mockSuperuserCreated = true;
+    mockUnregisteredUser.is_admin = true;
     return {
       data: { user_id: crypto.randomUUID() },
       error: null,
@@ -1244,6 +1444,10 @@ const mockExportJobs = new Map<string, ExportJobModel>();
     issueInvite,
     listInvites,
     revokeInvite,
+    listAdminUsers,
+    readAdminUser,
+    blockAdminUser,
+    unblockAdminUser,
     registerParticipant,
     updateParticipant: notImplemented,
     updateOrganizer: notImplemented,

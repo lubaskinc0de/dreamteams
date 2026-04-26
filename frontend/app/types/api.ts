@@ -64,6 +64,74 @@ export interface InvitesList {
   page: number;
 }
 
+export interface AdminBanStatus {
+  is_blocked: boolean;
+  reason: string | null;
+  blocked_at: string | null;
+}
+
+export type AdminUserRole = "organizer" | "participant";
+
+export interface AdminUsersFilters {
+  page?: number;
+  search?: string;
+  is_admin?: boolean;
+  is_blocked?: boolean;
+  role?: AdminUserRole;
+}
+
+export interface AdminUserListItem {
+  id: string;
+  is_admin: boolean;
+  ban_status: AdminBanStatus;
+  organizer_name: string | null;
+  participant_full_name: string | null;
+}
+
+export interface AdminUsersList {
+  items: AdminUserListItem[];
+  total: number;
+  page: number;
+}
+
+export interface AdminUserBase {
+  id: string;
+  avatar_url: string | null;
+  is_admin: boolean;
+  ban_status: AdminBanStatus;
+}
+
+export interface AdminUserOrganizer {
+  id: string;
+  user_id: string;
+  organizer_name: string;
+  phone_number: string;
+  contact_email: string;
+}
+
+export interface AdminUserParticipant {
+  full_name: string;
+  participant_type: string;
+  age: number;
+  bio: string | null;
+  skills: Array<{ name: string; level: string }>;
+  experience_level: string | null;
+  preferred_domains: string[];
+  contacts: Array<{ title: string; url: string }>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminUserDetails {
+  user: AdminUserBase;
+  organizer: AdminUserOrganizer | null;
+  participant: AdminUserParticipant | null;
+}
+
+export interface AdminBlockUserInput {
+  reason: string | null;
+}
+
 export type ErrorCode =
   | "VALIDATION_ERROR"
   | "UNAUTHORIZED"

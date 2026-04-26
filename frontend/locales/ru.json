@@ -503,6 +503,14 @@
       "title": "Инвайт отозван",
       "description": "Инвайт-код успешно отозван"
     },
+    "userBlocked": {
+      "title": "Пользователь заблокирован",
+      "description": "Ограничение аккаунта применено"
+    },
+    "userUnblocked": {
+      "title": "Пользователь разблокирован",
+      "description": "Ограничение аккаунта снято"
+    },
     "inviteCopyFailed": {
       "title": "Не удалось скопировать код"
     },
@@ -540,7 +548,78 @@
     "hoursAgo": "{n} ч. назад"
   },
   "admin": {
+    "users": {
+      "nav": "Пользователи",
+      "title": "Управление пользователями",
+      "detailTitle": "Детали пользователя",
+      "subtitle": "Всего пользователей: {total}",
+      "empty": "По выбранным фильтрам пользователей нет.",
+      "emptyTitle": "Пользователи не найдены",
+      "unnamed": "Пользователь без имени",
+      "notProvided": "Не указано",
+      "adminBadge": "Админ",
+      "roles": {
+        "organizer": "Организатор",
+        "participant": "Участник",
+        "none": "Без роли"
+      },
+      "status": {
+        "active": "Активен",
+        "blocked": "Заблокирован"
+      },
+      "filters": {
+        "searchPlaceholder": "Поиск по имени или точному UUID пользователя",
+        "allRoles": "Все роли",
+        "allAdminStatuses": "Все пользователи",
+        "adminOnly": "Админы",
+        "nonAdminOnly": "Не админы",
+        "allBanStatuses": "Все статусы",
+        "blockedOnly": "Заблокированные",
+        "activeOnly": "Активные"
+      },
+      "actions": {
+        "details": "Детали",
+        "block": "Заблокировать",
+        "unblock": "Разблокировать"
+      },
+      "fields": {
+        "status": "Статус",
+        "reason": "Причина",
+        "blockedAt": "Заблокирован",
+        "organizerName": "Название организатора",
+        "phone": "Телефон",
+        "email": "Email",
+        "organizerId": "ID организатора",
+        "fullName": "ФИО",
+        "participantType": "Тип участника",
+        "age": "Возраст",
+        "experience": "Опыт",
+        "createdAt": "Создан",
+        "updatedAt": "Обновлён",
+        "bio": "О себе",
+        "skills": "Навыки",
+        "domains": "Предпочитаемые направления",
+        "contacts": "Контакты"
+      },
+      "sections": {
+        "banStatus": "Статус блокировки",
+        "organizer": "Профиль организатора",
+        "participant": "Профиль участника",
+        "noRole": "Нет профиля организатора или участника"
+      },
+      "blockModal": {
+        "title": "Заблокировать пользователя",
+        "description": "Заблокировать {name}? Пользователь потеряет доступ к авторизованным функциям.",
+        "reason": "Причина (необязательно)",
+        "reasonPlaceholder": "Опишите причину блокировки аккаунта"
+      },
+      "unblockModal": {
+        "title": "Разблокировать пользователя",
+        "description": "Разблокировать {name}? Ограничение аккаунта будет снято."
+      }
+    },
     "invites": {
+      "nav": "Инвайты",
       "title": "Управление инвайтами",
       "subtitle": "Всего инвайтов: {total}",
       "createButton": "Создать инвайт",

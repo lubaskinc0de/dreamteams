@@ -18,6 +18,10 @@ import type {
   InviteForm,
   CreatedInvite,
   InvitesList,
+  AdminBlockUserInput,
+  AdminUserDetails,
+  AdminUsersFilters,
+  AdminUsersList,
   CreatedSuperuser,
   ApplicationFormInput,
   CreatedApplicationForm,
@@ -441,6 +445,83 @@ export const useApi = () => {
     }
   };
 
+  const listAdminUsers = async (
+    filters: AdminUsersFilters = {},
+  ): Promise<{ data: AdminUsersList | null; error: ApiError | null }> => {
+    try {
+      const params: Record<string, any> = {
+        page: filters.page ?? 1,
+      };
+
+      if (filters.search) {
+        params.search = filters.search;
+      }
+
+      if (filters.is_admin !== undefined) {
+        params.is_admin = filters.is_admin;
+      }
+
+      if (filters.is_blocked !== undefined) {
+        params.is_blocked = filters.is_blocked;
+      }
+
+      if (filters.role) {
+        params.role = filters.role;
+      }
+
+      const data = await apiFetch<AdminUsersList>(`${apiBase}/api/admin/users/`, {
+        method: "GET",
+        params,
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const readAdminUser = async (
+    userId: string,
+  ): Promise<{ data: AdminUserDetails | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<AdminUserDetails>(
+        `${apiBase}/api/admin/users/${userId}`,
+        { method: "GET" },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const blockAdminUser = async (
+    userId: string,
+    input: AdminBlockUserInput,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<{}>(`${apiBase}/api/admin/users/${userId}/block`, {
+        method: "POST",
+        body: input,
+        headers: { "Content-Type": "application/json" },
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const unblockAdminUser = async (
+    userId: string,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<{}>(`${apiBase}/api/admin/users/${userId}/unblock`, {
+        method: "POST",
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
   const registerParticipant = async (
     form: ParticipantForm,
   ): Promise<{ data: CreatedParticipant | null; error: ApiError | null }> => {
@@ -742,6 +823,10 @@ export const useApi = () => {
     issueInvite,
     listInvites,
     revokeInvite,
+    listAdminUsers,
+    readAdminUser,
+    blockAdminUser,
+    unblockAdminUser,
     registerParticipant,
     updateParticipant,
     updateOrganizer,

@@ -503,6 +503,14 @@
       "title": "Invite Revoked",
       "description": "The invite code has been revoked successfully"
     },
+    "userBlocked": {
+      "title": "User blocked",
+      "description": "The account restriction has been applied"
+    },
+    "userUnblocked": {
+      "title": "User unblocked",
+      "description": "The account restriction has been removed"
+    },
     "inviteCopyFailed": {
       "title": "Failed to copy code"
     },
@@ -540,7 +548,78 @@
     "hoursAgo": "{n}h ago"
   },
   "admin": {
+    "users": {
+      "nav": "Users",
+      "title": "User Management",
+      "detailTitle": "User Details",
+      "subtitle": "{total} users total",
+      "empty": "No users match the selected filters.",
+      "emptyTitle": "No users found",
+      "unnamed": "Unnamed user",
+      "notProvided": "Not provided",
+      "adminBadge": "Admin",
+      "roles": {
+        "organizer": "Organizer",
+        "participant": "Participant",
+        "none": "No role"
+      },
+      "status": {
+        "active": "Active",
+        "blocked": "Blocked"
+      },
+      "filters": {
+        "searchPlaceholder": "Search by name or exact user UUID",
+        "allRoles": "All roles",
+        "allAdminStatuses": "All users",
+        "adminOnly": "Admins",
+        "nonAdminOnly": "Non-admins",
+        "allBanStatuses": "All statuses",
+        "blockedOnly": "Blocked",
+        "activeOnly": "Active"
+      },
+      "actions": {
+        "details": "Details",
+        "block": "Block",
+        "unblock": "Unblock"
+      },
+      "fields": {
+        "status": "Status",
+        "reason": "Reason",
+        "blockedAt": "Blocked at",
+        "organizerName": "Organizer name",
+        "phone": "Phone",
+        "email": "Email",
+        "organizerId": "Organizer ID",
+        "fullName": "Full name",
+        "participantType": "Participant type",
+        "age": "Age",
+        "experience": "Experience",
+        "createdAt": "Created at",
+        "updatedAt": "Updated at",
+        "bio": "Bio",
+        "skills": "Skills",
+        "domains": "Preferred domains",
+        "contacts": "Contacts"
+      },
+      "sections": {
+        "banStatus": "Ban status",
+        "organizer": "Organizer profile",
+        "participant": "Participant profile",
+        "noRole": "No organizer or participant profile"
+      },
+      "blockModal": {
+        "title": "Block user",
+        "description": "Block {name}? The user will lose access to authenticated features.",
+        "reason": "Reason (optional)",
+        "reasonPlaceholder": "Describe why this account is being blocked"
+      },
+      "unblockModal": {
+        "title": "Unblock user",
+        "description": "Unblock {name}? The account restriction will be removed."
+      }
+    },
     "invites": {
+      "nav": "Invites",
       "title": "Invite Management",
       "subtitle": "{total} invites total",
       "createButton": "Create Invite",
