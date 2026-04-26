@@ -1,21 +1,32 @@
 from dataclasses import dataclass
 from typing import override
 
+from adaptix import ExtraSkip, Retort, name_mapping
+
 from dreamteams.application.common.dto.application import ApplicationModel, ParticipantInfo
 from dreamteams.application.manage_profile.read import ProfileModel
 from dreamteams.entities.application.entity import ApplicationStatus as MainApplicationStatus
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact as MainParticipantContact
 from dreamteams_exporter.adapters.auth.model import AuthUserId
+from dreamteams_exporter.adapters.http.application_form_gateway import HttpApplicationFormGateway
 from dreamteams_exporter.adapters.http.applications_gateway import HttpApplicationsGateway
 from dreamteams_exporter.adapters.http.user_gateway import HttpUserGateway
 from dreamteams_exporter.application.common.dto.application import ApplicationsPage
 from dreamteams_exporter.entities.application.entity import Application
+from dreamteams_exporter.entities.application_form.entity import ApplicationForm, ApplicationFormField
 from dreamteams_exporter.entities.common.identifiers import CompetitionId
 from dreamteams_exporter.entities.common.vo.application_status import ApplicationStatus
 from dreamteams_exporter.entities.common.vo.participant_contact import ParticipantContact
 from dreamteams_exporter.entities.participant.entity import Participant
 from dreamteams_exporter.entities.user import User
 from tests.integration.api_client import ApiClient
+
+_application_form_retort = Retort(
+    recipe=[
+        name_mapping(ApplicationForm, extra_in=ExtraSkip()),
+        name_mapping(ApplicationFormField, extra_in=ExtraSkip()),
+    ],
+)
 
 
 def _to_exporter_contact(contact: MainParticipantContact) -> ParticipantContact:
@@ -64,6 +75,29 @@ class FakeHttpUserGateway(HttpUserGateway):
             organizer_id=profile.organizer.id if profile.organizer is not None else None,
             participant_id=profile.participant.id if profile.participant is not None else None,
         )
+
+
+@dataclass(slots=True)
+class FakeApplicationFormGateway(HttpApplicationFormGateway):
+    """Test replacement for the exporter's application form gateway backed by ApiClient."""
+
+    api_client: ApiClient
+    user_id: AuthUserId
+
+    @override
+    async def get_by_competition_id(self, competition_id: CompetitionId) -> ApplicationForm | None:
+        """Read the application form through the organizer endpoint."""
+        with self.api_client.authenticate(auth_user_id=self.user_id):
+            response = await self.api_client.read_application_form(competition_id)
+            if (
+                response.status == 404
+                and response.error is not None
+                and response.error.code == "APPLICATION_FORM_NOT_FOUND"
+            ):
+                return None
+            payload = response.assert_status(200).ensure_content()
+
+        return _application_form_retort.load(payload.model_dump(mode="json"), ApplicationForm)
 
 
 @dataclass(slots=True)

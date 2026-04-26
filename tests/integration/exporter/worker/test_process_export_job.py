@@ -1,7 +1,10 @@
+import csv
+import io
 from urllib.parse import quote
 
 import pytest
 
+from dreamteams.application.common.dto.application import ApplicationModel
 from dreamteams_exporter.application.common.dto.export_job import ExportJobModel
 from dreamteams_exporter.application.errors.rate_limit import RateLimitExceededError
 from dreamteams_exporter.bootstrap.config.loader import Config as ExporterConfig
@@ -10,11 +13,46 @@ from tests.common.factory.application import SubmitApplicationInputFactory
 from tests.integration.exporter.facade import ExporterGateway
 from tests.integration.exporter.helpers import (
     build_submission_input,
-    expected_row,
     export_form,
     prime_rate_limit,
 )
 from tests.integration.helpers.facade import Gateway
+
+EXPECTED_BASE_HEADERS = [
+    "Название соревнования",
+    "Направления",
+    "Статус",
+    "Дата подачи",
+    "ФИО",
+    "Тип участника",
+    "Возраст",
+    "Контакты",
+]
+
+
+def _sort_rows(rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    return sorted(rows, key=lambda row: tuple(row.items()))
+
+
+def _read_headers(text: str) -> list[str]:
+    return next(csv.reader(io.StringIO(text)))
+
+
+def expected_row(application: ApplicationModel) -> dict[str, str]:
+    """Project an application into the expected process-job CSV row."""
+    form_data = application.form_data or {}
+    return {
+        "Название соревнования": application.competition_name,
+        "Направления": ", ".join(application.domains),
+        "Статус": application.status.value,
+        "Дата подачи": application.created_at.strftime("%d.%m.%Y %H:%M"),
+        "motivation": str(form_data.get("motivation", "")),
+        "roles": ", ".join(str(item) for item in form_data.get("roles", [])),
+        "ФИО": application.participant.full_name,
+        "Тип участника": application.participant.participant_type.value,
+        "Возраст": str(application.participant.age),
+        "Контакты": ", ".join(f"{c.title}: {c.url}" for c in application.participant.contacts),
+    }
 
 
 @pytest.mark.parametrize(
@@ -75,10 +113,7 @@ async def test_process_job_writes_csv_and_marks_job_successful(
     )
     assert model.file_url is not None
     rows = await exporter_gateway.fetch_csv_rows(model.file_url)
-    assert sorted(rows, key=lambda row: row["ID заявки"]) == sorted(
-        [expected_row(application) for application in accepted_models],
-        key=lambda row: row["ID заявки"],
-    )
+    assert _sort_rows(rows) == _sort_rows([expected_row(application) for application in accepted_models])
 
 
 async def test_process_job_with_no_matching_applications_creates_header_only_csv(
@@ -120,7 +155,7 @@ async def test_process_job_with_no_matching_applications_creates_header_only_csv
     rows = await exporter_gateway.fetch_csv_rows(model.file_url)
     text = await exporter_gateway.fetch_csv_text(model.file_url)
     assert rows == []
-    assert "ID заявки" in text
+    assert _read_headers(text) == EXPECTED_BASE_HEADERS
 
 
 async def test_process_job_marks_job_failed_when_rate_limit_is_exceeded(

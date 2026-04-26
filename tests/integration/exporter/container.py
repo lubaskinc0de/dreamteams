@@ -19,6 +19,7 @@ from dreamteams_exporter.adapters.http.config import DreamteamsApiConfig
 from dreamteams_exporter.adapters.http.user_gateway import HttpUserGateway
 from dreamteams_exporter.adapters.storage.config import S3Config
 from dreamteams_exporter.application.common.event_bus import JobEventBus
+from dreamteams_exporter.application.common.gateway.application_form import ApplicationFormGateway
 from dreamteams_exporter.application.common.gateway.applications import ApplicationsGateway
 from dreamteams_exporter.bootstrap.config.loader import Config as ExporterConfig
 from dreamteams_exporter.bootstrap.config.sentry import SentryConfig
@@ -33,7 +34,11 @@ from dreamteams_exporter.presentation.fast_api.error_handlers import include_exc
 from dreamteams_exporter.presentation.fast_api.routers import include_routers
 from dreamteams_exporter.presentation.faststream.handlers import include_handlers
 from tests.integration.api_client import ApiClient
-from tests.integration.exporter.fake_gateways import FakeApplicationsGateway, FakeHttpUserGateway
+from tests.integration.exporter.fake_gateways import (
+    FakeApplicationFormGateway,
+    FakeApplicationsGateway,
+    FakeHttpUserGateway,
+)
 
 
 class NoopJobEventBus(JobEventBus):
@@ -50,6 +55,11 @@ class ExporterTestOverridesProvider(Provider):
     scope: BaseScope | None = Scope.APP
     api_client = from_context(ApiClient)
     user_gateway = provide(FakeHttpUserGateway, provides=HttpUserGateway)
+    application_form_gateway = provide(
+        FakeApplicationFormGateway,
+        scope=Scope.REQUEST,
+        provides=ApplicationFormGateway,
+    )
     applications_gateway = provide(FakeApplicationsGateway, scope=Scope.REQUEST, provides=ApplicationsGateway)
 
 

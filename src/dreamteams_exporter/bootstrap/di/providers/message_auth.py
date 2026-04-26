@@ -2,6 +2,7 @@ from dishka import Provider, Scope, WithParents, provide
 
 from dreamteams_exporter.adapters.auth.model import AuthUserId
 from dreamteams_exporter.adapters.broker.publisher import NatsJobEventBus
+from dreamteams_exporter.adapters.http.application_form_gateway import HttpApplicationFormGateway
 from dreamteams_exporter.adapters.http.applications_gateway import HttpApplicationsGateway
 from dreamteams_exporter.adapters.idp.message_idp import MessageIdProvider
 from dreamteams_exporter.application.common.event_bus import JobEventBus
@@ -11,6 +12,7 @@ class MessageAuthProvider(Provider):
     """Binds request-scoped types used by the FastStream worker entry point."""
 
     id_provider = provide(WithParents[MessageIdProvider], scope=Scope.REQUEST)
+    application_form_gateway = provide(WithParents[HttpApplicationFormGateway], scope=Scope.REQUEST)
     applications_gateway = provide(WithParents[HttpApplicationsGateway], scope=Scope.REQUEST)
     event_bus = provide(NatsJobEventBus, scope=Scope.REQUEST, provides=JobEventBus)
 

@@ -6,7 +6,6 @@ from typing import Any, override
 from urllib.parse import quote
 
 import aioboto3
-from adaptix import Retort, name_mapping
 from botocore.exceptions import ClientError
 
 from dreamteams_exporter.adapters.storage.config import S3Config
@@ -19,8 +18,6 @@ from dreamteams_exporter.application.common.spreadsheet_exporter import (
 _CONTENT_TYPE = "text/csv; charset=utf-8"
 _PART_SIZE = 5 * 1024 * 1024  # S3's minimum for non-final multipart parts
 _UTF8_BOM = b"\xef\xbb\xbf"  # lets Excel detect UTF-8 when opening the CSV
-
-_retort = Retort(recipe=[name_mapping(ExportRow, as_list=True)])
 
 
 class CsvS3SpreadsheetSession(SpreadsheetSession):
@@ -54,7 +51,7 @@ class CsvS3SpreadsheetSession(SpreadsheetSession):
     async def write_rows(self, rows: Iterable[ExportRow]) -> None:
         """Serialises rows into CSV lines and flushes full 5 MB parts to S3 as the buffer fills."""
         for row in rows:
-            self._encode_cells(_retort.dump(row, ExportRow))
+            self._encode_cells(row)
 
         while len(self._buffer) >= _PART_SIZE:
             part = bytes(self._buffer[:_PART_SIZE])
@@ -124,7 +121,7 @@ class CsvS3SpreadsheetSession(SpreadsheetSession):
 
 
 class CsvS3SpreadsheetExporter(SpreadsheetExporter):
-    """Streams ``ExportRow`` batches as UTF-8 CSV into S3 via multipart upload."""
+    """Streams cell-row batches as UTF-8 CSV into S3 via multipart upload."""
 
     def __init__(self, config: S3Config) -> None:
         self._config = config

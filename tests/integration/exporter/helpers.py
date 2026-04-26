@@ -1,10 +1,6 @@
-# ruff: noqa: RUF001
-import json
-
 from redis.asyncio import Redis
 
-from dreamteams.application.common.dto.application import ApplicationModel
-from dreamteams.application.manage_application_form.create import ApplicationFormInput, FieldForm
+from dreamteams.application.manage_application_form.create import ApplicationFormInput, FieldChoiceForm, FieldForm
 from dreamteams.application.submit_application import SubmitApplicationInput
 from dreamteams.entities.application_form.vo.field import FieldType
 from dreamteams_exporter.entities.common.identifiers import UserId
@@ -24,6 +20,15 @@ def export_form() -> ApplicationFormInput:
                 required=True,
                 choices=None,
             ),
+            FieldForm(
+                name="roles",
+                type=FieldType.MULTISELECT,
+                required=False,
+                choices=[
+                    FieldChoiceForm(value="frontend"),
+                    FieldChoiceForm(value="backend"),
+                ],
+            ),
         ],
     )
 
@@ -37,28 +42,8 @@ def build_submission_input(
     """Build a deterministic submission payload for one participant."""
     return factory.build(
         domains=[competition.form.domains[0]],
-        form_data={"motivation": f"candidate-{index}"},
+        form_data={"motivation": f"candidate-{index}", "roles": ["frontend", "backend"]},
     )
-
-
-def expected_row(application: ApplicationModel) -> dict[str, str]:
-    """Project main's application model into the CSV row shape."""
-    return {
-        "ID заявки": str(application.id),
-        "Название соревнования": application.competition_name,
-        "Направления": ", ".join(application.domains),
-        "Статус": application.status.value,
-        "Дата подачи": application.created_at.isoformat(),
-        "Данные формы": json.dumps(application.form_data, ensure_ascii=False)
-        if application.form_data is not None
-        else "",
-        "ID участника": str(application.participant.id),
-        "ФИО": application.participant.full_name,
-        "О себе": application.participant.bio or "",
-        "Тип участника": application.participant.participant_type.value,
-        "Возраст": str(application.participant.age),
-        "Контакты": ", ".join(f"{c.title}: {c.url}" for c in application.participant.contacts),
-    }
 
 
 async def prime_rate_limit(redis_url: str, user_id: UserId, max_attempts: int) -> None:

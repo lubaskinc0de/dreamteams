@@ -10,7 +10,7 @@ class SpreadsheetSession(Protocol):
 
     @abstractmethod
     async def write_rows(self, rows: Iterable[ExportRow]) -> None:
-        """Appends a batch of read-model rows to the spreadsheet."""
+        """Appends a batch of cell rows to the spreadsheet."""
         raise NotImplementedError
 
     @abstractmethod
