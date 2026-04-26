@@ -1354,7 +1354,8 @@ const mockExportJobs = new Map<string, ExportJobModel>();
     await delay(300);
 
     const allowedStatuses: ApplicationStatus[] = ["pending", "accepted", "rejected"];
-    if (!allowedStatuses.includes(input.application_status)) {
+    const applicationStatus = input.application_status ?? null;
+    if (applicationStatus !== null && !allowedStatuses.includes(applicationStatus)) {
       return {
         data: null,
         error: {
@@ -1371,7 +1372,7 @@ const mockExportJobs = new Map<string, ExportJobModel>();
       id: jobId,
       user_id: "123e4567-e89b-12d3-a456-426614174000",
       competition_id: input.competition_id,
-      application_status: input.application_status,
+      application_status: applicationStatus,
       status_kind: "pending",
       status_reason: null,
       file_url: null,

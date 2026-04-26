@@ -144,10 +144,9 @@ export const useCompetitionApplicationsStore = defineStore("competitionApplicati
       this.exporting = true;
       this.exportErrorMessage = null;
 
-      const exportStatus = this.statusFilter ?? "accepted";
       const { data: createdJob, error } = await api.createExportJob({
         competition_id: competitionId,
-        application_status: exportStatus,
+        application_status: this.statusFilter,
       });
 
       if (error || !createdJob) {

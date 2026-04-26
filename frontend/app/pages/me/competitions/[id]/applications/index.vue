@@ -47,7 +47,7 @@ const exportLabel = computed(() => {
   }
 
   if (store.statusFilter === null) {
-    return t('applications.export.buttonAcceptedDefault');
+    return t('applications.export.buttonAll');
   }
 
   return t('applications.export.button');

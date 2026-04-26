@@ -515,7 +515,7 @@ export type ExportJobStatusKind = "pending" | "success" | "failed";
 
 export interface CreateExportJobInput {
   competition_id: string;
-  application_status: ApplicationStatus;
+  application_status?: ApplicationStatus | null;
 }
 
 export interface CreatedExportJob {
@@ -526,7 +526,7 @@ export interface ExportJobModel {
   id: string;
   user_id: string;
   competition_id: string;
-  application_status: ApplicationStatus;
+  application_status: ApplicationStatus | null;
   status_kind: ExportJobStatusKind;
   status_reason: string | null;
   file_url: string | null;

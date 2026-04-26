@@ -1148,9 +1148,10 @@
     },
     "export": {
       "button": "Export applications",
+      "buttonAll": "Export all applications",
       "buttonAcceptedDefault": "Export accepted applications",
       "exporting": "Exporting...",
-      "allHint": "On the All tab, export uses accepted applications by default.",
+      "allHint": "On the All tab, export includes every application.",
       "hint": {
         "pending": "Export pending applications for this competition.",
         "accepted": "Export accepted applications for this competition.",
