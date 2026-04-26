@@ -19,7 +19,7 @@ class CreateExportJobInput:
     """Payload accepted by the create-job interactor."""
 
     competition_id: CompetitionId
-    application_status: ApplicationStatus
+    application_status: ApplicationStatus | None = None
 
 
 @dataclass(slots=True, kw_only=True, frozen=True)

@@ -16,7 +16,7 @@ class ExportJobModel:
     id: ExportJobId
     user_id: UserId
     competition_id: CompetitionId
-    application_status: ApplicationStatus
+    application_status: ApplicationStatus | None
     status_kind: str
     status_reason: str | None
     file_url: str | None

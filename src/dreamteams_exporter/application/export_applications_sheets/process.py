@@ -60,15 +60,15 @@ def _to_export_row(application: Application, form: ApplicationForm | None) -> Ex
     form_data = application.form_data or {}
     form_cells = [_format_form_value(form_data.get(field.name)) for field in form.fields] if form is not None else []
     return [
-        application.competition_name,
-        ", ".join(application.domains),
-        application.status.value,
-        application.created_at.strftime("%d.%m.%Y %H:%M"),
-        *form_cells,
         application.participant.full_name,
-        application.participant.participant_type,
+        application.competition_name,
+        application.status.value,
+        ", ".join(application.domains),
         str(application.participant.age),
+        application.participant.participant_type,
         _format_contacts(application.participant.contacts),
+        *form_cells,
+        application.created_at.strftime("%d.%m.%Y %H:%M"),
     ]
 
 
@@ -114,9 +114,9 @@ class ExportApplicationsToSheets:
         session = await self.spreadsheet_exporter.start(
             key=f"exports/{job.id}.csv",
             headers=[
-                *EXPORT_BASE_HEADERS[:4],
+                *EXPORT_BASE_HEADERS[:7],
                 *_form_headers(form),
-                *EXPORT_BASE_HEADERS[4:],
+                *EXPORT_BASE_HEADERS[7:],
             ],
         )
         try:

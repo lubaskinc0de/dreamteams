@@ -112,7 +112,7 @@ class FakeApplicationsGateway(HttpApplicationsGateway):
         self,
         *,
         competition_id: CompetitionId,
-        status: ApplicationStatus,
+        status: ApplicationStatus | None,
         page: int,
         page_size: int,
     ) -> ApplicationsPage:
@@ -122,7 +122,7 @@ class FakeApplicationsGateway(HttpApplicationsGateway):
                 competition_id,
                 page=page,
                 page_size=page_size,
-                status=MainApplicationStatus(status.value),
+                status=MainApplicationStatus(status.value) if status is not None else None,
             )
             payload = response.assert_status(200).ensure_content()
 

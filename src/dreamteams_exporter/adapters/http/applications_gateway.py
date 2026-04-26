@@ -49,18 +49,19 @@ class HttpApplicationsGateway(ApplicationsGateway):
         self,
         *,
         competition_id: CompetitionId,
-        status: ApplicationStatus,
+        status: ApplicationStatus | None,
         page: int,
         page_size: int,
     ) -> ApplicationsPage:
-        """Fetches one page of applications for the given competition + status."""
+        """Fetches one page of applications for the given competition + optional status."""
         url = f"{self._config.base_url}/competitions/{competition_id}/applications/"
         headers = {self._config.auth_header_name: self._user_id}
         params: dict[str, str | int] = {
             "page": page,
             "page_size": page_size,
-            "status": status.value,
         }
+        if status is not None:
+            params["status"] = status.value
 
         async with self._session.get(url, headers=headers, params=params) as response:
             response.raise_for_status()

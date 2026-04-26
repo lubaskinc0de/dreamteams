@@ -45,6 +45,37 @@ async def test_organizer_creates_pending_export_job_and_publishes_message(
     process_job_publisher.mock.assert_called_once_with({"job_id": str(model.id)})
 
 
+async def test_organizer_creates_unfiltered_export_job_and_publishes_message(
+    exporter_gateway: ExporterGateway,
+    gateway: Gateway,
+    process_job_publisher: LogicPublisher,
+) -> None:
+    """Organizer creates an export job without an application status filter."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    competition = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+
+    # Act
+    model = await exporter_gateway.create(
+        auth_user_id=owner.organizer.auth_id,
+        competition_id=competition.created.competition_id,
+    )
+
+    # Assert
+    assert model == ExportJobModel(
+        id=model.id,
+        user_id=owner.organizer.created.user_id,
+        competition_id=competition.created.competition_id,
+        application_status=None,
+        status_kind="pending",
+        status_reason=None,
+        file_url=None,
+        created_at=model.created_at,
+        finished_at=None,
+    )
+    process_job_publisher.mock.assert_called_once_with({"job_id": str(model.id)})
+
+
 async def test_participant_cannot_create_export_job(
     exporter_client: ApiClient,
     gateway: Gateway,

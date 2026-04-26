@@ -13,7 +13,7 @@ from tests.unit.conftest import NOW
 
 def make_pending_job(
     *,
-    application_status: ApplicationStatus = ApplicationStatus.PENDING,
+    application_status: ApplicationStatus | None = ApplicationStatus.PENDING,
     created_at: datetime = NOW,
 ) -> ExportApplicationsJob:
     """Build a fresh pending job with deterministic defaults."""

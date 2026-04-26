@@ -11,7 +11,7 @@ def export_job_factory(
     *,
     user_id: UserId,
     competition_id: CompetitionId,
-    application_status: ApplicationStatus,
+    application_status: ApplicationStatus | None,
     clock: Clock,
 ) -> ExportApplicationsJob:
     """Build a new export job in the pending state."""

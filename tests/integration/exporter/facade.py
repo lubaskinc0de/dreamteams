@@ -37,7 +37,7 @@ class ExporterGateway:
         *,
         auth_user_id: str,
         competition_id: CompetitionId,
-        application_status: ApplicationStatus,
+        application_status: ApplicationStatus | None = None,
     ) -> ExportJobModel:
         """Create an export job through the HTTP API and return its persisted model."""
         with self.client.authenticate(auth_user_id=auth_user_id):
@@ -77,7 +77,7 @@ class ExporterGateway:
         *,
         user_id: UserId,
         competition_id: CompetitionId,
-        application_status: ApplicationStatus = ApplicationStatus.PENDING,
+        application_status: ApplicationStatus | None = ApplicationStatus.PENDING,
         finished_status: str | None = None,
         file_url: str = "http://storage.example.com/exports/file.csv",
         failed_reason: str = "seeded failure",

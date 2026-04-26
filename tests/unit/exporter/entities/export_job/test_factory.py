@@ -11,8 +11,8 @@ from dreamteams_exporter.entities.export_job.vo.status import JobStatus
 from tests.unit.conftest import NOW
 
 
-@given(status=st.sampled_from(ApplicationStatus))
-def test_factory_creates_pending_job_with_requested_fields(clock: Clock, status: ApplicationStatus) -> None:
+@given(status=st.none() | st.sampled_from(ApplicationStatus))
+def test_factory_creates_pending_job_with_requested_fields(clock: Clock, status: ApplicationStatus | None) -> None:
     """Factory returns a pending job echoing the caller's inputs and the clock's moment."""
     user_id = uuid4()
     competition_id = uuid4()

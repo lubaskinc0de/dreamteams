@@ -19,14 +19,20 @@ from tests.integration.exporter.helpers import (
 from tests.integration.helpers.facade import Gateway
 
 EXPECTED_BASE_HEADERS = [
-    "Название соревнования",
-    "Направления",
-    "Статус",
-    "Дата подачи",
     "ФИО",
-    "Тип участника",
+    "Соревнование",
+    "Статус",
+    "Направления",
     "Возраст",
+    "Тип участника",
     "Контакты",
+    "Дата",
+]
+EXPECTED_FORM_HEADERS = [
+    *EXPECTED_BASE_HEADERS[:7],
+    "motivation",
+    "roles",
+    *EXPECTED_BASE_HEADERS[7:],
 ]
 
 
@@ -42,16 +48,16 @@ def expected_row(application: ApplicationModel) -> dict[str, str]:
     """Project an application into the expected process-job CSV row."""
     form_data = application.form_data or {}
     return {
-        "Название соревнования": application.competition_name,
-        "Направления": ", ".join(application.domains),
+        "ФИО": application.participant.full_name,
+        "Соревнование": application.competition_name,
         "Статус": application.status.value,
-        "Дата подачи": application.created_at.strftime("%d.%m.%Y %H:%M"),
+        "Направления": ", ".join(application.domains),
+        "Возраст": str(application.participant.age),
+        "Тип участника": application.participant.participant_type.value,
+        "Контакты": ", ".join(f"{c.title}: {c.url}" for c in application.participant.contacts),
         "motivation": str(form_data.get("motivation", "")),
         "roles": ", ".join(str(item) for item in form_data.get("roles", [])),
-        "ФИО": application.participant.full_name,
-        "Тип участника": application.participant.participant_type.value,
-        "Возраст": str(application.participant.age),
-        "Контакты": ", ".join(f"{c.title}: {c.url}" for c in application.participant.contacts),
+        "Дата": application.created_at.strftime("%d.%m.%Y %H:%M"),
     }
 
 
@@ -113,7 +119,60 @@ async def test_process_job_writes_csv_and_marks_job_successful(
     )
     assert model.file_url is not None
     rows = await exporter_gateway.fetch_csv_rows(model.file_url)
+    text = await exporter_gateway.fetch_csv_text(model.file_url)
+    assert _read_headers(text) == EXPECTED_FORM_HEADERS
     assert _sort_rows(rows) == _sort_rows([expected_row(application) for application in accepted_models])
+
+
+async def test_process_unfiltered_job_writes_applications_with_all_statuses(
+    exporter_gateway: ExporterGateway,
+    gateway: Gateway,
+    submit_application_input_factory: SubmitApplicationInputFactory,
+) -> None:
+    """Unfiltered process job exports applications regardless of status."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    competition = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+    await gateway.application_form.create(
+        competition.created.competition_id,
+        owner.organizer.auth_id,
+        export_form(),
+    )
+    submitted_ids = await gateway.application.create_for_competition(
+        6,
+        competition.created.competition_id,
+        build_submission_input(submit_application_input_factory, competition),
+    )
+    all_models = await gateway.application.create_mixed(submitted_ids, owner.organizer.auth_id)
+    job = await exporter_gateway.seed(
+        user_id=owner.organizer.created.user_id,
+        competition_id=competition.created.competition_id,
+        application_status=None,
+    )
+
+    # Act
+    await exporter_gateway.publish_process(job_id=job.id, auth_user_id=owner.organizer.auth_id)
+    model = await exporter_gateway.wait_http_job(
+        job_id=job.id,
+        auth_user_id=owner.organizer.auth_id,
+        status_kind="success",
+    )
+
+    # Assert
+    assert model == ExportJobModel(
+        id=job.id,
+        user_id=owner.organizer.created.user_id,
+        competition_id=competition.created.competition_id,
+        application_status=None,
+        status_kind="success",
+        status_reason=None,
+        file_url=model.file_url,
+        created_at=job.created_at,
+        finished_at=model.finished_at,
+    )
+    assert model.file_url is not None
+    rows = await exporter_gateway.fetch_csv_rows(model.file_url)
+    assert _sort_rows(rows) == _sort_rows([expected_row(application) for application in all_models])
 
 
 async def test_process_job_with_no_matching_applications_creates_header_only_csv(

@@ -19,7 +19,7 @@ class ExportApplicationsJob:
     id: ExportJobId
     user_id: UserId
     competition_id: CompetitionId
-    application_status: ApplicationStatus
+    application_status: ApplicationStatus | None
     status: JobStatus
     file_url: str | None
     created_at: datetime
