@@ -18,7 +18,7 @@ from dreamteams.application.errors.application_form import (
 from dreamteams.application.errors.invite import InviteNotFoundError
 from dreamteams.application.errors.organizer import OrganizerAlreadyExistsError, OrganizerNotFoundError
 from dreamteams.application.errors.participant import ParticipantNotFoundError
-from dreamteams.application.errors.user import InvalidSuperuserPasswordError, UserNotFoundError
+from dreamteams.application.errors.user import InvalidSuperuserPasswordError, UserBlockedError, UserNotFoundError
 from dreamteams.entities.errors.application import (
     ApplicationAlreadyResolvedError,
     CompetitionNotActiveError,
@@ -42,6 +42,7 @@ error_to_http_status: dict[type[AppError], int] = {
     UnauthorizedError: 401,
     AuthUserAlreadyExistsError: 409,
     UserNotFoundError: 404,
+    UserBlockedError: 403,
     AccessDeniedError: 403,
     OrganizerAlreadyExistsError: 409,
     InvalidCompetitionDataError: 422,

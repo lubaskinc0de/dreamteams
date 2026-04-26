@@ -68,5 +68,6 @@ class ApplicationGateway(Protocol):
         """List a competition's applications with full participant info, returning read models directly.
 
         Fetches participants in a single batch query. Returns tuple of (models list, total count).
+        Implementations must exclude applications whose participant's user has ``ban_status.is_blocked = True``.
         """
         raise NotImplementedError

@@ -10,7 +10,7 @@ from sqlalchemy import ColumnElement, Subquery, and_, asc, delete, desc, exists,
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from dreamteams.adapters.db.models import application_table, competition_table, milestone_table
+from dreamteams.adapters.db.models import application_table, competition_table, milestone_table, organizer_table, user_table
 from dreamteams.application.common.avatar_storage import AvatarStorage
 from dreamteams.application.common.dto.competition import CompetitionModel
 from dreamteams.application.common.dto.explore_competition import ExploreCompetitionModel, ExploreOrganizerModel
@@ -110,8 +110,16 @@ class SACompetitionGateway(CompetitionGateway):
         *,
         eager_milestones: bool = False,
     ) -> Competition | None:
-        """Fetch a competition by ID, optionally eager-loading its milestones."""
-        query = select(Competition).where(competition_table.c.id == competition_id)
+        """Fetch a competition by ID, optionally eager-loading its milestones.
+
+        Returns None if the organizer's account is blocked.
+        """
+        query = (
+            select(Competition)
+            .join(organizer_table, organizer_table.c.id == competition_table.c.organizer_id)
+            .join(user_table, user_table.c.id == organizer_table.c.user_id)
+            .where(competition_table.c.id == competition_id, user_table.c.is_blocked.is_(False))
+        )
         if eager_milestones:
             query = query.options(selectinload(Competition.milestones))  # type: ignore[arg-type]
         result = await self._session.execute(query)
@@ -119,10 +127,15 @@ class SACompetitionGateway(CompetitionGateway):
 
     @override
     async def get_with_organizer(self, competition_id: CompetitionId) -> Competition | None:
-        """Fetch a competition eager-loading organizer + organizer.user."""
+        """Fetch a competition eager-loading organizer + organizer.user.
+
+        Returns None if the organizer's account is blocked.
+        """
         result = await self._session.execute(
             select(Competition)
-            .where(competition_table.c.id == competition_id)
+            .join(organizer_table, organizer_table.c.id == competition_table.c.organizer_id)
+            .join(user_table, user_table.c.id == organizer_table.c.user_id)
+            .where(competition_table.c.id == competition_id, user_table.c.is_blocked.is_(False))
             .options(selectinload(Competition.organizer).selectinload(Organizer.user)),  # type: ignore[arg-type]
         )
         return result.scalar_one_or_none()
@@ -142,7 +155,9 @@ class SACompetitionGateway(CompetitionGateway):
         query = (
             select(Competition, members_count.label("members_count"))
             .outerjoin(accepted, accepted.c.competition_id == competition_table.c.id)
-            .where(competition_table.c.id == competition_id)
+            .join(organizer_table, organizer_table.c.id == competition_table.c.organizer_id)
+            .join(user_table, user_table.c.id == organizer_table.c.user_id)
+            .where(competition_table.c.id == competition_id, user_table.c.is_blocked.is_(False))
             .options(selectinload(Competition.milestones))  # type: ignore[arg-type]
         )
         row = (await self._session.execute(query)).one_or_none()
@@ -223,7 +238,9 @@ class SACompetitionGateway(CompetitionGateway):
             query = (
                 select(Competition, members_count.label("members_count"), total_col)
                 .outerjoin(accepted, accepted.c.competition_id == competition_table.c.id)
-                .where(*filters)
+                .join(organizer_table, organizer_table.c.id == competition_table.c.organizer_id)
+                .join(user_table, user_table.c.id == organizer_table.c.user_id)
+                .where(*filters, user_table.c.is_blocked.is_(False))
                 .order_by(desc(competition_table.c.created_at), desc(competition_table.c.id))
                 .limit(page_size)
                 .offset((page - 1) * page_size)
@@ -302,7 +319,9 @@ class SACompetitionGateway(CompetitionGateway):
             query = (
                 select(Competition, members_count.label("members_count"), total_col)
                 .outerjoin(accepted, accepted.c.competition_id == competition_table.c.id)
-                .where(*filters)
+                .join(organizer_table, organizer_table.c.id == competition_table.c.organizer_id)
+                .join(user_table, user_table.c.id == organizer_table.c.user_id)
+                .where(*filters, user_table.c.is_blocked.is_(False))
                 .order_by(*order_by)
                 .limit(page_size)
                 .offset((page - 1) * page_size)

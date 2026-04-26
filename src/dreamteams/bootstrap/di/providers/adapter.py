@@ -12,6 +12,7 @@ from dreamteams.adapters.auth.idp.user import IdProviderImpl
 from dreamteams.adapters.avatar_storage import S3AvatarStorage, S3Config
 from dreamteams.adapters.cache.config import CacheConfig
 from dreamteams.adapters.cache.redis_auth_user_cache import RedisAuthUserCache
+from dreamteams.adapters.cache.redis_blocked_user_cache import RedisBlockedUserCache
 from dreamteams.adapters.clock import SystemClock
 from dreamteams.adapters.db.config import DbConfig
 from dreamteams.adapters.db.gateway.application import SAApplicationGateway
@@ -51,6 +52,7 @@ class AdapterProvider(Provider):
     clock = provide(WithParents[SystemClock], scope=Scope.APP)
     password_hasher = provide(WithParents[Argon2PasswordHasher], scope=Scope.APP)
     auth_user_cache = provide(WithParents[RedisAuthUserCache], scope=Scope.APP)
+    blocked_user_cache = provide(WithParents[RedisBlockedUserCache], scope=Scope.APP)
 
     @provide(scope=Scope.APP)
     async def get_redis(self, config: CacheConfig) -> AsyncIterator[Redis]:

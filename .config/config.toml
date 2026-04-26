@@ -40,3 +40,5 @@ url = "redis://redis:6379/1"
 # keys so a synchronous mass-expiry doesn't hammer the DB.
 auth_user_ttl_seconds = 3600
 auth_user_ttl_jitter_seconds = 300
+# TTL for blocked-user cache entries (positive-only; deleted on unblock).
+blocked_user_ttl_seconds = 86400

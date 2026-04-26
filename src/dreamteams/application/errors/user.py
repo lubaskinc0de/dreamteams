@@ -1,7 +1,26 @@
+from datetime import datetime
 from typing import Any, ClassVar, override
 
 from dreamteams.entities.common.identifiers import UserId
 from dreamteams.entities.errors.base import AppError, app_error
+
+
+@app_error
+class UserBlockedError(AppError):
+    """Raised when a blocked user attempts to authenticate."""
+
+    code: ClassVar[str] = "ACCOUNT_BLOCKED"
+    message: str = "Your account has been blocked"
+    reason: str | None = None
+    blocked_at: datetime | None = None
+
+    @override
+    @property
+    def meta(self) -> dict[str, Any] | None:
+        return {
+            "reason": self.reason,
+            "blocked_at": self.blocked_at.isoformat() if self.blocked_at else None,
+        }
 
 
 @app_error

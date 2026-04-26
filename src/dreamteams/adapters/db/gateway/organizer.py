@@ -4,6 +4,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dreamteams.adapters.db.models.organizer import organizer_table
+from dreamteams.adapters.db.models.user import user_table
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
 from dreamteams.entities.common.identifiers import UserId
 from dreamteams.entities.user import Organizer
@@ -17,9 +18,11 @@ class SAOrganizerGateway(OrganizerGateway):
 
     @override
     async def get_by_user_id(self, user_id: UserId) -> Organizer | None:
-        """Return the organizer attached to the given user, or None if no organizer role exists."""
+        """Return the organizer attached to the given user, or None if the user is blocked or has no organizer role."""
         result = await self._session.execute(
-            select(Organizer).where(organizer_table.c.user_id == user_id),
+            select(Organizer)
+            .join(user_table, user_table.c.id == organizer_table.c.user_id)
+            .where(organizer_table.c.user_id == user_id, user_table.c.is_blocked.is_(False)),
         )
         return result.scalar_one_or_none()
 

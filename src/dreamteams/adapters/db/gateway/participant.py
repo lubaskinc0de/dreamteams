@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from dreamteams.adapters.db.models import participant_table
+from dreamteams.adapters.db.models.user import user_table
 from dreamteams.application.common.gateway.participant import ParticipantGateway
 from dreamteams.entities.common.identifiers import ParticipantId, UserId
 from dreamteams.entities.user import Participant
@@ -23,8 +24,12 @@ class SAParticipantGateway(ParticipantGateway):
         *,
         eager_skills_and_contacts: bool = False,
     ) -> Participant | None:
-        """Load the participant attached to a user; eager-load skills/contacts only when requested."""
-        query = select(Participant).where(participant_table.c.user_id == user_id)
+        """Load the participant attached to a user; returns None if the user is blocked."""
+        query = (
+            select(Participant)
+            .join(user_table, user_table.c.id == participant_table.c.user_id)
+            .where(participant_table.c.user_id == user_id, user_table.c.is_blocked.is_(False))
+        )
         if eager_skills_and_contacts:
             query = query.options(
                 selectinload(Participant.skills),  # type: ignore[arg-type]
@@ -40,8 +45,12 @@ class SAParticipantGateway(ParticipantGateway):
         *,
         eager_skills_and_contacts: bool = False,
     ) -> Participant | None:
-        """Load the participant by their entity ID; eager-load skills/contacts only when requested."""
-        query = select(Participant).where(participant_table.c.id == participant_id)
+        """Load the participant by their entity ID; returns None if the user is blocked."""
+        query = (
+            select(Participant)
+            .join(user_table, user_table.c.id == participant_table.c.user_id)
+            .where(participant_table.c.id == participant_id, user_table.c.is_blocked.is_(False))
+        )
         if eager_skills_and_contacts:
             query = query.options(
                 selectinload(Participant.skills),  # type: ignore[arg-type]

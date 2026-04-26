@@ -10,6 +10,7 @@ from sqlalchemy.orm import selectinload
 from dreamteams.adapters.db.models.application import application_table
 from dreamteams.adapters.db.models.competition import competition_table
 from dreamteams.adapters.db.models.participant import participant_table
+from dreamteams.adapters.db.models.user import user_table
 from dreamteams.application.common.dto.application import ApplicationModel, MyApplicationModel, ParticipantInfo
 from dreamteams.application.common.gateway.application import ApplicationGateway, ApplicationSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
@@ -134,11 +135,12 @@ class SAApplicationGateway(ApplicationGateway):
             query = (
                 select(Application, Participant, total_col)
                 .join(Participant, application_table.c.participant_id == participant_table.c.id)
+                .join(user_table, user_table.c.id == participant_table.c.user_id)
                 .options(
                     selectinload(Participant.skills),  # type: ignore[arg-type]
                     selectinload(Participant.contacts),  # type: ignore[arg-type]
                 )
-                .where(*filters)
+                .where(*filters, user_table.c.is_blocked.is_(False))
                 .order_by(*_order_by(sort_by, sort_order))
                 .limit(page_size)
                 .offset((page - 1) * page_size)

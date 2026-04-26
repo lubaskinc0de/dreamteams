@@ -38,7 +38,10 @@ class CompetitionGateway(Protocol):
         *,
         eager_milestones: bool = False,
     ) -> Competition | None:
-        """Retrieves a competition entity by its unique identifier, returns None if not found.
+        """Retrieves a competition entity by its unique identifier.
+
+        Returns None if not found or if the competition's organizer account is blocked.
+        Implementations must exclude competitions whose organizer has ``ban_status.is_blocked = True``.
 
         Set ``eager_milestones=True`` when the caller renders milestones in its response —
         otherwise the relationship raises on access.
@@ -47,7 +50,11 @@ class CompetitionGateway(Protocol):
 
     @abstractmethod
     async def get_with_organizer(self, competition_id: CompetitionId) -> Competition | None:
-        """Retrieves a competition with the organizer (and organizer.user) eagerly loaded."""
+        """Retrieves a competition with the organizer (and organizer.user) eagerly loaded.
+
+        Returns None if the organizer account is blocked.
+        Implementations must exclude competitions whose organizer has ``ban_status.is_blocked = True``.
+        """
         raise NotImplementedError
 
     @abstractmethod
@@ -57,7 +64,11 @@ class CompetitionGateway(Protocol):
 
     @abstractmethod
     async def read(self, competition_id: CompetitionId) -> CompetitionModel | None:
-        """Fetch a single competition as a manage-competitions read model (with ``members_count``)."""
+        """Fetch a single competition as a manage-competitions read model (with ``members_count``).
+
+        Returns None if not found or if the competition's organizer account is blocked.
+        Implementations must exclude competitions whose organizer has ``ban_status.is_blocked = True``.
+        """
         raise NotImplementedError
 
     @abstractmethod
@@ -89,6 +100,7 @@ class CompetitionGateway(Protocol):
         """Anonymous preview list: non-archived competitions in an active registration window.
 
         Each row's ``members_count`` is computed in the same SQL query.
+        Implementations must exclude competitions whose organizer has ``ban_status.is_blocked = True``.
         """
         raise NotImplementedError
 
@@ -123,5 +135,6 @@ class CompetitionGateway(Protocol):
         - ``search``: trigram similarity on the title
 
         ``MOST_POPULAR`` sorts by ``members_count`` desc; ``NEWEST`` sorts by ``created_at`` desc.
+        Implementations must exclude competitions whose organizer has ``ban_status.is_blocked = True``.
         """
         raise NotImplementedError

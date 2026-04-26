@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from uuid import uuid4
@@ -8,6 +8,7 @@ from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import OrganizerId, ParticipantId, UserId
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.organizer import (
     OrganizerUserIdMismatchError,
 )
@@ -20,6 +21,15 @@ from dreamteams.entities.participant.vo.participant_contact import ParticipantCo
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
 
 type Avatar = str
+
+
+@dataclass(slots=True)
+class BanStatus:
+    """Value object representing the blocked state of a user account."""
+
+    is_blocked: bool = False
+    reason: str | None = None
+    blocked_at: datetime | None = None
 
 
 @model
@@ -51,6 +61,19 @@ class User(Entity):
     participant: "Participant | None" = None
     avatar: Avatar | None = None
     is_admin: bool = False
+    ban_status: BanStatus = field(default_factory=BanStatus)
+
+    def block(self, admin: "User", reason: str | None, clock: Clock) -> None:
+        """Block this user account. Admin only."""
+        if not admin.is_admin:
+            raise AccessDeniedError(message="Only admins can block users")
+        self.ban_status = BanStatus(is_blocked=True, reason=reason, blocked_at=clock.now())
+
+    def unblock(self, admin: "User") -> None:
+        """Unblock this user account. Admin only."""
+        if not admin.is_admin:
+            raise AccessDeniedError(message="Only admins can unblock users")
+        self.ban_status = BanStatus(is_blocked=False)
 
     def make_organizer(self, organizer: Organizer) -> None:
         """Attach ``Organizer`` role to user."""

@@ -10,3 +10,5 @@ class CacheConfig:
     # avoid a synchronised stampede of expirations.
     auth_user_ttl_seconds: int
     auth_user_ttl_jitter_seconds: int
+    # TTL for blocked-user cache entries. Entries are only written on block, deleted on unblock.
+    blocked_user_ttl_seconds: int
