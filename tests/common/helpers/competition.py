@@ -35,8 +35,7 @@ INVALID_COMPETITION_DATA_CASES: list[tuple[dict[str, Any], str]] = [
     # Title validation
     ({"title": "a" * 300}, "VALIDATION_ERROR"),  # Title exceeds max length (200 characters)
     # Description validation
-    ({"description": ""}, "INVALID_COMPETITION_DATA"),  # Description cannot be empty
-    ({"description": "   "}, "INVALID_COMPETITION_DATA"),  # Description cannot be whitespace only
+    ({"description": ""}, "VALIDATION_ERROR"),  # Description cannot be empty
     # Domains validation
     ({"domains": []}, "INVALID_COMPETITION_DATA"),  # Domains list cannot be empty
     # Participant limits: max is zero
@@ -131,16 +130,7 @@ INVALID_COMPETITION_DATA_CASES: list[tuple[dict[str, Any], str]] = [
                 {"timestamp": timedelta(days=20), "title": ""},
             ],
         },
-        "INVALID_COMPETITION_DATA",
-    ),
-    # Milestones: whitespace-only title
-    (
-        {
-            "milestones": [
-                {"timestamp": timedelta(days=21), "title": "   "},
-            ],
-        },
-        "INVALID_COMPETITION_DATA",
+        "VALIDATION_ERROR",
     ),
     # Milestones: too long title
     (

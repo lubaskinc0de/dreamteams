@@ -7,6 +7,7 @@ from hypothesis import strategies as st
 from dreamteams.entities.application.entity import ApplicationData
 from dreamteams.entities.application_form.entity import ApplicationForm, ApplicationFormData, application_form_factory
 from dreamteams.entities.application_form.vo.field import Field, FieldChoice, FieldType
+from dreamteams.entities.application_form.vo.fields import ApplicationFormFields
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
@@ -17,14 +18,16 @@ from dreamteams.entities.competition.entity import (
     competition_factory,
 )
 from dreamteams.entities.competition.milestone import Milestone, MilestoneData
-from dreamteams.entities.competition.milestone_description import MilestoneDescription
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import CompetitionSchedule, ScheduleData
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
+from dreamteams.entities.competition.vo.milestones import CompetitionMilestones
 from dreamteams.entities.participant.vo.age import Age
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
+from dreamteams.entities.participant.vo.participant_contacts import ParticipantContacts
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill, SkillLevel
+from dreamteams.entities.participant.vo.participant_skills import ParticipantSkills
 from dreamteams.entities.user import (
     ExperienceLevel,
     Organizer,
@@ -150,23 +153,12 @@ def valid_text(draw: st.DrawFn) -> str:
 
 
 @st.composite
-def milestone_description(draw: st.DrawFn) -> MilestoneDescription | None:
-    """Optional MilestoneDescription, sometimes None."""
-    return draw(
-        st.one_of(
-            st.none(),
-            st.text(max_size=MilestoneDescription.MAX_LENGTH).map(MilestoneDescription),
-        ),
-    )
-
-
-@st.composite
 def milestone_data(draw: st.DrawFn) -> MilestoneData:
     """Valid milestone data."""
     return MilestoneData(
         title=draw(valid_text()),
         timestamp=draw(dt_future()),
-        description=draw(milestone_description()),
+        description=draw(st.one_of(st.none(), st.text(max_size=300))),
     )
 
 
@@ -176,7 +168,7 @@ def milestone(draw: st.DrawFn) -> Milestone:
     return Milestone(
         title=draw(valid_text()),
         timestamp=draw(dt_future()),
-        description=draw(milestone_description()),
+        description=draw(st.one_of(st.none(), st.text(max_size=300))),
     )
 
 
@@ -279,6 +271,8 @@ def valid_competition_update_data(draw: st.DrawFn) -> UpdateCompetitionData:
         team_size = None
         schedule = draw(valid_schedule_data_no_team_formation())
 
+    milestones = draw(st.one_of(st.none(), st.lists(milestone(), max_size=5)))
+
     return UpdateCompetitionData(
         title=draw(valid_text()),
         description=draw(valid_text()),
@@ -293,7 +287,7 @@ def valid_competition_update_data(draw: st.DrawFn) -> UpdateCompetitionData:
         ),
         team_size=team_size,
         participant_type=draw(st.sampled_from(ParticipantType)),
-        milestones=_deduplicate_milestones(draw(st.one_of(st.none(), st.lists(milestone(), max_size=5)))),
+        milestones=(CompetitionMilestones(_deduplicate_milestones(milestones)) if milestones is not None else None),
         auto_accept=draw(st.booleans()),
         is_archived=draw(st.booleans()),
     )
@@ -317,10 +311,9 @@ def participant_skill_data(draw: st.DrawFn) -> ParticipantSkill:
 @st.composite
 def participant_contact_data(draw: st.DrawFn) -> ParticipantContact:
     """Valid ParticipantContact."""
-    slug = draw(st.text(alphabet="abcdefghijklmnopqrstuvwxyz0123456789", min_size=3, max_size=20))
     return ParticipantContact(
         title=draw(valid_text()),
-        url=f"https://{slug}.example.com",
+        value=draw(valid_text()),
     )
 
 
@@ -337,7 +330,7 @@ def valid_participant_data(draw: st.DrawFn) -> ParticipantData:
 
     preferred_domains = draw(st.lists(domain_data(), min_size=0))
 
-    contacts = draw(st.lists(participant_contact_data(), min_size=0, unique_by=(lambda c: c.title, lambda c: c.url)))
+    contacts = draw(st.lists(participant_contact_data(), min_size=0, unique_by=(lambda c: c.title, lambda c: c.value)))
 
     participant_type = draw(st.sampled_from([ParticipantType.SCHOOLCHILD, ParticipantType.STUDENT]))
 
@@ -346,10 +339,10 @@ def valid_participant_data(draw: st.DrawFn) -> ParticipantData:
     return ParticipantData(
         full_name=full_name,
         bio=bio,
-        skills=skills_unique,
+        skills=ParticipantSkills(skills_unique),
         experience_level=experience_level,
         preferred_domains=preferred_domains,
-        contacts=contacts,
+        contacts=ParticipantContacts(contacts),
         participant_type=participant_type,
         age=age,
     )
@@ -379,7 +372,7 @@ def valid_participant_update_data(draw: st.DrawFn) -> UpdateParticipantData:
 
     preferred_domains = draw(st.lists(domain_data(), min_size=0))
 
-    contacts = draw(st.lists(participant_contact_data(), min_size=0, unique_by=(lambda c: c.title, lambda c: c.url)))
+    contacts = draw(st.lists(participant_contact_data(), min_size=0, unique_by=(lambda c: c.title, lambda c: c.value)))
 
     participant_type = draw(st.sampled_from([ParticipantType.SCHOOLCHILD, ParticipantType.STUDENT]))
 
@@ -388,10 +381,10 @@ def valid_participant_update_data(draw: st.DrawFn) -> UpdateParticipantData:
     return UpdateParticipantData(
         full_name=full_name,
         bio=bio,
-        skills=skills_unique,
+        skills=ParticipantSkills(skills_unique),
         experience_level=experience_level,
         preferred_domains=preferred_domains,
-        contacts=contacts,
+        contacts=ParticipantContacts(contacts),
         participant_type=participant_type,
         age=age,
     )
@@ -433,7 +426,7 @@ def valid_application_form_data(draw: st.DrawFn, min_fields: int = 1) -> Applica
     fields = draw(
         st.lists(valid_field(), min_size=min_fields, max_size=5, unique_by=lambda f: f.name),
     )
-    return ApplicationFormData(fields=fields)
+    return ApplicationFormData(fields=ApplicationFormFields(fields))
 
 
 @st.composite

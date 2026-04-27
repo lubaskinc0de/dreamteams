@@ -14,7 +14,9 @@ from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.participant.vo.age import Age
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
+from dreamteams.entities.participant.vo.participant_contacts import ParticipantContacts
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
+from dreamteams.entities.participant.vo.participant_skills import ParticipantSkills
 from dreamteams.entities.user import ExperienceLevel, UpdateParticipantData
 
 logger: Logger = structlog.get_logger(__name__)
@@ -56,10 +58,10 @@ class UpdateParticipant:
             data=UpdateParticipantData(
                 full_name=data.full_name,
                 bio=data.bio,
-                skills=[ParticipantSkill(name=s.name, level=s.level) for s in data.skills],
+                skills=ParticipantSkills([ParticipantSkill(name=s.name, level=s.level) for s in data.skills]),
                 experience_level=data.experience_level,
                 preferred_domains=data.preferred_domains,
-                contacts=[ParticipantContact(title=c.title, url=str(c.url)) for c in data.contacts],
+                contacts=ParticipantContacts([ParticipantContact(title=c.title, value=c.value) for c in data.contacts]),
                 participant_type=data.participant_type,
                 age=Age(data.age),
             ),

@@ -17,6 +17,10 @@ from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.entities.application.entity import Application, ApplicationStatus
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId, ParticipantId
 from dreamteams.entities.participant.vo.age import Age
+from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
+from dreamteams.entities.participant.vo.participant_contacts import ParticipantContacts
+from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
+from dreamteams.entities.participant.vo.participant_skills import ParticipantSkills
 from dreamteams.entities.user import Participant
 
 _tracer = trace.get_tracer("dreamteams.adapters")
@@ -36,7 +40,21 @@ def _order_by(sort_by: ApplicationSortBy, sort_order: SortOrder) -> list[ColumnE
 def _to_my_application_model(application: Application, competition_name: str) -> MyApplicationModel: ...
 
 
-@impl_converter(recipe=[coercer(Age, int, func=lambda a: a.value)])
+def _skills_to_list(skills: ParticipantSkills) -> list[ParticipantSkill]:
+    return list(skills)
+
+
+def _contacts_to_list(contacts: ParticipantContacts) -> list[ParticipantContact]:
+    return list(contacts)
+
+
+@impl_converter(
+    recipe=[
+        coercer(Age, int, func=lambda a: a.value),
+        coercer(ParticipantSkills, list[ParticipantSkill], func=_skills_to_list),
+        coercer(ParticipantContacts, list[ParticipantContact], func=_contacts_to_list),
+    ],
+)
 def _to_participant_info(participant: Participant) -> ParticipantInfo: ...
 
 

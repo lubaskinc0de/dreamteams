@@ -36,7 +36,7 @@ logger: Logger = structlog.get_logger(__name__)
 
 
 def _format_contacts(contacts: list[ParticipantContact]) -> str:
-    return ", ".join(f"{c.title}: {c.url}" for c in contacts)
+    return ", ".join(f"{c.title}: {c.value}" for c in contacts)
 
 
 def _format_form_value(value: Any) -> str:

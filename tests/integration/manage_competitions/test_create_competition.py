@@ -53,6 +53,24 @@ async def test_create_competition_without_team_size_or_team_formation_succeeds(
     response.assert_status(200).ensure_content()
 
 
+async def test_create_competition_fails_if_description_is_empty(
+    api_client: ApiClient,
+    competition_form_factory: CompetitionFormFactory,
+    gateway: Gateway,
+) -> None:
+    """Test creating competition with empty description is rejected with 422."""
+    # Arrange
+    organizer = await gateway.organizer.create_with_admin(gateway.admin)
+    data = competition_form_factory.build().model_copy(update={"description": ""})
+
+    # Act
+    with api_client.authenticate(auth_user_id=organizer.organizer.auth_id):
+        response = await api_client.create_competition(data.model_dump(mode="json"))
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
 @pytest.mark.parametrize(("update_data", "expected_error"), INVALID_COMPETITION_DATA_CASES)
 async def test_create_competition_with_invalid_data(
     api_client: ApiClient,

@@ -195,7 +195,7 @@ class CompetitionGateway:
                 MilestoneForm(
                     title=m.title,
                     timestamp=m.timestamp,
-                    description=m.description.value if m.description is not None else None,
+                    description=m.description,
                 )
                 for m in competition_model.milestones
             ],

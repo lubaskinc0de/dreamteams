@@ -15,7 +15,6 @@ from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import CompetitionData, competition_factory
 from dreamteams.entities.competition.milestone import MilestoneData
-from dreamteams.entities.competition.milestone_description import MilestoneDescription
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import ScheduleData
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
@@ -34,7 +33,7 @@ class CompetitionForm(BaseModel):
     """Form for creating a competition."""
 
     title: str = Field(max_length=200)
-    description: str
+    description: str = Field(min_length=1)
     schedule: ScheduleData
     participant_limits: ParticipantLimits
     domains: list[Domain]
@@ -78,9 +77,7 @@ class CreateCompetition:
                     MilestoneData(
                         title=milestone.title,
                         timestamp=milestone.timestamp,
-                        description=(
-                            MilestoneDescription(milestone.description) if milestone.description is not None else None
-                        ),
+                        description=milestone.description,
                     )
                     for milestone in data.milestones
                 ],

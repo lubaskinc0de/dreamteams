@@ -2,6 +2,7 @@ from uuid import uuid4
 
 from faker import Faker
 
+from dreamteams.application.common.dto.participant_contact import ParticipantContactForm
 from dreamteams.application.manage_profile import ParticipantModel, ProfileModel
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
@@ -35,7 +36,7 @@ async def test_participant_profile_is_updated(
     )
 
     expected_contacts = sorted(
-        [ParticipantContact(title=c.title, url=str(c.url)) for c in update_form.contacts],
+        [ParticipantContact(title=c.title, value=c.value) for c in update_form.contacts],
         key=lambda c: c.title,
     )
 
@@ -107,30 +108,33 @@ async def test_update_participant_fails_if_skill_has_invalid_level(
     faker: Faker,
 ) -> None:
     """Test that a skill with an invalid level is rejected with 422."""
-    data = update_participant_form_factory.build().model_copy(
-        update={"skills": [{"name": "Python", "level": ""}]},
-    )
+    data = update_participant_form_factory.build().model_dump(mode="json")
+    data["skills"] = [{"name": "Python", "level": ""}]
 
     with api_client.authenticate(auth_user_id=str(uuid4()), auth_user_email=faker.email()):
-        response = await api_client.update_participant(data.model_dump(mode="json"))
+        response = await api_client.update_participant(data)
 
     response.assert_error(422, "VALIDATION_ERROR")
 
 
-async def test_update_participant_fails_if_contact_url_is_malformed(
+async def test_update_participant_accepts_non_url_contact_value(
     api_client: ApiClient,
+    gateway: Gateway,
     update_participant_form_factory: UpdateParticipantFormFactory,
-    faker: Faker,
 ) -> None:
-    """Test that a contact with a malformed URL is rejected with 422."""
+    """Test that a contact value does not need URL syntax."""
+    # Arrange
+    participant = await gateway.participant.create()
     data = update_participant_form_factory.build().model_copy(
-        update={"contacts": [{"title": "GitHub", "url": "not-a-url"}]},
+        update={"contacts": [ParticipantContactForm(title="Telegram", value="@telegram")]},
     )
 
-    with api_client.authenticate(auth_user_id=str(uuid4()), auth_user_email=faker.email()):
+    # Act
+    with api_client.authenticate(auth_user_id=participant.auth_id):
         response = await api_client.update_participant(data.model_dump(mode="json"))
 
-    response.assert_error(422, "VALIDATION_ERROR")
+    # Assert
+    response.assert_status(200)
 
 
 async def test_update_participant_fails_if_age_is_negative(

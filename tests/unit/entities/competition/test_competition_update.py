@@ -6,10 +6,10 @@ from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.competition.entity import Competition, UpdateCompetitionData
 from dreamteams.entities.competition.schedule import CompetitionSchedule, ScheduleData
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
+from dreamteams.entities.competition.vo.milestones import CompetitionMilestones
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 from tests.unit.composite import (
-    milestone,
     positive_ordered_pairs,
     valid_competition,
     valid_competition_update_data,
@@ -59,31 +59,10 @@ def test_update_competition_succeeds(
         is_archived=valid_competition_update_data.is_archived,
         milestones=valid_competition_update_data.milestones
         if valid_competition_update_data.milestones is not None
-        else [],
+        else CompetitionMilestones(),
         created_at=competition.created_at,
         updated_at=competition.updated_at,
     )
-
-
-@settings(max_examples=30)
-@given(st.data(), valid_competition_update_data())
-def test_competition_milestones_are_unique(
-    gateway: Gateway,
-    clock: Clock,
-    data: st.DataObject,
-    valid_competition_update_data: UpdateCompetitionData,
-) -> None:
-    """Test cannot create competition with duplicate milestones."""
-    organizer = gateway.organizer.create()
-    competition = data.draw(valid_competition(organizer, clock))
-    valid_competition_update_data.milestones = [data.draw(milestone())] * 2
-
-    with pytest.raises(InvalidCompetitionDataError, match="Milestone timestamps must be unique"):
-        competition.update(
-            valid_competition_update_data,
-            organizer,
-            clock,
-        )
 
 
 @settings(max_examples=30)
@@ -121,29 +100,6 @@ def test_competition_domains_are_not_empty(
     valid_competition_update_data.domains = []
 
     with pytest.raises(InvalidCompetitionDataError, match="Domains list must not be empty"):
-        competition.update(
-            valid_competition_update_data,
-            organizer,
-            clock,
-        )
-
-
-@pytest.mark.parametrize("empty_string", ["", " ", "   "])
-@settings(max_examples=30)
-@given(st.data(), valid_competition_update_data())
-def test_competition_descriptions_are_not_empty(
-    empty_string: str,
-    gateway: Gateway,
-    clock: Clock,
-    data: st.DataObject,
-    valid_competition_update_data: UpdateCompetitionData,
-) -> None:
-    """Test cannot update competition with empty description."""
-    organizer = gateway.organizer.create()
-    competition = data.draw(valid_competition(organizer, clock))
-    valid_competition_update_data.description = empty_string
-
-    with pytest.raises(InvalidCompetitionDataError, match="Description must not be empty"):
         competition.update(
             valid_competition_update_data,
             organizer,

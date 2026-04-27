@@ -1,5 +1,4 @@
 from polyfactory.factories.pydantic_factory import ModelFactory
-from pydantic import HttpUrl
 
 from dreamteams.application.common.dto.participant_contact import ParticipantContactForm
 from dreamteams.application.common.dto.participant_skill import ParticipantSkillForm
@@ -36,7 +35,7 @@ def _contacts() -> list[ParticipantContactForm]:
     return [
         ParticipantContactForm(
             title=f"{faker.word()}-{i}",
-            url=HttpUrl(f"https://contact-{i}-{faker.lexify('????')}.example.com/"),
+            value=f"https://contact-{i}-{faker.lexify('????')}.example.com/",
         )
         for i in range(count)
     ]

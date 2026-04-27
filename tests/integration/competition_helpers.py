@@ -14,7 +14,6 @@ from dreamteams.application.submit_application.list_competitions import ExploreC
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
 from dreamteams.entities.competition.milestone import Milestone
-from dreamteams.entities.competition.milestone_description import MilestoneDescription
 from dreamteams.entities.competition.schedule import schedule_factory
 from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
 
@@ -81,7 +80,7 @@ def competition_form_to_model(
             Milestone(
                 timestamp=milestone.timestamp,
                 title=milestone.title,
-                description=MilestoneDescription(milestone.description) if milestone.description is not None else None,
+                description=milestone.description,
             )
             for milestone in sorted(form.milestones, key=lambda item: item.timestamp)
         ],
@@ -120,7 +119,7 @@ def competition_update_form_to_model(
             Milestone(
                 timestamp=milestone.timestamp,
                 title=milestone.title,
-                description=MilestoneDescription(milestone.description) if milestone.description is not None else None,
+                description=milestone.description,
             )
             for milestone in sorted(form.milestones, key=lambda item: item.timestamp)
         ]

@@ -1,5 +1,5 @@
 import structlog
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from dreamteams.application.common.gateway.application_form import ApplicationFormGateway
 from dreamteams.application.common.gateway.competition import CompetitionGateway
@@ -14,6 +14,7 @@ from dreamteams.application.errors.organizer import OrganizerNotFoundError
 from dreamteams.entities.application_form.entity import ApplicationFormData, application_form_factory
 from dreamteams.entities.application_form.vo.field import Field as DomainField
 from dreamteams.entities.application_form.vo.field import FieldChoice, FieldType
+from dreamteams.entities.application_form.vo.fields import ApplicationFormFields
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import ApplicationFormId, CompetitionId
 from dreamteams.entities.errors.competition import CompetitionNotFoundError
@@ -24,13 +25,13 @@ logger: Logger = structlog.get_logger(__name__)
 class FieldChoiceForm(BaseModel):
     """A single selectable option for SELECT or MULTISELECT fields."""
 
-    value: str
+    value: str = Field(min_length=1)
 
 
 class FieldForm(BaseModel):
     """A single input field definition."""
 
-    name: str
+    name: str = Field(min_length=1)
     type: FieldType
     required: bool = True
     choices: list[FieldChoiceForm] | None = None
@@ -94,7 +95,7 @@ class CreateApplicationForm:
         ]
 
         form = application_form_factory(
-            data=ApplicationFormData(fields=domain_fields),
+            data=ApplicationFormData(fields=ApplicationFormFields(domain_fields)),
             competition=competition,
             organizer=organizer,
             clock=self.clock,

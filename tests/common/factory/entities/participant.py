@@ -3,30 +3,37 @@ from polyfactory.factories import DataclassFactory
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.participant.vo.age import Age
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
+from dreamteams.entities.participant.vo.participant_contacts import ParticipantContacts
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill, SkillLevel
+from dreamteams.entities.participant.vo.participant_skills import ParticipantSkills
 from dreamteams.entities.user import ParticipantData
 
 
-def _skills() -> list[ParticipantSkill]:
+def _skills() -> ParticipantSkills:
     faker = ParticipantDataFactory.__faker__
     count = faker.random_int(min=0, max=5)
 
-    return [
-        ParticipantSkill(name=f"{faker.word()}-{i}", level=faker.random_element(list(SkillLevel))) for i in range(count)
-    ]
+    return ParticipantSkills(
+        [
+            ParticipantSkill(name=f"{faker.word()}-{i}", level=faker.random_element(list(SkillLevel)))
+            for i in range(count)
+        ],
+    )
 
 
-def _contacts() -> list[ParticipantContact]:
+def _contacts() -> ParticipantContacts:
     faker = ParticipantDataFactory.__faker__
     count = faker.random_int(min=0, max=5)
 
-    return [
-        ParticipantContact(
-            title=f"{faker.word()}-{i}",
-            url=f"https://contact-{i}-{faker.lexify('????')}.example.com/",
-        )
-        for i in range(count)
-    ]
+    return ParticipantContacts(
+        [
+            ParticipantContact(
+                title=f"{faker.word()}-{i}",
+                value=f"https://contact-{i}-{faker.lexify('????')}.example.com/",
+            )
+            for i in range(count)
+        ],
+    )
 
 
 def _participant_type() -> ParticipantType:

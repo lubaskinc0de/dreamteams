@@ -34,6 +34,7 @@ from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import Competition
 from dreamteams.entities.competition.milestone import Milestone
+from dreamteams.entities.competition.vo.milestones import CompetitionMilestones
 from dreamteams.entities.user import Organizer
 
 _tracer = trace.get_tracer("dreamteams.adapters")
@@ -42,7 +43,11 @@ SIMILARITY_THRESHOLD = 0.15
 logger: Logger = structlog.get_logger(__name__)
 
 
-@impl_converter
+def _milestones_to_list(milestones: CompetitionMilestones) -> list[Milestone]:
+    return list(milestones)
+
+
+@impl_converter(recipe=[coercer(CompetitionMilestones, list[Milestone], func=_milestones_to_list)])
 def _to_competition_model(competition: Competition, members_count: int) -> CompetitionModel: ...
 
 
@@ -59,7 +64,12 @@ def _build_preview_converter(
             avatar_url=avatar_storage.get_url(avatar_key) if avatar_key is not None else None,
         )
 
-    @impl_converter(recipe=[coercer(Organizer, PreviewOrganizerModel, func=organizer_to_preview)])
+    @impl_converter(
+        recipe=[
+            coercer(Organizer, PreviewOrganizerModel, func=organizer_to_preview),
+            coercer(CompetitionMilestones, list[Milestone], func=_milestones_to_list),
+        ],
+    )
     def convert(competition: Competition, members_count: int) -> PreviewCompetitionModel: ...
 
     return convert
@@ -78,7 +88,12 @@ def _build_explore_converter(
             avatar_url=avatar_storage.get_url(avatar_key) if avatar_key is not None else None,
         )
 
-    @impl_converter(recipe=[coercer(Organizer, ExploreOrganizerModel, func=organizer_to_explore)])
+    @impl_converter(
+        recipe=[
+            coercer(Organizer, ExploreOrganizerModel, func=organizer_to_explore),
+            coercer(CompetitionMilestones, list[Milestone], func=_milestones_to_list),
+        ],
+    )
     def convert(competition: Competition, members_count: int) -> ExploreCompetitionModel: ...
 
     return convert

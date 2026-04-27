@@ -23,7 +23,9 @@ from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.participant.vo.age import Age
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
+from dreamteams.entities.participant.vo.participant_contacts import ParticipantContacts
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill, SkillLevel
+from dreamteams.entities.participant.vo.participant_skills import ParticipantSkills
 from dreamteams.entities.user import ExperienceLevel, Participant, User
 
 
@@ -77,7 +79,7 @@ participant_contacts_table = Table(
     mapper_registry.metadata,
     Column("participant_id", UUID(as_uuid=True), ForeignKey("participants.id", ondelete="CASCADE"), nullable=False),
     Column("title", String(70), nullable=False),
-    Column("url", Text, nullable=False),
+    Column("value", Text, nullable=False),
     PrimaryKeyConstraint("participant_id", "title"),
 )
 
@@ -103,6 +105,7 @@ mapper_registry.map_imperatively(
         "skills": relationship(
             ParticipantSkill,
             foreign_keys=[participant_skills_table.c.participant_id],
+            collection_class=ParticipantSkills,
             cascade="all, delete-orphan",
             passive_deletes=True,
             lazy="raise_on_sql",
@@ -111,6 +114,7 @@ mapper_registry.map_imperatively(
         "contacts": relationship(
             ParticipantContact,
             foreign_keys=[participant_contacts_table.c.participant_id],
+            collection_class=ParticipantContacts,
             cascade="all, delete-orphan",
             passive_deletes=True,
             lazy="raise_on_sql",

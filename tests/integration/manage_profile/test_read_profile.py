@@ -71,7 +71,7 @@ async def test_view_participant_profile(api_client: ApiClient, gateway: Gateway)
     )
 
     expected_contacts = sorted(
-        [ParticipantContact(title=c.title, url=str(c.url)) for c in participant.form.contacts],
+        [ParticipantContact(title=c.title, value=c.value) for c in participant.form.contacts],
         key=lambda c: c.title,
     )
 

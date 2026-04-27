@@ -8,6 +8,7 @@ from dreamteams.entities.application.entity import Application, ApplicationData,
 from dreamteams.entities.application.submit_service import submit_application
 from dreamteams.entities.application_form.entity import ApplicationForm, ApplicationFormData, application_form_factory
 from dreamteams.entities.application_form.vo.field import Field, FieldChoice, FieldType
+from dreamteams.entities.application_form.vo.fields import ApplicationFormFields
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
@@ -38,7 +39,7 @@ def _make_form(
 ) -> ApplicationForm:
     assert organizer is not None
     return application_form_factory(
-        data=ApplicationFormData(fields=list(fields)),
+        data=ApplicationFormData(fields=ApplicationFormFields(fields)),
         competition=competition,
         organizer=organizer,
         clock=clock,

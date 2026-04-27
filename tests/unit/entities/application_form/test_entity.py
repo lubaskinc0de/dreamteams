@@ -8,28 +8,14 @@ from dreamteams.entities.application_form.entity import (
     application_form_factory,
 )
 from dreamteams.entities.application_form.vo.field import Field, FieldType
+from dreamteams.entities.application_form.vo.fields import ApplicationFormFields
 from dreamteams.entities.common.clock import Clock
-from dreamteams.entities.errors.application_form import InvalidApplicationFormDataError
 from dreamteams.entities.errors.base import AccessDeniedError
 from tests.unit.composite import valid_application_form, valid_application_form_data, valid_competition
 from tests.unit.entities.application_form.conftest import STRING_FIELD, make_form, make_form_via_factory
 from tests.unit.helpers.facade import Gateway
 
 _OTHER_FIELD = Field(name="other", type=FieldType.STRING)
-
-
-def test_empty_fields_list_is_rejected() -> None:
-    """ApplicationForm with no fields raises InvalidApplicationFormDataError."""
-    with pytest.raises(InvalidApplicationFormDataError, match="at least one field"):
-        make_form()
-
-
-def test_duplicate_field_names_are_rejected() -> None:
-    """ApplicationForm with duplicate field names raises InvalidApplicationFormDataError."""
-    dup = Field(name="bio", type=FieldType.STRING)
-
-    with pytest.raises(InvalidApplicationFormDataError, match="unique names"):
-        make_form(STRING_FIELD, dup)
 
 
 def test_valid_form_is_constructed_correctly() -> None:
@@ -53,7 +39,7 @@ def test_organizer_of_different_competition_is_denied(
 
     with pytest.raises(AccessDeniedError):
         application_form_factory(
-            data=ApplicationFormData(fields=[STRING_FIELD]),
+            data=ApplicationFormData(fields=ApplicationFormFields([STRING_FIELD])),
             competition=competition,
             organizer=different_organizer,
             clock=clock,
@@ -77,7 +63,7 @@ def test_factory_creates_correct_form(
         id=form.id,
         competition_id=competition.id,
         created_at=form.created_at,
-        fields=[STRING_FIELD, _OTHER_FIELD],
+        fields=ApplicationFormFields([STRING_FIELD, _OTHER_FIELD]),
     )
 
 

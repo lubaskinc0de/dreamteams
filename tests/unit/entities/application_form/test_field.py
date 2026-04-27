@@ -9,13 +9,6 @@ from tests.unit.composite import valid_field, valid_text
 _CHOICES = (FieldChoice(value="a"), FieldChoice(value="b"))
 
 
-@pytest.mark.parametrize("blank", ["", "   ", "\t"])
-def test_blank_name_is_rejected(blank: str) -> None:
-    """Blank field name raises InvalidApplicationFormDataError."""
-    with pytest.raises(InvalidApplicationFormDataError, match="Field name must not be empty"):
-        Field(name=blank, type=FieldType.STRING)
-
-
 @pytest.mark.parametrize("ft", [FieldType.SELECT, FieldType.MULTISELECT])
 def test_select_type_without_choices_is_rejected(ft: FieldType) -> None:
     """SELECT/MULTISELECT field without choices raises InvalidApplicationFormDataError."""

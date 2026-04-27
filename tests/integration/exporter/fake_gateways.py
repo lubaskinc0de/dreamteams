@@ -30,7 +30,7 @@ _application_form_retort = Retort(
 
 
 def _to_exporter_contact(contact: MainParticipantContact) -> ParticipantContact:
-    return ParticipantContact(title=contact.title, url=contact.url)
+    return ParticipantContact(title=contact.title, value=contact.value)
 
 
 def _to_exporter_participant(participant: ParticipantInfo) -> Participant:

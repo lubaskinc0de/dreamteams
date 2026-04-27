@@ -15,11 +15,11 @@ from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import UpdateCompetitionData
 from dreamteams.entities.competition.milestone import MilestoneData, milestone_factory
-from dreamteams.entities.competition.milestone_description import MilestoneDescription
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import ScheduleData
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionVenue
+from dreamteams.entities.competition.vo.milestones import CompetitionMilestones
 from dreamteams.entities.errors.competition import CompetitionNotFoundError
 
 logger: Logger = structlog.get_logger(__name__)
@@ -29,7 +29,7 @@ class UpdateCompetitionForm(BaseModel):
     """Form for updating a competition."""
 
     title: str = Field(max_length=200)
-    description: str
+    description: str = Field(min_length=1)
     schedule: ScheduleData
     participant_limits: ParticipantLimits
     domains: list[Domain]
@@ -65,7 +65,7 @@ class UpdateCompetition:
         if organizer is None:
             raise OrganizerNotFoundError
 
-        if data.milestones:
+        if data.milestones is not None:
             await self.competition_gateway.clear_milestones(competition_id)
 
         competition.update(
@@ -80,21 +80,19 @@ class UpdateCompetition:
                 participant_type=data.participant_type,
                 venue=data.venue,
                 team_size=data.team_size,
-                milestones=[
-                    milestone_factory(
-                        MilestoneData(
-                            title=milestone.title,
-                            timestamp=milestone.timestamp,
-                            description=(
-                                MilestoneDescription(milestone.description)
-                                if milestone.description is not None
-                                else None
+                milestones=CompetitionMilestones(
+                    [
+                        milestone_factory(
+                            MilestoneData(
+                                title=milestone.title,
+                                timestamp=milestone.timestamp,
+                                description=milestone.description,
                             ),
-                        ),
-                        self.clock,
-                    )
-                    for milestone in data.milestones
-                ]
+                            self.clock,
+                        )
+                        for milestone in data.milestones
+                    ],
+                )
                 if data.milestones is not None
                 else None,
                 auto_accept=data.auto_accept,

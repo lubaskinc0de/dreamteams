@@ -17,8 +17,8 @@ from dreamteams.entities.errors.participant import (
     ParticipantUserIdMismatchError,
 )
 from dreamteams.entities.participant.vo.age import Age
-from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
-from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
+from dreamteams.entities.participant.vo.participant_contacts import ParticipantContacts
+from dreamteams.entities.participant.vo.participant_skills import ParticipantSkills
 
 type Avatar = str
 
@@ -120,10 +120,10 @@ class UpdateParticipantData:
 
     full_name: str
     bio: str | None
-    skills: list[ParticipantSkill]
+    skills: ParticipantSkills
     experience_level: ExperienceLevel | None
     preferred_domains: list[Domain]
-    contacts: list[ParticipantContact]
+    contacts: ParticipantContacts
     participant_type: ParticipantType
     age: Age
 
@@ -134,10 +134,10 @@ class ParticipantData:
 
     full_name: str
     bio: str | None
-    skills: list[ParticipantSkill]
+    skills: ParticipantSkills
     experience_level: ExperienceLevel | None
     preferred_domains: list[Domain]
-    contacts: list[ParticipantContact]
+    contacts: ParticipantContacts
     participant_type: ParticipantType
     age: Age
 
@@ -150,10 +150,10 @@ class Participant(Entity):
     user_id: UserId
     full_name: str
     bio: str | None
-    skills: list[ParticipantSkill]
+    skills: ParticipantSkills
     experience_level: ExperienceLevel | None
     preferred_domains: list[Domain]
-    contacts: list[ParticipantContact]
+    contacts: ParticipantContacts
     participant_type: ParticipantType
     age: Age
     created_at: datetime
@@ -161,23 +161,8 @@ class Participant(Entity):
 
     def __post_init__(self) -> None:
         """Enforce Participant invariants on every construction and mutation."""
-        if not self.full_name.strip():
-            raise InvalidParticipantDataError(message="Full name must not be empty")
-
         if self.participant_type == ParticipantType.ANY:
             raise InvalidParticipantDataError(message="Participant type cannot be ANY")
-
-        skill_names = [s.name for s in self.skills]
-        if len(skill_names) != len(set(skill_names)):
-            raise InvalidParticipantDataError(message="Skill names must be unique")
-
-        contact_titles = [c.title for c in self.contacts]
-        if len(contact_titles) != len(set(contact_titles)):
-            raise InvalidParticipantDataError(message="Contact titles must be unique")
-
-        contact_urls = [c.url for c in self.contacts]
-        if len(contact_urls) != len(set(contact_urls)):
-            raise InvalidParticipantDataError(message="Contact URLs must be unique")
 
     def update(
         self,
@@ -187,11 +172,11 @@ class Participant(Entity):
         """Update participant profile fields."""
         self.full_name = data.full_name
         self.bio = data.bio
-        self.skills = data.skills
+        self.skills = ParticipantSkills(data.skills)
         self.experience_level = data.experience_level
         self.preferred_domains = data.preferred_domains
         self.participant_type = data.participant_type
-        self.contacts = data.contacts
+        self.contacts = ParticipantContacts(data.contacts)
         self.age = data.age
         self.updated_at = clock.now()
         self.__post_init__()
@@ -209,10 +194,10 @@ def participant_factory(
         user_id=user.id,
         full_name=data.full_name,
         bio=data.bio,
-        skills=data.skills,
+        skills=ParticipantSkills(data.skills),
         experience_level=data.experience_level,
         preferred_domains=data.preferred_domains,
-        contacts=data.contacts,
+        contacts=ParticipantContacts(data.contacts),
         participant_type=data.participant_type,
         age=data.age,
         created_at=now,

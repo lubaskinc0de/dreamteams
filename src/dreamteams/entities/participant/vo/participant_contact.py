@@ -1,16 +1,9 @@
 from dataclasses import dataclass
 
-from dreamteams.entities.errors.participant import InvalidParticipantDataError
-
 
 @dataclass
 class ParticipantContact:
-    """Participant contact link with title validation."""
+    """Participant contact — title and any string value (URL, handle, phone, etc.)."""
 
     title: str
-    url: str
-
-    def __post_init__(self) -> None:
-        """Validate title."""
-        if not self.title or self.title.isspace():
-            raise InvalidParticipantDataError(message="Contact title not must be empty")
+    value: str

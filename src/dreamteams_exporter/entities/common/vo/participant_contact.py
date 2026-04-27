@@ -6,4 +6,4 @@ class ParticipantContact:
     """Participant contact link."""
 
     title: str
-    url: str
+    value: str

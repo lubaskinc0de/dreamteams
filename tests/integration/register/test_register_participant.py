@@ -51,8 +51,6 @@ async def test_register_as_participant_without_optional_fields(
         {"bio": "a" * 501},
         # Malformed skill object (empty name, invalid level)
         {"skills": [{"name": "", "level": ""}]},
-        # Incorrect contact url
-        {"contacts": [{"title": "GitHub", "url": "not-a-url"}]},
         # Both full name and skills are invalid
         {"full_name": "a" * 71, "skills": [{"name": "", "level": ""}]},
     ],
@@ -64,10 +62,11 @@ async def test_register_as_participant_with_invalid_data(
     faker: Faker,
 ) -> None:
     """Test register as participant with invalid data."""
-    data = participant_form_factory.build().model_copy(update=update_data)
+    data = participant_form_factory.build().model_dump(mode="json")
+    data.update(update_data)
 
     with api_client.authenticate(auth_user_id=str(uuid4()), auth_user_email=faker.email()):
-        response = await api_client.register_participant(data.model_dump(mode="json"))
+        response = await api_client.register_participant(data)
 
     response.assert_error(422, "VALIDATION_ERROR")
 

@@ -7,16 +7,17 @@ from sqlalchemy.types import TypeDecorator
 from dreamteams.adapters.db.models.base import mapper_registry
 from dreamteams.entities.application_form.entity import ApplicationForm
 from dreamteams.entities.application_form.vo.field import Field, FieldChoice, FieldType
+from dreamteams.entities.application_form.vo.fields import ApplicationFormFields
 
 
-class FieldListType(TypeDecorator[list[Field]]):
-    """SQLAlchemy TypeDecorator that serializes/deserializes list[Field] to/from JSONB."""
+class FieldListType(TypeDecorator[ApplicationFormFields]):
+    """SQLAlchemy TypeDecorator that serializes/deserializes ApplicationFormFields to/from JSONB."""
 
     impl: ClassVar[type[JSONB]] = JSONB  # type: ignore[misc,mutable-override]
     cache_ok: ClassVar[bool] = True  # type: ignore[misc,mutable-override]
 
     @override
-    def process_bind_param(self, value: list[Field] | None, dialect: Any) -> list[dict[str, Any]] | None:
+    def process_bind_param(self, value: ApplicationFormFields | None, dialect: Any) -> list[dict[str, Any]] | None:
         if value is None:
             return None
         return [
@@ -30,7 +31,7 @@ class FieldListType(TypeDecorator[list[Field]]):
         ]
 
     @override
-    def process_result_value(self, value: list[dict[str, Any]] | None, dialect: Any) -> list[Field] | None:
+    def process_result_value(self, value: list[dict[str, Any]] | None, dialect: Any) -> ApplicationFormFields | None:
         if value is None:
             return None
         fields = []
@@ -44,7 +45,7 @@ class FieldListType(TypeDecorator[list[Field]]):
                     choices=(tuple(FieldChoice(value=c["value"]) for c in choices) if choices is not None else None),
                 ),
             )
-        return fields
+        return ApplicationFormFields(fields)
 
 
 application_form_table = Table(

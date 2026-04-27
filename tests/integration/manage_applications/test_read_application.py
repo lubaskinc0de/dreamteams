@@ -47,7 +47,7 @@ async def test_organizer_can_read_application(
             experience_level=participant.form.experience_level,
             preferred_domains=participant.form.preferred_domains,
             contacts=sorted(
-                [ParticipantContact(title=c.title, url=str(c.url)) for c in participant.form.contacts],
+                [ParticipantContact(title=c.title, value=c.value) for c in participant.form.contacts],
                 key=lambda c: c.title,
             ),
         ),

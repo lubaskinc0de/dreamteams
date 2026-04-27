@@ -7,11 +7,12 @@ from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
 from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
-from dreamteams.entities.competition.milestone import Milestone, MilestoneData, milestone_factory
+from dreamteams.entities.competition.milestone import MilestoneData, milestone_factory
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import CompetitionSchedule, ScheduleData, schedule_factory
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionVenue
+from dreamteams.entities.competition.vo.milestones import CompetitionMilestones
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 from dreamteams.entities.user import Organizer
@@ -35,7 +36,7 @@ class Competition(Entity):
     participant_type: ParticipantType
     venue: CompetitionVenue
     team_size: TeamSizeRange | None
-    milestones: list[Milestone]
+    milestones: CompetitionMilestones
     auto_accept: bool
     is_archived: bool
     created_at: datetime
@@ -55,17 +56,8 @@ class Competition(Entity):
         if not self.is_owned_by(organizer):
             raise AccessDeniedError(message="Only the organizer who created this competition can update it")
 
-        if not data.description or not data.description.strip():
-            raise InvalidCompetitionDataError(message="Description must not be empty")
-
         if not data.domains:
             raise InvalidCompetitionDataError(message="Domains list must not be empty")
-
-        milestones = [] if data.milestones is None else data.milestones
-
-        timestamps = [m.timestamp for m in milestones]
-        if len(timestamps) != len(set(timestamps)):
-            raise InvalidCompetitionDataError(message="Milestone timestamps must be unique")
 
         new_schedule = self.schedule.update(data.schedule, clock)
         _validate_team_size_schedule_pairing(data.team_size, new_schedule)
@@ -80,7 +72,7 @@ class Competition(Entity):
         self.team_size = data.team_size
         self.auto_accept = data.auto_accept
         self.is_archived = data.is_archived
-        self.milestones = milestones
+        self.milestones = data.milestones if data.milestones is not None else CompetitionMilestones()
         self.updated_at = clock.now()
 
 
@@ -114,7 +106,7 @@ class UpdateCompetitionData:
     team_size: TeamSizeRange | None
     auto_accept: bool
     is_archived: bool
-    milestones: list[Milestone] | None = None
+    milestones: CompetitionMilestones | None = None
 
 
 def _validate_team_size_schedule_pairing(
@@ -136,17 +128,8 @@ def competition_factory(
     clock: Clock,
 ) -> Competition:
     """Create a new competition."""
-    if not data.description or not data.description.strip():
-        raise InvalidCompetitionDataError(message="Description must not be empty")
-
     if not data.domains:
         raise InvalidCompetitionDataError(message="Domains list must not be empty")
-
-    milestones = [] if data.milestones is None else data.milestones
-
-    timestamps = [m.timestamp for m in milestones]
-    if len(timestamps) != len(set(timestamps)):
-        raise InvalidCompetitionDataError(message="Milestone timestamps must be unique")
 
     schedule = schedule_factory(data.schedule, clock)
     _validate_team_size_schedule_pairing(data.team_size, schedule)
@@ -165,7 +148,7 @@ def competition_factory(
         participant_type=data.participant_type,
         venue=data.venue,
         team_size=data.team_size,
-        milestones=[milestone_factory(milestone, clock) for milestone in milestones],
+        milestones=CompetitionMilestones([milestone_factory(m, clock) for m in (data.milestones or [])]),
         auto_accept=data.auto_accept,
         is_archived=True,
         created_at=now,

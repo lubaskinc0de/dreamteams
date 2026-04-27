@@ -33,7 +33,7 @@ async def test_admin_can_read_blocked_participant_user(api_client: ApiClient, ga
         key=lambda skill: skill.name,
     )
     expected_contacts = sorted(
-        [ParticipantContact(title=c.title, url=str(c.url)) for c in participant.form.contacts],
+        [ParticipantContact(title=c.title, value=c.value) for c in participant.form.contacts],
         key=lambda contact: contact.title,
     )
     assert result == AdminUserDetails(

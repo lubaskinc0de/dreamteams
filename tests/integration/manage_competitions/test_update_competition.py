@@ -56,6 +56,25 @@ async def test_update_competition_as_owner_succeeds(
     assert actual_model == expected_model
 
 
+async def test_update_competition_fails_if_description_is_empty(
+    api_client: ApiClient,
+    gateway: Gateway,
+    update_competition_form_factory: UpdateCompetitionFormFactory,
+) -> None:
+    """Test updating competition with empty description is rejected with 422."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    comp = await gateway.competition.create(owner.organizer.auth_id)
+    data = update_competition_form_factory.build().model_copy(update={"description": ""})
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.update_competition(comp.created.competition_id, data.model_dump(mode="json"))
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
 @pytest.mark.parametrize(("update_data", "expected_error"), INVALID_COMPETITION_DATA_CASES)
 async def test_update_competition_with_invalid_data(
     api_client: ApiClient,

@@ -2,6 +2,7 @@ from uuid import uuid4
 
 from dreamteams.entities.application_form.entity import ApplicationForm, ApplicationFormData, application_form_factory
 from dreamteams.entities.application_form.vo.field import Field, FieldChoice, FieldType
+from dreamteams.entities.application_form.vo.fields import ApplicationFormFields
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.competition.entity import Competition
 from dreamteams.entities.user import Organizer
@@ -14,7 +15,7 @@ def make_form(*fields: Field) -> ApplicationForm:
         id=uuid4(),
         competition_id=uuid4(),
         created_at=NOW,
-        fields=list(fields),
+        fields=ApplicationFormFields(list(fields)),
     )
 
 
@@ -26,7 +27,7 @@ def make_form_via_factory(
 ) -> ApplicationForm:
     """Create an ApplicationForm through the factory for a given competition."""
     return application_form_factory(
-        data=ApplicationFormData(fields=list(fields)),
+        data=ApplicationFormData(fields=ApplicationFormFields(list(fields))),
         competition=competition,
         organizer=organizer,
         clock=clock,

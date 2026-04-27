@@ -1,5 +1,3 @@
-from typing import override
-
 from sqlalchemy import (
     ARRAY,
     UUID,
@@ -13,10 +11,8 @@ from sqlalchemy import (
     String,
     Table,
     Text,
-    TypeDecorator,
     asc,
 )
-from sqlalchemy.engine import Dialect
 from sqlalchemy.orm import composite, relationship
 
 from dreamteams.adapters.db.models.base import mapper_registry
@@ -24,36 +20,12 @@ from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import Competition
 from dreamteams.entities.competition.milestone import Milestone
-from dreamteams.entities.competition.milestone_description import MilestoneDescription
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import CompetitionSchedule
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
+from dreamteams.entities.competition.vo.milestones import CompetitionMilestones
 from dreamteams.entities.user import Organizer
-
-
-class MilestoneDescriptionType(TypeDecorator[MilestoneDescription]):
-    """Map between a nullable String column and the MilestoneDescription value object."""
-
-    impl: type[String] = String  # type: ignore[mutable-override]
-    cache_ok: bool = True  # type: ignore[mutable-override]
-
-    def __init__(self) -> None:
-        super().__init__(length=MilestoneDescription.MAX_LENGTH)
-
-    @override
-    def process_bind_param(self, value: MilestoneDescription | None, dialect: Dialect) -> str | None:
-        """Convert MilestoneDescription VO to str for storage."""
-        if isinstance(value, MilestoneDescription):
-            return value.value
-        return None
-
-    @override
-    def process_result_value(self, value: str | None, dialect: Dialect) -> MilestoneDescription | None:
-        """Convert stored str back to MilestoneDescription VO."""
-        if value is not None:
-            return MilestoneDescription(value)
-        return None
 
 
 def _team_size_composite(max_team_size: int | None, min_team_size: int | None) -> TeamSizeRange | None:
@@ -94,7 +66,7 @@ milestone_table = Table(
     Column("competition_id", UUID(as_uuid=True), ForeignKey("competitions.id", ondelete="CASCADE"), nullable=False),
     Column("timestamp", DateTime(timezone=True), nullable=False),
     Column("title", String(200), nullable=False),
-    Column("description", MilestoneDescriptionType(), nullable=True),
+    Column("description", String(300), nullable=True),
     PrimaryKeyConstraint("competition_id", "timestamp"),
 )
 
@@ -144,6 +116,7 @@ mapper_registry.map_imperatively(
         "milestones": relationship(
             Milestone,
             foreign_keys=[milestone_table.c.competition_id],
+            collection_class=CompetitionMilestones,
             cascade="all, delete-orphan",
             passive_deletes=True,
             lazy="raise_on_sql",

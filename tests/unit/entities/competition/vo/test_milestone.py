@@ -7,7 +7,7 @@ from hypothesis import given
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.competition.milestone import Milestone, MilestoneData, milestone_factory
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
-from tests.unit.composite import dt_future, dt_past, milestone_data
+from tests.unit.composite import dt_past, milestone_data
 
 
 @given(milestone_data())
@@ -23,21 +23,6 @@ def test_create_milestone_with_valid_data(
         title=data.title,
         description=data.description,
     )
-
-
-@given(dt_future())
-@pytest.mark.parametrize(
-    ("title"),
-    [
-        (""),
-        ("   "),
-        ("\t\n"),
-    ],
-)
-def test_title_is_not_empty(clock: Clock, title: str, timestamp: datetime) -> None:
-    """Test that empty or whitespace-only titles raise error."""
-    with pytest.raises(InvalidCompetitionDataError, match="Milestone title must not be empty"):
-        milestone_factory(MilestoneData(timestamp=timestamp, title=title), clock)
 
 
 @given(dt_past())

@@ -2,12 +2,11 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import uuid4
 
-from dreamteams.entities.application_form.vo.field import Field
+from dreamteams.entities.application_form.vo.fields import ApplicationFormFields
 from dreamteams.entities.base import Entity, model
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import ApplicationFormId, CompetitionId
 from dreamteams.entities.competition.entity import Competition
-from dreamteams.entities.errors.application_form import InvalidApplicationFormDataError
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.user import Organizer
 
@@ -19,22 +18,14 @@ class ApplicationForm(Entity):
     id: ApplicationFormId
     competition_id: CompetitionId
     created_at: datetime
-    fields: list[Field]
-
-    def __post_init__(self) -> None:
-        """Validate ApplicationForm invariants."""
-        if not self.fields:
-            raise InvalidApplicationFormDataError(message="Application form must have at least one field")
-        names = [f.name for f in self.fields]
-        if len(names) != len(set(names)):
-            raise InvalidApplicationFormDataError(message="Application form fields must have unique names")
+    fields: ApplicationFormFields
 
 
 @dataclass(slots=True)
 class ApplicationFormData:
     """Input data for creating an ApplicationForm."""
 
-    fields: list[Field]
+    fields: ApplicationFormFields
 
 
 def application_form_factory(
@@ -51,5 +42,5 @@ def application_form_factory(
         id=uuid4(),
         competition_id=competition.id,
         created_at=clock.now(),
-        fields=list(data.fields),
+        fields=ApplicationFormFields(data.fields),
     )
