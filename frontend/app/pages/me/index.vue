@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useNotificationsStore } from "~/stores/notifications";
+import { contactHref } from "~/utils/contact";
 
 const userStore = useUserStore();
 const { navigateTo } = useNavigation();
@@ -358,17 +359,28 @@ onMounted(async () => {
                           <UButton icon="i-heroicons-pencil-square" size="xs" color="neutral" variant="ghost" :padded="false" @click="openFieldEdit('contacts')" />
                         </div>
                         <div class="flex flex-wrap gap-2">
-                          <a
+                          <template
                             v-for="contact in userStore.participant.contacts"
-                            :key="contact.title"
-                            :href="contact.url"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="flex items-center gap-1.5 px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-primary-500 hover:text-primary-400 transition-colors"
+                            :key="`${contact.title}:${contact.value}`"
                           >
-                            <UIcon name="i-heroicons-link" class="text-xs" />
-                            {{ contact.title }}
-                          </a>
+                            <NuxtLink
+                              v-if="contactHref(contact.value)"
+                              :to="contactHref(contact.value)!"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              class="flex items-center gap-1.5 px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-primary-500 hover:text-primary-400 transition-colors"
+                            >
+                              <UIcon name="i-heroicons-link" class="text-xs" />
+                              {{ contact.title }}
+                            </NuxtLink>
+                            <span
+                              v-else
+                              class="flex items-center gap-1.5 px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300"
+                            >
+                              <UIcon name="i-heroicons-at-symbol" class="text-xs" />
+                              {{ contact.title }}: {{ contact.value }}
+                            </span>
+                          </template>
                         </div>
                       </div>
                     </div>

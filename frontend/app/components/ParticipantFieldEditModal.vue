@@ -28,7 +28,7 @@ const bio = ref("");
 const experienceLevel = ref<ExperienceLevel | null>(null);
 const preferredDomains = ref<Domain[]>([]);
 const skills = ref<{ name: string; level: SkillLevel }[]>([]);
-const contacts = ref<{ title: string; url: string }[]>([]);
+const contacts = ref<{ title: string; value: string }[]>([]);
 
 const reset = () => {
   const p = userStore.participant;
@@ -37,7 +37,7 @@ const reset = () => {
   experienceLevel.value = p.experience_level ?? null;
   preferredDomains.value = [...p.preferred_domains];
   skills.value = p.skills.map((s) => ({ name: s.name, level: s.level as SkillLevel }));
-  contacts.value = p.contacts.map((c) => ({ title: c.title, url: c.url }));
+  contacts.value = p.contacts.map((c) => ({ title: c.title, value: c.value }));
   participantStore.clearError();
 };
 
@@ -74,7 +74,7 @@ const toggleDomain = (domain: Domain) => {
 
 const addSkill = () => { skills.value.push({ name: "", level: "BEGINNER" }); };
 const removeSkill = (i: number) => { skills.value.splice(i, 1); };
-const addContact = () => { contacts.value.push({ title: "", url: "" }); };
+const addContact = () => { contacts.value.push({ title: "", value: "" }); };
 const removeContact = (i: number) => { contacts.value.splice(i, 1); };
 
 const onSave = async () => {
@@ -178,7 +178,7 @@ const apiError = computed(() => getErrorMessage(participantStore.error));
         <div v-else-if="field === 'contacts'" class="space-y-2">
           <div v-for="(contact, i) in contacts" :key="i" class="flex gap-2 items-center">
             <UInput v-model="contact.title" :placeholder="t('form.contacts.titlePlaceholder')" size="sm" class="w-32" />
-            <UInput v-model="contact.url" :placeholder="t('form.contacts.urlPlaceholder')" size="sm" class="flex-1" />
+            <UInput v-model="contact.value" :placeholder="t('form.contacts.valuePlaceholder')" size="sm" class="flex-1" />
             <UButton icon="i-heroicons-trash" color="error" variant="ghost" size="sm" type="button" @click="removeContact(i)" />
           </div>
           <UButton icon="i-heroicons-plus" color="neutral" variant="ghost" size="sm" type="button" @click="addContact">

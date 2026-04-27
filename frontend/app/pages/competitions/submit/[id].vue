@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useMyApplicationsStore } from '~/stores/myApplications';
 import { useNotificationsStore } from '~/stores/notifications';
-import { extractMilestoneDescription } from '~/utils/milestone';
 import type { CompetitionModel, Domain, FieldModel } from '~/types/api';
 
 const { t } = useI18n();
@@ -333,7 +332,7 @@ const handleApply = async () => {
                         :items="competition.milestones.map((milestone) => ({
                           date: formatDateTime(milestone.timestamp),
                           title: milestone.title,
-                          description: extractMilestoneDescription(milestone.description) ?? undefined,
+                          description: milestone.description ?? undefined,
                           icon: 'i-heroicons-flag',
                         }))"
                         color="primary"

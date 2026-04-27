@@ -20,7 +20,7 @@ interface Props {
   experienceLevel?: ExperienceLevel | null;
   preferredDomains?: Domain[];
   skills?: { name: string; level: SkillLevel }[];
-  contacts?: { title: string; url: string }[];
+  contacts?: { title: string; value: string }[];
 }
 
 const props = defineProps<Props>();
@@ -39,7 +39,7 @@ const state = reactive({
   experience_level: (props.experienceLevel ?? null) as ExperienceLevel | null,
   preferred_domains: [...(props.preferredDomains ?? [])] as Domain[],
   skills: [...(props.skills ?? [])].map((s) => ({ name: s.name, level: s.level })),
-  contacts: [...(props.contacts ?? [])].map((c) => ({ title: c.title, url: c.url })),
+  contacts: [...(props.contacts ?? [])].map((c) => ({ title: c.title, value: c.value })),
 });
 
 watch(
@@ -53,7 +53,7 @@ watch(
       state.experience_level = props.experienceLevel ?? null;
       state.preferred_domains = [...(props.preferredDomains ?? [])];
       state.skills = [...(props.skills ?? [])].map((s) => ({ name: s.name, level: s.level }));
-      state.contacts = [...(props.contacts ?? [])].map((c) => ({ title: c.title, url: c.url }));
+      state.contacts = [...(props.contacts ?? [])].map((c) => ({ title: c.title, value: c.value }));
       participantStore.clearError();
     }
   },
@@ -95,7 +95,7 @@ const removeSkill = (index: number) => {
 };
 
 const addContact = () => {
-  state.contacts.push({ title: "", url: "" });
+  state.contacts.push({ title: "", value: "" });
 };
 
 const removeContact = (index: number) => {
@@ -310,8 +310,8 @@ const apiError = computed(() => getErrorMessage(participantStore.error));
                   class="w-32"
                 />
                 <UInput
-                  v-model="contact.url"
-                  :placeholder="t('form.contacts.urlPlaceholder')"
+                  v-model="contact.value"
+                  :placeholder="t('form.contacts.valuePlaceholder')"
                   size="sm"
                   class="flex-1"
                 />

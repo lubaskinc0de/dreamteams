@@ -5,7 +5,6 @@ import { useNotificationsStore } from '~/stores/notifications';
 import { CalendarDate, Time, parseAbsoluteToLocal, today, getLocalTimeZone } from '@internationalized/date';
 import { createCompetitionSchemas } from '~/schemas/competition';
 import { combineDateTime } from '~/utils/dateTime';
-import { extractMilestoneDescription } from '~/utils/milestone';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -206,7 +205,7 @@ const initializeForm = (comp: any) => {
   formState.value.milestones = comp.milestones.map((m: any) => ({
     title: m.title,
     timestamp: m.timestamp,
-    description: extractMilestoneDescription(m.description),
+    description: m.description,
   }));
   formState.value.auto_accept = comp.auto_accept;
   formState.value.is_archived = comp.is_archived;
@@ -273,7 +272,7 @@ const initializeForm = (comp: any) => {
 
   // Parse and set milestones for UI components
   milestones.value = comp.milestones.map((m: any) => {
-    const description = extractMilestoneDescription(m.description);
+    const description = m.description;
     try {
       const dt = parseAbsoluteToLocal(m.timestamp);
       return {

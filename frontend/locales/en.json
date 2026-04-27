@@ -378,11 +378,10 @@
       "titlePlaceholder": "e.g. GitHub, LinkedIn",
       "titleRequired": "Contact title is required",
       "titleMaxLength": "Title must not exceed 70 characters",
-      "urlLabel": "URL",
-      "urlPlaceholder": "https://github.com/username",
-      "urlRequired": "URL is required",
-      "urlMaxLength": "URL must not exceed 2083 characters",
-      "invalidUrl": "Please enter a valid URL"
+      "valueLabel": "Contact",
+      "valuePlaceholder": "username or https://github.com/username",
+      "valueRequired": "Contact value is required",
+      "valueMaxLength": "Contact value must not exceed 2083 characters"
     }
   },
   "apiErrors": {

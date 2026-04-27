@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useCompetitionApplicationsStore } from '~/stores/competitionApplications';
 import { useNotificationsStore } from '~/stores/notifications';
+import { contactHref } from '~/utils/contact';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -190,14 +191,16 @@ const handleReject = async () => {
                   {{ t('applications.participantContacts') }}
                 </p>
                 <ul v-if="app.participant.contacts.length > 0" class="space-y-1.5 text-base">
-                  <li v-for="c in app.participant.contacts" :key="c.url" class="flex gap-3">
+                  <li v-for="c in app.participant.contacts" :key="`${c.title}:${c.value}`" class="flex gap-3">
                     <span class="text-gray-500 dark:text-gray-400 min-w-32">{{ c.title }}</span>
                     <a
-                      :href="c.url"
+                      v-if="contactHref(c.value)"
+                      :href="contactHref(c.value)!"
                       target="_blank"
                       rel="noopener"
                       class="text-primary-600 dark:text-primary-400 hover:underline break-all"
-                    >{{ c.url }}</a>
+                    >{{ c.value }}</a>
+                    <span v-else class="text-gray-700 dark:text-gray-300 break-all">{{ c.value }}</span>
                   </li>
                 </ul>
                 <p v-else class="text-sm text-gray-400 italic">{{ t('applications.notProvided') }}</p>

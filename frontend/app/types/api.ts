@@ -117,7 +117,7 @@ export interface AdminUserParticipant {
   skills: Array<{ name: string; level: string }>;
   experience_level: string | null;
   preferred_domains: string[];
-  contacts: Array<{ title: string; url: string }>;
+  contacts: Array<{ title: string; value: string }>;
   created_at: string;
   updated_at: string;
 }
@@ -185,7 +185,7 @@ export interface ParticipantSkill {
 
 export interface ParticipantContact {
   title: string;
-  url: string;
+  value: string;
 }
 
 export interface ParticipantProfile {
@@ -208,7 +208,7 @@ export interface ParticipantSkillForm {
 
 export interface ParticipantContactForm {
   title: string;
-  url: string;
+  value: string;
 }
 
 export interface ParticipantForm {
@@ -279,25 +279,16 @@ export interface CompetitionVenue {
   location: string | null;
 }
 
-export interface MilestoneDescription {
-  value: string;
-}
-
 export interface MilestoneForm {
   title: string;
   timestamp: string;
-  // Wire form: backend expects the raw string (Pydantic MilestoneForm schema),
-  // never the {value: ...} VO shape.
   description: string | null;
 }
 
 export interface Milestone {
   title: string;
   timestamp: string;
-  // Wire read shape: backend serializes the MilestoneDescription value object
-  // as { value: "..." }. Unwrap via `milestone.description?.value ?? null` at
-  // call sites — prefer `extractMilestoneDescription()` helper.
-  description: MilestoneDescription | null;
+  description: string | null;
 }
 
 export interface CompetitionForm {

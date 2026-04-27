@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { PreviewCompetitionModel } from "~/types/api";
 import { useWindowSize } from "@vueuse/core";
-import { extractMilestoneDescription } from "~/utils/milestone";
 
 /**
  * Competition Detail Modal/Drawer
@@ -237,7 +236,7 @@ const handleRegister = () => {
             :items="competition.milestones.map((milestone) => ({
               date: formatDateTime(milestone.timestamp),
               title: milestone.title,
-              description: extractMilestoneDescription(milestone.description) ?? undefined,
+              description: milestone.description ?? undefined,
               icon: 'i-heroicons-flag',
             }))"
             color="primary"
@@ -411,7 +410,7 @@ const handleRegister = () => {
             :items="competition.milestones.map((milestone) => ({
               date: formatDateTime(milestone.timestamp),
               title: milestone.title,
-              description: extractMilestoneDescription(milestone.description) ?? undefined,
+              description: milestone.description ?? undefined,
               icon: 'i-heroicons-flag',
             }))"
             color="primary"

@@ -8,8 +8,7 @@ export const createCompetitionSchemas = (t: (key: string) => string) => {
     .transform((val) => val.trim());
 
   const descriptionSchema = z
-    .string()
-    .min(1, t("competition.form.description.required"));
+    .string();
 
   const scheduleSchema = z.object({
     registration_start: z.string().min(1, t("competition.form.schedule.registrationStart.required")),
@@ -154,7 +153,6 @@ export const createCompetitionSchemas = (t: (key: string) => string) => {
   const milestoneSchema = z.object({
     title: z
       .string()
-      .min(1, t("competition.form.milestone.title.required"))
       .max(50, t("competition.form.milestone.title.maxLength")),
     timestamp: z.string().min(1, t("competition.form.milestone.timestamp.required")),
     description: z
@@ -278,7 +276,6 @@ export const createCompetitionSchemas = (t: (key: string) => string) => {
   const updateMilestoneSchema = z.object({
     title: z
       .string()
-      .min(1, t("competition.form.milestone.title.required"))
       .max(50, t("competition.form.milestone.title.maxLength")),
     timestamp: z.string().min(1, t("competition.form.milestone.timestamp.required")),
   });

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAdminUsersStore } from "~/stores/adminUsers";
 import { useNotificationsStore } from "~/stores/notifications";
+import { contactHref } from "~/utils/contact";
 
 definePageMeta({ layout: "default" });
 
@@ -337,17 +338,25 @@ useHead({
                 {{ t("admin.users.fields.contacts") }}
               </h3>
               <div class="space-y-2">
-                <a
+                <template
                   v-for="contact in store.currentUser.participant.contacts"
-                  :key="contact.url"
-                  :href="contact.url"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="inline-flex items-center gap-2 text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                  :key="`${contact.title}:${contact.value}`"
                 >
-                  <UIcon name="i-heroicons-link" />
-                  <span>{{ contact.title }}</span>
-                </a>
+                  <a
+                    v-if="contactHref(contact.value)"
+                    :href="contactHref(contact.value)!"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-2 text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                  >
+                    <UIcon name="i-heroicons-link" />
+                    <span>{{ contact.title }}</span>
+                  </a>
+                  <div v-else class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                    <UIcon name="i-heroicons-at-symbol" />
+                    <span>{{ contact.title }}: {{ contact.value }}</span>
+                  </div>
+                </template>
               </div>
             </div>
           </div>

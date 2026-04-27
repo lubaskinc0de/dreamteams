@@ -24,18 +24,17 @@ export const createParticipantSchemas = (t: (key: string) => string) => {
     level: skillLevelSchema,
   });
 
-  const contactUrlSchema = z
+  const contactValueSchema = z
     .string()
-    .min(1, t("form.contacts.urlRequired"))
-    .max(2083, t("form.contacts.urlMaxLength"))
-    .url(t("form.contacts.invalidUrl"));
+    .min(1, t("form.contacts.valueRequired"))
+    .max(2083, t("form.contacts.valueMaxLength"));
 
   const contactSchema = z.object({
     title: z
       .string()
       .min(1, t("form.contacts.titleRequired"))
       .max(70, t("form.contacts.titleMaxLength")),
-    url: contactUrlSchema,
+    value: contactValueSchema,
   });
 
   const experienceLevelSchema = z.enum(

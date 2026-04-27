@@ -378,11 +378,10 @@
       "titlePlaceholder": "Например: GitHub, LinkedIn",
       "titleRequired": "Название контакта обязательно",
       "titleMaxLength": "Название не должно превышать 70 символов",
-      "urlLabel": "Ссылка",
-      "urlPlaceholder": "https://github.com/username",
-      "urlRequired": "Ссылка обязательна",
-      "urlMaxLength": "Ссылка не должна превышать 2083 символа",
-      "invalidUrl": "Введите корректную ссылку"
+      "valueLabel": "Контакт",
+      "valuePlaceholder": "username или https://github.com/username",
+      "valueRequired": "Значение контакта обязательно",
+      "valueMaxLength": "Значение контакта не должно превышать 2083 символа"
     }
   },
   "apiErrors": {
