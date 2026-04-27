@@ -3,7 +3,6 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from dreamteams.entities.common.identifiers import OrganizerId, ParticipantId, UserId
-from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
@@ -40,7 +39,6 @@ class AdminParticipantModel(BaseModel):
     bio: str | None
     skills: list[ParticipantSkill]
     experience_level: ExperienceLevel | None
-    preferred_domains: list[Domain]
     contacts: list[ParticipantContact]
     created_at: datetime
     updated_at: datetime

@@ -1,5 +1,6 @@
 from redis.asyncio import Redis
 
+from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.manage_application_form.create import ApplicationFormInput, FieldChoiceForm, FieldForm
 from dreamteams.application.submit_application import SubmitApplicationInput
 from dreamteams.entities.application_form.vo.field import FieldType
@@ -41,7 +42,7 @@ def build_submission_input(
 ) -> SubmitApplicationInput:
     """Build a deterministic submission payload for one participant."""
     return factory.build(
-        domains=[competition.form.domains[0]],
+        track=CompetitionTrackForm(name=competition.form.tracks[0].name),
         form_data={"motivation": f"candidate-{index}", "roles": ["frontend", "backend"]},
     )
 

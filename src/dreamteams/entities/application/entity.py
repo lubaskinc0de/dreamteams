@@ -9,8 +9,8 @@ from dreamteams.entities.application_form.entity import ApplicationForm
 from dreamteams.entities.base import Entity, model
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId, ParticipantId
-from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.competition.entity import Competition
+from dreamteams.entities.competition.track import CompetitionTrack
 from dreamteams.entities.errors.application import ApplicationAlreadyResolvedError, InvalidApplicationDataError
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.user import Organizer, Participant
@@ -31,7 +31,7 @@ class Application(Entity):
     id: ApplicationId
     participant_id: ParticipantId
     competition_id: CompetitionId
-    domains: list[Domain]
+    track: CompetitionTrack
     status: ApplicationStatus
     created_at: datetime
     form_data: dict[str, Any] | None = None
@@ -64,7 +64,7 @@ class Application(Entity):
 class ApplicationData:
     """Data for creating an Application."""
 
-    domains: list[Domain]
+    track: CompetitionTrack
     form_data: dict[str, Any] | None = None
 
 
@@ -76,11 +76,8 @@ def application_factory(
     form: ApplicationForm | None = None,
 ) -> Application:
     """Create a new Application."""
-    if not data.domains:
-        raise InvalidApplicationDataError(message="Domains list must not be empty")
-
-    if not set(data.domains) <= set(competition.domains):
-        raise InvalidApplicationDataError(message="Application domains must be a subset of competition domains")
+    if data.track.name.casefold() not in {track.name.casefold() for track in competition.tracks}:
+        raise InvalidApplicationDataError(message="Application track must exist in competition tracks")
 
     validate_form_data(data.form_data, form)
 
@@ -90,7 +87,7 @@ def application_factory(
         id=uuid4(),
         participant_id=participant.id,
         competition_id=competition.id,
-        domains=data.domains,
+        track=data.track,
         status=status,
         created_at=clock.now(),
         form_data=data.form_data,

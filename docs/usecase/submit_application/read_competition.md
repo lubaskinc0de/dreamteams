@@ -19,7 +19,8 @@
 | `description` | `str` | Competition description |
 | `schedule` | `CompetitionSchedule` | Registration and event dates |
 | `participant_limits` | `ParticipantLimits` | Max participants |
-| `domains` | `list[Domain]` | Technical domains |
+| `tags` | `list[CompetitionTag]` | Search tags attached to the competition |
+| `tracks` | `list[CompetitionTrack]` | Tracks participants can apply to |
 | `participant_type` | `ParticipantType` | Participant type |
 | `venue` | `CompetitionVenue` | Format and location |
 | `team_size` | `TeamSizeRange \| None` | Team size range |

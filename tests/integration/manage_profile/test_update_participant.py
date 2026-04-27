@@ -52,7 +52,6 @@ async def test_participant_profile_is_updated(
             bio=update_form.bio,
             skills=profile.participant.skills,
             experience_level=update_form.experience_level,
-            preferred_domains=update_form.preferred_domains,
             contacts=expected_contacts,
         ),
         avatar_url=None,
@@ -135,6 +134,25 @@ async def test_update_participant_accepts_non_url_contact_value(
 
     # Assert
     response.assert_status(200)
+
+
+async def test_update_participant_rejects_more_than_fifteen_contacts(
+    api_client: ApiClient,
+    gateway: Gateway,
+    update_participant_form_factory: UpdateParticipantFormFactory,
+) -> None:
+    """Updating a participant with more than 15 contacts is rejected by request validation."""
+    # Arrange
+    participant = await gateway.participant.create()
+    data = update_participant_form_factory.build().model_dump(mode="json")
+    data["contacts"] = [{"title": f"contact-{i}", "value": f"https://example.com/{i}"} for i in range(16)]
+
+    # Act
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        response = await api_client.update_participant(data)
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
 
 
 async def test_update_participant_fails_if_age_is_negative(

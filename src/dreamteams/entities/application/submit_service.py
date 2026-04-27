@@ -28,7 +28,7 @@ def submit_application(  # noqa: PLR0913
     4. Accepted count must be strictly below participant_limits.max.
 
     Delegates to ``application_factory`` for entity-level validation
-    (domains, form_data, auto_accept status).
+    (track, form_data, auto_accept status).
     """
     if competition.is_archived:
         raise CompetitionNotActiveError(message="Competition is archived and not accepting applications")

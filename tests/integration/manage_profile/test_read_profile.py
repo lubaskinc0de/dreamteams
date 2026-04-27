@@ -87,7 +87,6 @@ async def test_view_participant_profile(api_client: ApiClient, gateway: Gateway)
             bio=participant.form.bio,
             skills=profile_model.participant.skills,
             experience_level=participant.form.experience_level,
-            preferred_domains=participant.form.preferred_domains,
             contacts=expected_contacts,
         ),
         avatar_url=None,

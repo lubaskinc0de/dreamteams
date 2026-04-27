@@ -6,6 +6,7 @@ import asyncio
 from collections.abc import Iterable
 from dataclasses import dataclass
 
+from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.manage_applications import ApplicationModel
 from dreamteams.application.manage_my_applications import MyApplicationModel
 from dreamteams.application.submit_application import SubmitApplicationInput
@@ -29,7 +30,7 @@ class ApplicationGateway:
     async def submit(self, participant_auth_id: str, comp: CompetitionCreated) -> ApplicationId:
         """Submit an application to a competition on behalf of a participant."""
         data = self.submit_application_input_factory.build(
-            domains=[comp.form.domains[0]],
+            track=CompetitionTrackForm(name=comp.form.tracks[0].name),
             form_data=None,
         )
 
@@ -226,7 +227,7 @@ class ApplicationGateway:
                     count,
                     comp.created.competition_id,
                     self.submit_application_input_factory.build(
-                        domains=[comp.form.domains[0]],
+                        track=CompetitionTrackForm(name=comp.form.tracks[0].name),
                         form_data=None,
                     ),
                 )

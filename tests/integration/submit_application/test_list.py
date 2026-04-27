@@ -1,9 +1,12 @@
+from uuid import uuid4
+
 import pytest
 
+from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.common.gateway.competition import CompetitionSortBy, ExploreSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
+from dreamteams.application.manage_tags import CompetitionTagInput
 from dreamteams.application.submit_application.list_competitions import PAGE_SIZE, ExploreCompetitionsList
-from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from tests.common.factory.application import SubmitApplicationInputFactory
@@ -157,7 +160,10 @@ async def test_full_capacity_competitions_are_hidden(
         auto_accept=True,
         max_participants=max_participants,
     )
-    submit_input = submit_application_input_factory.build(domains=[comp.form.domains[0]], form_data=None)
+    submit_input = submit_application_input_factory.build(
+        track=CompetitionTrackForm(name=comp.form.tracks[0].name),
+        form_data=None,
+    )
     await gateway.application.create_for_competition(
         max_participants,
         comp.created.competition_id,
@@ -401,45 +407,58 @@ async def test_auto_accept_filter_returns_only_matching_competitions(
     assert response.assert_status(200).ensure_content() == expected
 
 
-@pytest.mark.parametrize(
-    ("comp_a_domains", "comp_b_domains", "query_domains", "expected_match"),
-    [
-        ([Domain.BACKEND], [Domain.FRONTEND], [Domain.BACKEND], "a"),
-        ([Domain.BACKEND, Domain.AI], [Domain.FRONTEND], [Domain.AI], "a"),
-        ([Domain.BACKEND], [Domain.FRONTEND], [Domain.FRONTEND], "b"),
-        ([Domain.BACKEND], [Domain.FRONTEND], [Domain.AI], "none"),
-        ([Domain.BACKEND], [Domain.FRONTEND], [Domain.BACKEND, Domain.FRONTEND], "both"),
-    ],
-)
-async def test_domains_filter_returns_competitions_with_overlapping_domains(
+async def test_tag_filter_returns_competitions_with_matching_tags(
     api_client: ApiClient,
     gateway: Gateway,
-    comp_a_domains: list[Domain],
-    comp_b_domains: list[Domain],
-    query_domains: list[Domain],
-    expected_match: str,
 ) -> None:
-    """``domains=[...]`` returns only competitions whose ``domains`` overlap with the query."""
+    """``tag_ids=[...]`` returns only competitions whose tags overlap with the query."""
     # Arrange
     owner = await gateway.organizer.create_with_admin(gateway.admin)
     participant = await gateway.participant.create()
-    comp_a = await gateway.competition.create_active(owner.organizer.auth_id, domains=comp_a_domains)
-    comp_b = await gateway.competition.create_active(owner.organizer.auth_id, domains=comp_b_domains)
+    with api_client.authenticate(auth_user_id=owner.admin.auth_id):
+        backend = (
+            (await api_client.create_tag(CompetitionTagInput(value="Backend test filter").model_dump(mode="json")))
+            .assert_status(200)
+            .ensure_content()
+        )
+        frontend = (
+            (await api_client.create_tag(CompetitionTagInput(value="Frontend test filter").model_dump(mode="json")))
+            .assert_status(200)
+            .ensure_content()
+        )
+    comp_a = await gateway.competition.create_active(owner.organizer.auth_id, tag_ids=[backend.id])
+    comp_b = await gateway.competition.create_active(owner.organizer.auth_id, tag_ids=[frontend.id])
 
     # Act
     with api_client.authenticate(auth_user_id=participant.auth_id):
-        response = await api_client.explore_competitions(domains=query_domains)
+        response = await api_client.explore_competitions(tag_ids=[backend.id])
 
     # Assert
     result = response.assert_status(200).ensure_content()
-    returned_ids = {item.id for item in result.items}
-    expected_ids = {
-        "a": {comp_a.created.competition_id},
-        "b": {comp_b.created.competition_id},
-        "both": {comp_a.created.competition_id, comp_b.created.competition_id},
-        "none": set(),
-    }[expected_match]
-    assert returned_ids == expected_ids
+    assert {item.id for item in result.items} == {comp_a.created.competition_id}
+    assert comp_b.created.competition_id not in {item.id for item in result.items}
+
+
+async def test_search_matches_competition_tag_value(
+    api_client: ApiClient,
+    gateway: Gateway,
+) -> None:
+    """Explore search returns competitions whose attached tag value matches the search term."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    tag_input = CompetitionTagInput(value=f"TagSearchNeedle-{uuid4()}")
+    with api_client.authenticate(auth_user_id=owner.admin.auth_id):
+        tag = (await api_client.create_tag(tag_input.model_dump(mode="json"))).assert_status(200).ensure_content()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, tag_ids=[tag.id])
+
+    # Act
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        response = await api_client.explore_competitions(search=tag_input.value)
+
+    # Assert
+    result = response.assert_status(200).ensure_content()
+    assert {item.id for item in result.items} == {comp.created.competition_id}
 
 
 # --- Pagination + response shape ---

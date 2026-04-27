@@ -2,10 +2,11 @@ from datetime import UTC, datetime, timedelta
 
 from polyfactory.factories.pydantic_factory import ModelFactory
 
+from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.common.dto.milestone import MilestoneForm
 from dreamteams.application.manage_competitions import UpdateCompetitionForm
 from dreamteams.application.publish_competition import CompetitionForm
-from dreamteams.entities.common.vo.domain import Domain
+from dreamteams.entities.common.identifiers import CompetitionTagId
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import ScheduleData
@@ -59,12 +60,18 @@ def _team_size_provider() -> TeamSizeRange:
     return TeamSizeRange(max=max_size, min=min_size)
 
 
-def _domains_provider() -> list[Domain]:
-    """Provider for domains list with random selection."""
-    random_ = CompetitionFormFactory.__random__
-    all_domains = list(Domain)
-    count = random_.randint(1, len(all_domains))
-    return random_.sample(all_domains, count)
+def _tracks_provider() -> list[CompetitionTrackForm]:
+    """Provider for competition tracks."""
+    faker = CompetitionFormFactory.__faker__
+    count = CompetitionFormFactory.__random__.randint(1, 5)
+    names = {faker.unique.word().title() for _ in range(count)}
+    faker.unique.clear()
+    return [CompetitionTrackForm(name=name) for name in names]
+
+
+def _tag_ids_provider() -> list[CompetitionTagId]:
+    """Provider for empty tag IDs list."""
+    return []
 
 
 def _participant_type_provider() -> ParticipantType:
@@ -112,7 +119,8 @@ class CompetitionFormFactory(ModelFactory[CompetitionForm]):
     participant_limits = _participant_limits_provider
     venue = _competition_venue_provider
     team_size = _team_size_provider
-    domains = _domains_provider
+    tag_ids = _tag_ids_provider
+    tracks = _tracks_provider
     participant_type = _participant_type_provider
     milestones = _milestones_provider
 
@@ -126,6 +134,7 @@ class UpdateCompetitionFormFactory(ModelFactory[UpdateCompetitionForm]):
     participant_limits = _participant_limits_provider
     venue = _competition_venue_provider
     team_size = _team_size_provider
-    domains = _domains_provider
+    tag_ids = _tag_ids_provider
+    tracks = _tracks_provider
     participant_type = _participant_type_provider
     milestones = _milestones_provider

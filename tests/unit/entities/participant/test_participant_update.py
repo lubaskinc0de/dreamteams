@@ -35,7 +35,6 @@ def test_update_participant_succeeds(
         bio=valid_participant_update_data.bio,
         skills=valid_participant_update_data.skills,
         experience_level=valid_participant_update_data.experience_level,
-        preferred_domains=valid_participant_update_data.preferred_domains,
         contacts=valid_participant_update_data.contacts,
         participant_type=valid_participant_update_data.participant_type,
         age=valid_participant_update_data.age,

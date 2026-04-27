@@ -10,12 +10,12 @@ from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dreamteams.adapters.db.models import competition_table
+from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.common.dto.milestone import MilestoneForm
 from dreamteams.application.manage_competitions import CompetitionModel
 from dreamteams.application.manage_competitions.update import UpdateCompetitionForm
 from dreamteams.application.publish_competition.create import CompetitionForm
-from dreamteams.entities.common.identifiers import CompetitionId
-from dreamteams.entities.common.vo.domain import Domain
+from dreamteams.entities.common.identifiers import CompetitionId, CompetitionTagId
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import ScheduleData
@@ -167,7 +167,8 @@ class CompetitionGateway:
         competition_id: CompetitionId,
         organizer_auth_id: str,
         *,
-        domains: list[Domain],
+        tag_ids: list[CompetitionTagId],
+        tracks: list[CompetitionTrackForm],
         auto_accept: bool = False,
         participant_type: ParticipantType = ParticipantType.ANY,
         max_participants: int = 10000,
@@ -175,7 +176,7 @@ class CompetitionGateway:
         """Open registration window and update key competition fields.
 
         DB-updates ``registration_start`` into the past, then calls the API to set
-        ``participant_type``, ``participant_limits``, ``is_archived``, ``domains``, ``auto_accept``.
+        ``participant_type``, ``participant_limits``, ``is_archived``, ``tag_ids``, ``tracks``, ``auto_accept``.
         """
         competition_model = await self.read(competition_id, organizer_auth_id)
         await self.make_all_active([competition_model], organizer_auth_id)
@@ -202,7 +203,8 @@ class CompetitionGateway:
             participant_type=participant_type,
             participant_limits=ParticipantLimits(max=max_participants),
             is_archived=False,
-            domains=domains,
+            tag_ids=tag_ids,
+            tracks=tracks,
             auto_accept=auto_accept,
         )
         with self.api_client.authenticate(auth_user_id=organizer_auth_id):
@@ -232,7 +234,7 @@ class CompetitionGateway:
         auto_accept: bool = True,
         participant_type: ParticipantType = ParticipantType.ANY,
         max_participants: int = 10000,
-        domains: list[Domain] | None = None,
+        tag_ids: list[CompetitionTagId] | None = None,
     ) -> CompetitionCreated:
         """Create a new competition with open registration."""
         comp = await self.create(organizer_auth_id, auto_accept=auto_accept)
@@ -240,7 +242,8 @@ class CompetitionGateway:
         await self.activate(
             comp.created.competition_id,
             organizer_auth_id,
-            domains=domains if domains is not None else comp.form.domains,
+            tag_ids=tag_ids if tag_ids is not None else comp.form.tag_ids,
+            tracks=comp.form.tracks,
             auto_accept=auto_accept,
             participant_type=participant_type,
             max_participants=max_participants,
@@ -251,15 +254,14 @@ class CompetitionGateway:
     async def create_unarchived(
         self,
         organizer_auth_id: str,
-        *,
-        domains: list[Domain] | None = None,
     ) -> CompetitionCreated:
         """Create a competition that is visible (unarchived) but whose registration hasn't started yet."""
         comp = await self.create(organizer_auth_id)
         update_form = self.update_competition_form_factory.build(
             participant_type=ParticipantType.ANY,
             is_archived=False,
-            domains=domains if domains is not None else comp.form.domains,
+            tag_ids=comp.form.tag_ids,
+            tracks=comp.form.tracks,
             auto_accept=comp.form.auto_accept,
         )
         await self.update(comp.created.competition_id, update_form, organizer_auth_id)

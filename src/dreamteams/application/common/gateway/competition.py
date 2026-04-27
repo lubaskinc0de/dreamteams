@@ -6,8 +6,7 @@ from dreamteams.application.common.dto.competition import CompetitionModel
 from dreamteams.application.common.dto.explore_competition import ExploreCompetitionModel
 from dreamteams.application.common.dto.preview_competition import PreviewCompetitionModel
 from dreamteams.application.common.gateway.sorting import SortOrder
-from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId, ParticipantId
-from dreamteams.entities.common.vo.domain import Domain
+from dreamteams.entities.common.identifiers import CompetitionId, CompetitionTagId, OrganizerId, ParticipantId
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import Competition
 
@@ -37,13 +36,15 @@ class CompetitionGateway(Protocol):
         competition_id: CompetitionId,
         *,
         eager_milestones: bool = False,
+        eager_tags: bool = False,
+        eager_tracks: bool = False,
     ) -> Competition | None:
         """Retrieves a competition entity by its unique identifier.
 
         Returns None if not found or if the competition's organizer account is blocked.
         Implementations must exclude competitions whose organizer has ``ban_status.is_blocked = True``.
 
-        Set ``eager_milestones=True`` when the caller renders milestones in its response —
+        Set eager flags when the caller renders or validates relationship-backed fields —
         otherwise the relationship raises on access.
         """
         raise NotImplementedError
@@ -60,6 +61,11 @@ class CompetitionGateway(Protocol):
     @abstractmethod
     async def clear_milestones(self, competition_id: CompetitionId) -> None:
         """Delete all competition milestones from storage."""
+        raise NotImplementedError
+
+    @abstractmethod
+    async def clear_tracks(self, competition_id: CompetitionId) -> None:
+        """Delete all competition tracks from storage."""
         raise NotImplementedError
 
     @abstractmethod
@@ -117,7 +123,7 @@ class CompetitionGateway(Protocol):
         min_team_size: int | None,
         max_team_size: int | None,
         auto_accept: bool | None,
-        domains: list[Domain] | None,
+        tag_ids: list[CompetitionTagId] | None,
     ) -> tuple[list[ExploreCompetitionModel], int]:
         """Participant-facing browse: only competitions the participant can still submit to.
 
@@ -131,8 +137,8 @@ class CompetitionGateway(Protocol):
         - ``min_team_size`` / ``max_team_size``: the competition's own team-size range must
           overlap with [min, max]
         - ``auto_accept``: exact match when provided
-        - ``domains``: competition's domains must overlap with any of the provided
-        - ``search``: trigram similarity on the title
+        - ``tag_ids``: competition's tags must overlap with any of the provided
+        - ``search``: similarity on the title or attached tag values
 
         ``MOST_POPULAR`` sorts by ``members_count`` desc; ``NEWEST`` sorts by ``created_at`` desc.
         Implementations must exclude competitions whose organizer has ``ban_status.is_blocked = True``.

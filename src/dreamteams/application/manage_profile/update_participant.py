@@ -10,7 +10,6 @@ from dreamteams.application.common.logger import Logger
 from dreamteams.application.common.uow import UoW
 from dreamteams.application.errors.participant import ParticipantNotFoundError
 from dreamteams.entities.common.clock import Clock
-from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.participant.vo.age import Age
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
@@ -31,8 +30,7 @@ class UpdateParticipantForm(BaseModel):
     bio: str | None = Field(default=None, max_length=500)
     skills: list[ParticipantSkillForm] = Field(default_factory=list)
     experience_level: ExperienceLevel | None = None
-    preferred_domains: list[Domain] = Field(default_factory=list)
-    contacts: list[ParticipantContactForm] = Field(default_factory=list)
+    contacts: list[ParticipantContactForm] = Field(default_factory=list, max_length=15)
 
 
 @interactor
@@ -60,7 +58,6 @@ class UpdateParticipant:
                 bio=data.bio,
                 skills=ParticipantSkills([ParticipantSkill(name=s.name, level=s.level) for s in data.skills]),
                 experience_level=data.experience_level,
-                preferred_domains=data.preferred_domains,
                 contacts=ParticipantContacts([ParticipantContact(title=c.title, value=c.value) for c in data.contacts]),
                 participant_type=data.participant_type,
                 age=Age(data.age),

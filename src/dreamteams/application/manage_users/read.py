@@ -72,7 +72,6 @@ class ReadUserByAdmin:
                     bio=participant.bio,
                     skills=participant.skills,
                     experience_level=participant.experience_level,
-                    preferred_domains=participant.preferred_domains,
                     contacts=participant.contacts,
                     created_at=participant.created_at,
                     updated_at=participant.updated_at,

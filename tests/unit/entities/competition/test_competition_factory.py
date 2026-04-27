@@ -47,7 +47,8 @@ def test_create_competition_with_valid_data(
             data.schedule.team_formation_end,
         ),
         participant_limits=data.participant_limits,
-        domains=data.domains,
+        tags=data.tags,
+        tracks=data.tracks,
         participant_type=data.participant_type,
         venue=data.venue,
         team_size=data.team_size,
@@ -62,25 +63,6 @@ def test_create_competition_with_valid_data(
         created_at=competition.created_at,
         updated_at=competition.updated_at,
     )
-
-
-@settings(max_examples=30)
-@given(valid_competition_data())
-def test_competition_domains_list_is_not_empty(
-    gateway: Gateway,
-    clock: Clock,
-    data: CompetitionData,
-) -> None:
-    """Test cannot create competition with empty domains list."""
-    organizer = gateway.organizer.create()
-    data.domains = []
-
-    with pytest.raises(InvalidCompetitionDataError, match="Domains list must not be empty"):
-        competition_factory(
-            organizer=organizer,
-            data=data,
-            clock=clock,
-        )
 
 
 @settings(max_examples=30)

@@ -15,6 +15,10 @@ from dreamteams.application.errors.application_form import (
     ApplicationFormAlreadyExistsError,
     ApplicationFormNotFoundError,
 )
+from dreamteams.application.errors.competition_tag import (
+    CompetitionTagAlreadyExistsError,
+    CompetitionTagNotFoundError,
+)
 from dreamteams.application.errors.invite import InviteNotFoundError
 from dreamteams.application.errors.organizer import OrganizerAlreadyExistsError, OrganizerNotFoundError
 from dreamteams.application.errors.participant import ParticipantNotFoundError
@@ -66,6 +70,8 @@ error_to_http_status: dict[type[AppError], int] = {
     ParticipantLimitsExceededError: 409,
     OrganizerNotFoundError: 404,
     ParticipantNotFoundError: 404,
+    CompetitionTagNotFoundError: 404,
+    CompetitionTagAlreadyExistsError: 409,
 }
 
 

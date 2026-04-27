@@ -6,7 +6,6 @@ from uuid import uuid4
 from dreamteams.entities.base import Entity, model
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import OrganizerId, ParticipantId, UserId
-from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.organizer import (
@@ -122,7 +121,6 @@ class UpdateParticipantData:
     bio: str | None
     skills: ParticipantSkills
     experience_level: ExperienceLevel | None
-    preferred_domains: list[Domain]
     contacts: ParticipantContacts
     participant_type: ParticipantType
     age: Age
@@ -136,7 +134,6 @@ class ParticipantData:
     bio: str | None
     skills: ParticipantSkills
     experience_level: ExperienceLevel | None
-    preferred_domains: list[Domain]
     contacts: ParticipantContacts
     participant_type: ParticipantType
     age: Age
@@ -152,7 +149,6 @@ class Participant(Entity):
     bio: str | None
     skills: ParticipantSkills
     experience_level: ExperienceLevel | None
-    preferred_domains: list[Domain]
     contacts: ParticipantContacts
     participant_type: ParticipantType
     age: Age
@@ -174,7 +170,6 @@ class Participant(Entity):
         self.bio = data.bio
         self.skills = ParticipantSkills(data.skills)
         self.experience_level = data.experience_level
-        self.preferred_domains = data.preferred_domains
         self.participant_type = data.participant_type
         self.contacts = ParticipantContacts(data.contacts)
         self.age = data.age
@@ -196,7 +191,6 @@ def participant_factory(
         bio=data.bio,
         skills=ParticipantSkills(data.skills),
         experience_level=data.experience_level,
-        preferred_domains=data.preferred_domains,
         contacts=ParticipantContacts(data.contacts),
         participant_type=data.participant_type,
         age=data.age,

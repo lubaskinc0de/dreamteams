@@ -12,8 +12,7 @@ Registers a new participant
 | `bio`               | `str \| None`             | No       | Short biography or description |
 | `skills`            | `list[ParticipantSkill]`  | No       | List of participant skills (default: empty) |
 | `experience_level`  | `ExperienceLevel \| None` | No       | Experience level |
-| `preferred_domains` | `list[Domain]`            | No       | List of preferred domains (default: empty) |
-| `contacts`          | `list[ParticipantContact]`| No       | List of contacts (default: empty) |
+| `contacts`          | `list[ParticipantContact]`| No       | List of contacts (default: empty, max 15) |
 
 
 ## Output
@@ -30,6 +29,7 @@ Registers a new participant
 4. Skill names must be unique within the skills list
 5. Contact titles must be unique within the contacts list
 6. Contact values must be unique within the contacts list
+7. At most 15 contacts are accepted by the request model
 
 
 ## Errors

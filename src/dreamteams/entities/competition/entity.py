@@ -5,7 +5,6 @@ from uuid import uuid4
 from dreamteams.entities.base import Entity, model
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
-from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.milestone import MilestoneData, milestone_factory
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
@@ -13,6 +12,8 @@ from dreamteams.entities.competition.schedule import CompetitionSchedule, Schedu
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.venue import CompetitionVenue
 from dreamteams.entities.competition.vo.milestones import CompetitionMilestones
+from dreamteams.entities.competition.vo.tags import CompetitionTags
+from dreamteams.entities.competition.vo.tracks import CompetitionTracks
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 from dreamteams.entities.user import Organizer
@@ -32,7 +33,8 @@ class Competition(Entity):
     description: str
     schedule: CompetitionSchedule
     participant_limits: ParticipantLimits
-    domains: list[Domain]
+    tags: CompetitionTags
+    tracks: CompetitionTracks
     participant_type: ParticipantType
     venue: CompetitionVenue
     team_size: TeamSizeRange | None
@@ -56,9 +58,6 @@ class Competition(Entity):
         if not self.is_owned_by(organizer):
             raise AccessDeniedError(message="Only the organizer who created this competition can update it")
 
-        if not data.domains:
-            raise InvalidCompetitionDataError(message="Domains list must not be empty")
-
         new_schedule = self.schedule.update(data.schedule, clock)
         _validate_team_size_schedule_pairing(data.team_size, new_schedule)
 
@@ -66,7 +65,8 @@ class Competition(Entity):
         self.description = data.description
         self.schedule = new_schedule
         self.participant_limits = data.participant_limits
-        self.domains = data.domains
+        self.tags = data.tags
+        self.tracks = data.tracks
         self.participant_type = data.participant_type
         self.venue = data.venue
         self.team_size = data.team_size
@@ -84,7 +84,8 @@ class CompetitionData:
     description: str
     schedule: ScheduleData
     participant_limits: ParticipantLimits
-    domains: list[Domain]
+    tags: CompetitionTags
+    tracks: CompetitionTracks
     participant_type: ParticipantType
     venue: CompetitionVenue
     team_size: TeamSizeRange | None
@@ -100,7 +101,8 @@ class UpdateCompetitionData:
     description: str
     schedule: ScheduleData
     participant_limits: ParticipantLimits
-    domains: list[Domain]
+    tags: CompetitionTags
+    tracks: CompetitionTracks
     participant_type: ParticipantType
     venue: CompetitionVenue
     team_size: TeamSizeRange | None
@@ -128,9 +130,6 @@ def competition_factory(
     clock: Clock,
 ) -> Competition:
     """Create a new competition."""
-    if not data.domains:
-        raise InvalidCompetitionDataError(message="Domains list must not be empty")
-
     schedule = schedule_factory(data.schedule, clock)
     _validate_team_size_schedule_pairing(data.team_size, schedule)
 
@@ -144,7 +143,8 @@ def competition_factory(
         description=data.description,
         schedule=schedule,
         participant_limits=data.participant_limits,
-        domains=data.domains,
+        tags=data.tags,
+        tracks=data.tracks,
         participant_type=data.participant_type,
         venue=data.venue,
         team_size=data.team_size,

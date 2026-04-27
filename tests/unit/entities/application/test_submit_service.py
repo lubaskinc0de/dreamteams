@@ -1,7 +1,7 @@
 from typing import Any
 
 import pytest
-from hypothesis import assume, given, settings
+from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from dreamteams.entities.application.entity import Application, ApplicationData, ApplicationStatus
@@ -10,9 +10,9 @@ from dreamteams.entities.application_form.entity import ApplicationForm, Applica
 from dreamteams.entities.application_form.vo.field import Field, FieldChoice, FieldType
 from dreamteams.entities.application_form.vo.fields import ApplicationFormFields
 from dreamteams.entities.common.clock import Clock
-from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
+from dreamteams.entities.competition.track import CompetitionTrack
 from dreamteams.entities.errors.application import (
     CompetitionNotActiveError,
     InvalidApplicationDataError,
@@ -62,7 +62,7 @@ def test_application_is_created_with_valid_data(
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
     competition.participant_limits = ParticipantLimits(max=1000)
-    app_data = data.draw(valid_application_data(domains=competition.domains))
+    app_data = data.draw(valid_application_data(tracks=list(competition.tracks)))
 
     application = submit_application(
         data=app_data,
@@ -76,7 +76,7 @@ def test_application_is_created_with_valid_data(
         id=application.id,
         participant_id=participant.id,
         competition_id=competition.id,
-        domains=app_data.domains,
+        track=app_data.track,
         status=ApplicationStatus.ACCEPTED if competition.auto_accept else ApplicationStatus.PENDING,
         created_at=application.created_at,
         form_data=app_data.form_data,
@@ -97,7 +97,7 @@ def test_archived_competition_is_rejected(
     organizer = gateway.organizer.create()
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     competition = data.draw(valid_competition(organizer, clock, is_archived=True, is_open=True))
-    app_data = data.draw(valid_application_data(domains=competition.domains))
+    app_data = data.draw(valid_application_data(tracks=list(competition.tracks)))
 
     with pytest.raises(CompetitionNotActiveError):
         submit_application(
@@ -121,7 +121,7 @@ def test_registration_not_yet_started_is_rejected(
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     # is_open=False (default) → factory-generated future schedule, registration not yet started
     competition = data.draw(valid_competition(organizer, clock, is_archived=False))
-    app_data = data.draw(valid_application_data(domains=competition.domains))
+    app_data = data.draw(valid_application_data(tracks=list(competition.tracks)))
 
     with pytest.raises(CompetitionNotActiveError):
         submit_application(
@@ -144,7 +144,7 @@ def test_registration_already_ended_is_rejected(
     organizer = gateway.organizer.create()
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_ended=True))
-    app_data = data.draw(valid_application_data(domains=competition.domains))
+    app_data = data.draw(valid_application_data(tracks=list(competition.tracks)))
 
     with pytest.raises(CompetitionNotActiveError):
         submit_application(
@@ -171,7 +171,7 @@ def test_participant_type_mismatch_is_rejected(
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.SCHOOLCHILD
-    app_data = data.draw(valid_application_data(domains=competition.domains))
+    app_data = data.draw(valid_application_data(tracks=list(competition.tracks)))
 
     with pytest.raises(ParticipantTypeMismatchError):
         submit_application(
@@ -196,7 +196,7 @@ def test_participant_type_any_accepts_any_participant(
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
     competition.participant_limits = ParticipantLimits(max=1000)
-    app_data = data.draw(valid_application_data(domains=competition.domains))
+    app_data = data.draw(valid_application_data(tracks=list(competition.tracks)))
 
     application = submit_application(
         data=app_data,
@@ -210,7 +210,7 @@ def test_participant_type_any_accepts_any_participant(
         id=application.id,
         participant_id=participant.id,
         competition_id=competition.id,
-        domains=app_data.domains,
+        track=app_data.track,
         status=ApplicationStatus.ACCEPTED if competition.auto_accept else ApplicationStatus.PENDING,
         created_at=application.created_at,
         form_data=app_data.form_data,
@@ -230,7 +230,7 @@ def test_matching_participant_type_is_accepted(
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.STUDENT
     competition.participant_limits = ParticipantLimits(max=1000)
-    app_data = data.draw(valid_application_data(domains=competition.domains))
+    app_data = data.draw(valid_application_data(tracks=list(competition.tracks)))
 
     application = submit_application(
         data=app_data,
@@ -244,7 +244,7 @@ def test_matching_participant_type_is_accepted(
         id=application.id,
         participant_id=participant.id,
         competition_id=competition.id,
-        domains=app_data.domains,
+        track=app_data.track,
         status=ApplicationStatus.ACCEPTED if competition.auto_accept else ApplicationStatus.PENDING,
         created_at=application.created_at,
         form_data=app_data.form_data,
@@ -269,7 +269,7 @@ def test_participant_limits_exceeded_is_rejected(
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
     competition.participant_limits = ParticipantLimits(max=max_participants)
-    app_data = data.draw(valid_application_data(domains=competition.domains))
+    app_data = data.draw(valid_application_data(tracks=list(competition.tracks)))
 
     with pytest.raises(ParticipantLimitsExceededError):
         submit_application(
@@ -296,7 +296,7 @@ def test_accepted_count_below_max_is_accepted(
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
     competition.participant_limits = ParticipantLimits(max=max_participants)
-    app_data = data.draw(valid_application_data(domains=competition.domains))
+    app_data = data.draw(valid_application_data(tracks=list(competition.tracks)))
 
     application = submit_application(
         data=app_data,
@@ -310,7 +310,7 @@ def test_accepted_count_below_max_is_accepted(
         id=application.id,
         participant_id=participant.id,
         competition_id=competition.id,
-        domains=app_data.domains,
+        track=app_data.track,
         status=ApplicationStatus.ACCEPTED if competition.auto_accept else ApplicationStatus.PENDING,
         created_at=application.created_at,
         form_data=app_data.form_data,
@@ -334,7 +334,7 @@ def test_auto_accept_competition_produces_accepted_status(
     competition.participant_type = ParticipantType.ANY
     competition.participant_limits = ParticipantLimits(max=1000)
     competition.auto_accept = True
-    app_data = data.draw(valid_application_data(domains=competition.domains))
+    app_data = data.draw(valid_application_data(tracks=list(competition.tracks)))
 
     application = submit_application(
         data=app_data,
@@ -348,7 +348,7 @@ def test_auto_accept_competition_produces_accepted_status(
         id=application.id,
         participant_id=participant.id,
         competition_id=competition.id,
-        domains=app_data.domains,
+        track=app_data.track,
         status=ApplicationStatus.ACCEPTED,
         created_at=application.created_at,
         form_data=app_data.form_data,
@@ -369,7 +369,7 @@ def test_non_auto_accept_competition_produces_pending_status(
     competition.participant_type = ParticipantType.ANY
     competition.participant_limits = ParticipantLimits(max=1000)
     competition.auto_accept = False
-    app_data = data.draw(valid_application_data(domains=competition.domains))
+    app_data = data.draw(valid_application_data(tracks=list(competition.tracks)))
 
     application = submit_application(
         data=app_data,
@@ -383,64 +383,30 @@ def test_non_auto_accept_competition_produces_pending_status(
         id=application.id,
         participant_id=participant.id,
         competition_id=competition.id,
-        domains=app_data.domains,
+        track=app_data.track,
         status=ApplicationStatus.PENDING,
         created_at=application.created_at,
         form_data=app_data.form_data,
     )
 
 
-# --- Domain validation ---
-
-
 @settings(max_examples=30)
 @given(st.data())
-def test_empty_domains_are_rejected(
+def test_unknown_track_is_rejected(
     gateway: Gateway,
     clock: Clock,
     data: st.DataObject,
 ) -> None:
-    """Submitting with an empty domains list raises InvalidApplicationDataError."""
+    """Submitting with a track absent from the competition raises InvalidApplicationDataError."""
     organizer = gateway.organizer.create()
     participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
     competition.participant_limits = ParticipantLimits(max=1000)
 
-    with pytest.raises(InvalidApplicationDataError, match="Domains list must not be empty"):
+    with pytest.raises(InvalidApplicationDataError, match="Application track must exist in competition tracks"):
         submit_application(
-            data=ApplicationData(domains=[]),
-            participant=participant,
-            competition=competition,
-            accepted_count=0,
-            clock=clock,
-        )
-
-
-@settings(max_examples=30)
-@given(st.data())
-def test_domains_outside_competition_are_rejected(
-    gateway: Gateway,
-    clock: Clock,
-    data: st.DataObject,
-) -> None:
-    """Application domains must be a subset of the competition's domains."""
-    organizer = gateway.organizer.create()
-    participant = gateway.participant.create(participant_type=ParticipantType.STUDENT)
-    competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
-    competition.participant_type = ParticipantType.ANY
-    competition.participant_limits = ParticipantLimits(max=1000)
-    all_domains = set(Domain)
-    extra_domains = all_domains - set(competition.domains)
-    assume(len(extra_domains) > 0)
-    invalid_domain = data.draw(st.sampled_from(sorted(extra_domains)))
-
-    with pytest.raises(
-        InvalidApplicationDataError,
-        match="Application domains must be a subset of competition domains",
-    ):
-        submit_application(
-            data=ApplicationData(domains=[invalid_domain]),
+            data=ApplicationData(track=CompetitionTrack("Track not in competition")),
             participant=participant,
             competition=competition,
             accepted_count=0,
@@ -464,7 +430,7 @@ def test_null_form_data_accepted_when_no_form(
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
     competition.participant_limits = ParticipantLimits(max=1000)
-    app_data = data.draw(valid_application_data(domains=competition.domains))
+    app_data = data.draw(valid_application_data(tracks=list(competition.tracks)))
     app_data.form_data = None
 
     application = submit_application(
@@ -491,7 +457,7 @@ def test_form_data_rejected_when_no_form_exists(
     competition = data.draw(valid_competition(organizer, clock, is_archived=False, is_open=True))
     competition.participant_type = ParticipantType.ANY
     competition.participant_limits = ParticipantLimits(max=1000)
-    app_data = data.draw(valid_application_data(domains=competition.domains))
+    app_data = data.draw(valid_application_data(tracks=list(competition.tracks)))
     app_data.form_data = {"unexpected": "value"}
 
     with pytest.raises(InvalidApplicationDataError, match="form_data must be None"):
@@ -526,7 +492,7 @@ def test_valid_form_data_is_accepted(
         clock=clock,
     )
     answers = data.draw(valid_form_data_for_form(form))
-    app_data = data.draw(valid_application_data(domains=competition.domains))
+    app_data = data.draw(valid_application_data(tracks=list(competition.tracks)))
     app_data.form_data = answers
 
     application = submit_application(
@@ -555,7 +521,7 @@ def test_missing_required_field_is_rejected(
     competition.participant_type = ParticipantType.ANY
     competition.participant_limits = ParticipantLimits(max=1000)
     form = _make_form(organizer, competition, clock, Field(name="bio", type=FieldType.STRING))
-    app_data = data.draw(valid_application_data(domains=competition.domains))
+    app_data = data.draw(valid_application_data(tracks=list(competition.tracks)))
     app_data.form_data = {}
 
     with pytest.raises(InvalidApplicationDataError, match="Required field 'bio' is missing"):
@@ -589,7 +555,7 @@ def test_optional_field_can_be_omitted(
         Field(name="bio", type=FieldType.STRING, required=True),
         Field(name="age", type=FieldType.INT, required=False),
     )
-    app_data = data.draw(valid_application_data(domains=competition.domains))
+    app_data = data.draw(valid_application_data(tracks=list(competition.tracks)))
     app_data.form_data = {"bio": "hello"}
 
     application = submit_application(
@@ -618,7 +584,7 @@ def test_extra_form_key_is_rejected(
     competition.participant_type = ParticipantType.ANY
     competition.participant_limits = ParticipantLimits(max=1000)
     form = _make_form(organizer, competition, clock, Field(name="bio", type=FieldType.STRING))
-    app_data = data.draw(valid_application_data(domains=competition.domains))
+    app_data = data.draw(valid_application_data(tracks=list(competition.tracks)))
     app_data.form_data = {"bio": "hi", "ghost": "x"}
 
     with pytest.raises(InvalidApplicationDataError, match="Unknown form fields"):
@@ -648,7 +614,7 @@ def test_string_field_rejects_non_string_value(
     competition.participant_type = ParticipantType.ANY
     competition.participant_limits = ParticipantLimits(max=1000)
     form = _make_form(organizer, competition, clock, Field(name="bio", type=FieldType.STRING))
-    app_data = data.draw(valid_application_data(domains=competition.domains))
+    app_data = data.draw(valid_application_data(tracks=list(competition.tracks)))
     app_data.form_data = {"bio": bad_value}
 
     with pytest.raises(InvalidApplicationDataError, match="must be a string"):
@@ -676,7 +642,7 @@ def test_int_field_rejects_bool_value(
     competition.participant_type = ParticipantType.ANY
     competition.participant_limits = ParticipantLimits(max=1000)
     form = _make_form(organizer, competition, clock, Field(name="age", type=FieldType.INT))
-    app_data = data.draw(valid_application_data(domains=competition.domains))
+    app_data = data.draw(valid_application_data(tracks=list(competition.tracks)))
     app_data.form_data = {"age": True}
 
     with pytest.raises(InvalidApplicationDataError, match="must be an integer"):
@@ -709,7 +675,7 @@ def test_select_field_rejects_unknown_choice(
         clock,
         Field(name="size", type=FieldType.SELECT, choices=_CHOICES),
     )
-    app_data = data.draw(valid_application_data(domains=competition.domains))
+    app_data = data.draw(valid_application_data(tracks=list(competition.tracks)))
     app_data.form_data = {"size": "XL"}
 
     with pytest.raises(InvalidApplicationDataError, match="must be one of"):
@@ -742,7 +708,7 @@ def test_multiselect_field_rejects_empty_list(
         clock,
         Field(name="roles", type=FieldType.MULTISELECT, choices=_MULTI_CHOICES),
     )
-    app_data = data.draw(valid_application_data(domains=competition.domains))
+    app_data = data.draw(valid_application_data(tracks=list(competition.tracks)))
     app_data.form_data = {"roles": []}
 
     with pytest.raises(InvalidApplicationDataError, match="must be a non-empty list"):
@@ -775,7 +741,7 @@ def test_multiselect_field_rejects_invalid_item(
         clock,
         Field(name="roles", type=FieldType.MULTISELECT, choices=_MULTI_CHOICES),
     )
-    app_data = data.draw(valid_application_data(domains=competition.domains))
+    app_data = data.draw(valid_application_data(tracks=list(competition.tracks)))
     app_data.form_data = {"roles": ["fe", "unknown"]}
 
     with pytest.raises(InvalidApplicationDataError, match="invalid values"):

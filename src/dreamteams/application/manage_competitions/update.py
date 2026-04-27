@@ -1,25 +1,30 @@
 import structlog
 from pydantic import BaseModel, Field
 
+from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.common.dto.milestone import MilestoneForm
 from dreamteams.application.common.gateway.competition import CompetitionGateway
+from dreamteams.application.common.gateway.competition_tag import CompetitionTagGateway
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
 from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
 from dreamteams.application.common.uow import UoW
+from dreamteams.application.errors.competition_tag import CompetitionTagNotFoundError
 from dreamteams.application.errors.organizer import OrganizerNotFoundError
 from dreamteams.entities.common.clock import Clock
-from dreamteams.entities.common.identifiers import CompetitionId
-from dreamteams.entities.common.vo.domain import Domain
+from dreamteams.entities.common.identifiers import CompetitionId, CompetitionTagId
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import UpdateCompetitionData
 from dreamteams.entities.competition.milestone import MilestoneData, milestone_factory
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import ScheduleData
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
+from dreamteams.entities.competition.track import CompetitionTrack
 from dreamteams.entities.competition.venue import CompetitionVenue
 from dreamteams.entities.competition.vo.milestones import CompetitionMilestones
+from dreamteams.entities.competition.vo.tags import CompetitionTags
+from dreamteams.entities.competition.vo.tracks import CompetitionTracks
 from dreamteams.entities.errors.competition import CompetitionNotFoundError
 
 logger: Logger = structlog.get_logger(__name__)
@@ -32,7 +37,8 @@ class UpdateCompetitionForm(BaseModel):
     description: str = Field(min_length=1)
     schedule: ScheduleData
     participant_limits: ParticipantLimits
-    domains: list[Domain]
+    tag_ids: list[CompetitionTagId] = Field(default_factory=list, max_length=30)
+    tracks: list[CompetitionTrackForm] = Field(min_length=1)
     participant_type: ParticipantType
     venue: CompetitionVenue
     team_size: TeamSizeRange | None
@@ -49,6 +55,7 @@ class UpdateCompetition:
     idp: IdProvider
     organizer_gateway: OrganizerGateway
     competition_gateway: CompetitionGateway
+    competition_tag_gateway: CompetitionTagGateway
     clock: Clock
 
     async def execute(self, competition_id: CompetitionId, data: UpdateCompetitionForm) -> None:
@@ -56,7 +63,12 @@ class UpdateCompetition:
         user_id = await self.idp.get_user_id()
         logger.debug("Updating competition", competition_id=competition_id, user_id=user_id)
 
-        competition = await self.competition_gateway.get(competition_id, eager_milestones=True)
+        competition = await self.competition_gateway.get(
+            competition_id,
+            eager_milestones=True,
+            eager_tags=True,
+            eager_tracks=True,
+        )
         if competition is None:
             logger.warning("Competition not found", competition_id=competition_id, user_id=user_id)
             raise CompetitionNotFoundError
@@ -67,7 +79,14 @@ class UpdateCompetition:
 
         if data.milestones is not None:
             await self.competition_gateway.clear_milestones(competition_id)
+        await self.competition_gateway.clear_tracks(competition_id)
 
+        loaded_tags = await self.competition_tag_gateway.get_many(data.tag_ids)
+        tag_by_id = {tag.id: tag for tag in loaded_tags}
+        if set(data.tag_ids) != set(tag_by_id):
+            raise CompetitionTagNotFoundError
+
+        tags = [tag_by_id[tag_id] for tag_id in data.tag_ids]
         competition.update(
             organizer=organizer,
             clock=self.clock,
@@ -76,7 +95,8 @@ class UpdateCompetition:
                 description=data.description,
                 schedule=data.schedule,
                 participant_limits=data.participant_limits,
-                domains=data.domains,
+                tags=CompetitionTags(tags),
+                tracks=CompetitionTracks([CompetitionTrack(track.name) for track in data.tracks]),
                 participant_type=data.participant_type,
                 venue=data.venue,
                 team_size=data.team_size,

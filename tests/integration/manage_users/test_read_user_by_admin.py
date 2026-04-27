@@ -57,7 +57,6 @@ async def test_admin_can_read_blocked_participant_user(api_client: ApiClient, ga
             bio=participant.form.bio,
             skills=expected_skills,
             experience_level=participant.form.experience_level,
-            preferred_domains=participant.form.preferred_domains,
             contacts=expected_contacts,
             created_at=result.participant.created_at,
             updated_at=result.participant.updated_at,

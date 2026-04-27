@@ -11,7 +11,6 @@ from dreamteams.application.common.logger import Logger
 from dreamteams.application.common.uow import UoW
 from dreamteams.application.errors.user import UserNotFoundError
 from dreamteams.entities.common.identifiers import OrganizerId, ParticipantId, UserId
-from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
@@ -41,7 +40,6 @@ class ParticipantModel(BaseModel):
     bio: str | None
     skills: list[ParticipantSkill]
     experience_level: ExperienceLevel | None
-    preferred_domains: list[Domain]
     contacts: list[ParticipantContact]
 
 
@@ -98,7 +96,6 @@ class ReadProfile:
                 bio=participant.bio,
                 skills=participant.skills,
                 experience_level=participant.experience_level,
-                preferred_domains=participant.preferred_domains,
                 contacts=participant.contacts,
             )
             if participant is not None

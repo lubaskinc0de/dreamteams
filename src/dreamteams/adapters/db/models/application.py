@@ -1,9 +1,10 @@
-from sqlalchemy import ARRAY, UUID, Column, DateTime, Enum, ForeignKey, Table, UniqueConstraint
+from sqlalchemy import UUID, Column, DateTime, Enum, ForeignKey, String, Table, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import composite
 
 from dreamteams.adapters.db.models.base import mapper_registry
 from dreamteams.entities.application.entity import Application, ApplicationStatus
-from dreamteams.entities.common.vo.domain import Domain
+from dreamteams.entities.competition.track import CompetitionTrack
 
 application_table = Table(
     "applications",
@@ -21,7 +22,7 @@ application_table = Table(
         ForeignKey("competitions.id", ondelete="CASCADE"),
         nullable=False,
     ),
-    Column("domains", ARRAY(Enum(Domain, native_enum=False)), nullable=False),
+    Column("track_name", String(100), nullable=False),
     Column("status", Enum(ApplicationStatus, native_enum=False), nullable=False),
     Column("created_at", DateTime(timezone=True), nullable=False),
     Column("form_data", JSONB, nullable=True),
@@ -31,4 +32,10 @@ application_table = Table(
 mapper_registry.map_imperatively(
     Application,
     application_table,
+    properties={
+        "track": composite(
+            CompetitionTrack,
+            application_table.c.track_name,
+        ),
+    },
 )

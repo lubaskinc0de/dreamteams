@@ -18,7 +18,6 @@ from tests.integration.helpers.facade import Gateway
 
 
 async def test_update_competition_as_owner_succeeds(
-    api_client: ApiClient,
     gateway: Gateway,
     update_competition_form_factory: UpdateCompetitionFormFactory,
     request_container: AsyncContainer,
@@ -30,7 +29,6 @@ async def test_update_competition_as_owner_succeeds(
     comp = await gateway.competition.create(owner.organizer.auth_id)
 
     update_form = update_competition_form_factory.build()
-    data = update_form.model_dump(mode="json")
 
     competition_gateway = await request_container.get(CompetitionGateway)
     db_competition = await competition_gateway.get(comp.created.competition_id)
@@ -44,16 +42,78 @@ async def test_update_competition_as_owner_succeeds(
     )
 
     # Act
-    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
-        update_response = await api_client.update_competition(comp.created.competition_id, data)
-        update_response.assert_status(200)
-        read_response = await api_client.read_competition(comp.created.competition_id)
+    actual_model = await gateway.competition.update(
+        comp.created.competition_id,
+        update_form,
+        owner.organizer.auth_id,
+    )
 
     # Assert
-    actual_model = read_response.assert_status(200).ensure_content()
     assert actual_model.updated_at > expected_model.updated_at
     expected_model.updated_at = actual_model.updated_at
     assert actual_model == expected_model
+
+
+async def test_update_competition_persists_tags(
+    gateway: Gateway,
+    update_competition_form_factory: UpdateCompetitionFormFactory,
+    request_container: AsyncContainer,
+    clock: Clock,
+) -> None:
+    """Updating a competition with tag_ids returns the attached tag entities on read."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    comp = await gateway.competition.create(owner.organizer.auth_id)
+    mobile, backend = await gateway.tags.create_many_unique(
+        owner.admin.auth_id,
+        ["MobileUpdateTag", "BackendUpdateTag"],
+    )
+
+    update_form = update_competition_form_factory.build(tag_ids=[mobile.id, backend.id])
+
+    competition_gateway = await request_container.get(CompetitionGateway)
+    db_competition = await competition_gateway.get(comp.created.competition_id)
+    expected_model = competition_update_form_to_model(
+        competition_id=comp.created.competition_id,
+        updated_at=db_competition.updated_at,
+        created_at=db_competition.created_at,
+        organizer_id=db_competition.organizer_id,
+        form=update_form,
+        clock=clock,
+        tags=[backend, mobile],
+    )
+
+    # Act
+    actual_model = await gateway.competition.update(
+        comp.created.competition_id,
+        update_form,
+        owner.organizer.auth_id,
+    )
+
+    # Assert
+    assert actual_model.updated_at > expected_model.updated_at
+    expected_model.updated_at = actual_model.updated_at
+    assert actual_model == expected_model
+
+
+async def test_update_competition_rejects_more_than_thirty_tag_ids(
+    api_client: ApiClient,
+    gateway: Gateway,
+    update_competition_form_factory: UpdateCompetitionFormFactory,
+) -> None:
+    """Updating a competition with more than 30 tag_ids is rejected by request validation."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    comp = await gateway.competition.create(owner.organizer.auth_id)
+    data = update_competition_form_factory.build().model_dump(mode="json")
+    data["tag_ids"] = [str(uuid4()) for _ in range(31)]
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.update_competition(comp.created.competition_id, data)
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
 
 
 async def test_update_competition_fails_if_description_is_empty(

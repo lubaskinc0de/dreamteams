@@ -1,5 +1,4 @@
 from sqlalchemy import (
-    ARRAY,
     UUID,
     Boolean,
     Column,
@@ -16,15 +15,18 @@ from sqlalchemy import (
 from sqlalchemy.orm import composite, relationship
 
 from dreamteams.adapters.db.models.base import mapper_registry
-from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import Competition
 from dreamteams.entities.competition.milestone import Milestone
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import CompetitionSchedule
+from dreamteams.entities.competition.tag import CompetitionTag
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
+from dreamteams.entities.competition.track import CompetitionTrack
 from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
 from dreamteams.entities.competition.vo.milestones import CompetitionMilestones
+from dreamteams.entities.competition.vo.tags import CompetitionTags
+from dreamteams.entities.competition.vo.tracks import CompetitionTracks
 from dreamteams.entities.user import Organizer
 
 
@@ -48,7 +50,6 @@ competition_table = Table(
     Column("team_formation_start", DateTime(timezone=True), nullable=True),
     Column("team_formation_end", DateTime(timezone=True), nullable=True),
     Column("max_participants", Integer, nullable=False),
-    Column("domains", ARRAY(Enum(Domain, native_enum=False)), nullable=False),
     Column("participant_type", Enum(ParticipantType, native_enum=False), nullable=False),
     Column("format", Enum(CompetitionFormat, native_enum=False), nullable=False),
     Column("location", Text, nullable=True),
@@ -58,6 +59,29 @@ competition_table = Table(
     Column("is_archived", Boolean, nullable=False, default=False),
     Column("created_at", DateTime(timezone=True), nullable=False),
     Column("updated_at", DateTime(timezone=True), nullable=False),
+)
+
+competition_tag_table = Table(
+    "competition_tags",
+    mapper_registry.metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True),
+    Column("value", String(100), nullable=False),
+)
+
+competition_tag_link_table = Table(
+    "competition_tag_links",
+    mapper_registry.metadata,
+    Column("competition_id", UUID(as_uuid=True), ForeignKey("competitions.id", ondelete="CASCADE"), nullable=False),
+    Column("tag_id", UUID(as_uuid=True), ForeignKey("competition_tags.id", ondelete="CASCADE"), nullable=False),
+    PrimaryKeyConstraint("competition_id", "tag_id"),
+)
+
+competition_track_table = Table(
+    "competition_tracks",
+    mapper_registry.metadata,
+    Column("competition_id", UUID(as_uuid=True), ForeignKey("competitions.id", ondelete="CASCADE"), nullable=False),
+    Column("name", String(100), nullable=False),
+    PrimaryKeyConstraint("competition_id", "name"),
 )
 
 milestone_table = Table(
@@ -73,6 +97,16 @@ milestone_table = Table(
 mapper_registry.map_imperatively(
     Milestone,
     milestone_table,
+)
+
+mapper_registry.map_imperatively(
+    CompetitionTag,
+    competition_tag_table,
+)
+
+mapper_registry.map_imperatively(
+    CompetitionTrack,
+    competition_track_table,
 )
 
 # Composite that maps (NULL, NULL) → None on load; supplies the write-side accessor
@@ -121,6 +155,22 @@ mapper_registry.map_imperatively(
             passive_deletes=True,
             lazy="raise_on_sql",
             order_by=asc(milestone_table.c.timestamp),
+        ),
+        "tags": relationship(
+            CompetitionTag,
+            secondary=competition_tag_link_table,
+            collection_class=CompetitionTags,
+            lazy="raise_on_sql",
+            order_by=asc(competition_tag_table.c.value),
+        ),
+        "tracks": relationship(
+            CompetitionTrack,
+            foreign_keys=[competition_track_table.c.competition_id],
+            collection_class=CompetitionTracks,
+            cascade="all, delete-orphan",
+            passive_deletes=True,
+            lazy="raise_on_sql",
+            order_by=asc(competition_track_table.c.name),
         ),
         "organizer": relationship(
             Organizer,

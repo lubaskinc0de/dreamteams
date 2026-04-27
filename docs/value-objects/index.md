@@ -13,7 +13,9 @@ Value objects and validated value-object collections used within entities. Item 
 | [TeamSizeRange](team-size-range.md) | Min/max team size |
 | [Milestone](milestone.md) | Custom timeline event |
 | [CompetitionMilestones](competition-milestones.md) | Competition milestone collection with unique timestamps |
-| [Domain](domain.md) | IT domain area (Frontend, Backend, AI, …) |
+| [CompetitionTrack](competition-track.md) | Direction/category participants apply to |
+| [CompetitionTracks](competition-tracks.md) | Competition track collection with unique names |
+| [CompetitionTags](competition-tags.md) | Competition tag collection with unique tag IDs and values |
 
 ## Participant
 

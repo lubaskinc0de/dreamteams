@@ -36,8 +36,8 @@ INVALID_COMPETITION_DATA_CASES: list[tuple[dict[str, Any], str]] = [
     ({"title": "a" * 300}, "VALIDATION_ERROR"),  # Title exceeds max length (200 characters)
     # Description validation
     ({"description": ""}, "VALIDATION_ERROR"),  # Description cannot be empty
-    # Domains validation
-    ({"domains": []}, "INVALID_COMPETITION_DATA"),  # Domains list cannot be empty
+    # Tracks validation
+    ({"tracks": []}, "VALIDATION_ERROR"),  # Tracks list cannot be empty
     # Participant limits: max is zero
     ({"participant_limits": {"max": 0}}, "INVALID_COMPETITION_DATA"),
     # Participant limits: max is negative

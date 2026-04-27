@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Represents a Participant's intention to participate in a specific Competition. An application captures the domains the participant wants to contribute in and goes through a review lifecycle (or is auto-accepted based on competition settings).
+Represents a Participant's intention to participate in a specific Competition. An application captures the single track the participant is applying to and goes through a review lifecycle (or is auto-accepted based on competition settings).
 
 ## Attributes
 
@@ -11,7 +11,7 @@ Represents a Participant's intention to participate in a specific Competition. A
 | `id`               | `ApplicationId` (UUID)   | Unique application identifier                                      |
 | `participant_id`   | `ParticipantId` (UUID)   | Reference to the applying [Participant](participant.md)                              |
 | `competition_id`   | `CompetitionId` (UUID)   | Reference to the target [Competition](competition.md)                                |
-| `domains`          | `list[`[`Domain`](../value-objects/domain.md)`]`           | Domains the participant wants to work in (subset of competition's) |
+| `track`            | [`CompetitionTrack`](../value-objects/competition-track.md) | Track the participant applies to; must exist in the competition's tracks |
 | `status`           | [`ApplicationStatus`](#applicationstatus-enum)      | Current status of the application                                  |
 | `created_at`       | `datetime`               | Timestamp of application creation                                  |
 | `form_data`        | `dict[str, Any] \| None` | Answers to the competition's ApplicationForm fields; `None` if the competition has no form |
@@ -26,8 +26,8 @@ Represents a Participant's intention to participate in a specific Competition. A
 
 ## Business Rules
 
-1. `domains` list must contain at least one domain.
-2. Every domain in `domains` must exist in the target `Competition.domains` (strict subset check).
+1. `track` must be one of the target competition's tracks.
+2. Each application specifies exactly one track.
 3. The applying user must have an associated `Participant` profile; otherwise, access is denied.
 4. A participant can have at most **one** application per competition (uniqueness constraint on `participant_id` + `competition_id`).
 5. Only applications in `PENDING` status can be accepted or rejected by the organizer.

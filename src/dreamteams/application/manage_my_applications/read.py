@@ -48,7 +48,7 @@ class ReadMyApplication:
             participant_id=application.participant_id,
             competition_id=application.competition_id,
             competition_name=competition.title,
-            domains=application.domains,
+            track=application.track,
             status=application.status,
             created_at=application.created_at,
             form_data=application.form_data,

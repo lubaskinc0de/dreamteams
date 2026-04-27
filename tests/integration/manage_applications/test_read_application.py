@@ -30,7 +30,7 @@ async def test_organizer_can_read_application(
         id=application_id,
         competition_id=comp.created.competition_id,
         competition_name=comp.form.title,
-        domains=result.domains,
+        track=result.track,
         status=ApplicationStatus.PENDING,
         created_at=result.created_at,
         form_data=None,
@@ -45,7 +45,6 @@ async def test_organizer_can_read_application(
                 key=lambda s: s.name,
             ),
             experience_level=participant.form.experience_level,
-            preferred_domains=participant.form.preferred_domains,
             contacts=sorted(
                 [ParticipantContact(title=c.title, value=c.value) for c in participant.form.contacts],
                 key=lambda c: c.title,

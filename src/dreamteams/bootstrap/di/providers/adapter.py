@@ -19,6 +19,7 @@ from dreamteams.adapters.db.gateway.application import SAApplicationGateway
 from dreamteams.adapters.db.gateway.application_form import SAApplicationFormGateway
 from dreamteams.adapters.db.gateway.auth_user import SAAuthUserGateway
 from dreamteams.adapters.db.gateway.competition import SACompetitionGateway
+from dreamteams.adapters.db.gateway.competition_tag import SACompetitionTagGateway
 from dreamteams.adapters.db.gateway.organizer import SAOrganizerGateway
 from dreamteams.adapters.db.gateway.organizer_invite import SAOrganizerInviteGateway
 from dreamteams.adapters.db.gateway.participant import SAParticipantGateway
@@ -43,6 +44,7 @@ class AdapterProvider(Provider):
         WithParents[SAOrganizerGateway],
         WithParents[SAParticipantGateway],
         WithParents[SACompetitionGateway],
+        WithParents[SACompetitionTagGateway],
         WithParents[SAOrganizerInviteGateway],
         WithParents[SAApplicationFormGateway],
         WithParents[SAApplicationGateway],

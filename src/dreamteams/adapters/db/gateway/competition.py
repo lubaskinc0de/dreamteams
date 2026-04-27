@@ -13,6 +13,9 @@ from sqlalchemy.orm import selectinload
 from dreamteams.adapters.db.models import (
     application_table,
     competition_table,
+    competition_tag_link_table,
+    competition_tag_table,
+    competition_track_table,
     milestone_table,
     organizer_table,
     user_table,
@@ -29,12 +32,15 @@ from dreamteams.application.common.gateway.competition import (
 from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.common.logger import Logger
 from dreamteams.entities.application.entity import ApplicationStatus
-from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId, ParticipantId
-from dreamteams.entities.common.vo.domain import Domain
+from dreamteams.entities.common.identifiers import CompetitionId, CompetitionTagId, OrganizerId, ParticipantId
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import Competition
 from dreamteams.entities.competition.milestone import Milestone
+from dreamteams.entities.competition.tag import CompetitionTag
+from dreamteams.entities.competition.track import CompetitionTrack
 from dreamteams.entities.competition.vo.milestones import CompetitionMilestones
+from dreamteams.entities.competition.vo.tags import CompetitionTags
+from dreamteams.entities.competition.vo.tracks import CompetitionTracks
 from dreamteams.entities.user import Organizer
 
 _tracer = trace.get_tracer("dreamteams.adapters")
@@ -47,7 +53,21 @@ def _milestones_to_list(milestones: CompetitionMilestones) -> list[Milestone]:
     return list(milestones)
 
 
-@impl_converter(recipe=[coercer(CompetitionMilestones, list[Milestone], func=_milestones_to_list)])
+def _tags_to_list(tags: CompetitionTags) -> list[CompetitionTag]:
+    return list(tags)
+
+
+def _tracks_to_list(tracks: CompetitionTracks) -> list[CompetitionTrack]:
+    return list(tracks)
+
+
+@impl_converter(
+    recipe=[
+        coercer(CompetitionMilestones, list[Milestone], func=_milestones_to_list),
+        coercer(CompetitionTags, list[CompetitionTag], func=_tags_to_list),
+        coercer(CompetitionTracks, list[CompetitionTrack], func=_tracks_to_list),
+    ],
+)
 def _to_competition_model(competition: Competition, members_count: int) -> CompetitionModel: ...
 
 
@@ -68,6 +88,8 @@ def _build_preview_converter(
         recipe=[
             coercer(Organizer, PreviewOrganizerModel, func=organizer_to_preview),
             coercer(CompetitionMilestones, list[Milestone], func=_milestones_to_list),
+            coercer(CompetitionTags, list[CompetitionTag], func=_tags_to_list),
+            coercer(CompetitionTracks, list[CompetitionTrack], func=_tracks_to_list),
         ],
     )
     def convert(competition: Competition, members_count: int) -> PreviewCompetitionModel: ...
@@ -92,6 +114,8 @@ def _build_explore_converter(
         recipe=[
             coercer(Organizer, ExploreOrganizerModel, func=organizer_to_explore),
             coercer(CompetitionMilestones, list[Milestone], func=_milestones_to_list),
+            coercer(CompetitionTags, list[CompetitionTag], func=_tags_to_list),
+            coercer(CompetitionTracks, list[CompetitionTrack], func=_tracks_to_list),
         ],
     )
     def convert(competition: Competition, members_count: int) -> ExploreCompetitionModel: ...
@@ -130,6 +154,8 @@ class SACompetitionGateway(CompetitionGateway):
         competition_id: CompetitionId,
         *,
         eager_milestones: bool = False,
+        eager_tags: bool = False,
+        eager_tracks: bool = False,
     ) -> Competition | None:
         """Fetch a competition by ID, optionally eager-loading its milestones.
 
@@ -143,6 +169,10 @@ class SACompetitionGateway(CompetitionGateway):
         )
         if eager_milestones:
             query = query.options(selectinload(Competition.milestones))  # type: ignore[arg-type]
+        if eager_tags:
+            query = query.options(selectinload(Competition.tags))  # type: ignore[arg-type]
+        if eager_tracks:
+            query = query.options(selectinload(Competition.tracks))  # type: ignore[arg-type]
         result = await self._session.execute(query)
         return result.scalar_one_or_none()
 
@@ -169,6 +199,13 @@ class SACompetitionGateway(CompetitionGateway):
         )
 
     @override
+    async def clear_tracks(self, competition_id: CompetitionId) -> None:
+        """Delete all tracks of a competition."""
+        await self._session.execute(
+            delete(CompetitionTrack).where(competition_track_table.c.competition_id == competition_id),
+        )
+
+    @override
     async def read(self, competition_id: CompetitionId) -> CompetitionModel | None:
         """Fetch a single competition as a CompetitionModel with members_count baked in."""
         accepted = _accepted_counts_subquery()
@@ -179,7 +216,11 @@ class SACompetitionGateway(CompetitionGateway):
             .join(organizer_table, organizer_table.c.id == competition_table.c.organizer_id)
             .join(user_table, user_table.c.id == organizer_table.c.user_id)
             .where(competition_table.c.id == competition_id, user_table.c.is_blocked.is_(False))
-            .options(selectinload(Competition.milestones))  # type: ignore[arg-type]
+            .options(
+                selectinload(Competition.milestones),  # type: ignore[arg-type]
+                selectinload(Competition.tags),  # type: ignore[arg-type]
+                selectinload(Competition.tracks),  # type: ignore[arg-type]
+            )
         )
         row = (await self._session.execute(query)).one_or_none()
         if row is None:
@@ -230,7 +271,11 @@ class SACompetitionGateway(CompetitionGateway):
                 .order_by(*order_by)
                 .limit(page_size)
                 .offset((page - 1) * page_size)
-                .options(selectinload(Competition.milestones))  # type: ignore[arg-type]
+                .options(
+                    selectinload(Competition.milestones),  # type: ignore[arg-type]
+                    selectinload(Competition.tags),  # type: ignore[arg-type]
+                    selectinload(Competition.tracks),  # type: ignore[arg-type]
+                )
             )
             result = (await self._session.execute(query)).all()
             rows = [_to_competition_model(row[0], row.members_count) for row in result]
@@ -268,6 +313,8 @@ class SACompetitionGateway(CompetitionGateway):
                 .options(
                     selectinload(Competition.organizer).selectinload(Organizer.user),  # type: ignore[arg-type]
                     selectinload(Competition.milestones),  # type: ignore[arg-type]
+                    selectinload(Competition.tags),  # type: ignore[arg-type]
+                    selectinload(Competition.tracks),  # type: ignore[arg-type]
                 )
             )
             result = (await self._session.execute(query)).all()
@@ -288,7 +335,7 @@ class SACompetitionGateway(CompetitionGateway):
         min_team_size: int | None,
         max_team_size: int | None,
         auto_accept: bool | None,
-        domains: list[Domain] | None,
+        tag_ids: list[CompetitionTagId] | None,
     ) -> tuple[list[ExploreCompetitionModel], int]:
         """Participant-facing browse: only competitions the participant can still submit to."""
         now = datetime.now(tz=UTC)
@@ -320,12 +367,31 @@ class SACompetitionGateway(CompetitionGateway):
             filters.append(competition_table.c.min_team_size <= max_team_size)
         if auto_accept is not None:
             filters.append(competition_table.c.auto_accept == auto_accept)
-        if domains is not None and len(domains) > 0:
-            filters.append(competition_table.c.domains.op("&&", is_comparison=True)(domains))
+        if tag_ids:
+            has_requested_tag = exists().where(
+                and_(
+                    competition_tag_link_table.c.competition_id == competition_table.c.id,
+                    competition_tag_link_table.c.tag_id.in_(tag_ids),
+                ),
+            )
+            filters.append(has_requested_tag)
 
         order_by: list[ColumnElement[object]] = []
         if search is not None:
-            similarity = func.word_similarity(func.lower(competition_table.c.title), search.lower())
+            search_value = search.lower()
+            title_similarity = func.word_similarity(func.lower(competition_table.c.title), search_value)
+            tag_similarity = (
+                select(func.max(func.word_similarity(func.lower(competition_tag_table.c.value), search_value)))
+                .select_from(
+                    competition_tag_link_table.join(
+                        competition_tag_table,
+                        competition_tag_table.c.id == competition_tag_link_table.c.tag_id,
+                    ),
+                )
+                .where(competition_tag_link_table.c.competition_id == competition_table.c.id)
+                .scalar_subquery()
+            )
+            similarity = func.greatest(title_similarity, func.coalesce(tag_similarity, 0))
             filters.append(similarity > SIMILARITY_THRESHOLD)
             order_by.append(similarity.desc())
 
@@ -349,6 +415,8 @@ class SACompetitionGateway(CompetitionGateway):
                 .options(
                     selectinload(Competition.organizer).selectinload(Organizer.user),  # type: ignore[arg-type]
                     selectinload(Competition.milestones),  # type: ignore[arg-type]
+                    selectinload(Competition.tags),  # type: ignore[arg-type]
+                    selectinload(Competition.tracks),  # type: ignore[arg-type]
                 )
             )
             result = (await self._session.execute(query)).all()

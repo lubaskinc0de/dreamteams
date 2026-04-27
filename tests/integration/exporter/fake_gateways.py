@@ -50,7 +50,7 @@ def to_exporter_application(application: ApplicationModel) -> Application:
         id=application.id,
         competition_id=application.competition_id,
         competition_name=application.competition_name,
-        domains=[d.value for d in application.domains],
+        track=application.track.name,
         status=ApplicationStatus(application.status.value),
         created_at=application.created_at,
         form_data=application.form_data,

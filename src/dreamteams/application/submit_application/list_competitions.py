@@ -10,7 +10,7 @@ from dreamteams.application.common.gateway.participant import ParticipantGateway
 from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.common.interactor import interactor
 from dreamteams.application.common.logger import Logger
-from dreamteams.entities.common.vo.domain import Domain
+from dreamteams.entities.common.identifiers import CompetitionTagId
 from dreamteams.entities.errors.base import AccessDeniedError
 
 PAGE_SIZE = 10
@@ -26,7 +26,7 @@ class ExploreCompetitionsInput(BaseModel):
     min_team_size: int | None = Field(default=None, ge=1)
     max_team_size: int | None = Field(default=None, ge=1)
     auto_accept: bool | None = None
-    domains: list[Domain] | None = None
+    tag_ids: list[CompetitionTagId] | None = None
 
 
 class ExploreCompetitionsList(BaseModel):
@@ -63,7 +63,7 @@ class ExploreCompetitions:
             min_team_size=input_data.min_team_size,
             max_team_size=input_data.max_team_size,
             auto_accept=input_data.auto_accept,
-            domains=input_data.domains,
+            tag_ids=input_data.tag_ids,
         )
 
         items, total = await self.competition_gateway.explore(
@@ -76,6 +76,6 @@ class ExploreCompetitions:
             min_team_size=input_data.min_team_size,
             max_team_size=input_data.max_team_size,
             auto_accept=input_data.auto_accept,
-            domains=input_data.domains,
+            tag_ids=input_data.tag_ids,
         )
         return ExploreCompetitionsList(items=items, total=total, page=input_data.page)

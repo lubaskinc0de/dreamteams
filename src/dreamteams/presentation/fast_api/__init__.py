@@ -15,6 +15,8 @@ from dreamteams.presentation.fast_api.routers.invites import router as invites_r
 from dreamteams.presentation.fast_api.routers.organizers import router as organizers_router
 from dreamteams.presentation.fast_api.routers.participants import router as participants_router
 from dreamteams.presentation.fast_api.routers.root import router as root_router
+from dreamteams.presentation.fast_api.routers.tags import admin_router as admin_tags_router
+from dreamteams.presentation.fast_api.routers.tags import router as tags_router
 from dreamteams.presentation.fast_api.routers.users import router as users_router
 
 
@@ -25,6 +27,8 @@ def include_routers(app: FastAPI) -> None:
     app.include_router(users_router)
     app.include_router(competitions_router)
     app.include_router(admin_users_router)
+    app.include_router(admin_tags_router)
+    app.include_router(tags_router)
     app.include_router(invites_router)
     app.include_router(participants_router)
     app.include_router(application_forms_router)

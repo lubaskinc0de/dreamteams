@@ -33,7 +33,7 @@ async def test_participant_can_list_own_applications(
                 participant_id=result.items[0].participant_id,
                 competition_id=comp.created.competition_id,
                 competition_name=comp.form.title,
-                domains=result.items[0].domains,
+                track=result.items[0].track,
                 status=ApplicationStatus.PENDING,
                 created_at=result.items[0].created_at,
                 form_data=None,

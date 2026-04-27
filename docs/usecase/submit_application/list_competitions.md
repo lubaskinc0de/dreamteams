@@ -6,11 +6,11 @@
 |-------|------|-------------|------------|
 | `page` | `int` | Page number for pagination | Positive integer (default `1`) |
 | `sort_by` | `str` | Sort field | `most_popular` (default) or `newest` |
-| `search` | `str \| null` | Substring search on competition title (trigram similarity) | Optional |
+| `search` | `str \| null` | Search on competition title and attached tag values (trigram similarity) | Optional |
 | `min_team_size` | `int \| null` | Participant's desired minimum team size | Positive integer; optional |
 | `max_team_size` | `int \| null` | Participant's desired maximum team size | Positive integer; optional |
 | `auto_accept` | `bool \| null` | Exact match on competition's `auto_accept` | Optional |
-| `domains` | `list[Domain] \| null` | Match competitions whose domains overlap with any of these | Optional |
+| `tag_ids` | `list[CompetitionTagId] \| null` | Match competitions whose tags overlap with any of these | Optional |
 
 ## Output
 
@@ -31,7 +31,8 @@
 | `description` | `str` | Competition description |
 | `schedule` | `CompetitionSchedule` | Registration and event dates |
 | `participant_limits` | `ParticipantLimits` | Max participants |
-| `domains` | `list[Domain]` | Technical domains |
+| `tags` | `list[CompetitionTag]` | Search tags attached to the competition |
+| `tracks` | `list[CompetitionTrack]` | Tracks participants can apply to |
 | `participant_type` | `ParticipantType` | Participant type requirement |
 | `venue` | `CompetitionVenue` | Format and location |
 | `team_size` | `TeamSizeRange` | Team size range |
@@ -50,7 +51,7 @@
 5. `members_count` (number of accepted applications) is strictly below `participant_limits.max`
 6. `min_team_size` / `max_team_size`, if provided, must overlap with the competition's own team-size range
 7. `auto_accept`, if provided, must exactly match the competition's value
-8. `domains`, if provided, must overlap with the competition's domains
-9. `search`, if provided, uses trigram similarity against the title
+8. `tag_ids`, if provided, must overlap with the competition's tags
+9. `search`, if provided, uses trigram similarity against the title and attached tag values
 10. `most_popular` (default) sorts by `members_count` descending; `newest` sorts by `created_at` descending
 11. Stable ordering is guaranteed via `id` as the final tiebreaker

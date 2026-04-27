@@ -54,7 +54,7 @@ class ReadApplication:
             id=application.id,
             competition_id=application.competition_id,
             competition_name=competition.title,
-            domains=application.domains,
+            track=application.track,
             status=application.status,
             created_at=application.created_at,
             form_data=application.form_data,
@@ -66,7 +66,6 @@ class ReadApplication:
                 age=participant.age.value,
                 skills=participant.skills,
                 experience_level=participant.experience_level,
-                preferred_domains=participant.preferred_domains,
                 contacts=participant.contacts,
             ),
         )

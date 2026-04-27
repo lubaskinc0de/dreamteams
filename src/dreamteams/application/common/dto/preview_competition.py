@@ -3,13 +3,14 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
-from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import Banner
 from dreamteams.entities.competition.milestone import Milestone
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import CompetitionSchedule
+from dreamteams.entities.competition.tag import CompetitionTag
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
+from dreamteams.entities.competition.track import CompetitionTrack
 from dreamteams.entities.competition.venue import CompetitionVenue
 
 
@@ -31,7 +32,8 @@ class PreviewCompetitionModel(BaseModel):
     description: str
     schedule: CompetitionSchedule
     participant_limits: ParticipantLimits
-    domains: list[Domain]
+    tags: list[CompetitionTag]
+    tracks: list[CompetitionTrack]
     participant_type: ParticipantType
     venue: CompetitionVenue
     team_size: TeamSizeRange | None

@@ -1,7 +1,6 @@
 from typing import override
 
 from sqlalchemy import (
-    ARRAY,
     UUID,
     Column,
     DateTime,
@@ -19,7 +18,6 @@ from sqlalchemy.engine import Dialect
 from sqlalchemy.orm import relationship
 
 from dreamteams.adapters.db.models.base import mapper_registry
-from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.participant.vo.age import Age
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
@@ -58,7 +56,6 @@ participant_table = Table(
     Column("full_name", String(150), nullable=False),
     Column("bio", Text, nullable=True),
     Column("experience_level", Enum(ExperienceLevel, native_enum=False), nullable=True),
-    Column("preferred_domains", ARRAY(Enum(Domain, native_enum=False)), nullable=False),
     Column("participant_type", Enum(ParticipantType, native_enum=False), nullable=False),
     Column("age", AgeType, nullable=False),
     Column("created_at", DateTime(timezone=True), nullable=False),

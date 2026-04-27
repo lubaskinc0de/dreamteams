@@ -1,8 +1,10 @@
 from datetime import UTC, datetime, timedelta
 from typing import Any
+from uuid import uuid4
 
 import pytest
 
+from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.competition.schedule import ScheduleData
 from tests.common.factory.competition import CompetitionFormFactory
 from tests.common.helpers.competition import (
@@ -11,6 +13,7 @@ from tests.common.helpers.competition import (
     schedule_from_deltas,
 )
 from tests.integration.api_client import ApiClient
+from tests.integration.competition_helpers import competition_form_to_model
 from tests.integration.helpers.facade import Gateway
 
 
@@ -51,6 +54,55 @@ async def test_create_competition_without_team_size_or_team_formation_succeeds(
 
     # Assert
     response.assert_status(200).ensure_content()
+
+
+async def test_create_competition_persists_tags(
+    competition_form_factory: CompetitionFormFactory,
+    gateway: Gateway,
+    clock: Clock,
+) -> None:
+    """Creating a competition with tag_ids returns the attached tag entities on read."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    backend, python = await gateway.tags.create_many_unique(
+        owner.admin.auth_id,
+        ["BackendCreateTag", "PythonCreateTag"],
+    )
+
+    form = competition_form_factory.build(tag_ids=[python.id, backend.id])
+
+    # Act
+    model = await gateway.competition.create_from_form(owner.organizer.auth_id, form)
+
+    # Assert
+    assert model == competition_form_to_model(
+        competition_id=model.id,
+        organizer_id=owner.organizer.created.organizer_id,
+        created_at=model.created_at,
+        updated_at=model.updated_at,
+        form=form,
+        clock=clock,
+        tags=[backend, python],
+    )
+
+
+async def test_create_competition_rejects_more_than_thirty_tag_ids(
+    api_client: ApiClient,
+    competition_form_factory: CompetitionFormFactory,
+    gateway: Gateway,
+) -> None:
+    """Creating a competition with more than 30 tag_ids is rejected by request validation."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    data = competition_form_factory.build().model_dump(mode="json")
+    data["tag_ids"] = [str(uuid4()) for _ in range(31)]
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.create_competition(data)
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
 
 
 async def test_create_competition_fails_if_description_is_empty(

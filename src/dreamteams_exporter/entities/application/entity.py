@@ -14,7 +14,7 @@ class Application:
     id: ApplicationId
     competition_id: CompetitionId
     competition_name: str
-    domains: list[str]
+    track: str
     status: ApplicationStatus
     created_at: datetime
     form_data: dict[str, Any] | None

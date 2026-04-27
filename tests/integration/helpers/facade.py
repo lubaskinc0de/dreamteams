@@ -8,6 +8,7 @@ from tests.integration.helpers.application_form_factory import ApplicationFormGa
 from tests.integration.helpers.competition_factory import CompetitionGateway
 from tests.integration.helpers.organizer_factory import OrganizerGateway
 from tests.integration.helpers.participant_factory import ParticipantGateway
+from tests.integration.helpers.tag_factory import TagGateway
 
 
 @dataclass
@@ -20,3 +21,4 @@ class Gateway:
     competition: CompetitionGateway
     application: ApplicationGateway
     application_form: ApplicationFormGateway
+    tags: TagGateway

@@ -14,8 +14,7 @@ Updates the participant profile of the currently authenticated user.
 | `bio`               | `str \| None`             | No       | Short biography or description (max 500 characters) |
 | `skills`            | `list[ParticipantSkill]`  | No       | List of participant skills (default: empty) |
 | `experience_level`  | `ExperienceLevel \| None` | No       | Experience level |
-| `preferred_domains` | `list[Domain]`            | No       | List of preferred domains (default: empty) |
-| `contacts`          | `list[ParticipantContact]`| No       | List of contacts (default: empty) |
+| `contacts`          | `list[ParticipantContact]`| No       | List of contacts (default: empty, max 15) |
 
 ## Output
 
@@ -30,6 +29,7 @@ No output. Operation succeeds or raises error.
 5. Contact titles must be unique within the contacts list
 6. Contact values must be unique within the contacts list
 7. `avatar_url` is preserved from the existing profile (not updatable via this use case)
+8. At most 15 contacts are accepted by the request model
 
 ## Errors
 

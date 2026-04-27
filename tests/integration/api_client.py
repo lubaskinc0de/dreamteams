@@ -20,6 +20,9 @@ from dreamteams.application.manage_invites import InviteIssued, InviteModel, Inv
 from dreamteams.application.manage_my_applications import ApplicationsList as MyApplicationsList
 from dreamteams.application.manage_my_applications import MyApplicationModel
 from dreamteams.application.manage_profile import ProfileModel
+from dreamteams.application.manage_tags import (
+    CompetitionTagsList,
+)
 from dreamteams.application.manage_users import AdminUserDetails, UsersList
 from dreamteams.application.preview_competition.list import PreviewCompetitionsList
 from dreamteams.application.publish_competition import CreatedCompetition
@@ -27,9 +30,16 @@ from dreamteams.application.register.register_organizer import CreatedOrganizer
 from dreamteams.application.register.register_participant import CreatedParticipant
 from dreamteams.application.register.register_superuser import CreatedSuperuser
 from dreamteams.application.submit_application import CreatedApplication, ExploreCompetitionsList
+from dreamteams.application.view_tags import CompetitionTagsList as ViewCompetitionTagsList
 from dreamteams.entities.application.entity import ApplicationStatus
-from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId, OrganizerInviteId, UserId
-from dreamteams.entities.common.vo.domain import Domain
+from dreamteams.entities.common.identifiers import (
+    ApplicationId,
+    CompetitionId,
+    CompetitionTagId,
+    OrganizerInviteId,
+    UserId,
+)
+from dreamteams.entities.competition.tag import CompetitionTag
 from dreamteams_exporter.application.common.dto.export_job import ExportJobModel
 from dreamteams_exporter.application.export_applications_sheets.create import CreatedExportJob
 from dreamteams_exporter.entities.common.identifiers import ExportJobId
@@ -45,6 +55,8 @@ PARTICIPANT_URL = "/participants"
 APPLICATIONS_URL = "/applications"
 EXPORTS_URL = "/exports"
 ADMIN_USERS_URL = "/admin/users"
+ADMIN_TAGS_URL = "/admin/tags"
+TAGS_URL = "/tags"
 
 
 @dataclass
@@ -249,6 +261,41 @@ class ApiClient:
         response = await self.session.get(f"{ADMIN_USERS_URL}/{user_id}", headers=self._headers)
         return await self._load_response(response, response_type=AdminUserDetails)
 
+    async def create_tag(self, data: dict[str, Any]) -> APIResponse[CompetitionTag]:
+        """Create tag via POST /admin/tags/."""
+        response = await self.session.post(
+            f"{ADMIN_TAGS_URL}/",
+            headers=self._headers,
+            json=data,
+        )
+        return await self._load_response(response, response_type=CompetitionTag)
+
+    async def list_admin_tags(self, *, page: int = 1, search: str | None = None) -> APIResponse[CompetitionTagsList]:
+        """List tags via GET /admin/tags/."""
+        params: dict[str, str | int] = {"page": page}
+        if search is not None:
+            params["search"] = search
+        response = await self.session.get(f"{ADMIN_TAGS_URL}/", headers=self._headers, params=params)
+        return await self._load_response(response, response_type=CompetitionTagsList)
+
+    async def read_tag(self, tag_id: CompetitionTagId) -> APIResponse[CompetitionTag]:
+        """Read tag via GET /admin/tags/{tag_id}."""
+        response = await self.session.get(f"{ADMIN_TAGS_URL}/{tag_id}", headers=self._headers)
+        return await self._load_response(response, response_type=CompetitionTag)
+
+    async def delete_tag(self, tag_id: CompetitionTagId) -> APIResponse[None]:
+        """Delete tag via DELETE /admin/tags/{tag_id}."""
+        response = await self.session.delete(f"{ADMIN_TAGS_URL}/{tag_id}", headers=self._headers)
+        return await self._load_response(response, response_type=None)
+
+    async def list_tags(self, *, page: int = 1, search: str | None = None) -> APIResponse[ViewCompetitionTagsList]:
+        """List tags via GET /tags/."""
+        params: dict[str, str | int] = {"page": page}
+        if search is not None:
+            params["search"] = search
+        response = await self.session.get(f"{TAGS_URL}/", headers=self._headers, params=params)
+        return await self._load_response(response, response_type=ViewCompetitionTagsList)
+
     async def view_profile(self) -> APIResponse[ProfileModel]:
         """View user profile via GET /users/me."""
         response = await self.session.get(f"{USERS_URL}/me", headers=self._headers)
@@ -326,7 +373,7 @@ class ApiClient:
         min_team_size: int | None = None,
         max_team_size: int | None = None,
         auto_accept: bool | None = None,
-        domains: list[Domain] | None = None,
+        tag_ids: list[CompetitionTagId] | None = None,
     ) -> APIResponse[ExploreCompetitionsList]:
         """Call GET /competitions/explore (participant-facing)."""
         params: list[tuple[str, str | int | float | bool | None]] = [
@@ -341,8 +388,8 @@ class ApiClient:
             params.append(("max_team_size", max_team_size))
         if auto_accept is not None:
             params.append(("auto_accept", str(auto_accept).lower()))
-        if domains is not None:
-            params.extend(("domains", domain.value) for domain in domains)
+        if tag_ids is not None:
+            params.extend(("tag_ids", str(tag_id)) for tag_id in tag_ids)
 
         response = await self.session.get(
             f"{COMPETITIONS_URL}/explore",

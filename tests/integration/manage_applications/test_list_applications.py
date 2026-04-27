@@ -2,6 +2,7 @@ from uuid import uuid4
 
 import pytest
 
+from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.manage_applications.list import MAX_PAGE_SIZE, PAGE_SIZE
 from dreamteams.entities.application.entity import ApplicationStatus
@@ -22,7 +23,10 @@ async def test_list_applications_succeeds(
     # Arrange
     owner = await gateway.organizer.create_with_admin(gateway.admin)
     comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
-    submit_input = submit_application_input_factory.build(domains=[comp.form.domains[0]], form_data=None)
+    submit_input = submit_application_input_factory.build(
+        track=CompetitionTrackForm(name=comp.form.tracks[0].name),
+        form_data=None,
+    )
     submitted_ids = await gateway.application.create_for_competition(
         num_applications,
         comp.created.competition_id,
@@ -121,7 +125,10 @@ async def test_list_applications_with_pagination(
     comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
 
     num_applications = page * PAGE_SIZE
-    submit_input = submit_application_input_factory.build(domains=[comp.form.domains[0]], form_data=None)
+    submit_input = submit_application_input_factory.build(
+        track=CompetitionTrackForm(name=comp.form.tracks[0].name),
+        form_data=None,
+    )
     submitted_ids = await gateway.application.create_for_competition(
         num_applications,
         comp.created.competition_id,
@@ -156,7 +163,10 @@ async def test_list_applications_respects_page_size(
     # Arrange
     owner = await gateway.organizer.create_with_admin(gateway.admin)
     comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
-    submit_input = submit_application_input_factory.build(domains=[comp.form.domains[0]], form_data=None)
+    submit_input = submit_application_input_factory.build(
+        track=CompetitionTrackForm(name=comp.form.tracks[0].name),
+        form_data=None,
+    )
     submitted_ids = await gateway.application.create_for_competition(
         num_applications,
         comp.created.competition_id,
@@ -193,7 +203,10 @@ async def test_list_applications_filters_by_status(
     # Arrange
     owner = await gateway.organizer.create_with_admin(gateway.admin)
     comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
-    submit_input = submit_application_input_factory.build(domains=[comp.form.domains[0]], form_data=None)
+    submit_input = submit_application_input_factory.build(
+        track=CompetitionTrackForm(name=comp.form.tracks[0].name),
+        form_data=None,
+    )
     submitted_ids = await gateway.application.create_for_competition(
         6,
         comp.created.competition_id,
@@ -224,7 +237,10 @@ async def test_list_applications_respects_sort_order(
     # Arrange
     owner = await gateway.organizer.create_with_admin(gateway.admin)
     comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
-    submit_input = submit_application_input_factory.build(domains=[comp.form.domains[0]], form_data=None)
+    submit_input = submit_application_input_factory.build(
+        track=CompetitionTrackForm(name=comp.form.tracks[0].name),
+        form_data=None,
+    )
     submitted_ids = await gateway.application.create_for_competition(
         3,
         comp.created.competition_id,

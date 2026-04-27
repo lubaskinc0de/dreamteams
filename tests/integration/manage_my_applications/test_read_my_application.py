@@ -28,7 +28,7 @@ async def test_participant_can_read_own_application(
         participant_id=result.participant_id,
         competition_id=comp.created.competition_id,
         competition_name=comp.form.title,
-        domains=result.domains,
+        track=result.track,
         status=ApplicationStatus.PENDING,
         created_at=result.created_at,
         form_data=None,

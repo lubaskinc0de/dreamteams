@@ -29,6 +29,12 @@ from dreamteams.application.manage_profile.delete import DeleteProfile
 from dreamteams.application.manage_profile.detach_avatar import DetachAvatar
 from dreamteams.application.manage_profile.update_organizer import UpdateOrganizer
 from dreamteams.application.manage_profile.update_participant import UpdateParticipant
+from dreamteams.application.manage_tags import (
+    CreateCompetitionTag,
+    DeleteCompetitionTag,
+    ReadCompetitionTag,
+)
+from dreamteams.application.manage_tags import ListCompetitionTags as ListCompetitionTagsAsAdmin
 from dreamteams.application.manage_users import BlockUser, ListUsers, ReadUserByAdmin, UnblockUser
 from dreamteams.application.preview_competition.list import PreviewCompetitions
 from dreamteams.application.publish_competition import CreateCompetition
@@ -39,6 +45,7 @@ from dreamteams.application.register.shared.user_factory import UserFactory
 from dreamteams.application.submit_application import ExploreCompetitions, SubmitApplication
 from dreamteams.application.submit_application import ReadApplicationForm as ReadApplicationFormAsParticipant
 from dreamteams.application.submit_application import ReadCompetition as ReadCompetitionAsParticipant
+from dreamteams.application.view_tags import ListCompetitionTags as ViewCompetitionTags
 
 
 class InteractorProvider(Provider):
@@ -84,5 +91,10 @@ class InteractorProvider(Provider):
         UnblockUser,
         ListUsers,
         ReadUserByAdmin,
+        CreateCompetitionTag,
+        ReadCompetitionTag,
+        ListCompetitionTagsAsAdmin,
+        DeleteCompetitionTag,
+        ViewCompetitionTags,
     )
     user_factory = provide(UserFactory)

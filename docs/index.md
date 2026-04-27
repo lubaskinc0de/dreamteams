@@ -10,8 +10,8 @@ The platform follows strict **Clean Architecture** with five layers enforced by 
 
 | Layer | Purpose |
 |-------|---------|
-| **Entities** | Core domain models: [User](entities/user.md), [Organizer](entities/organizer.md), [Competition](entities/competition.md), [Application](entities/application.md) |
-| **Value Objects** | Domain value objects and validated collections: [Domain](value-objects/domain.md), [CompetitionSchedule](value-objects/competition-schedule.md), [ApplicationFormFields](value-objects/application-form-fields.md) |
+| **Entities** | Core domain models: [User](entities/user.md), [Organizer](entities/organizer.md), [Competition](entities/competition.md), [CompetitionTag](entities/competition-tag.md), [Application](entities/application.md) |
+| **Value Objects** | Core value objects and validated collections: [CompetitionTrack](value-objects/competition-track.md), [CompetitionTracks](value-objects/competition-tracks.md), [CompetitionTags](value-objects/competition-tags.md), [CompetitionSchedule](value-objects/competition-schedule.md), [ApplicationFormFields](value-objects/application-form-fields.md) |
 | **Application** | Use cases (interactors) and gateway interfaces |
 | **Adapters** | Database gateways, SQLAlchemy models, auth providers |
 | **Presentation** | FastAPI routers and request/response models |
@@ -60,6 +60,7 @@ The platform follows strict **Clean Architecture** with five layers enforced by 
 - [Organizer](entities/organizer.md) — organization profile linked to a User
 - [Participant](entities/participant.md) — individual profile linked to a User
 - [Competition](entities/competition.md) — hackathon or olympiad event
+- [CompetitionTag](entities/competition-tag.md) — searchable tag catalog entry for competition discovery
 - [Application](entities/application.md) — participant's application to a competition
 - [ApplicationForm](entities/application-form.md) — optional extra fields for an application
 - [OrganizerInvite](entities/organizer-invite.md) — invite code for organizer registration
@@ -73,6 +74,8 @@ The platform follows strict **Clean Architecture** with five layers enforced by 
 | [Register](usecase/register/usecase.md) | Visitor | Register organizer, participant, or superuser |
 | [Manage Profile](usecase/manage_profile/usecase.md) | Organizer | Read and update profile |
 | [Manage Invites](usecase/manage_invites/usecase.md) | Admin | Issue, revoke, list invites |
+| [Manage Tags](usecase/manage_tags/usecase.md) | Admin | Create, read, list, delete competition tags |
+| [View Tags](usecase/view_tags/usecase.md) | Participant/Organizer | Search and list available competition tags |
 | [Publish Competition](usecase/publish_competition/usecase.md) | Organizer | Create competition |
 | [Manage Competitions](usecase/manage_competitions/usecase.md) | Organizer | List, read, update, delete competitions |
 | [Preview Competition](usecase/preview_competition/usecase.md) | Visitor/Participant | Browse public competition listings |

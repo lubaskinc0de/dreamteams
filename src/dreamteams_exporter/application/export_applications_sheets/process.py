@@ -63,7 +63,7 @@ def _to_export_row(application: Application, form: ApplicationForm | None) -> Ex
         application.participant.full_name,
         application.competition_name,
         application.status.value,
-        ", ".join(application.domains),
+        application.track,
         str(application.participant.age),
         application.participant.participant_type,
         _format_contacts(application.participant.contacts),

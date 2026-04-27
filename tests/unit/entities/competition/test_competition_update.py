@@ -50,7 +50,8 @@ def test_update_competition_succeeds(
             valid_competition_update_data.schedule.team_formation_end,
         ),
         participant_limits=valid_competition_update_data.participant_limits,
-        domains=valid_competition_update_data.domains,
+        tags=valid_competition_update_data.tags,
+        tracks=valid_competition_update_data.tracks,
         participant_type=valid_competition_update_data.participant_type,
         venue=valid_competition_update_data.venue,
         team_size=valid_competition_update_data.team_size,
@@ -82,27 +83,6 @@ def test_only_owner_can_update_competition(
         competition.update(
             valid_competition_update_data,
             different_organizer,
-            clock,
-        )
-
-
-@settings(max_examples=30)
-@given(st.data(), valid_competition_update_data())
-def test_competition_domains_are_not_empty(
-    gateway: Gateway,
-    clock: Clock,
-    data: st.DataObject,
-    valid_competition_update_data: UpdateCompetitionData,
-) -> None:
-    """Test cannot update competition with empty domains."""
-    organizer = gateway.organizer.create()
-    competition = data.draw(valid_competition(organizer, clock))
-    valid_competition_update_data.domains = []
-
-    with pytest.raises(InvalidCompetitionDataError, match="Domains list must not be empty"):
-        competition.update(
-            valid_competition_update_data,
-            organizer,
             clock,
         )
 

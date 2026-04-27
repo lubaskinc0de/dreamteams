@@ -5,8 +5,8 @@ from pydantic import BaseModel
 
 from dreamteams.entities.application.entity import ApplicationStatus
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId, ParticipantId
-from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.competition.track import CompetitionTrack
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
 from dreamteams.entities.user import ExperienceLevel
@@ -19,7 +19,7 @@ class MyApplicationModel(BaseModel):
     participant_id: ParticipantId
     competition_id: CompetitionId
     competition_name: str
-    domains: list[Domain]
+    track: CompetitionTrack
     status: ApplicationStatus
     created_at: datetime
     form_data: dict[str, Any] | None
@@ -35,7 +35,6 @@ class ParticipantInfo(BaseModel):
     age: int
     skills: list[ParticipantSkill]
     experience_level: ExperienceLevel | None
-    preferred_domains: list[Domain]
     contacts: list[ParticipantContact]
 
 
@@ -45,7 +44,7 @@ class ApplicationModel(BaseModel):
     id: ApplicationId
     competition_id: CompetitionId
     competition_name: str
-    domains: list[Domain]
+    track: CompetitionTrack
     status: ApplicationStatus
     created_at: datetime
     form_data: dict[str, Any] | None

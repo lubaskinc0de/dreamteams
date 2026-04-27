@@ -8,7 +8,8 @@
 | `description` | `str` | Competition description | Non-empty |
 | `schedule` | `CompetitionSchedule` | Registration and event dates | Value object validation |
 | `participant_limits` | `ParticipantLimits` | Max participants | Value object validation |
-| `domains` | `list[Domain]` | Technical domains | Non-empty list |
+| `tag_ids` | `list[CompetitionTagId]` | Search tags from the admin-managed catalog | Optional; max 30 |
+| `tracks` | `list[CompetitionTrackForm]` | Tracks participants can apply to | Non-empty list; unique names |
 | `participant_type` | `ParticipantType` | Participant type | Enum value |
 | `venue` | `CompetitionVenue` | Format and location | Value object validation |
 | `team_size` | `TeamSizeRange \| None` | Team size range | Optional — must be set together with `schedule.team_formation_{start,end}` or both omitted |
@@ -40,3 +41,4 @@
 7. If milestones are provided, their timestamps must be unique
 8. `auto_accept` defaults to `False`; when `True`, participant applications are accepted immediately
 9. `team_size` and `schedule.team_formation_{start,end}` are a paired group — either all three are provided (team competition) or all three are omitted (individual competition). Any mismatch raises `INVALID_COMPETITION_DATA`.
+10. Every `tag_id` must reference an existing competition tag (`COMPETITION_TAG_NOT_FOUND`)

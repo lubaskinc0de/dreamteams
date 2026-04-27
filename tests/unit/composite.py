@@ -9,7 +9,6 @@ from dreamteams.entities.application_form.entity import ApplicationForm, Applica
 from dreamteams.entities.application_form.vo.field import Field, FieldChoice, FieldType
 from dreamteams.entities.application_form.vo.fields import ApplicationFormFields
 from dreamteams.entities.common.clock import Clock
-from dreamteams.entities.common.vo.domain import Domain
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import (
     Competition,
@@ -20,9 +19,13 @@ from dreamteams.entities.competition.entity import (
 from dreamteams.entities.competition.milestone import Milestone, MilestoneData
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import CompetitionSchedule, ScheduleData
+from dreamteams.entities.competition.tag import CompetitionTag
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
+from dreamteams.entities.competition.track import CompetitionTrack
 from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
 from dreamteams.entities.competition.vo.milestones import CompetitionMilestones
+from dreamteams.entities.competition.vo.tags import CompetitionTags
+from dreamteams.entities.competition.vo.tracks import CompetitionTracks
 from dreamteams.entities.participant.vo.age import Age
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
 from dreamteams.entities.participant.vo.participant_contacts import ParticipantContacts
@@ -192,6 +195,18 @@ def _deduplicate_milestones(milestones: Any) -> Any:
 
 
 @st.composite
+def competition_tag(draw: st.DrawFn) -> CompetitionTag:
+    """Valid competition tag."""
+    return CompetitionTag(id=draw(st.uuids()), value=draw(valid_text()))
+
+
+@st.composite
+def competition_track(draw: st.DrawFn) -> CompetitionTrack:
+    """Valid competition track."""
+    return CompetitionTrack(name=draw(valid_text()))
+
+
+@st.composite
 def valid_competition_data(draw: st.DrawFn) -> CompetitionData:
     """Valid competition data."""
     max_participants = draw(st.integers(min_value=1, max_value=10_000))
@@ -211,7 +226,25 @@ def valid_competition_data(draw: st.DrawFn) -> CompetitionData:
         description=draw(valid_text()),
         schedule=schedule,
         participant_limits=ParticipantLimits(max=max_participants),
-        domains=draw(st.lists(st.sampled_from(Domain), min_size=1)),
+        tags=CompetitionTags(
+            draw(
+                st.lists(
+                    competition_tag(),
+                    max_size=5,
+                    unique_by=(lambda tag: tag.id, lambda tag: tag.value.casefold()),
+                ),
+            ),
+        ),
+        tracks=CompetitionTracks(
+            draw(
+                st.lists(
+                    competition_track(),
+                    min_size=1,
+                    max_size=5,
+                    unique_by=lambda track: track.name.casefold(),
+                ),
+            ),
+        ),
         venue=CompetitionVenue(
             format=venue_format,
             location=draw(valid_text())
@@ -278,7 +311,25 @@ def valid_competition_update_data(draw: st.DrawFn) -> UpdateCompetitionData:
         description=draw(valid_text()),
         schedule=schedule,
         participant_limits=ParticipantLimits(max=max_participants),
-        domains=draw(st.lists(st.sampled_from(Domain), min_size=1)),
+        tags=CompetitionTags(
+            draw(
+                st.lists(
+                    competition_tag(),
+                    max_size=5,
+                    unique_by=(lambda tag: tag.id, lambda tag: tag.value.casefold()),
+                ),
+            ),
+        ),
+        tracks=CompetitionTracks(
+            draw(
+                st.lists(
+                    competition_track(),
+                    min_size=1,
+                    max_size=5,
+                    unique_by=lambda track: track.name.casefold(),
+                ),
+            ),
+        ),
         venue=CompetitionVenue(
             format=venue_format,
             location=draw(valid_text())
@@ -291,12 +342,6 @@ def valid_competition_update_data(draw: st.DrawFn) -> UpdateCompetitionData:
         auto_accept=draw(st.booleans()),
         is_archived=draw(st.booleans()),
     )
-
-
-@st.composite
-def domain_data(draw: st.DrawFn) -> Domain:
-    """Random Domain enum value."""
-    return draw(st.sampled_from(list(Domain)))
 
 
 @st.composite
@@ -328,8 +373,6 @@ def valid_participant_data(draw: st.DrawFn) -> ParticipantData:
 
     experience_level = draw(st.one_of(st.none(), st.sampled_from(list(ExperienceLevel))))
 
-    preferred_domains = draw(st.lists(domain_data(), min_size=0))
-
     contacts = draw(st.lists(participant_contact_data(), min_size=0, unique_by=(lambda c: c.title, lambda c: c.value)))
 
     participant_type = draw(st.sampled_from([ParticipantType.SCHOOLCHILD, ParticipantType.STUDENT]))
@@ -341,7 +384,6 @@ def valid_participant_data(draw: st.DrawFn) -> ParticipantData:
         bio=bio,
         skills=ParticipantSkills(skills_unique),
         experience_level=experience_level,
-        preferred_domains=preferred_domains,
         contacts=ParticipantContacts(contacts),
         participant_type=participant_type,
         age=age,
@@ -370,8 +412,6 @@ def valid_participant_update_data(draw: st.DrawFn) -> UpdateParticipantData:
 
     experience_level = draw(st.one_of(st.none(), st.sampled_from(list(ExperienceLevel))))
 
-    preferred_domains = draw(st.lists(domain_data(), min_size=0))
-
     contacts = draw(st.lists(participant_contact_data(), min_size=0, unique_by=(lambda c: c.title, lambda c: c.value)))
 
     participant_type = draw(st.sampled_from([ParticipantType.SCHOOLCHILD, ParticipantType.STUDENT]))
@@ -383,7 +423,6 @@ def valid_participant_update_data(draw: st.DrawFn) -> UpdateParticipantData:
         bio=bio,
         skills=ParticipantSkills(skills_unique),
         experience_level=experience_level,
-        preferred_domains=preferred_domains,
         contacts=ParticipantContacts(contacts),
         participant_type=participant_type,
         age=age,
@@ -391,13 +430,10 @@ def valid_participant_update_data(draw: st.DrawFn) -> UpdateParticipantData:
 
 
 @st.composite
-def valid_application_data(draw: st.DrawFn, domains: list[Domain] | None = None) -> ApplicationData:
-    """Valid application data. If domains is provided, draws a non-empty subset."""
-    if domains is not None:
-        selected = draw(st.lists(st.sampled_from(domains), min_size=1, max_size=len(domains), unique=True))
-    else:
-        selected = draw(st.lists(st.sampled_from(Domain), min_size=1, unique=True))
-    return ApplicationData(domains=selected)
+def valid_application_data(draw: st.DrawFn, tracks: list[CompetitionTrack] | None = None) -> ApplicationData:
+    """Valid application data. If tracks are provided, draws one of them."""
+    selected = draw(st.sampled_from(tracks)) if tracks is not None else draw(competition_track())
+    return ApplicationData(track=selected)
 
 
 @st.composite

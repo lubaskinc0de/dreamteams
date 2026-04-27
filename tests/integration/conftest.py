@@ -48,6 +48,7 @@ from tests.integration.helpers.competition_factory import CompetitionGateway
 from tests.integration.helpers.facade import Gateway
 from tests.integration.helpers.organizer_factory import OrganizerGateway
 from tests.integration.helpers.participant_factory import ParticipantGateway
+from tests.integration.helpers.tag_factory import TagGateway
 
 SUPERUSER_PW_HASH = "$argon2id$v=19$m=65536,t=3,p=4$WtB09we21GMOQ8kjBOFnrQ$ZU8lTm3cNPhFe90PGfH5sliQvzlbZf6DKztbxNlOl2s"
 
@@ -350,6 +351,12 @@ def application_form_gateway(
 
 
 @pytest.fixture
+def tag_gateway(api_client: ApiClient) -> TagGateway:
+    """Gateway for competition tag creation."""
+    return TagGateway(api_client=api_client)
+
+
+@pytest.fixture
 def gateway(
     admin_gateway: AdminGateway,
     organizer_gateway: OrganizerGateway,
@@ -357,6 +364,7 @@ def gateway(
     competition_gateway: CompetitionGateway,
     application_gateway: ApplicationGateway,
     application_form_gateway: ApplicationFormGateway,
+    tag_gateway: TagGateway,
 ) -> Gateway:
     """Facade providing access to all per-entity gateways."""
     return Gateway(
@@ -366,4 +374,5 @@ def gateway(
         competition=competition_gateway,
         application=application_gateway,
         application_form=application_form_gateway,
+        tags=tag_gateway,
     )

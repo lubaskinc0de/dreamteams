@@ -32,7 +32,6 @@ async def test_register_as_participant_without_optional_fields(
         bio=None,
         skills=[],
         experience_level=None,
-        preferred_domains=[],
         contacts=[],
     ).model_dump(mode="json")
 
@@ -40,6 +39,24 @@ async def test_register_as_participant_without_optional_fields(
         response = await api_client.register_participant(data=data)
 
     response.assert_status(200).ensure_content()
+
+
+async def test_register_participant_rejects_more_than_fifteen_contacts(
+    api_client: ApiClient,
+    participant_form_factory: ParticipantFormFactory,
+    faker: Faker,
+) -> None:
+    """Registering a participant with more than 15 contacts is rejected by request validation."""
+    # Arrange
+    data = participant_form_factory.build().model_dump(mode="json")
+    data["contacts"] = [{"title": f"contact-{i}", "value": f"https://example.com/{i}"} for i in range(16)]
+
+    # Act
+    with api_client.authenticate(auth_user_id=str(uuid4()), auth_user_email=faker.email()):
+        response = await api_client.register_participant(data=data)
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
 
 
 @pytest.mark.parametrize(

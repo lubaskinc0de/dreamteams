@@ -17,7 +17,6 @@ Represents a participant (physical person) registered on the platform to take pa
 | `bio`               | `str \| None`          | No       | Short biography or description                            |
 | `skills`            | [`ParticipantSkills`](../value-objects/participant-skills.md) | No | Collection of professional skills |
 | `experience_level`  | [`ExperienceLevel`](#experiencelevel-enum) `\| None` | No | Level of expertise |
-| `preferred_domains` | `list[`[`Domain`](../value-objects/domain.md)`]` | No | Preferred IT domains |
 | `contacts`          | [`ParticipantContacts`](../value-objects/participant-contacts.md) | No | Collection of contact values (GitHub, Telegram, portfolio, phone, etc.) |
 | `created_at`        | `datetime`             | Yes      | Timestamp of profile creation                             |
 | `updated_at`        | `datetime`             | Yes      | Timestamp of last profile update                          |
@@ -55,6 +54,7 @@ A value object wrapping a participant's age as an integer.
 5. Skill names in `skills` must be unique.
 6. Contacts in `contacts` must be unique by `title`.
 7. Contacts in `contacts` must be unique by `value`.
+8. Participant create/update requests accept at most 15 contacts.
 
 ## Relationships
 

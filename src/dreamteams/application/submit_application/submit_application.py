@@ -3,6 +3,7 @@ from typing import Any
 import structlog
 from pydantic import BaseModel
 
+from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.common.gateway.application import ApplicationGateway
 from dreamteams.application.common.gateway.application_form import ApplicationFormGateway
 from dreamteams.application.common.gateway.competition import CompetitionGateway
@@ -17,7 +18,7 @@ from dreamteams.entities.application.entity import ApplicationData
 from dreamteams.entities.application.submit_service import submit_application
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId
-from dreamteams.entities.common.vo.domain import Domain
+from dreamteams.entities.competition.track import CompetitionTrack
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import CompetitionNotFoundError
 
@@ -27,7 +28,7 @@ logger: Logger = structlog.get_logger(__name__)
 class SubmitApplicationInput(BaseModel):
     """Request body for submitting an application to a competition."""
 
-    domains: list[Domain]
+    track: CompetitionTrackForm
     form_data: dict[str, Any] | None = None
 
 
@@ -60,7 +61,7 @@ class SubmitApplication:
             logger.warning("User has no participant profile", user_id=user_id)
             raise AccessDeniedError(message="Only participants can submit applications")
 
-        competition = await self.competition_gateway.get(competition_id)
+        competition = await self.competition_gateway.get(competition_id, eager_tracks=True)
         if competition is None:
             logger.warning("Competition not found", competition_id=competition_id, user_id=user_id)
             raise CompetitionNotFoundError
@@ -81,7 +82,10 @@ class SubmitApplication:
         form = await self.application_form_gateway.get_by_competition_id(competition_id)
 
         application = submit_application(
-            data=ApplicationData(domains=data.domains, form_data=data.form_data),
+            data=ApplicationData(
+                track=CompetitionTrack(data.track.name),
+                form_data=data.form_data,
+            ),
             participant=participant,
             competition=competition,
             accepted_count=accepted_count,

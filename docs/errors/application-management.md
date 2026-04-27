@@ -6,7 +6,7 @@
 |------|-------------|-------------|----------|
 | `APPLICATION_NOT_FOUND` | 404 | Application with the given ID does not exist | None |
 | `APPLICATION_ALREADY_EXISTS` | 409 | Participant already has an application for this competition | None |
-| `INVALID_APPLICATION_DATA` | 400 | Application data fails validation (bad domains, form data mismatch, etc.) | None |
+| `INVALID_APPLICATION_DATA` | 400 | Application data fails validation (bad track, form data mismatch, etc.) | None |
 | `APPLICATION_ALREADY_RESOLVED` | 409 | Application is not in `PENDING` status and cannot be accepted, rejected, or withdrawn again | None |
 | `APPLICATION_FORM_NOT_FOUND` | 404 | No ApplicationForm exists for the given competition | None |
 | `APPLICATION_FORM_ALREADY_EXISTS` | 409 | An ApplicationForm already exists for the given competition; delete it before creating a new one | None |

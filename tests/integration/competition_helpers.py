@@ -15,6 +15,8 @@ from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
 from dreamteams.entities.competition.milestone import Milestone
 from dreamteams.entities.competition.schedule import schedule_factory
+from dreamteams.entities.competition.tag import CompetitionTag
+from dreamteams.entities.competition.track import CompetitionTrack
 from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
 
 
@@ -62,6 +64,7 @@ def competition_form_to_model(
     clock: Clock,
     *,
     members_count: int = 0,
+    tags: list[CompetitionTag] | None = None,
 ) -> CompetitionModel:
     """Transform competition form and additional data to CompetitionModel."""
     return CompetitionModel(
@@ -72,7 +75,8 @@ def competition_form_to_model(
         description=form.description,
         schedule=schedule_factory(form.schedule, clock),
         participant_limits=form.participant_limits,
-        domains=form.domains,
+        tags=sorted(tags or [], key=lambda tag: tag.value),
+        tracks=[CompetitionTrack(track.name) for track in sorted(form.tracks, key=lambda item: item.name)],
         participant_type=form.participant_type,
         venue=form.venue,
         team_size=form.team_size,
@@ -101,6 +105,7 @@ def competition_update_form_to_model(
     clock: Clock,
     *,
     members_count: int = 0,
+    tags: list[CompetitionTag] | None = None,
 ) -> CompetitionModel:
     """Transform competition update form and additional data to CompetitionModel."""
     return CompetitionModel(
@@ -111,7 +116,8 @@ def competition_update_form_to_model(
         description=form.description,
         schedule=schedule_factory(form.schedule, clock),
         participant_limits=form.participant_limits,
-        domains=form.domains,
+        tags=sorted(tags or [], key=lambda tag: tag.value),
+        tracks=[CompetitionTrack(track.name) for track in sorted(form.tracks, key=lambda item: item.name)],
         participant_type=form.participant_type,
         venue=form.venue,
         team_size=form.team_size,
@@ -154,7 +160,8 @@ def competitions_list_to_preview_list(
             description=comp.description,
             schedule=comp.schedule,
             participant_limits=comp.participant_limits,
-            domains=comp.domains,
+            tags=comp.tags,
+            tracks=comp.tracks,
             participant_type=comp.participant_type,
             venue=comp.venue,
             team_size=comp.team_size,
@@ -192,7 +199,8 @@ def competitions_list_to_explore_list(
             description=comp.description,
             schedule=comp.schedule,
             participant_limits=comp.participant_limits,
-            domains=comp.domains,
+            tags=comp.tags,
+            tracks=comp.tracks,
             participant_type=comp.participant_type,
             venue=comp.venue,
             team_size=comp.team_size,
