@@ -429,8 +429,9 @@
     "description": "Access to authenticated DreamTeams features has been suspended for this session. You can review the terms or sign out.",
     "reason": "Reason",
     "blockedAt": "Restricted at",
-    "accountId": "Account ID",
     "notProvided": "Not provided",
+    "appealTitle": "Appeal this restriction",
+    "appealDescription": "If you believe this restriction is a mistake, email support.",
     "tosLink": "Terms of Service",
     "signOut": "Sign out"
   },

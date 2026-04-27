@@ -61,7 +61,7 @@ const isSettingsOpen = ref(false);
           <img
             src="/logo.png"
             alt="DreamTeams Logo"
-            class="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 object-contain"
+            class="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 object-contain"
           />
           <div>
             <p class="font-semibold text-gray-900 dark:text-gray-100">

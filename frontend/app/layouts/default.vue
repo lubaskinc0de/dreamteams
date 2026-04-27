@@ -92,7 +92,7 @@ const handleLogin = async () => {
       <template #left>
         <NuxtLink :to="brandLink" class="flex items-center gap-3 group" :aria-label="t('nav.brand')">
           <img src="/logo.png" alt="DreamTeams Logo"
-            class="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 lg:h-16 lg:w-16 object-contain transition-transform group-hover:scale-110" />
+            class="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 object-contain transition-transform group-hover:scale-110" />
           <span
             class="text-lg sm:text-xl font-extrabold text-gray-900 dark:text-gray-100 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors">
             {{ t("nav.brand") }}
@@ -206,7 +206,7 @@ const handleLogin = async () => {
           <!-- Brand Section -->
           <div class="space-y-4">
             <div class="flex items-center gap-3">
-              <img src="/logo.png" alt="DreamTeams Logo" class="h-10 w-10 object-contain" />
+              <img src="/logo.png" alt="DreamTeams Logo" class="h-7 w-7 object-contain" />
               <span class="text-xl font-bold bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent">
                 {{ t("nav.brand") }}
               </span>
