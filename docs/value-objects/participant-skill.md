@@ -23,5 +23,5 @@ Represents a professional skill or technology that a participant can list in the
 
 ## Business Rules
 
-1. `name` must be non-empty and trimmed.
-2. Duplicate skills (by `name`) are not allowed within a participant's skill list.
+1. Non-empty `name` validation happens at the application boundary.
+2. Skill collection uniqueness is owned by [`ParticipantSkills`](participant-skills.md).

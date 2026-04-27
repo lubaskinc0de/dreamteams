@@ -83,10 +83,13 @@ nav:
     - Participant Skill: value-objects/participant-skill.md
     - Team Size Range: value-objects/team-size-range.md
     - Milestone: value-objects/milestone.md
-    - Milestone Description: value-objects/milestone-description.md
+    - Competition Milestones: value-objects/competition-milestones.md
     - Field: value-objects/field.md
     - Field Type: value-objects/field-type.md
     - Field Choice: value-objects/field-choice.md
+    - Application Form Fields: value-objects/application-form-fields.md
+    - Participant Skills: value-objects/participant-skills.md
+    - Participant Contacts: value-objects/participant-contacts.md
   - Use Cases:
     - Register:
       - Overview: usecase/register/usecase.md

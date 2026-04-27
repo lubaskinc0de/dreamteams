@@ -12,7 +12,6 @@
 | Field | Type | Description | Validation |
 |-------|------|-------------|------------|
 | `name` | `str` | Machine-readable field identifier | Non-empty; unique within the form |
-| `label` | `str` | Human-readable field label | Non-empty |
 | `type` | `FieldType` | Field data type | `STRING`, `INT`, `SELECT`, or `MULTISELECT` |
 | `required` | `bool` | Whether the field is mandatory | Default `True` |
 | `choices` | `list[FieldChoiceForm] \| None` | Selectable options | Required for `SELECT`/`MULTISELECT`; must be `None` for `STRING`/`INT` |
@@ -22,7 +21,6 @@
 | Field | Type | Description | Validation |
 |-------|------|-------------|------------|
 | `value` | `str` | Machine-readable option key | Non-empty; unique within the field |
-| `label` | `str` | Human-readable option display | Non-empty |
 
 ## Output
 

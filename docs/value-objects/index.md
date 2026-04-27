@@ -1,6 +1,6 @@
 # Value Objects
 
-Immutable types used within entities. Value objects have no identity — two instances with equal fields are considered equal.
+Value objects and validated value-object collections used within entities. Item value objects have no identity — two instances with equal fields are considered equal.
 
 ## Competition
 
@@ -12,7 +12,7 @@ Immutable types used within entities. Value objects have no identity — two ins
 | [ParticipantLimits](participant-limits.md) | Max participant count |
 | [TeamSizeRange](team-size-range.md) | Min/max team size |
 | [Milestone](milestone.md) | Custom timeline event |
-| [MilestoneDescription](milestone-description.md) | Free-form milestone context (≤ 300 chars) |
+| [CompetitionMilestones](competition-milestones.md) | Competition milestone collection with unique timestamps |
 | [Domain](domain.md) | IT domain area (Frontend, Backend, AI, …) |
 
 ## Participant
@@ -20,8 +20,10 @@ Immutable types used within entities. Value objects have no identity — two ins
 | Value Object | Description |
 |--------------|-------------|
 | [ParticipantType](participant-type.md) | Target audience category |
-| [ParticipantSkill](participant-skill.md) | Skill with domain tag and level |
-| [ParticipantContact](participant-contact.md) | External contact link |
+| [ParticipantSkill](participant-skill.md) | Skill name with proficiency level |
+| [ParticipantSkills](participant-skills.md) | Participant skill collection with unique names |
+| [ParticipantContact](participant-contact.md) | External contact value |
+| [ParticipantContacts](participant-contacts.md) | Participant contact collection with unique titles and values |
 
 ## Application Form
 
@@ -30,3 +32,4 @@ Immutable types used within entities. Value objects have no identity — two ins
 | [Field](field.md) | A single form field definition |
 | [FieldType](field-type.md) | STRING / INT / SELECT / MULTISELECT |
 | [FieldChoice](field-choice.md) | A selectable option for SELECT/MULTISELECT fields |
+| [ApplicationFormFields](application-form-fields.md) | Application form field collection with at least one unique-name field |

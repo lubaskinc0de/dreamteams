@@ -11,7 +11,7 @@ The platform follows strict **Clean Architecture** with five layers enforced by 
 | Layer | Purpose |
 |-------|---------|
 | **Entities** | Core domain models: [User](entities/user.md), [Organizer](entities/organizer.md), [Competition](entities/competition.md), [Application](entities/application.md) |
-| **Value Objects** | Immutable types used by entities: [Domain](value-objects/domain.md), [CompetitionSchedule](value-objects/competition-schedule.md), [Field](value-objects/field.md) |
+| **Value Objects** | Domain value objects and validated collections: [Domain](value-objects/domain.md), [CompetitionSchedule](value-objects/competition-schedule.md), [ApplicationFormFields](value-objects/application-form-fields.md) |
 | **Application** | Use cases (interactors) and gateway interfaces |
 | **Adapters** | Database gateways, SQLAlchemy models, auth providers |
 | **Presentation** | FastAPI routers and request/response models |

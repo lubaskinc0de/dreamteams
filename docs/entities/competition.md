@@ -19,7 +19,7 @@ Represents a hackathon or olympiad event created by an organizer.
 | `participant_type`   | [`ParticipantType`](../value-objects/participant-type.md)      | Target participant category                        |
 | `venue`              | [`CompetitionVenue`](../value-objects/competition-venue.md)     | Event format and location                          |
 | `team_size`          | [`TeamSizeRange`](../value-objects/team-size-range.md) `\| None` | Min and max team size (optional — paired with schedule.team_formation_*) |
-| `milestones`         | `list[`[`Milestone`](../value-objects/milestone.md)`]`      | Custom timeline milestones                         |
+| `milestones`         | [`CompetitionMilestones`](../value-objects/competition-milestones.md) | Custom timeline milestones                         |
 | `auto_accept`        | `bool`                 | Auto-accept applications (default: `False`)        |
 | `is_archived`        | `bool`                 | Whether competition is archived                    |
 | `created_at`         | `datetime`             | When competition was created                       |
@@ -29,7 +29,7 @@ Represents a hackathon or olympiad event created by an organizer.
 
 1. Domains list must not be empty
 2. Milestone timestamps must be unique within a competition
-3. Description must not be empty or whitespace-only
+3. Description non-empty validation happens at the application boundary
 4. Only the organizer who created the competition can read, update, or delete it
 5. New competitions are created with `is_archived=True` by default
 6. Archived competitions are not visible to participants

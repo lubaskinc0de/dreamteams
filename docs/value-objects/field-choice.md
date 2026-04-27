@@ -13,10 +13,8 @@ Value object (immutable dataclass)
 | Attribute | Type  | Description                                              |
 | --------- | ----- | -------------------------------------------------------- |
 | `value`   | `str` | Machine-readable key stored in the application form data |
-| `label`   | `str` | Human-readable display text shown to participants        |
 
 ## Business Rules
 
-1. `value` must not be empty or whitespace-only.
-2. `label` must not be empty or whitespace-only.
-3. All `FieldChoice.value` items within a single `Field` must be unique.
+1. Non-empty `value` validation happens at the application boundary.
+2. All `FieldChoice.value` items within a single `Field` must be unique.

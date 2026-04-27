@@ -11,7 +11,7 @@ Represents an optional set of extra input fields that an organizer can attach to
 | `id`             | `ApplicationFormId` (UUID)  | Unique identifier                                                        |
 | `competition_id` | `CompetitionId` (UUID)      | The [Competition](competition.md) this form belongs to (one-to-one)                        |
 | `created_at`     | `datetime`                  | When the form was created                                                |
-| `fields`         | `frozenset[`[`Field`](../value-objects/field.md)`]`          | The set of fields participants must fill in; uniqueness enforced by `name` |
+| `fields`         | [`ApplicationFormFields`](../value-objects/application-form-fields.md) | The fields participants must fill in; non-empty with uniqueness enforced by `name` |
 
 ## Storage
 
@@ -20,14 +20,13 @@ Represents an optional set of extra input fields that an organizer can attach to
 ```json
 {
   "name": "tshirt_size",
-  "label": "T-shirt size",
   "type": "SELECT",
   "required": true,
   "choices": [
-    { "value": "S",  "label": "Small" },
-    { "value": "M",  "label": "Medium" },
-    { "value": "L",  "label": "Large" },
-    { "value": "XL", "label": "Extra Large" }
+    { "value": "S" },
+    { "value": "M" },
+    { "value": "L" },
+    { "value": "XL" }
   ]
 }
 ```

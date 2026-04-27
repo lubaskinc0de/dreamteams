@@ -28,7 +28,7 @@ No output. Operation succeeds or raises error.
 3. Age must be between 0 and 150 inclusive
 4. Skill names must be unique within the skills list
 5. Contact titles must be unique within the contacts list
-6. Contact URLs must be unique within the contacts list
+6. Contact values must be unique within the contacts list
 7. `avatar_url` is preserved from the existing profile (not updatable via this use case)
 
 ## Errors

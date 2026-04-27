@@ -58,7 +58,7 @@ Retrieves full user, organizer, and participant information for admin review.
 | `skills` | `list[ParticipantSkill]` | Participant skills |
 | `experience_level` | `ExperienceLevel \| None` | Experience level |
 | `preferred_domains` | `list[Domain]` | Preferred domains |
-| `contacts` | `list[ParticipantContact]` | Contact links |
+| `contacts` | `list[ParticipantContact]` | Contact values |
 | `created_at` | `datetime` | Profile creation timestamp |
 | `updated_at` | `datetime` | Last profile update timestamp |
 

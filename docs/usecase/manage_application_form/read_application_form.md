@@ -22,7 +22,6 @@
 | Field | Type | Description |
 |-------|------|-------------|
 | `name` | `str` | Machine-readable field identifier |
-| `label` | `str` | Human-readable field label |
 | `type` | `FieldType` | `STRING`, `INT`, `SELECT`, or `MULTISELECT` |
 | `required` | `bool` | Whether the field is mandatory |
 | `choices` | `list[FieldChoiceModel] \| None` | Options for `SELECT`/`MULTISELECT` fields; `None` for others |
@@ -32,7 +31,6 @@
 | Field | Type | Description |
 |-------|------|-------------|
 | `value` | `str` | Machine-readable option key |
-| `label` | `str` | Human-readable option display |
 
 ## Business Rules
 

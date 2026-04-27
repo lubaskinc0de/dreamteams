@@ -21,7 +21,7 @@
 |-------|------|-------------|------------|
 | `title` | `str` | Milestone title | Max 50 characters, non-empty |
 | `timestamp` | `datetime` | Milestone timestamp | Valid datetime |
-| `description` | `str \| None` | Optional free-form context | Max 300 characters ([MilestoneDescription](../../value-objects/milestone-description.md)) |
+| `description` | `str \| None` | Optional free-form context | Max 300 characters |
 
 ## Output
 

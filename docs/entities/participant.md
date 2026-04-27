@@ -15,10 +15,10 @@ Represents a participant (physical person) registered on the platform to take pa
 | `age`               | [`Age`](#age-vo)       | Yes      | Age of the participant (0–150)                            |
 | `avatar_url`        | `str \| None`          | No       | URL to the participant's profile picture                  |
 | `bio`               | `str \| None`          | No       | Short biography or description                            |
-| `skills`            | `list[`[`ParticipantSkill`](../value-objects/participant-skill.md)`]` | No | List of professional skills |
+| `skills`            | [`ParticipantSkills`](../value-objects/participant-skills.md) | No | Collection of professional skills |
 | `experience_level`  | [`ExperienceLevel`](#experiencelevel-enum) `\| None` | No | Level of expertise |
 | `preferred_domains` | `list[`[`Domain`](../value-objects/domain.md)`]` | No | Preferred IT domains |
-| `contacts`          | `list[`[`ParticipantContact`](../value-objects/participant-contact.md)`]` | No | List of contact links (GitHub, Telegram, portfolio, etc.) |
+| `contacts`          | [`ParticipantContacts`](../value-objects/participant-contacts.md) | No | Collection of contact values (GitHub, Telegram, portfolio, phone, etc.) |
 | `created_at`        | `datetime`             | Yes      | Timestamp of profile creation                             |
 | `updated_at`        | `datetime`             | Yes      | Timestamp of last profile update                          |
 
@@ -49,12 +49,12 @@ A value object wrapping a participant's age as an integer.
 ## Business Rules
 
 1. Each participant must be linked to exactly one user via `user_id`.
-2. `full_name` cannot be empty or consist only of whitespace.
+2. `full_name` is validated at the application boundary.
 3. `participant_type` cannot be `ANY`.
 4. Age must be between 0 and 150 inclusive.
-5. All skill names in `skills` must be unique.
-6. All contacts in `contacts` must be unique by `title`.
-7. All contacts in `contacts` must be unique by `url`.
+5. Skill names in `skills` must be unique.
+6. Contacts in `contacts` must be unique by `title`.
+7. Contacts in `contacts` must be unique by `value`.
 
 ## Relationships
 

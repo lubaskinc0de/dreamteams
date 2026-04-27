@@ -2,16 +2,16 @@
 
 ## Purpose
 
-Represents a contact link or external profile associated with a participant.
+Represents a participant contact entry. The value is an arbitrary string such as a URL, handle, phone number, or email address.
 
 ## Attributes
 
 | Attribute | Type  | Description                              |
 | --------- | ----- | ---------------------------------------- |
-| `title`   | `str` | title of the external profile or contact |
-| `url`     | `str` | URL to the external profile or contact   |
+| `title`   | `str` | Title of the external profile or contact |
+| `value`   | `str` | Contact value (URL, handle, phone, email, etc.) |
 
 ## Business Rules
 
-1. `title` must not be empty
-2. The contact list must not contain duplicate URLs.
+1. Non-empty `title` validation happens at the application boundary.
+2. Contact collection uniqueness is owned by [`ParticipantContacts`](participant-contacts.md).
