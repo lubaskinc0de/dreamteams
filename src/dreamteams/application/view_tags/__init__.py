@@ -1,4 +1,5 @@
-"""Use case: View Tags.
+"""
+Use case: View Tags.
 
 Actor: Organizer or participant
 Organizer or participant searches and lists available competition tags.

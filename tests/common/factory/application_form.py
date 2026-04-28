@@ -5,7 +5,7 @@ from dreamteams.application.manage_application_form.create_application_form impo
     FieldChoiceForm,
     FieldForm,
 )
-from dreamteams.entities.application_form.vo.field import FieldType
+from dreamteams.entities.application_form.field import FieldType
 
 
 def _field_forms_provider() -> list[FieldForm]:

@@ -47,7 +47,8 @@ class ApplicationGateway(Protocol):
         sort_order: SortOrder,
         status: ApplicationStatus | None,
     ) -> tuple[list[MyApplicationModel], int]:
-        """List a participant's applications joined with competition name, returning read models directly.
+        """
+        List a participant's applications joined with competition name, returning read models directly.
 
         Returns tuple of (models list, total count).
         """
@@ -65,7 +66,8 @@ class ApplicationGateway(Protocol):
         sort_order: SortOrder,
         status: ApplicationStatus | None,
     ) -> tuple[list[ApplicationModel], int]:
-        """List a competition's applications with full participant info, returning read models directly.
+        """
+        List a competition's applications with full participant info, returning read models directly.
 
         Fetches participants in a single batch query. Returns tuple of (models list, total count).
         Implementations must exclude applications whose participant's user has ``ban_status.is_blocked = True``.

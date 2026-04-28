@@ -11,16 +11,16 @@ from dreamteams.application.common.metrics import MetricsGateway
 from dreamteams.application.errors.competition_tag import CompetitionTagNotFoundError
 from dreamteams.application.errors.organizer import OrganizerNotFoundError
 from dreamteams.entities.common.identifiers import CompetitionId, CompetitionTagId
-from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.common.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import CompetitionData, competition_factory
 from dreamteams.entities.competition.milestone import MilestoneData
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import ScheduleData
+from dreamteams.entities.competition.tags import CompetitionTags
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.track import CompetitionTrack
+from dreamteams.entities.competition.tracks import CompetitionTracks
 from dreamteams.entities.competition.venue import CompetitionVenue
-from dreamteams.entities.competition.vo.tags import CompetitionTags
-from dreamteams.entities.competition.vo.tracks import CompetitionTracks
 from dreamteams_common.clock import Clock
 from dreamteams_common.interactor import interactor
 from dreamteams_common.logger import Logger

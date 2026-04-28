@@ -214,7 +214,7 @@ async def test_admin_user_list_searches_by_organizer_name(api_client: ApiClient,
     """Organizer name search returns matching organizer users."""
     # Arrange
     admin = await gateway.admin.create()
-    organizer = await gateway.organizer.create(admin.auth_id)
+    organizer = await gateway.organizer.create(admin.auth_id, organizer_name="OrganizerSearchNeedle")
     await gateway.participant.create()
 
     # Act

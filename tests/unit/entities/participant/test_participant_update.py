@@ -1,7 +1,7 @@
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from dreamteams.entities.participant.vo.age import Age
+from dreamteams.entities.participant.age import Age
 from dreamteams.entities.user import Participant, UpdateParticipantData
 from dreamteams_common.clock import Clock
 from tests.unit.composite import (

@@ -159,7 +159,8 @@ class ApplicationGateway:
         application_ids: list[ApplicationId],
         organizer_auth_id: str,
     ) -> list[ApplicationModel]:
-        """Transition applications to mixed statuses and return their current models.
+        """
+        Transition applications to mixed statuses and return their current models.
 
         Distribution:
         - n == 0: empty
@@ -212,7 +213,8 @@ class ApplicationGateway:
         organizer_auth_id: str,
         member_counts: list[int],
     ) -> list[CompetitionCreated]:
-        """Create one active, auto-accepting competition per entry in ``member_counts``.
+        """
+        Create one active, auto-accepting competition per entry in ``member_counts``.
 
         Submits that many applications to each — every submission lands as ACCEPTED thanks
         to ``auto_accept=True``.

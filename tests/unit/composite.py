@@ -6,9 +6,9 @@ from hypothesis import strategies as st
 
 from dreamteams.entities.application.entity import ApplicationData
 from dreamteams.entities.application_form.entity import ApplicationForm, ApplicationFormData, application_form_factory
-from dreamteams.entities.application_form.vo.field import Field, FieldChoice, FieldType
-from dreamteams.entities.application_form.vo.fields import ApplicationFormFields
-from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.application_form.field import Field, FieldChoice, FieldType
+from dreamteams.entities.application_form.fields import ApplicationFormFields
+from dreamteams.entities.common.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import (
     Competition,
     CompetitionData,
@@ -16,20 +16,20 @@ from dreamteams.entities.competition.entity import (
     competition_factory,
 )
 from dreamteams.entities.competition.milestone import Milestone, MilestoneData
+from dreamteams.entities.competition.milestones import CompetitionMilestones
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import CompetitionSchedule, ScheduleData
 from dreamteams.entities.competition.tag import CompetitionTag
+from dreamteams.entities.competition.tags import CompetitionTags
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.track import CompetitionTrack
+from dreamteams.entities.competition.tracks import CompetitionTracks
 from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
-from dreamteams.entities.competition.vo.milestones import CompetitionMilestones
-from dreamteams.entities.competition.vo.tags import CompetitionTags
-from dreamteams.entities.competition.vo.tracks import CompetitionTracks
-from dreamteams.entities.participant.vo.age import Age
-from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
-from dreamteams.entities.participant.vo.participant_contacts import ParticipantContacts
-from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill, SkillLevel
-from dreamteams.entities.participant.vo.participant_skills import ParticipantSkills
+from dreamteams.entities.participant.age import Age
+from dreamteams.entities.participant.participant_contact import ParticipantContact
+from dreamteams.entities.participant.participant_contacts import ParticipantContacts
+from dreamteams.entities.participant.participant_skill import ParticipantSkill, SkillLevel
+from dreamteams.entities.participant.participant_skills import ParticipantSkills
 from dreamteams.entities.user import (
     ExperienceLevel,
     Organizer,
@@ -268,7 +268,8 @@ def valid_competition(
     is_open: bool = False,
     is_ended: bool = False,
 ) -> Competition:
-    """Valid competition entity.
+    """
+    Valid competition entity.
 
     By default mirrors ``competition_factory`` behaviour: ``is_archived=True`` with a future
     registration schedule.  Keyword flags override the schedule / archive state:

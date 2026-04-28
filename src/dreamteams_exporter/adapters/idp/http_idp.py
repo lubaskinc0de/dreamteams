@@ -11,7 +11,8 @@ from dreamteams_exporter.entities.user import User
 
 
 class HttpIdProvider(IdProvider):
-    """IdProvider for the HTTP entry point.
+    """
+    IdProvider for the HTTP entry point.
 
     Reads the caller id from the configured auth header on construction and caches the resolved
     User for the request lifetime.

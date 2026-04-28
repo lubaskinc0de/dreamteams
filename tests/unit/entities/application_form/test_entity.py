@@ -7,8 +7,8 @@ from dreamteams.entities.application_form.entity import (
     ApplicationFormData,
     application_form_factory,
 )
-from dreamteams.entities.application_form.vo.field import Field, FieldType
-from dreamteams.entities.application_form.vo.fields import ApplicationFormFields
+from dreamteams.entities.application_form.field import Field, FieldType
+from dreamteams.entities.application_form.fields import ApplicationFormFields
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams_common.clock import Clock
 from tests.unit.composite import valid_application_form, valid_application_form_data, valid_competition

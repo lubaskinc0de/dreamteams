@@ -6,7 +6,7 @@ from dreamteams.adapters.cache.config import CacheConfig
 from dreamteams.adapters.db.config import DbConfig
 from dreamteams.adapters.sentry import SentryConfig
 from dreamteams.application.register_user.register_superuser import SuperuserConfig
-from dreamteams.bootstrap.config.loader import Config
+from dreamteams.bootstrap.config_loader import Config
 from dreamteams.presentation.fast_api.config import ServerConfig
 from dreamteams_common.observability.config import OTelConfig
 

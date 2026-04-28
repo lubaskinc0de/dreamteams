@@ -21,7 +21,8 @@ def _key(auth_user_id: AuthUserId) -> str:
 
 
 class RedisAuthUserCache(AuthUserCache):
-    """Redis-backed implementation of :class:`AuthUserCache`.
+    """
+    Redis-backed implementation of :class:`AuthUserCache`.
 
     Failures (connection, timeout, deserialisation) are logged and swallowed so a
     degraded cache never turns into a failed request.

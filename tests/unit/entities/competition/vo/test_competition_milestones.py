@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 import pytest
 
 from dreamteams.entities.competition.milestone import Milestone
-from dreamteams.entities.competition.vo.milestones import CompetitionMilestones
+from dreamteams.entities.competition.milestones import CompetitionMilestones
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 
 

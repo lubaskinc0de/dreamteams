@@ -1,4 +1,5 @@
-"""Use case: Manage Profile.
+"""
+Use case: Manage Profile.
 
 Actor: User
 User reads, updates, or deletes their own profile data.

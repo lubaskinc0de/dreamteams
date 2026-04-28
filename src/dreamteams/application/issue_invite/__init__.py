@@ -1,4 +1,5 @@
-"""Use case: Issue Invite.
+"""
+Use case: Issue Invite.
 
 Actor: Admin
 Admin issues organizer invite codes and can inspect or revoke issued invites.

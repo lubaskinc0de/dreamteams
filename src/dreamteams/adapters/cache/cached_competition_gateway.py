@@ -11,7 +11,7 @@ from dreamteams.application.common.gateway.competition import (
 )
 from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.entities.common.identifiers import CompetitionId, CompetitionTagId, OrganizerId, ParticipantId
-from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.common.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import Competition
 
 

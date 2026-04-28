@@ -34,7 +34,8 @@ _retort = Retort(
 
 
 class HttpUserGateway:
-    """Adapter-internal helper that fetches the current User from main's ``GET /users/me``.
+    """
+    Adapter-internal helper that fetches the current User from main's ``GET /users/me``.
 
     Used by both ``HttpIdProvider`` and ``MessageIdProvider``. Not exposed as an application-layer
     protocol — the application layer only knows ``IdProvider``.

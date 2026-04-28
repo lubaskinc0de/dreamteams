@@ -1,4 +1,5 @@
-"""Use case: Publish Competition.
+"""
+Use case: Publish Competition.
 
 Actor: Organizer
 Organizer creates and publishes a new competition.

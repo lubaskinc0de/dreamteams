@@ -1,8 +1,8 @@
 import pytest
 
 from dreamteams.entities.errors.participant import InvalidParticipantDataError
-from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill, SkillLevel
-from dreamteams.entities.participant.vo.participant_skills import ParticipantSkills
+from dreamteams.entities.participant.participant_skill import ParticipantSkill, SkillLevel
+from dreamteams.entities.participant.participant_skills import ParticipantSkills
 
 
 def test_empty_skills_list_is_accepted() -> None:

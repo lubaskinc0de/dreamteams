@@ -2,7 +2,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from dreamteams.entities.application_form.vo.field import Field, FieldChoice, FieldType
+from dreamteams.entities.application_form.field import Field, FieldChoice, FieldType
 from dreamteams.entities.errors.application_form import InvalidApplicationFormDataError
 from tests.unit.composite import valid_field, valid_text
 

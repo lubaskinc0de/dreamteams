@@ -6,7 +6,8 @@ from dreamteams.entities.common.identifiers import UserId
 
 
 class AuthUserCache(Protocol):
-    """Cache for the immutable ``auth_user_id -> user_id`` mapping resolved by IdProvider.
+    """
+    Cache for the immutable ``auth_user_id -> user_id`` mapping resolved by IdProvider.
 
     Positive-only (misses are not cached). Cache failures must be swallowed by the
     implementation so request handling never depends on cache availability. Staleness

@@ -5,10 +5,10 @@ from pydantic import BaseModel
 
 from dreamteams.entities.application.entity import ApplicationStatus
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId, ParticipantId
-from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.common.participant_type import ParticipantType
 from dreamteams.entities.competition.track import CompetitionTrack
-from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
-from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
+from dreamteams.entities.participant.participant_contact import ParticipantContact
+from dreamteams.entities.participant.participant_skill import ParticipantSkill
 from dreamteams.entities.user import ExperienceLevel
 
 

@@ -7,7 +7,7 @@ from dreamteams.adapters.cache.config import CacheConfig
 from dreamteams.adapters.db.config import DbConfig
 from dreamteams.adapters.sentry import SentryConfig
 from dreamteams.application.register_user.register_superuser import SuperuserConfig
-from dreamteams.bootstrap.config.loader import Config
+from dreamteams.bootstrap.config_loader import Config
 from dreamteams.bootstrap.di.providers.adapter import AdapterProvider
 from dreamteams.bootstrap.di.providers.config import ConfigProvider
 from dreamteams.bootstrap.di.providers.interactor import InteractorProvider

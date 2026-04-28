@@ -6,12 +6,12 @@ from dreamteams.application.common.dto.participant_skill import ParticipantSkill
 from dreamteams.application.common.metrics import MetricsGateway
 from dreamteams.application.register_user.shared.user_factory import UserFactory
 from dreamteams.entities.common.identifiers import ParticipantId, UserId
-from dreamteams.entities.common.vo.participant_type import ParticipantType
-from dreamteams.entities.participant.vo.age import Age
-from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
-from dreamteams.entities.participant.vo.participant_contacts import ParticipantContacts
-from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
-from dreamteams.entities.participant.vo.participant_skills import ParticipantSkills
+from dreamteams.entities.common.participant_type import ParticipantType
+from dreamteams.entities.participant.age import Age
+from dreamteams.entities.participant.participant_contact import ParticipantContact
+from dreamteams.entities.participant.participant_contacts import ParticipantContacts
+from dreamteams.entities.participant.participant_skill import ParticipantSkill
+from dreamteams.entities.participant.participant_skills import ParticipantSkills
 from dreamteams.entities.user import (
     ExperienceLevel,
     ParticipantData,

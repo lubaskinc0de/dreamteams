@@ -7,7 +7,7 @@ from dreamteams.application.common.gateway.competition import CompetitionSortBy,
 from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.manage_tags import CompetitionTagInput
 from dreamteams.application.submit_application.list_competitions import PAGE_SIZE, ExploreCompetitionsList
-from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.common.participant_type import ParticipantType
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from tests.common.factory.application import SubmitApplicationInputFactory
 from tests.common.factory.competition import CompetitionFormFactory

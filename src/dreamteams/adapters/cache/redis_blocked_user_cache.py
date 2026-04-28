@@ -23,7 +23,8 @@ def _key(user_id: UserId) -> str:
 
 
 class RedisBlockedUserCache(BlockedUserCache):
-    """Redis-backed positive-only cache storing blocked user ban details as JSON.
+    """
+    Redis-backed positive-only cache storing blocked user ban details as JSON.
 
     Failures (connection, timeout, deserialisation) are logged and swallowed so a
     degraded cache never turns into a failed request.

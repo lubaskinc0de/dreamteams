@@ -5,7 +5,7 @@ from uuid import uuid4
 
 from dreamteams.entities.base import Entity
 from dreamteams.entities.common.identifiers import OrganizerId, ParticipantId, UserId
-from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.common.participant_type import ParticipantType
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.organizer import (
     OrganizerUserIdMismatchError,
@@ -14,9 +14,9 @@ from dreamteams.entities.errors.participant import (
     InvalidParticipantDataError,
     ParticipantUserIdMismatchError,
 )
-from dreamteams.entities.participant.vo.age import Age
-from dreamteams.entities.participant.vo.participant_contacts import ParticipantContacts
-from dreamteams.entities.participant.vo.participant_skills import ParticipantSkills
+from dreamteams.entities.participant.age import Age
+from dreamteams.entities.participant.participant_contacts import ParticipantContacts
+from dreamteams.entities.participant.participant_skills import ParticipantSkills
 from dreamteams_common.clock import Clock
 
 type Avatar = str
@@ -50,7 +50,8 @@ class Organizer(Entity):
 
 @dataclass
 class User(Entity):
-    """Domain entity representing a user in the application.
+    """
+    Domain entity representing a user in the application.
 
     Contains roles such as ``organizer`` and ``participant``.
     """

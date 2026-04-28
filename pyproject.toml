@@ -111,8 +111,11 @@ ignore = [
     # Strange and obscure
     'D100',
     'D104',
+    'D203',
+    'D212',
     'D401',
     'RET504',
+    'COM812',
     'D107',
     'S104',
     'ANN401',

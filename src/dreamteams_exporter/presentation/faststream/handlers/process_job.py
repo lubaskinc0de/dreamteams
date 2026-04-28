@@ -6,7 +6,7 @@ from dishka_faststream import FromDishka, inject
 from faststream.nats import NatsRouter, PullSub
 
 from dreamteams_common.logger import Logger
-from dreamteams_exporter.application.export_applications_sheets.process import (
+from dreamteams_exporter.application.export_applications_sheets.process_job import (
     ExportApplicationsToSheets,
     ProcessExportJobInput,
 )

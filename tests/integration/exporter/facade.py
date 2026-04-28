@@ -10,7 +10,7 @@ from faststream.nats.publisher.usecase import LogicPublisher
 from dreamteams_common.clock import SystemClock
 from dreamteams_exporter.application.common.dto.export_job import ExportJobModel
 from dreamteams_exporter.application.common.gateway.export_job import ExportJobGateway
-from dreamteams_exporter.application.export_applications_sheets.create import CreateExportJobInput
+from dreamteams_exporter.application.export_applications_sheets.create_job import CreateExportJobInput
 from dreamteams_exporter.entities.common.identifiers import CompetitionId, ExportJobId, UserId
 from dreamteams_exporter.entities.common.vo.application_status import ApplicationStatus
 from dreamteams_exporter.entities.export_job.factory import export_job_factory

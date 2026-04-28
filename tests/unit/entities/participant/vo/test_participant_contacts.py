@@ -1,8 +1,8 @@
 import pytest
 
 from dreamteams.entities.errors.participant import InvalidParticipantDataError
-from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
-from dreamteams.entities.participant.vo.participant_contacts import ParticipantContacts
+from dreamteams.entities.participant.participant_contact import ParticipantContact
+from dreamteams.entities.participant.participant_contacts import ParticipantContacts
 
 
 def test_empty_contacts_list_is_accepted() -> None:

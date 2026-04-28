@@ -3,7 +3,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from dreamteams.entities.competition.entity import Competition, UpdateCompetitionGeneralInfoData
-from dreamteams.entities.competition.vo.milestones import CompetitionMilestones
+from dreamteams.entities.competition.milestones import CompetitionMilestones
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams_common.clock import Clock
 from tests.unit.composite import (

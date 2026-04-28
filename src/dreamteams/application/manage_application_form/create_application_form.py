@@ -10,9 +10,9 @@ from dreamteams.application.common.metrics import MetricsGateway
 from dreamteams.application.errors.application_form import ApplicationFormAlreadyExistsError
 from dreamteams.application.errors.organizer import OrganizerNotFoundError
 from dreamteams.entities.application_form.entity import ApplicationFormData, application_form_factory
-from dreamteams.entities.application_form.vo.field import Field as DomainField
-from dreamteams.entities.application_form.vo.field import FieldChoice, FieldType
-from dreamteams.entities.application_form.vo.fields import ApplicationFormFields
+from dreamteams.entities.application_form.field import Field as DomainField
+from dreamteams.entities.application_form.field import FieldChoice, FieldType
+from dreamteams.entities.application_form.fields import ApplicationFormFields
 from dreamteams.entities.common.identifiers import ApplicationFormId, CompetitionId
 from dreamteams.entities.errors.competition import CompetitionNotFoundError
 from dreamteams_common.clock import Clock

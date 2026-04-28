@@ -6,7 +6,8 @@ from dreamteams.entities.user import BanStatus
 
 
 class BlockedUserCache(Protocol):
-    """Write interface for the blocked-user cache.
+    """
+    Write interface for the blocked-user cache.
 
     Used by application-layer interactors to update the cache on block/unblock.
     Implementations must swallow errors so cache failures never break requests.

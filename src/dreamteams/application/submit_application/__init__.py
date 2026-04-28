@@ -1,4 +1,5 @@
-"""Use case: Submit Application.
+"""
+Use case: Submit Application.
 
 Actor: Participant
 Participant browses available competitions, reads a competition's application form,

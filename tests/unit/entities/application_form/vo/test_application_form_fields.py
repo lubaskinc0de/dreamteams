@@ -1,7 +1,7 @@
 import pytest
 
-from dreamteams.entities.application_form.vo.field import Field, FieldType
-from dreamteams.entities.application_form.vo.fields import ApplicationFormFields
+from dreamteams.entities.application_form.field import Field, FieldType
+from dreamteams.entities.application_form.fields import ApplicationFormFields
 from dreamteams.entities.errors.application_form import InvalidApplicationFormDataError
 
 

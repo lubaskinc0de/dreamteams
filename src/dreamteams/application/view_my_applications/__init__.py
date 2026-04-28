@@ -1,4 +1,5 @@
-"""Use case: View My Applications.
+"""
+Use case: View My Applications.
 
 Actor: Participant
 Participant reads and lists their own applications.

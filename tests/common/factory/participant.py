@@ -4,8 +4,8 @@ from dreamteams.application.common.dto.participant_contact import ParticipantCon
 from dreamteams.application.common.dto.participant_skill import ParticipantSkillForm
 from dreamteams.application.manage_profile.update_participant import UpdateParticipantForm
 from dreamteams.application.register_user.register_participant import ParticipantForm
-from dreamteams.entities.common.vo.participant_type import ParticipantType
-from dreamteams.entities.participant.vo.participant_skill import SkillLevel
+from dreamteams.entities.common.participant_type import ParticipantType
+from dreamteams.entities.participant.participant_skill import SkillLevel
 
 
 def _bio() -> str | None:

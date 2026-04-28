@@ -10,7 +10,8 @@ def _track_provider() -> CompetitionTrackForm:
 
 
 class SubmitApplicationInputFactory(ModelFactory[SubmitApplicationInput]):
-    """Factory for SubmitApplicationInput models.
+    """
+    Factory for SubmitApplicationInput models.
 
     Generates a default track. Set ``form_data`` explicitly when the competition
     has an ApplicationForm attached.

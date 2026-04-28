@@ -1,6 +1,6 @@
 from hypothesis import given
 
-from dreamteams.entities.application_form.vo.field import FieldChoice
+from dreamteams.entities.application_form.field import FieldChoice
 from tests.unit.composite import valid_text
 
 

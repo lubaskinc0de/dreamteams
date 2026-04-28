@@ -89,7 +89,8 @@ class S3Client(ABC):  # noqa: B024
 
 
 class S3AvatarStorage(AvatarStorage, S3Client):
-    """Async client for user avatar management using aioboto3.
+    """
+    Async client for user avatar management using aioboto3.
 
     Stores avatars in S3-compatible storage.
     """

@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 
 from dreamteams.entities.errors.participant import InvalidParticipantDataError
-from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
+from dreamteams.entities.participant.participant_contact import ParticipantContact
 
 
 class ParticipantContacts(list[ParticipantContact]):

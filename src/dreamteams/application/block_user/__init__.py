@@ -1,4 +1,5 @@
-"""Use case: Block User.
+"""
+Use case: Block User.
 
 Actor: Admin
 Admin blocks and unblocks user accounts.

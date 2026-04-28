@@ -1,4 +1,5 @@
-"""Use case: Manage Application Form.
+"""
+Use case: Manage Application Form.
 
 Actor: Organizer
 Organizer manages the optional application form attached to their competition.

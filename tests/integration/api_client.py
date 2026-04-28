@@ -41,7 +41,7 @@ from dreamteams.entities.common.identifiers import (
 )
 from dreamteams.entities.competition.tag import CompetitionTag
 from dreamteams_exporter.application.common.dto.export_job import ExportJobModel
-from dreamteams_exporter.application.export_applications_sheets.create import CreatedExportJob
+from dreamteams_exporter.application.export_applications_sheets.create_job import CreatedExportJob
 from dreamteams_exporter.entities.common.identifiers import ExportJobId
 
 retort = Retort()
@@ -114,7 +114,8 @@ class APIClientConfig:
 
 
 class AuthContext:
-    """Context manager for setting authentication.
+    """
+    Context manager for setting authentication.
 
     Auth headers live in a ``ContextVar`` so concurrent tasks (e.g. ``asyncio.gather``)
     each carry their own snapshot and do not overwrite each other's credentials.

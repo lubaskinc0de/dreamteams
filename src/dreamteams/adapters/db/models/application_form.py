@@ -6,8 +6,8 @@ from sqlalchemy.types import TypeDecorator
 
 from dreamteams.adapters.db.models.base import mapper_registry
 from dreamteams.entities.application_form.entity import ApplicationForm
-from dreamteams.entities.application_form.vo.field import Field, FieldChoice, FieldType
-from dreamteams.entities.application_form.vo.fields import ApplicationFormFields
+from dreamteams.entities.application_form.field import Field, FieldChoice, FieldType
+from dreamteams.entities.application_form.fields import ApplicationFormFields
 
 
 class FieldListType(TypeDecorator[ApplicationFormFields]):

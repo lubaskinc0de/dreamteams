@@ -7,7 +7,7 @@ from dreamteams.application.manage_application_form.create_application_form impo
     FieldForm,
 )
 from dreamteams.application.submit_application import SubmitApplicationInput
-from dreamteams.entities.application_form.vo.field import FieldType
+from dreamteams.entities.application_form.field import FieldType
 from dreamteams_exporter.entities.common.identifiers import UserId
 from tests.common.factory.application import SubmitApplicationInputFactory
 from tests.integration.helpers.models import CompetitionCreated

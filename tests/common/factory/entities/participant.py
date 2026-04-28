@@ -1,11 +1,11 @@
 from polyfactory.factories import DataclassFactory
 
-from dreamteams.entities.common.vo.participant_type import ParticipantType
-from dreamteams.entities.participant.vo.age import Age
-from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
-from dreamteams.entities.participant.vo.participant_contacts import ParticipantContacts
-from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill, SkillLevel
-from dreamteams.entities.participant.vo.participant_skills import ParticipantSkills
+from dreamteams.entities.common.participant_type import ParticipantType
+from dreamteams.entities.participant.age import Age
+from dreamteams.entities.participant.participant_contact import ParticipantContact
+from dreamteams.entities.participant.participant_contacts import ParticipantContacts
+from dreamteams.entities.participant.participant_skill import ParticipantSkill, SkillLevel
+from dreamteams.entities.participant.participant_skills import ParticipantSkills
 from dreamteams.entities.user import ParticipantData
 
 

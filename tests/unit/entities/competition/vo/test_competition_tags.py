@@ -3,7 +3,7 @@ from uuid import uuid4
 import pytest
 
 from dreamteams.entities.competition.tag import CompetitionTag
-from dreamteams.entities.competition.vo.tags import CompetitionTags
+from dreamteams.entities.competition.tags import CompetitionTags
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 
 

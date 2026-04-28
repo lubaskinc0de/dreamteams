@@ -4,8 +4,8 @@ from faker import Faker
 
 from dreamteams.application.common.dto.participant_contact import ParticipantContactForm
 from dreamteams.application.manage_profile import ParticipantModel, ProfileModel
-from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
-from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
+from dreamteams.entities.participant.participant_contact import ParticipantContact
+from dreamteams.entities.participant.participant_skill import ParticipantSkill
 from tests.common.factory.participant import UpdateParticipantFormFactory
 from tests.integration.api_client import ApiClient
 from tests.integration.helpers.facade import Gateway

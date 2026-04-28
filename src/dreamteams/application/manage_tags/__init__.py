@@ -1,4 +1,5 @@
-"""Use case: Manage Tags.
+"""
+Use case: Manage Tags.
 
 Actor: Admin
 Admin maintains the competition tag catalog.

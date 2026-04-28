@@ -53,7 +53,8 @@ class AdapterProvider(Provider):
 
     @provide(scope=Scope.APP)
     async def get_nats_broker(self, config: NatsConfig) -> AsyncIterator[NatsBroker]:
-        """Broker connection used by the HTTP container to publish ``exporter.jobs.process`` events.
+        """
+        Broker connection used by the HTTP container to publish ``exporter.jobs.process`` events.
 
         In the worker container, FastStream manages its own broker lifecycle via ``app.run()``;
         this provider is only meaningful for the HTTP path.

@@ -22,7 +22,7 @@ from dreamteams.application.update_my_competition import (
     UpdateCompetitionGeneralInfoForm,
 )
 from dreamteams.entities.common.identifiers import CompetitionId, CompetitionTagId
-from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.common.participant_type import ParticipantType
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from tests.common.factory.competition import CompetitionFormFactory
 from tests.integration.api_client import ApiClient
@@ -215,7 +215,8 @@ class CompetitionGateway:
         participant_type: ParticipantType = ParticipantType.ANY,
         max_participants: int = 10000,
     ) -> None:
-        """Open registration window and update key competition fields.
+        """
+        Open registration window and update key competition fields.
 
         DB-updates ``registration_start`` into the past, then calls the API to set
         ``participant_type``, ``participant_limits``, ``is_archived``, ``tag_ids``, ``tracks``, ``auto_accept``.
@@ -348,7 +349,8 @@ class CompetitionGateway:
         *,
         participant_type: ParticipantType = ParticipantType.ANY,
     ) -> list[CompetitionModel]:
-        """Create ``n`` competitions and open their registration so they're visible to explore.
+        """
+        Create ``n`` competitions and open their registration so they're visible to explore.
 
         All rows are forced to ``participant_type`` (default ``ANY``) so explore eligibility
         filters don't silently drop them due to the factory's random participant_type.
@@ -359,7 +361,8 @@ class CompetitionGateway:
         return await self.make_all_active(competitions, organizer_auth_id)
 
     async def create_many_mixed(self, organizer_auth_id: str, n: int) -> list[CompetitionModel]:
-        """Create N competitions with mixed states (active, inactive, archived, passed).
+        """
+        Create N competitions with mixed states (active, inactive, archived, passed).
 
         Distribution:
         - 40% active, 30% inactive, 20% passed, 10% archived

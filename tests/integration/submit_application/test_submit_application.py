@@ -4,8 +4,8 @@ from dreamteams.application.common.dto.competition_track import CompetitionTrack
 from dreamteams.application.manage_application_form import ApplicationFormInput
 from dreamteams.application.manage_application_form.create_application_form import FieldForm
 from dreamteams.application.submit_application import CreatedApplication
-from dreamteams.entities.application_form.vo.field import FieldType
-from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.application_form.field import FieldType
+from dreamteams.entities.common.participant_type import ParticipantType
 from tests.common.factory.application import SubmitApplicationInputFactory
 from tests.integration.api_client import ApiClient
 from tests.integration.helpers.facade import Gateway

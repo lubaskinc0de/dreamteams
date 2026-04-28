@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
-from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.common.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import Banner
 from dreamteams.entities.competition.milestone import Milestone
 from dreamteams.entities.competition.participant_limits import ParticipantLimits

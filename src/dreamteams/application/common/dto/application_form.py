@@ -5,8 +5,8 @@ from adaptix.conversion import coercer, impl_converter
 from pydantic import BaseModel, ConfigDict
 
 from dreamteams.entities.application_form.entity import ApplicationForm
-from dreamteams.entities.application_form.vo.field import FieldType
-from dreamteams.entities.application_form.vo.fields import ApplicationFormFields
+from dreamteams.entities.application_form.field import FieldType
+from dreamteams.entities.application_form.fields import ApplicationFormFields
 from dreamteams.entities.common.identifiers import ApplicationFormId, CompetitionId
 
 

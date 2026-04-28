@@ -28,7 +28,7 @@ from dreamteams.adapters.db.alembic.config import get_alembic_config_path
 from dreamteams.adapters.db.config import DbConfig
 from dreamteams.adapters.sentry import SentryConfig
 from dreamteams.application.register_user.register_superuser import SuperuserConfig
-from dreamteams.bootstrap.config.loader import Config
+from dreamteams.bootstrap.config_loader import Config
 from dreamteams.bootstrap.fast_api import create_app
 from dreamteams.presentation.fast_api.config import ApiConfig, CorsConfig, ServerConfig
 from dreamteams_common.clock import Clock, SystemClock

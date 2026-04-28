@@ -1,6 +1,6 @@
 from dreamteams.entities.application.entity import Application, ApplicationData, application_factory
 from dreamteams.entities.application_form.entity import ApplicationForm
-from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.common.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import Competition
 from dreamteams.entities.errors.application import (
     CompetitionNotActiveError,
@@ -19,7 +19,8 @@ def submit_application(  # noqa: PLR0913
     clock: Clock,
     form: ApplicationForm | None = None,
 ) -> Application:
-    """Domain service: validate submission eligibility and create an Application.
+    """
+    Domain service: validate submission eligibility and create an Application.
 
     Checks (in order):
     1. Competition must not be archived.

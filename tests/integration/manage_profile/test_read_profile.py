@@ -1,8 +1,8 @@
 from uuid import uuid4
 
 from dreamteams.application.manage_profile import OrganizerModel, ParticipantModel, ProfileModel
-from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
-from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
+from dreamteams.entities.participant.participant_contact import ParticipantContact
+from dreamteams.entities.participant.participant_skill import ParticipantSkill
 from tests.integration.api_client import ApiClient
 from tests.integration.helpers.facade import Gateway
 

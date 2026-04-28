@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from dreamteams.entities.participant.vo.participant_skill import SkillLevel
+from dreamteams.entities.participant.participant_skill import SkillLevel
 
 
 class ParticipantSkillForm(BaseModel):

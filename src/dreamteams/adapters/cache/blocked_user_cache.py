@@ -7,7 +7,8 @@ from dreamteams.entities.user import BanStatus
 
 
 class BlockedUserCache(BlockedUserCacheBase, Protocol):
-    """Full read+write interface for the blocked-user cache.
+    """
+    Full read+write interface for the blocked-user cache.
 
     Extends the application-level write interface with the read method used by
     IdProviderImpl to check blocked status on each request.

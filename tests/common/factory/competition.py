@@ -11,7 +11,7 @@ from dreamteams.application.update_my_competition import (
     UpdateCompetitionGeneralInfoForm,
 )
 from dreamteams.entities.common.identifiers import CompetitionTagId
-from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.common.participant_type import ParticipantType
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import ScheduleData
 from dreamteams.entities.competition.team_size_range import TeamSizeRange

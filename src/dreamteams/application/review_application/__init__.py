@@ -1,4 +1,5 @@
-"""Use case: Review Application.
+"""
+Use case: Review Application.
 
 Actor: Organizer
 Organizer reads submitted applications and accepts or rejects them.

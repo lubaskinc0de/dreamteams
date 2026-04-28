@@ -6,8 +6,8 @@ from dreamteams.application.block_user import (
     AdminUserDetails,
     AdminUserModel,
 )
-from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
-from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
+from dreamteams.entities.participant.participant_contact import ParticipantContact
+from dreamteams.entities.participant.participant_skill import ParticipantSkill
 from dreamteams.entities.user import BanStatus
 from tests.integration.api_client import ApiClient
 from tests.integration.helpers.facade import Gateway

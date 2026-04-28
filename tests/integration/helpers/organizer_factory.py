@@ -19,11 +19,15 @@ class OrganizerGateway:
     organizer_form_factory: OrganizerFormFactory
     faker: Faker
 
-    async def create_with_invite(self, invite_code: str) -> OrganizerCreated:
+    async def create_with_invite(self, invite_code: str, *, organizer_name: str | None = None) -> OrganizerCreated:
         """Register a fresh organizer using an existing invite code."""
         auth_id = str(uuid4())
         email = self.faker.email()
-        form = self.organizer_form_factory.build(invite_code=invite_code)
+        form = (
+            self.organizer_form_factory.build(invite_code=invite_code)
+            if organizer_name is None
+            else self.organizer_form_factory.build(invite_code=invite_code, organizer_name=organizer_name)
+        )
 
         with self.api_client.authenticate(auth_user_id=auth_id, auth_user_email=email):
             organizer = (
@@ -32,12 +36,12 @@ class OrganizerGateway:
 
         return OrganizerCreated(auth_id=auth_id, email=email, form=form, created=organizer)
 
-    async def create(self, admin_auth_id: str) -> OrganizerCreated:
+    async def create(self, admin_auth_id: str, *, organizer_name: str | None = None) -> OrganizerCreated:
         """Issue a fresh invite as admin and register a new organizer."""
         with self.api_client.authenticate(auth_user_id=admin_auth_id):
             invite = (await self.api_client.issue_invite({})).assert_status(200).ensure_content()
 
-        return await self.create_with_invite(invite.code)
+        return await self.create_with_invite(invite.code, organizer_name=organizer_name)
 
     async def create_with_admin(self, admin_gateway: AdminGateway) -> OrganizerWithAdmin:
         """Create a fresh admin and then register an organizer under them."""

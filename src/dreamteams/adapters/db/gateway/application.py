@@ -16,11 +16,11 @@ from dreamteams.application.common.gateway.application import ApplicationGateway
 from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.entities.application.entity import Application, ApplicationStatus
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId, ParticipantId
-from dreamteams.entities.participant.vo.age import Age
-from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
-from dreamteams.entities.participant.vo.participant_contacts import ParticipantContacts
-from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
-from dreamteams.entities.participant.vo.participant_skills import ParticipantSkills
+from dreamteams.entities.participant.age import Age
+from dreamteams.entities.participant.participant_contact import ParticipantContact
+from dreamteams.entities.participant.participant_contacts import ParticipantContacts
+from dreamteams.entities.participant.participant_skill import ParticipantSkill
+from dreamteams.entities.participant.participant_skills import ParticipantSkills
 from dreamteams.entities.user import Participant
 
 _tracer = trace.get_tracer("dreamteams.adapters")

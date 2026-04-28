@@ -15,18 +15,18 @@ from sqlalchemy import (
 from sqlalchemy.orm import composite, relationship
 
 from dreamteams.adapters.db.models.base import mapper_registry
-from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.common.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import Competition
 from dreamteams.entities.competition.milestone import Milestone
+from dreamteams.entities.competition.milestones import CompetitionMilestones
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import CompetitionSchedule
 from dreamteams.entities.competition.tag import CompetitionTag
+from dreamteams.entities.competition.tags import CompetitionTags
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.track import CompetitionTrack
+from dreamteams.entities.competition.tracks import CompetitionTracks
 from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
-from dreamteams.entities.competition.vo.milestones import CompetitionMilestones
-from dreamteams.entities.competition.vo.tags import CompetitionTags
-from dreamteams.entities.competition.vo.tracks import CompetitionTracks
 from dreamteams.entities.user import Organizer
 
 

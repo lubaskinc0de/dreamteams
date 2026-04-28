@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import uuid4
 
-from dreamteams.entities.application_form.vo.fields import ApplicationFormFields
+from dreamteams.entities.application_form.fields import ApplicationFormFields
 from dreamteams.entities.base import Entity
 from dreamteams.entities.common.identifiers import ApplicationFormId, CompetitionId
 from dreamteams.entities.competition.entity import Competition

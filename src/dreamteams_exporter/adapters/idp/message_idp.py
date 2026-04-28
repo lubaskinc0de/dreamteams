@@ -11,7 +11,8 @@ from dreamteams_exporter.entities.user import User
 
 
 class MessageIdProvider(IdProvider):
-    """IdProvider for the NATS worker entry point.
+    """
+    IdProvider for the NATS worker entry point.
 
     Reads the caller id from the inbound message headers on construction and caches the resolved
     User for the message lifetime.

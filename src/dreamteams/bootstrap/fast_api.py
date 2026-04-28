@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
 from dreamteams.adapters.sentry import SentryConfig
-from dreamteams.bootstrap.config.loader import Config
+from dreamteams.bootstrap.config_loader import Config
 from dreamteams.bootstrap.di.container import get_async_container
 from dreamteams.presentation.fast_api import include_exception_handlers, include_routers
 from dreamteams.presentation.fast_api.tracing import tracing_middleware

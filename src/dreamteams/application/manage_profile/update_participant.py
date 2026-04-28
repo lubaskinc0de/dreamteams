@@ -6,12 +6,12 @@ from dreamteams.application.common.dto.participant_skill import ParticipantSkill
 from dreamteams.application.common.gateway.participant import ParticipantGateway
 from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.errors.participant import ParticipantNotFoundError
-from dreamteams.entities.common.vo.participant_type import ParticipantType
-from dreamteams.entities.participant.vo.age import Age
-from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
-from dreamteams.entities.participant.vo.participant_contacts import ParticipantContacts
-from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
-from dreamteams.entities.participant.vo.participant_skills import ParticipantSkills
+from dreamteams.entities.common.participant_type import ParticipantType
+from dreamteams.entities.participant.age import Age
+from dreamteams.entities.participant.participant_contact import ParticipantContact
+from dreamteams.entities.participant.participant_contacts import ParticipantContacts
+from dreamteams.entities.participant.participant_skill import ParticipantSkill
+from dreamteams.entities.participant.participant_skills import ParticipantSkills
 from dreamteams.entities.user import ExperienceLevel, UpdateParticipantData
 from dreamteams_common.clock import Clock
 from dreamteams_common.interactor import interactor

@@ -15,7 +15,8 @@ class ParticipantGateway(Protocol):
         *,
         eager_skills_and_contacts: bool = False,
     ) -> Participant | None:
-        """Return the participant attached to the given user.
+        """
+        Return the participant attached to the given user.
 
         Returns None if no participant role exists or if the user account is blocked.
         Implementations must return None when the user has ``ban_status.is_blocked = True``.
@@ -33,7 +34,8 @@ class ParticipantGateway(Protocol):
         *,
         eager_skills_and_contacts: bool = False,
     ) -> Participant | None:
-        """Return the participant by their entity ID.
+        """
+        Return the participant by their entity ID.
 
         Returns None if not found or if the participant's user account is blocked.
         Implementations must return None when the user has ``ban_status.is_blocked = True``.

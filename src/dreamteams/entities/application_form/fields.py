@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 
-from dreamteams.entities.application_form.vo.field import Field
+from dreamteams.entities.application_form.field import Field
 from dreamteams.entities.errors.application_form import InvalidApplicationFormDataError
 
 

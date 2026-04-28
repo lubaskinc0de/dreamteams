@@ -1,7 +1,7 @@
 import pytest
 
 from dreamteams.entities.competition.track import CompetitionTrack
-from dreamteams.entities.competition.vo.tracks import CompetitionTracks
+from dreamteams.entities.competition.tracks import CompetitionTracks
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 
 

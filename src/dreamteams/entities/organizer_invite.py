@@ -27,7 +27,8 @@ class OrganizerInvite(Entity):
     created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     def revoke(self, user: User) -> None:
-        """Revoke this invite on behalf of a user.
+        """
+        Revoke this invite on behalf of a user.
 
         Raises:
             AccessDeniedError: If the user is not an admin or not the creator.
@@ -46,7 +47,8 @@ class OrganizerInvite(Entity):
         self.is_revoked = True
 
     def ensure_can_read(self, user: User) -> None:
-        """Assert that the user is allowed to read this invite.
+        """
+        Assert that the user is allowed to read this invite.
 
         Raises:
             AccessDeniedError: If the user is not an admin or not the creator of the invite.
@@ -58,7 +60,8 @@ class OrganizerInvite(Entity):
             raise AccessDeniedError(message="You can only read invites you created")
 
     def use(self, organizer: Organizer) -> None:
-        """Mark this invite as used during organizer registration.
+        """
+        Mark this invite as used during organizer registration.
 
         Raises:
             InviteRevokedError: If the invite has been revoked.
@@ -74,7 +77,8 @@ class OrganizerInvite(Entity):
 
 
 def ensure_can_list_invites(user: User) -> None:
-    """Assert that the user is allowed to list organizer invites.
+    """
+    Assert that the user is allowed to list organizer invites.
 
     Raises:
         AccessDeniedError: If the user is not an admin.

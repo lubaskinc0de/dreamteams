@@ -1,4 +1,5 @@
-"""Use case: Delete Competition.
+"""
+Use case: Delete Competition.
 
 Actor: Organizer
 Organizer deletes an existing competition they own.

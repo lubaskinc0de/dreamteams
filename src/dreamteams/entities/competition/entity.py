@@ -4,15 +4,15 @@ from uuid import uuid4
 
 from dreamteams.entities.base import Entity
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
-from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.common.participant_type import ParticipantType
 from dreamteams.entities.competition.milestone import MilestoneData, milestone_factory
+from dreamteams.entities.competition.milestones import CompetitionMilestones
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import CompetitionSchedule, ScheduleData, schedule_factory
+from dreamteams.entities.competition.tags import CompetitionTags
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
+from dreamteams.entities.competition.tracks import CompetitionTracks
 from dreamteams.entities.competition.venue import CompetitionVenue
-from dreamteams.entities.competition.vo.milestones import CompetitionMilestones
-from dreamteams.entities.competition.vo.tags import CompetitionTags
-from dreamteams.entities.competition.vo.tracks import CompetitionTracks
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 from dreamteams.entities.user import Organizer

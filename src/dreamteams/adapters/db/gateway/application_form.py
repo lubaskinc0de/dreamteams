@@ -20,7 +20,8 @@ class SAApplicationFormGateway(ApplicationFormGateway):
 
     @override
     async def get_by_competition_id(self, competition_id: CompetitionId) -> ApplicationForm | None:
-        """Retrieve the application form for a given competition.
+        """
+        Retrieve the application form for a given competition.
 
         Returns None if not found or if the competition's organizer account is blocked.
         """

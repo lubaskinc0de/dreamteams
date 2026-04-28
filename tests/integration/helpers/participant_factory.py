@@ -5,7 +5,7 @@ from uuid import uuid4
 
 from faker import Faker
 
-from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.common.participant_type import ParticipantType
 from tests.common.factory.participant import ParticipantFormFactory
 from tests.integration.api_client import ApiClient
 from tests.integration.helpers.models import ParticipantCreated

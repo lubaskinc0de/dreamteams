@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 
 from dreamteams.entities.errors.participant import InvalidParticipantDataError
-from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
+from dreamteams.entities.participant.participant_skill import ParticipantSkill
 
 
 class ParticipantSkills(list[ParticipantSkill]):

@@ -4,7 +4,7 @@ from adaptix import Retort
 from faststream.nats.publisher.usecase import LogicPublisher
 
 from dreamteams_exporter.application.common.dto.export_job import ExportJobModel
-from dreamteams_exporter.application.export_applications_sheets.create import CreateExportJobInput
+from dreamteams_exporter.application.export_applications_sheets.create_job import CreateExportJobInput
 from dreamteams_exporter.entities.common.vo.application_status import ApplicationStatus
 from tests.integration.api_client import ApiClient
 from tests.integration.exporter.facade import ExporterGateway

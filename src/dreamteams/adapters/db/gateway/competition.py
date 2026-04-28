@@ -32,14 +32,14 @@ from dreamteams.application.common.gateway.competition import (
 from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.entities.application.entity import ApplicationStatus
 from dreamteams.entities.common.identifiers import CompetitionId, CompetitionTagId, OrganizerId, ParticipantId
-from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.common.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import Competition
 from dreamteams.entities.competition.milestone import Milestone
+from dreamteams.entities.competition.milestones import CompetitionMilestones
 from dreamteams.entities.competition.tag import CompetitionTag
+from dreamteams.entities.competition.tags import CompetitionTags
 from dreamteams.entities.competition.track import CompetitionTrack
-from dreamteams.entities.competition.vo.milestones import CompetitionMilestones
-from dreamteams.entities.competition.vo.tags import CompetitionTags
-from dreamteams.entities.competition.vo.tracks import CompetitionTracks
+from dreamteams.entities.competition.tracks import CompetitionTracks
 from dreamteams.entities.user import Organizer
 from dreamteams_common.logger import Logger
 
@@ -124,7 +124,8 @@ def _build_explore_converter(
 
 
 def _accepted_counts_subquery() -> Subquery:
-    """Aggregated count of ACCEPTED applications grouped by competition.
+    """
+    Aggregated count of ACCEPTED applications grouped by competition.
 
     Used as a LEFT JOIN target so ``members_count`` is available in both SELECT and ORDER BY
     without re-evaluating a correlated subquery per candidate row.
@@ -157,7 +158,8 @@ class SACompetitionGateway(CompetitionGateway):
         eager_tags: bool = False,
         eager_tracks: bool = False,
     ) -> Competition | None:
-        """Fetch a competition by ID, optionally eager-loading its milestones.
+        """
+        Fetch a competition by ID, optionally eager-loading its milestones.
 
         Returns None if the organizer's account is blocked.
         """
@@ -178,7 +180,8 @@ class SACompetitionGateway(CompetitionGateway):
 
     @override
     async def get_with_organizer(self, competition_id: CompetitionId) -> Competition | None:
-        """Fetch a competition eager-loading organizer + organizer.user.
+        """
+        Fetch a competition eager-loading organizer + organizer.user.
 
         Returns None if the organizer's account is blocked.
         """

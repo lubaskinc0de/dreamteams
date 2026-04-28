@@ -1,7 +1,7 @@
 from typing import Any
 
 from dreamteams.entities.application_form.entity import ApplicationForm
-from dreamteams.entities.application_form.vo.field import Field, FieldType
+from dreamteams.entities.application_form.field import Field, FieldType
 from dreamteams.entities.errors.application import InvalidApplicationDataError
 
 
