@@ -42,3 +42,11 @@ auth_user_ttl_seconds = 3600
 auth_user_ttl_jitter_seconds = 300
 # TTL for blocked-user cache entries (positive-only; deleted on unblock).
 blocked_user_ttl_seconds = 86400
+# TTL for application form entries.
+application_form_ttl_seconds = 900
+# TTL for competition tag entries and list pages.
+competition_tags_ttl_seconds = 1800
+# TTL for anonymous preview list pages.
+competition_preview_ttl_seconds = 60
+# TTL for single competition read models.
+competition_read_ttl_seconds = 120

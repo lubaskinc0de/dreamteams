@@ -1,6 +1,7 @@
 import structlog
 from pydantic import BaseModel, Field
 
+from dreamteams.application.common.competition_cache import CompetitionCache
 from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.common.dto.milestone import MilestoneForm
 from dreamteams.application.common.gateway.competition import CompetitionGateway
@@ -51,6 +52,7 @@ class UpdateCompetitionGeneralInfo:
     organizer_gateway: OrganizerGateway
     competition_gateway: CompetitionGateway
     competition_tag_gateway: CompetitionTagGateway
+    competition_cache: CompetitionCache
     clock: Clock
 
     async def execute(self, competition_id: CompetitionId, data: UpdateCompetitionGeneralInfoForm) -> None:
@@ -113,5 +115,7 @@ class UpdateCompetitionGeneralInfo:
         )
 
         await self.uow.commit()
+        await self.competition_cache.delete_read(competition_id)
+        await self.competition_cache.clear_preview()
 
         logger.info("Competition general information updated", competition_id=competition_id, user_id=user_id)

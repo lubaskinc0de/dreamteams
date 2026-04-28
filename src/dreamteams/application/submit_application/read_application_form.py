@@ -1,5 +1,6 @@
 import structlog
 
+from dreamteams.application.common.application_form_cache import ApplicationFormCache
 from dreamteams.application.common.dto.application_form import ApplicationFormModel, to_application_form_model
 from dreamteams.application.common.gateway.application_form import ApplicationFormGateway
 from dreamteams.application.common.gateway.competition import CompetitionGateway
@@ -23,6 +24,7 @@ class ReadApplicationForm:
     participant_gateway: ParticipantGateway
     competition_gateway: CompetitionGateway
     application_form_gateway: ApplicationFormGateway
+    application_form_cache: ApplicationFormCache
 
     async def execute(self, competition_id: CompetitionId) -> ApplicationFormModel:
         """Read the application form attached to a competition as a participant."""
@@ -39,9 +41,14 @@ class ReadApplicationForm:
             logger.warning("Competition not found", competition_id=competition_id, user_id=user_id)
             raise CompetitionNotFoundError
 
+        form = await self.application_form_cache.get(competition_id)
+        if form is not None:
+            return to_application_form_model(form)
+
         form = await self.application_form_gateway.get_by_competition_id(competition_id)
         if form is None:
             logger.warning("Application form not found", competition_id=competition_id, user_id=user_id)
             raise ApplicationFormNotFoundError
 
+        await self.application_form_cache.set(competition_id, form)
         return to_application_form_model(form)

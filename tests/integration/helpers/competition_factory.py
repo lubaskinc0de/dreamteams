@@ -6,10 +6,12 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
+from dishka import AsyncContainer
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dreamteams.adapters.db.models import competition_table
+from dreamteams.application.common.competition_cache import CompetitionCache
 from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.common.dto.milestone import MilestoneForm
 from dreamteams.application.delete_my_competition import CompetitionModel
@@ -34,6 +36,7 @@ class CompetitionGateway:
     api_client: ApiClient
     session: AsyncSession
     competition_form_factory: CompetitionFormFactory
+    container: AsyncContainer
 
     # --- Direct DB helpers ---
 
@@ -44,6 +47,12 @@ class CompetitionGateway:
             update(competition_table).where(competition_table.c.id == competition_id).values(**values),
         )
         await self.session.commit()
+        await self._clear_competition_cache(competition_id)
+
+    async def _clear_competition_cache(self, competition_id: CompetitionId) -> None:
+        cache = await self.container.get(CompetitionCache)
+        await cache.delete_read(competition_id)
+        await cache.clear_preview()
 
     # --- Read / update via API ---
 

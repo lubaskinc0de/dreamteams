@@ -1,6 +1,7 @@
 import structlog
 from pydantic import BaseModel, Field
 
+from dreamteams.application.common.competition_cache import CompetitionCache
 from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.common.dto.milestone import MilestoneForm
 from dreamteams.application.common.gateway.competition_tag import CompetitionTagGateway
@@ -58,6 +59,7 @@ class PublishCompetition:
     idp: IdProvider
     organizer_gateway: OrganizerGateway
     competition_tag_gateway: CompetitionTagGateway
+    competition_cache: CompetitionCache
     clock: Clock
     metrics: MetricsGateway
 
@@ -108,6 +110,7 @@ class PublishCompetition:
 
         self.uow.add(competition)
         await self.uow.commit()
+        await self.competition_cache.clear_preview()
         self.metrics.record_competition_created()
 
         logger.info("Competition saved", competition_id=competition.id, user_id=user_id)

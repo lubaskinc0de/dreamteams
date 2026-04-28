@@ -10,9 +10,16 @@ from dreamteams.adapters.auth.auth_provider import SimpleAuthProvider
 from dreamteams.adapters.auth.idp.auth_user import WebAuthUserIdProvider
 from dreamteams.adapters.auth.idp.user import IdProviderImpl
 from dreamteams.adapters.avatar_storage import S3AvatarStorage, S3Config
+from dreamteams.adapters.cache.cached_competition_gateway import CachedCompetitionGateway
+from dreamteams.adapters.cache.cached_competition_tag_gateway import CachedCompetitionTagGateway
+from dreamteams.adapters.cache.competition_read_cache import CompetitionReadCache
+from dreamteams.adapters.cache.competition_tag_read_cache import CompetitionTagReadCache
 from dreamteams.adapters.cache.config import CacheConfig
+from dreamteams.adapters.cache.redis_application_form_cache import RedisApplicationFormCache
 from dreamteams.adapters.cache.redis_auth_user_cache import RedisAuthUserCache
 from dreamteams.adapters.cache.redis_blocked_user_cache import RedisBlockedUserCache
+from dreamteams.adapters.cache.redis_competition_cache import RedisCompetitionCache
+from dreamteams.adapters.cache.redis_competition_tag_cache import RedisCompetitionTagCache
 from dreamteams.adapters.clock import SystemClock
 from dreamteams.adapters.db.config import DbConfig
 from dreamteams.adapters.db.gateway.application import SAApplicationGateway
@@ -25,6 +32,9 @@ from dreamteams.adapters.db.gateway.organizer_invite import SAOrganizerInviteGat
 from dreamteams.adapters.db.gateway.participant import SAParticipantGateway
 from dreamteams.adapters.db.gateway.user import SAUserGateway
 from dreamteams.adapters.db.pool_metrics import register_pool_metrics
+from dreamteams.application.common.application_form_cache import ApplicationFormCache
+from dreamteams.application.common.gateway.competition import CompetitionGateway
+from dreamteams.application.common.gateway.competition_tag import CompetitionTagGateway
 from dreamteams.application.common.uow import UoW
 from dreamteams.bootstrap.observability import OTelConfig
 from dreamteams.presentation.fast_api.config import ServerConfig
@@ -43,18 +53,39 @@ class AdapterProvider(Provider):
         WithParents[SAAuthUserGateway],
         WithParents[SAOrganizerGateway],
         WithParents[SAParticipantGateway],
-        WithParents[SACompetitionGateway],
-        WithParents[SACompetitionTagGateway],
         WithParents[SAOrganizerInviteGateway],
         WithParents[SAApplicationFormGateway],
         WithParents[SAApplicationGateway],
         scope=Scope.REQUEST,
     )
+    sa_competition_gateway = provide(SACompetitionGateway, scope=Scope.REQUEST)
+    sa_competition_tag_gateway = provide(SACompetitionTagGateway, scope=Scope.REQUEST)
+    application_form_cache = provide(RedisApplicationFormCache, scope=Scope.APP, provides=ApplicationFormCache)
+    competition_tag_cache = provide(WithParents[RedisCompetitionTagCache], scope=Scope.APP)
+    competition_cache = provide(WithParents[RedisCompetitionCache], scope=Scope.APP)
     auth_provider = provide(WithParents[SimpleAuthProvider], scope=Scope.REQUEST)
     clock = provide(WithParents[SystemClock], scope=Scope.APP)
     password_hasher = provide(WithParents[Argon2PasswordHasher], scope=Scope.APP)
     auth_user_cache = provide(WithParents[RedisAuthUserCache], scope=Scope.APP)
     blocked_user_cache = provide(WithParents[RedisBlockedUserCache], scope=Scope.APP)
+
+    @provide(scope=Scope.REQUEST, provides=CompetitionGateway)
+    def get_competition_gateway(
+        self,
+        gateway: SACompetitionGateway,
+        cache: CompetitionReadCache,
+    ) -> CachedCompetitionGateway:
+        """Provide cached competition gateway."""
+        return CachedCompetitionGateway(gateway, cache)
+
+    @provide(scope=Scope.REQUEST, provides=CompetitionTagGateway)
+    def get_competition_tag_gateway(
+        self,
+        gateway: SACompetitionTagGateway,
+        cache: CompetitionTagReadCache,
+    ) -> CachedCompetitionTagGateway:
+        """Provide cached competition tag gateway."""
+        return CachedCompetitionTagGateway(gateway, cache)
 
     @provide(scope=Scope.APP)
     async def get_redis(self, config: CacheConfig) -> AsyncIterator[Redis]:

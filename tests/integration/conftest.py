@@ -188,6 +188,10 @@ def app_config(
             auth_user_ttl_seconds=60,
             auth_user_ttl_jitter_seconds=0,
             blocked_user_ttl_seconds=86400,
+            application_form_ttl_seconds=900,
+            competition_tags_ttl_seconds=1800,
+            competition_preview_ttl_seconds=60,
+            competition_read_ttl_seconds=120,
         ),
     )
 
@@ -318,12 +322,14 @@ def competition_gateway(
     api_client: ApiClient,
     session: AsyncSession,
     competition_form_factory: CompetitionFormFactory,
+    container: AsyncContainer,
 ) -> CompetitionGateway:
     """Gateway for competition creation and state manipulation."""
     return CompetitionGateway(
         api_client=api_client,
         session=session,
         competition_form_factory=competition_form_factory,
+        container=container,
     )
 
 

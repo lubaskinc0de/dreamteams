@@ -1,5 +1,6 @@
 import structlog
 
+from dreamteams.application.common.competition_cache import CompetitionCache
 from dreamteams.application.common.gateway.application import ApplicationGateway
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
@@ -25,6 +26,7 @@ class RejectApplication:
     organizer_gateway: OrganizerGateway
     application_gateway: ApplicationGateway
     competition_gateway: CompetitionGateway
+    competition_cache: CompetitionCache
     metrics: MetricsGateway
 
     async def execute(self, application_id: ApplicationId) -> None:
@@ -49,6 +51,8 @@ class RejectApplication:
 
         self.uow.add(application)
         await self.uow.commit()
+        await self.competition_cache.delete_read(application.competition_id)
+        await self.competition_cache.clear_preview()
 
         self.metrics.record_application_rejected()
         logger.info("Application rejected", application_id=application_id, user_id=user_id)

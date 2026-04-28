@@ -1,6 +1,7 @@
 import structlog
 from pydantic import BaseModel
 
+from dreamteams.application.common.competition_cache import CompetitionCache
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
 from dreamteams.application.common.idp import IdProvider
@@ -32,6 +33,7 @@ class RescheduleCompetition:
     idp: IdProvider
     organizer_gateway: OrganizerGateway
     competition_gateway: CompetitionGateway
+    competition_cache: CompetitionCache
     clock: Clock
 
     async def execute(self, competition_id: CompetitionId, data: RescheduleCompetitionForm) -> None:
@@ -56,5 +58,7 @@ class RescheduleCompetition:
         )
 
         await self.uow.commit()
+        await self.competition_cache.delete_read(competition_id)
+        await self.competition_cache.clear_preview()
 
         logger.info("Competition rescheduled", competition_id=competition_id, user_id=user_id)

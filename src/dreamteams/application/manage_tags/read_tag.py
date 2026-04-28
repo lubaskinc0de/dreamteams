@@ -25,5 +25,4 @@ class ReadCompetitionTag:
         tag = await self.competition_tag_gateway.get(tag_id)
         if tag is None:
             raise CompetitionTagNotFoundError
-
         return tag

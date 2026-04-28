@@ -1,7 +1,9 @@
 import structlog
 from pydantic import BaseModel
 
+from dreamteams.application.common.application_form_cache import ApplicationFormCache
 from dreamteams.application.common.blocked_user_cache import BlockedUserCache
+from dreamteams.application.common.competition_cache import CompetitionCache
 from dreamteams.application.common.gateway.user import UserGateway
 from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.common.interactor import interactor
@@ -29,6 +31,8 @@ class BlockUser:
     idp: IdProvider
     user_gateway: UserGateway
     blocked_cache: BlockedUserCache
+    application_form_cache: ApplicationFormCache
+    competition_cache: CompetitionCache
     clock: Clock
 
     async def execute(self, data: BlockUserForm) -> None:
@@ -45,5 +49,8 @@ class BlockUser:
         target.block(admin, data.reason, self.clock)
         await self.uow.commit()
         await self.blocked_cache.set_blocked(data.target_user_id, target.ban_status)
+        await self.application_form_cache.clear()
+        await self.competition_cache.clear_read()
+        await self.competition_cache.clear_preview()
 
         logger.info("User blocked", target_user_id=data.target_user_id, admin_user_id=user_id)

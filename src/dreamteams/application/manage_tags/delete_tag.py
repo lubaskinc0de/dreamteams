@@ -1,4 +1,6 @@
 from dreamteams.application.block_user.shared import ensure_admin
+from dreamteams.application.common.competition_cache import CompetitionCache
+from dreamteams.application.common.competition_tag_cache import CompetitionTagCache
 from dreamteams.application.common.gateway.competition_tag import CompetitionTagGateway
 from dreamteams.application.common.gateway.user import UserGateway
 from dreamteams.application.common.idp import IdProvider
@@ -16,6 +18,8 @@ class DeleteCompetitionTag:
     idp: IdProvider
     user_gateway: UserGateway
     competition_tag_gateway: CompetitionTagGateway
+    competition_tag_cache: CompetitionTagCache
+    competition_cache: CompetitionCache
 
     async def execute(self, tag_id: CompetitionTagId) -> None:
         """Delete a competition tag."""
@@ -29,3 +33,6 @@ class DeleteCompetitionTag:
 
         await self.uow.delete(tag)
         await self.uow.commit()
+        await self.competition_tag_cache.clear()
+        await self.competition_cache.clear_read()
+        await self.competition_cache.clear_preview()
