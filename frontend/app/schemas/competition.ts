@@ -122,6 +122,41 @@ export const createCompetitionSchemas = (t: (key: string) => string) => {
       .min(1, t("competition.form.participantLimits.max.minValue")),
   });
 
+  const tagIdsSchema = z
+    .array(z.string().uuid(t("competition.form.tags.invalid")))
+    .max(30, t("competition.form.tags.maxLength"))
+    .default([]);
+
+  const trackSchema = z.object({
+    name: z
+      .string()
+      .transform((val) => val.trim())
+      .pipe(
+        z
+          .string()
+          .min(1, t("competition.form.tracks.required"))
+          .max(100, t("competition.form.tracks.maxLength")),
+      ),
+  });
+
+  const tracksSchema = z
+    .array(trackSchema)
+    .min(1, t("competition.form.tracks.required"))
+    .superRefine((tracks, ctx) => {
+      const normalized = tracks.map((track) => track.name.trim().toLowerCase());
+      const seen = new Set<string>();
+      for (const [index, name] of normalized.entries()) {
+        if (seen.has(name)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: t("competition.form.tracks.duplicate"),
+            path: [index, "name"],
+          });
+        }
+        seen.add(name);
+      }
+    });
+
   const teamSizeSchema = z.object({
     min: z.number().min(1, t("competition.form.teamSize.min.minValue")),
     max: z.number().min(1, t("competition.form.teamSize.max.minValue")),
@@ -179,7 +214,8 @@ export const createCompetitionSchemas = (t: (key: string) => string) => {
     description: descriptionSchema,
     schedule: scheduleSchema,
     participant_limits: participantLimitsSchema,
-    domains: z.array(z.enum(["frontend", "mobile", "backend", "ai", "devops"])).min(1, t("competition.form.domains.required")),
+    tag_ids: tagIdsSchema,
+    tracks: tracksSchema,
     participant_type: z.enum(["schoolchild", "student", "any"]),
     venue: venueSchema,
     team_size: teamSizeSchema.nullable(),
@@ -285,7 +321,8 @@ export const createCompetitionSchemas = (t: (key: string) => string) => {
     description: descriptionSchema,
     schedule: updateScheduleSchema,
     participant_limits: participantLimitsSchema,
-    domains: z.array(z.enum(["frontend", "mobile", "backend", "ai", "devops"])).min(1, t("competition.form.domains.required")),
+    tag_ids: tagIdsSchema,
+    tracks: tracksSchema,
     participant_type: z.enum(["schoolchild", "student", "any"]),
     venue: venueSchema,
     team_size: teamSizeSchema.nullable(),
@@ -309,6 +346,9 @@ export const createCompetitionSchemas = (t: (key: string) => string) => {
     descriptionSchema,
     scheduleSchema,
     participantLimitsSchema,
+    tagIdsSchema,
+    trackSchema,
+    tracksSchema,
     teamSizeSchema,
     venueSchema,
     milestoneSchema,

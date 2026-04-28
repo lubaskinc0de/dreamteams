@@ -96,11 +96,11 @@
       "title": "How the platform works",
       "catalog": {
         "title": "Competition catalog",
-        "description": "Published competitions are visible in the public listing with schedule, domains, participant limits, and event details."
+        "description": "Published competitions are visible in the public listing with schedule, tags, directions, participant limits, and event details."
       },
       "forms": {
         "title": "Application forms",
-        "description": "Organizers can configure a custom application form per competition and participants submit responses together with selected domains."
+        "description": "Organizers can configure a custom application form per competition and participants submit responses together with a selected direction."
       },
       "review": {
         "title": "Application review",
@@ -140,12 +140,12 @@
       },
       "participants": {
         "title": "Participant onboarding",
-        "description": "Participants create a profile, select domains, and submit applications to competitions that match them.",
+        "description": "Participants create a profile, discover competitions by tags, and submit applications to competitions that match them.",
         "badge": "Available"
       },
       "submissions": {
         "title": "Application submission",
-        "description": "Participants apply to competitions with selected domains and answers collected through the organizer's form.",
+        "description": "Participants apply to competitions with a selected direction and answers collected through the organizer's form.",
         "badge": "For participants"
       },
       "organizers": {
@@ -198,25 +198,16 @@
     "participant": {
       "bio": "About",
       "experienceLevel": "Experience",
-      "preferredDomains": "Preferred Domains",
       "skills": "Skills",
       "contacts": "Contacts",
       "addBio": "Add bio",
       "addExperience": "Add experience",
-      "addDomains": "Add domains",
       "addSkills": "Add skills",
       "addContacts": "Add contacts",
       "experienceLevels": {
         "JUNIOR": "Junior",
         "MID": "Middle",
         "SENIOR": "Senior"
-      },
-      "domains": {
-        "frontend": "Frontend",
-        "mobile": "Mobile",
-        "backend": "Backend",
-        "ai": "AI",
-        "devops": "DevOps"
       },
       "skillLevels": {
         "BEGINNER": "Beginner",
@@ -349,11 +340,6 @@
       "required": "Contact email is required",
       "invalid": "Enter a valid email address"
     },
-    "preferredDomains": {
-      "label": "Preferred Domains",
-      "placeholder": "Select domains",
-      "required": "Please select at least one domain"
-    },
     "skills": {
       "label": "Skills",
       "addButton": "Add Skill",
@@ -381,7 +367,8 @@
       "valueLabel": "Contact",
       "valuePlaceholder": "username or https://github.com/username",
       "valueRequired": "Contact value is required",
-      "valueMaxLength": "Contact value must not exceed 2083 characters"
+      "valueMaxLength": "Contact value must not exceed 2083 characters",
+      "maxItems": "You can add up to 15 contacts"
     }
   },
   "apiErrors": {
@@ -407,13 +394,15 @@
     "INVALID_SUPERUSER_PASSWORD": "Invalid password. Access denied",
     "PARTICIPANT_ALREADY_EXISTS": "You're already registered as a participant",
     "COMPETITION_NOT_FOUND": "Competition not found",
+    "COMPETITION_TAG_NOT_FOUND": "Competition tag not found",
+    "COMPETITION_TAG_ALREADY_EXISTS": "A tag with this value already exists",
     "APPLICATION_FORM_ALREADY_EXISTS": "An application form already exists. Delete the current one before creating a new one",
     "APPLICATION_FORM_NOT_FOUND": "Application form not found",
     "INVALID_APPLICATION_FORM_DATA": "Invalid application form data",
     "APPLICATION_NOT_FOUND": "Application not found",
     "APPLICATION_ALREADY_EXISTS": "You have already applied to this competition",
     "APPLICATION_ALREADY_RESOLVED": "Application has already been processed and cannot be changed",
-    "INVALID_APPLICATION_DATA": "Invalid application data. Check your selected domains and form answers",
+    "INVALID_APPLICATION_DATA": "Invalid application data. Check your selected direction and form answers",
     "INVALID_COMPETITION_DATA": "Invalid competition data. Please check the entered values",
     "COMPETITION_NOT_ACTIVE": "This competition is not currently accepting applications",
     "PARTICIPANT_LIMITS_EXCEEDED": "This competition has reached its participant limit",
@@ -537,6 +526,14 @@
     "applicationRejected": {
       "title": "Application rejected",
       "description": "Participant's application has been rejected"
+    },
+    "tagCreated": {
+      "title": "Tag created",
+      "description": "Competition tag created successfully"
+    },
+    "tagDeleted": {
+      "title": "Tag deleted",
+      "description": "Competition tag deleted successfully"
     }
   },
   "notifications": {
@@ -598,7 +595,6 @@
         "updatedAt": "Updated at",
         "bio": "Bio",
         "skills": "Skills",
-        "domains": "Preferred domains",
         "contacts": "Contacts"
       },
       "sections": {
@@ -645,6 +641,26 @@
       "revokeModal": {
         "title": "Revoke Invite",
         "description": "Are you sure you want to revoke this invite? The code will no longer be usable."
+      }
+    },
+    "tags": {
+      "nav": "Tags",
+      "title": "Tag Management",
+      "subtitle": "{total} tags total",
+      "createButton": "Create Tag",
+      "deleteButton": "Delete",
+      "searchPlaceholder": "Search tags",
+      "empty": "No tags yet. Create tags so organizers can classify competitions.",
+      "emptyTitle": "No tags yet",
+      "createModal": {
+        "title": "Create Tag",
+        "value": "Tag value",
+        "placeholder": "e.g. Python",
+        "submit": "Create"
+      },
+      "deleteModal": {
+        "title": "Delete Tag",
+        "description": "Delete \"{value}\"? It will be removed from competitions that reference it."
       }
     }
   },
@@ -748,7 +764,7 @@
       "participants": "Participants",
       "teamSize": "Team Size",
       "noTeams": "No Teams",
-      "domains": "Domains",
+      "tags": "Tags",
       "registrationPeriod": "Registration",
       "venue": "Format"
     },
@@ -786,7 +802,7 @@
       "teamSize": "Team Size",
       "venue": "Venue",
       "milestones": "Milestones",
-      "domains": "Domains",
+      "tags": "Tags",
       "organizer": "Organizer",
       "registerButton": "Register for Competition",
       "closeButton": "Close"
@@ -952,18 +968,24 @@
         },
         "tooltip": "Total number of individual participants or teams allowed"
       },
-      "domains": {
-        "label": "Domains",
-        "placeholder": "Select domains",
-        "required": "Please select at least one domain",
-        "options": {
-          "frontend": "Frontend",
-          "mobile": "Mobile",
-          "backend": "Backend",
-          "ai": "AI",
-          "devops": "DevOps"
-        },
-        "tooltip": "Technical areas participants should specialize in"
+      "tags": {
+        "label": "Tags",
+        "placeholder": "Search tags",
+        "add": "Add tag",
+        "invalid": "Invalid tag identifier",
+        "maxLength": "Select no more than 30 tags",
+        "empty": "No tags found",
+        "tooltip": "Global tags used for discovery and search"
+      },
+      "tracks": {
+        "label": "Directions",
+        "placeholder": "e.g. Backend",
+        "required": "Add at least one direction",
+        "maxLength": "Direction name must not exceed 100 characters",
+        "duplicate": "Direction names must be unique",
+        "add": "Add direction",
+        "remove": "Remove direction",
+        "tooltip": "Directions are competition-specific choices. Applicants select exactly one."
       },
       "participantType": {
         "label": "Who participates?",
@@ -1120,13 +1142,12 @@
     "participantAge": "Age",
     "participantBio": "About",
     "participantExperience": "Experience",
-    "participantDomains": "Preferred domains",
     "participantSkills": "Skills",
     "participantContacts": "Contacts",
     "notProvided": "Not provided",
     "applicationDetails": "Application",
     "competition": "Competition",
-    "domains": "Domains",
+    "track": "Direction",
     "submittedAt": "Submitted",
     "formData": "Form data",
     "noFormData": "No form was required",
@@ -1172,7 +1193,7 @@
       "rejected": "Rejected"
     },
     "competition": "Competition",
-    "domains": "Domains",
+    "track": "Direction",
     "submittedAt": "Submitted",
     "formData": "Form data",
     "noFormData": "No form was required",
@@ -1183,8 +1204,8 @@
     "backToList": "Back to applications",
     "applyButton": "Apply",
     "applying": "Applying...",
-    "selectDomains": "Select domains",
-    "domainsRequired": "Select at least one domain",
+    "selectTrack": "Select direction",
+    "trackRequired": "Select a direction",
     "onlyParticipantsCanApply": "Only participants can submit applications"
   },
   "explore": {
@@ -1200,7 +1221,7 @@
     "filters": {
       "title": "Filters",
       "search": "Search",
-      "searchPlaceholder": "Find by title",
+      "searchPlaceholder": "Find by title or tag",
       "sort": "Sort by",
       "teamSize": "Team size",
       "teamSizeMin": "Min",
@@ -1209,7 +1230,8 @@
       "autoAcceptAny": "Any",
       "autoAcceptYes": "Yes",
       "autoAcceptNo": "No",
-      "domains": "Domains"
+      "tags": "Tags",
+      "tagsPlaceholder": "Search tags"
     }
   }
 }

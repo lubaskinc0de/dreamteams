@@ -70,11 +70,8 @@ export const createParticipantSchemas = (t: (key: string) => string) => {
     age: ageSchema,
     bio: bioSchema.nullable().optional(),
     experience_level: experienceLevelSchema.nullable().optional(),
-    preferred_domains: z
-      .array(z.enum(["frontend", "mobile", "backend", "ai", "devops"] as const))
-      .optional(),
     skills: z.array(skillSchema).optional(),
-    contacts: z.array(contactSchema).optional(),
+    contacts: z.array(contactSchema).max(15, t("form.contacts.maxItems")).optional(),
     privacy_consent: privacyConsentSchema,
     terms_consent: termsConsentSchema,
   });
@@ -85,11 +82,8 @@ export const createParticipantSchemas = (t: (key: string) => string) => {
     age: ageSchema,
     bio: bioSchema.nullable().optional(),
     experience_level: experienceLevelSchema.nullable().optional(),
-    preferred_domains: z
-      .array(z.enum(["frontend", "mobile", "backend", "ai", "devops"] as const))
-      .optional(),
     skills: z.array(skillSchema).optional(),
-    contacts: z.array(contactSchema).optional(),
+    contacts: z.array(contactSchema).max(15, t("form.contacts.maxItems")).optional(),
   });
 
   return {

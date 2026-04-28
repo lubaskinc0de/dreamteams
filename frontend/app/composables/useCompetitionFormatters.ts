@@ -76,13 +76,6 @@ export const useCompetitionFormatters = () => {
   };
 
   /**
-   * Возвращает локализованное название домена
-   */
-  const getDomainLabel = (domain: string) => {
-    return t(`competition.form.domains.options.${domain}`);
-  };
-
-  /**
    * Возвращает локализованное название формата проведения
    */
   const getFormatLabel = (format: string) => {
@@ -104,7 +97,6 @@ export const useCompetitionFormatters = () => {
     formatNumericRange,
     formatParticipants,
     formatTeamSize,
-    getDomainLabel,
     getFormatLabel,
     getParticipantTypeLabel,
   };

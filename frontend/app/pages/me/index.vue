@@ -98,7 +98,7 @@ const isOrganizerEditOpen = ref(false);
 const isParticipantEditOpen = ref(false);
 const isNameEditOpen = ref(false);
 const fieldEditOpen = ref(false);
-type ParticipantEditableField = "bio" | "experience_level" | "preferred_domains" | "skills" | "contacts";
+type ParticipantEditableField = "bio" | "experience_level" | "skills" | "contacts";
 const editField = ref<ParticipantEditableField>("bio");
 const openFieldEdit = (field: ParticipantEditableField) => {
   editField.value = field;
@@ -260,9 +260,6 @@ onMounted(async () => {
                         <UButton v-if="!userStore.participant.experience_level" icon="i-heroicons-plus" size="xs" color="neutral" variant="outline" @click="openFieldEdit('experience_level')">
                           {{ t('profile.participant.experienceLevel') }}
                         </UButton>
-                        <UButton v-if="!userStore.participant.preferred_domains.length" icon="i-heroicons-plus" size="xs" color="neutral" variant="outline" @click="openFieldEdit('preferred_domains')">
-                          {{ t('profile.participant.preferredDomains') }}
-                        </UButton>
                         <UButton v-if="!userStore.participant.skills.length" icon="i-heroicons-plus" size="xs" color="neutral" variant="outline" @click="openFieldEdit('skills')">
                           {{ t('profile.participant.skills') }}
                         </UButton>
@@ -301,51 +298,25 @@ onMounted(async () => {
                         </div>
                       </div>
 
-                      <!-- Skills + Domains: two columns on lg -->
-                      <div
-                        v-if="userStore.participant.skills.length || userStore.participant.preferred_domains.length"
-                        class="grid grid-cols-1 lg:grid-cols-2 gap-4"
-                      >
+                      <!-- Skills -->
+                      <div v-if="userStore.participant.skills.length">
                         <!-- Skills -->
-                        <div v-if="userStore.participant.skills.length">
-                          <div class="flex items-center gap-1 mb-2">
-                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                              {{ t('profile.participant.skills') }}
-                            </p>
-                            <UButton icon="i-heroicons-pencil-square" size="xs" color="neutral" variant="ghost" :padded="false" @click="openFieldEdit('skills')" />
-                          </div>
-                          <div class="flex flex-wrap gap-1.5">
-                            <div
-                              v-for="skill in userStore.participant.skills"
-                              :key="skill.name"
-                              class="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-gray-100 dark:bg-gray-800"
-                            >
-                              <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ skill.name }}</span>
-                              <span class="text-xs text-gray-500 dark:text-gray-400">
-                                {{ t(`profile.participant.skillLevels.${skill.level}`) }}
-                              </span>
-                            </div>
-                          </div>
+                        <div class="flex items-center gap-1 mb-2">
+                          <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                            {{ t('profile.participant.skills') }}
+                          </p>
+                          <UButton icon="i-heroicons-pencil-square" size="xs" color="neutral" variant="ghost" :padded="false" @click="openFieldEdit('skills')" />
                         </div>
-
-                        <!-- Preferred Domains -->
-                        <div v-if="userStore.participant.preferred_domains.length">
-                          <div class="flex items-center gap-1 mb-2">
-                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                              {{ t('profile.participant.preferredDomains') }}
-                            </p>
-                            <UButton icon="i-heroicons-pencil-square" size="xs" color="neutral" variant="ghost" :padded="false" @click="openFieldEdit('preferred_domains')" />
-                          </div>
-                          <div class="flex flex-wrap gap-1.5">
-                            <UBadge
-                              v-for="domain in userStore.participant.preferred_domains"
-                              :key="domain"
-                              color="primary"
-                              variant="subtle"
-                              size="md"
-                            >
-                              {{ t(`profile.participant.domains.${domain}`) }}
-                            </UBadge>
+                        <div class="flex flex-wrap gap-1.5">
+                          <div
+                            v-for="skill in userStore.participant.skills"
+                            :key="skill.name"
+                            class="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-gray-100 dark:bg-gray-800"
+                          >
+                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ skill.name }}</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">
+                              {{ t(`profile.participant.skillLevels.${skill.level}`) }}
+                            </span>
                           </div>
                         </div>
                       </div>

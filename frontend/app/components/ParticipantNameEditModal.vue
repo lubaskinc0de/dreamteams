@@ -31,7 +31,6 @@ const onSave = async () => {
     bio: p.bio,
     skills: p.skills,
     experience_level: p.experience_level,
-    preferred_domains: p.preferred_domains,
     contacts: p.contacts,
   });
   if (participantStore.updateSuccess) emit("update:open", false);

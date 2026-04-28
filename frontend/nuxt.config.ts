@@ -33,14 +33,16 @@ export default defineNuxtConfig({
     },
   },
 
-  nitro: {
+  ...({
+    nitro: {
     prerender: {
       routes: ['/'],
       ignore: ['/me', '/onboarding', '/start'],
       crawlLinks: true,
       failOnError: false,
     },
-  },
+    },
+  } as Record<string, unknown>),
 
   vite: {
     server: {

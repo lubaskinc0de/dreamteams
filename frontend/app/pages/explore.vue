@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ExploreCompetitionsFilters, ExploreSortBy, Domain, ExploreCompetitionModel } from "~/types/api";
+import type { CompetitionTag, ExploreCompetitionsFilters, ExploreSortBy, ExploreCompetitionModel } from "~/types/api";
 import { useExploreCompetitions } from "~/composables/useExploreCompetitions";
 import { useInfiniteScroll } from "@vueuse/core";
 
@@ -26,16 +26,12 @@ const search = ref("");
 const sortBy = ref<ExploreSortBy>("most_popular");
 const minTeamSize = ref<number | null>(null);
 const maxTeamSize = ref<number | null>(null);
-const autoAccept = ref<boolean | null>(null);
-const selectedDomains = ref<Domain[]>([]);
-
-const domainOptions = computed(() => [
-  { value: "frontend", label: t("competition.form.domains.options.frontend") },
-  { value: "backend", label: t("competition.form.domains.options.backend") },
-  { value: "mobile", label: t("competition.form.domains.options.mobile") },
-  { value: "ai", label: t("competition.form.domains.options.ai") },
-  { value: "devops", label: t("competition.form.domains.options.devops") },
-]);
+const autoAccept = ref(false);
+const selectedTagIds = ref<string[]>([]);
+const availableTags = ref<CompetitionTag[]>([]);
+const selectedTagCache = ref<CompetitionTag[]>([]);
+const tagSearch = ref("");
+const tagsLoading = ref(false);
 
 const sortOptions = computed(() => [
   { value: "most_popular", label: t("explore.sort.mostPopular") },
@@ -47,8 +43,8 @@ const buildFilters = (): ExploreCompetitionsFilters => ({
   search: search.value.trim() || undefined,
   min_team_size: minTeamSize.value ?? undefined,
   max_team_size: maxTeamSize.value ?? undefined,
-  auto_accept: autoAccept.value ?? undefined,
-  domains: selectedDomains.value.length > 0 ? selectedDomains.value : undefined,
+  auto_accept: autoAccept.value ? true : undefined,
+  tag_ids: selectedTagIds.value.length > 0 ? selectedTagIds.value : undefined,
 });
 
 const commitFilters = () => applyFilters(buildFilters());
@@ -59,10 +55,46 @@ watch(search, () => {
   searchTimer = setTimeout(commitFilters, 300);
 });
 
-watch([sortBy, minTeamSize, maxTeamSize, autoAccept, selectedDomains], commitFilters, { deep: true });
+watch([sortBy, minTeamSize, maxTeamSize, autoAccept, selectedTagIds], commitFilters, { deep: true });
+
+const fetchTags = async () => {
+  tagsLoading.value = true;
+  const api = useApi();
+  const { data } = await api.listTags({
+    page: 1,
+    search: tagSearch.value.trim() || undefined,
+  });
+  if (data) {
+    availableTags.value = data.items;
+  }
+  tagsLoading.value = false;
+};
+
+let tagSearchTimer: ReturnType<typeof setTimeout> | null = null;
+watch(tagSearch, () => {
+  if (tagSearchTimer) clearTimeout(tagSearchTimer);
+  tagSearchTimer = setTimeout(fetchTags, 250);
+});
+
+const tagOptions = computed(() => {
+  const byId = new Map<string, CompetitionTag>();
+  for (const tag of selectedTagCache.value) byId.set(tag.id, tag);
+  for (const tag of availableTags.value) byId.set(tag.id, tag);
+  return [...byId.values()].sort((a, b) => a.value.localeCompare(b.value));
+});
+
+watch(selectedTagIds, (ids) => {
+  const known = tagOptions.value.filter((tag) => ids.includes(tag.id));
+  const byId = new Map(selectedTagCache.value.map((tag) => [tag.id, tag]));
+  for (const tag of known) {
+    byId.set(tag.id, tag);
+  }
+  selectedTagCache.value = [...byId.values()].filter((tag) => ids.includes(tag.id));
+});
 
 onMounted(() => {
   reset();
+  fetchTags();
   useInfiniteScroll(
     window,
     () => loadMore(),
@@ -86,10 +118,14 @@ const activeFilterCount = computed(() => {
   if (search.value.trim().length > 0) n += 1;
   if (minTeamSize.value !== null) n += 1;
   if (maxTeamSize.value !== null) n += 1;
-  if (autoAccept.value !== null) n += 1;
-  if (selectedDomains.value.length > 0) n += 1;
+  if (autoAccept.value) n += 1;
+  if (selectedTagIds.value.length > 0) n += 1;
   if (sortBy.value !== "most_popular") n += 1;
   return n;
+});
+
+onBeforeUnmount(() => {
+  if (tagSearchTimer) clearTimeout(tagSearchTimer);
 });
 </script>
 
@@ -130,15 +166,9 @@ const activeFilterCount = computed(() => {
                 </UFormField>
 
                 <UFormField :label="t('explore.filters.autoAccept')">
-                  <USelect
-                    class="w-full"
-                    :model-value="autoAccept === null ? 'any' : (autoAccept ? 'yes' : 'no')"
-                    @update:model-value="(v) => autoAccept = v === 'any' ? null : v === 'yes'"
-                    :items="[
-                      { value: 'any', label: t('explore.filters.autoAcceptAny') },
-                      { value: 'yes', label: t('explore.filters.autoAcceptYes') },
-                      { value: 'no', label: t('explore.filters.autoAcceptNo') },
-                    ]"
+                  <UCheckbox
+                    v-model="autoAccept"
+                    :label="t('explore.filters.autoAcceptYes')"
                   />
                 </UFormField>
 
@@ -161,23 +191,19 @@ const activeFilterCount = computed(() => {
                   </div>
                 </UFormField>
 
-                <UFormField :label="t('explore.filters.domains')" class="sm:col-span-2 lg:col-span-2">
-                  <div class="flex flex-wrap gap-x-4 gap-y-2">
-                    <UCheckbox
-                      v-for="opt in domainOptions"
-                      :key="opt.value"
-                      :model-value="selectedDomains.includes(opt.value as Domain)"
-                      @update:model-value="(checked) => {
-                        const d = opt.value as Domain;
-                        if (checked) {
-                          if (!selectedDomains.includes(d)) selectedDomains = [...selectedDomains, d];
-                        } else {
-                          selectedDomains = selectedDomains.filter((x) => x !== d);
-                        }
-                      }"
-                      :label="opt.label"
-                    />
-                  </div>
+                <UFormField :label="t('explore.filters.tags')" class="sm:col-span-2 lg:col-span-2">
+                  <USelectMenu
+                    v-model="selectedTagIds"
+                    v-model:search-term="tagSearch"
+                    :items="tagOptions"
+                    value-key="id"
+                    label-key="value"
+                    multiple
+                    clear
+                    :placeholder="t('explore.filters.tagsPlaceholder')"
+                    :search-input="{ placeholder: t('explore.filters.tagsPlaceholder') }"
+                    class="w-full"
+                  />
                 </UFormField>
               </div>
             </UCard>

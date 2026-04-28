@@ -23,6 +23,10 @@ import type {
   AdminUsersFilters,
   AdminUsersList,
   CreatedSuperuser,
+  CompetitionTag,
+  CompetitionTagForm,
+  CompetitionTagsFilters,
+  CompetitionTagsList,
   ApplicationFormInput,
   CreatedApplicationForm,
   ApplicationFormModel,
@@ -285,7 +289,7 @@ export const useApi = () => {
       if (filters.min_team_size !== undefined) params.min_team_size = filters.min_team_size;
       if (filters.max_team_size !== undefined) params.max_team_size = filters.max_team_size;
       if (filters.auto_accept !== undefined) params.auto_accept = filters.auto_accept;
-      if (filters.domains && filters.domains.length > 0) params.domains = filters.domains;
+      if (filters.tag_ids && filters.tag_ids.length > 0) params.tag_ids = filters.tag_ids;
       const data = await apiFetch<ExploreCompetitionsList>(
         `${apiBase}/api/competitions/explore`,
         { method: "GET", params },
@@ -515,6 +519,91 @@ export const useApi = () => {
     try {
       const data = await apiFetch<{}>(`${apiBase}/api/admin/users/${userId}/unblock`, {
         method: "POST",
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const listTags = async (
+    filters: CompetitionTagsFilters = {},
+  ): Promise<{ data: CompetitionTagsList | null; error: ApiError | null }> => {
+    try {
+      const params: Record<string, any> = {
+        page: filters.page ?? 1,
+      };
+
+      if (filters.search) {
+        params.search = filters.search;
+      }
+
+      const data = await apiFetch<CompetitionTagsList>(`${apiBase}/api/tags/`, {
+        method: "GET",
+        params,
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const listAdminTags = async (
+    filters: CompetitionTagsFilters = {},
+  ): Promise<{ data: CompetitionTagsList | null; error: ApiError | null }> => {
+    try {
+      const params: Record<string, any> = {
+        page: filters.page ?? 1,
+      };
+
+      if (filters.search) {
+        params.search = filters.search;
+      }
+
+      const data = await apiFetch<CompetitionTagsList>(`${apiBase}/api/admin/tags/`, {
+        method: "GET",
+        params,
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const createAdminTag = async (
+    form: CompetitionTagForm,
+  ): Promise<{ data: CompetitionTag | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<CompetitionTag>(`${apiBase}/api/admin/tags/`, {
+        method: "POST",
+        body: form,
+        headers: { "Content-Type": "application/json" },
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const readAdminTag = async (
+    tagId: string,
+  ): Promise<{ data: CompetitionTag | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<CompetitionTag>(`${apiBase}/api/admin/tags/${tagId}`, {
+        method: "GET",
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const deleteAdminTag = async (
+    tagId: string,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<{}>(`${apiBase}/api/admin/tags/${tagId}`, {
+        method: "DELETE",
       });
       return { data, error: null };
     } catch (err: any) {
@@ -827,6 +916,11 @@ export const useApi = () => {
     readAdminUser,
     blockAdminUser,
     unblockAdminUser,
+    listTags,
+    listAdminTags,
+    createAdminTag,
+    readAdminTag,
+    deleteAdminTag,
     registerParticipant,
     updateParticipant,
     updateOrganizer,

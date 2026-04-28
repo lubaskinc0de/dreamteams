@@ -116,17 +116,10 @@ const handleWithdraw = async () => {
                 </NuxtLink>
               </div>
 
-              <!-- Domains -->
+              <!-- Track -->
               <div>
-                <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{{ t('myApplications.domains') }}</p>
-                <div class="flex flex-wrap gap-1">
-                  <UBadge
-                    v-for="domain in app.domains"
-                    :key="domain"
-                    variant="soft"
-                    :label="domain"
-                  />
-                </div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{{ t('myApplications.track') }}</p>
+                <UBadge variant="soft" :label="app.track.name" />
               </div>
 
               <!-- Submitted at -->

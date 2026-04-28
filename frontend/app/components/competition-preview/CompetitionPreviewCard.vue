@@ -50,9 +50,9 @@ const handleCardClick = () => {
       {{ competition.description }}
     </p>
 
-    <!-- Domains -->
+    <!-- Tags -->
     <div class="mb-5">
-      <CompetitionDomainBadges :domains="competition.domains" size="sm" />
+      <CompetitionTagBadges :tags="competition.tags" size="sm" />
     </div>
 
     <!-- Meta -->

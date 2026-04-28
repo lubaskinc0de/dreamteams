@@ -318,21 +318,6 @@ useHead({
               </div>
             </div>
 
-            <div v-if="store.currentUser.participant.preferred_domains.length">
-              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                {{ t("admin.users.fields.domains") }}
-              </h3>
-              <div class="flex flex-wrap gap-2">
-                <UBadge
-                  v-for="domain in store.currentUser.participant.preferred_domains"
-                  :key="domain"
-                  color="neutral"
-                  variant="soft"
-                  :label="domain"
-                />
-              </div>
-            </div>
-
             <div v-if="store.currentUser.participant.contacts.length">
               <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">
                 {{ t("admin.users.fields.contacts") }}

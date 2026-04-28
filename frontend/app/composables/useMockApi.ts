@@ -4,6 +4,7 @@ import type {
   CreatedOrganizer,
   ProfileModel,
   ParticipantForm,
+  UpdateParticipantForm,
   CreatedParticipant,
   CompetitionForm,
   UpdateCompetitionForm,
@@ -24,7 +25,19 @@ import type {
   AdminUsersFilters,
   AdminUsersList,
   CreatedSuperuser,
+  CompetitionTag,
+  CompetitionTagForm,
+  CompetitionTagsFilters,
+  CompetitionTagsList,
+  ExploreCompetitionsFilters,
+  ExploreCompetitionsList,
   ApplicationStatus,
+  SubmitApplicationForm,
+  CreatedApplication,
+  MyApplicationModel,
+  MyApplicationsList,
+  ApplicationModel,
+  ApplicationsList,
   CreateExportJobInput,
   CreatedExportJob,
   ExportJobModel,
@@ -32,6 +45,29 @@ import type {
 
 // Mock invite code accepted in mock mode
 const MOCK_INVITE_CODE = "MOCK-INVITE-2026";
+
+let mockTags: CompetitionTag[] = [
+  { id: "11111111-1111-4111-8111-111111111111", value: "Frontend" },
+  { id: "22222222-2222-4222-8222-222222222222", value: "Backend" },
+  { id: "33333333-3333-4333-8333-333333333333", value: "Mobile" },
+  { id: "44444444-4444-4444-8444-444444444444", value: "AI" },
+  { id: "55555555-5555-4555-8555-555555555555", value: "DevOps" },
+  { id: "66666666-6666-4666-8666-666666666666", value: "Python" },
+];
+
+const tagByValue = (value: string) => {
+  const tag = mockTags.find((item) => item.value.toLowerCase() === value.toLowerCase());
+  if (!tag) {
+    throw new Error(`Unknown mock tag: ${value}`);
+  }
+  return tag;
+};
+
+const tags = (values: string[]) => values.map(tagByValue);
+const tracks = (names: string[]) => names.map((name) => ({ name }));
+
+const tagsByIds = (ids: string[]) =>
+  ids.map((id) => mockTags.find((tag) => tag.id === id)).filter((tag): tag is CompetitionTag => Boolean(tag));
 
 // Mock data
 const mockOrganizerUser: ProfileModel = {
@@ -64,7 +100,6 @@ const mockParticipantUser: ProfileModel = {
       { name: "React", level: "INTERMEDIATE" },
     ],
     experience_level: "MID",
-    preferred_domains: ["backend", "frontend"],
     contacts: [{ title: "Telegram", value: "@ivan_dev" }],
   },
   avatar_url: null,
@@ -166,7 +201,6 @@ let mockAdminUsers: AdminUserDetails[] = [
         { name: "TypeScript", level: "INTERMEDIATE" },
       ],
       experience_level: "MID",
-      preferred_domains: ["frontend", "ai"],
       contacts: [{ title: "GitHub", value: "https://github.com/anna" }],
       created_at: "2026-02-03T10:00:00Z",
       updated_at: "2026-04-14T12:20:00Z",
@@ -214,7 +248,8 @@ const mockPreviewCompetitions: PreviewCompetitionModel[] = [
     },
     participant_limits: { max: 500 },
     members_count: 120,
-    domains: ["ai", "backend"],
+    tags: tags(["AI", "Backend", "Python"]),
+    tracks: tracks(["AI/ML", "Backend"]),
     participant_type: "any",
     venue: { format: "hybrid", location: "Москва, Сколково" },
     team_size: { min: 2, max: 5 },
@@ -241,7 +276,8 @@ const mockPreviewCompetitions: PreviewCompetitionModel[] = [
     },
     participant_limits: { max: 200 },
     members_count: 45,
-    domains: ["frontend", "backend"],
+    tags: tags(["Frontend", "Backend"]),
+    tracks: tracks(["Frontend", "Backend"]),
     participant_type: "student",
     venue: { format: "offline", location: "Санкт-Петербург, Технопарк" },
     team_size: { min: 3, max: 5 },
@@ -268,7 +304,8 @@ const mockPreviewCompetitions: PreviewCompetitionModel[] = [
     },
     participant_limits: { max: 150 },
     members_count: 10,
-    domains: ["mobile"],
+    tags: tags(["Mobile"]),
+    tracks: tracks(["Mobile"]),
     participant_type: "any",
     venue: { format: "hybrid", location: "Казань, IT-парк" },
     team_size: { min: 2, max: 4 },
@@ -295,7 +332,8 @@ const mockPreviewCompetitions: PreviewCompetitionModel[] = [
     },
     participant_limits: { max: 180 },
     members_count: 0,
-    domains: ["devops", "backend"],
+    tags: tags(["DevOps", "Backend"]),
+    tracks: tracks(["DevOps", "Backend"]),
     participant_type: "any",
     venue: { format: "online", location: null },
     team_size: { min: 2, max: 4 },
@@ -322,7 +360,8 @@ const mockPreviewCompetitions: PreviewCompetitionModel[] = [
     },
     participant_limits: { max: 100 },
     members_count: 80,
-    domains: ["frontend", "ai"],
+    tags: tags(["Frontend", "AI"]),
+    tracks: tracks(["Frontend", "AI/ML"]),
     participant_type: "student",
     venue: { format: "offline", location: "Екатеринбург" },
     team_size: { min: 3, max: 6 },
@@ -349,7 +388,8 @@ const mockPreviewCompetitions: PreviewCompetitionModel[] = [
     },
     participant_limits: { max: 80 },
     members_count: 15,
-    domains: ["frontend", "mobile"],
+    tags: tags(["Frontend", "Mobile"]),
+    tracks: tracks(["Frontend", "Mobile"]),
     participant_type: "any",
     venue: { format: "hybrid", location: "Новосибирск, Академгородок" },
     team_size: { min: 1, max: 4 },
@@ -376,7 +416,8 @@ const mockPreviewCompetitions: PreviewCompetitionModel[] = [
     },
     participant_limits: { max: 250 },
     members_count: 200,
-    domains: ["backend", "devops"],
+    tags: tags(["Backend", "DevOps"]),
+    tracks: tracks(["Security", "Backend"]),
     participant_type: "any",
     venue: { format: "online", location: null },
     team_size: { min: 1, max: 3 },
@@ -403,7 +444,8 @@ const mockPreviewCompetitions: PreviewCompetitionModel[] = [
     },
     participant_limits: { max: 120 },
     members_count: 5,
-    domains: ["ai", "mobile", "frontend"],
+    tags: tags(["AI", "Mobile", "Frontend"]),
+    tracks: tracks(["AI/ML", "Mobile"]),
     participant_type: "student",
     venue: { format: "offline", location: "Москва, Сеченовский Университет" },
     team_size: { min: 3, max: 5 },
@@ -430,7 +472,8 @@ const mockPreviewCompetitions: PreviewCompetitionModel[] = [
     },
     participant_limits: { max: 100 },
     members_count: 90,
-    domains: ["backend", "ai", "devops"],
+    tags: tags(["Backend", "AI", "DevOps"]),
+    tracks: tracks(["Backend", "AI/ML"]),
     participant_type: "any",
     venue: { format: "hybrid", location: "Краснодар" },
     team_size: { min: 2, max: 5 },
@@ -457,7 +500,8 @@ const mockPreviewCompetitions: PreviewCompetitionModel[] = [
     },
     participant_limits: { max: 200 },
     members_count: 60,
-    domains: ["frontend", "backend"],
+    tags: tags(["Frontend", "Backend"]),
+    tracks: tracks(["Frontend", "Backend"]),
     participant_type: "any",
     venue: { format: "online", location: null },
     team_size: { min: 2, max: 4 },
@@ -484,7 +528,8 @@ const mockPreviewCompetitions: PreviewCompetitionModel[] = [
     },
     participant_limits: { max: 150 },
     members_count: 150,
-    domains: ["ai", "backend"],
+    tags: tags(["AI", "Backend"]),
+    tracks: tracks(["Data Science", "Backend"]),
     participant_type: "student",
     venue: { format: "online", location: null },
     team_size: { min: 1, max: 3 },
@@ -511,7 +556,8 @@ const mockPreviewCompetitions: PreviewCompetitionModel[] = [
     },
     participant_limits: { max: 100 },
     members_count: 35,
-    domains: ["frontend", "mobile", "ai"],
+    tags: tags(["Frontend", "Mobile", "AI"]),
+    tracks: tracks(["Frontend", "Mobile"]),
     participant_type: "any",
     venue: { format: "hybrid", location: "Москва, Skolkovo" },
     team_size: { min: 3, max: 5 },
@@ -539,7 +585,8 @@ const mockCompetitions: CompetitionModel[] = [
     },
     participant_limits: { max: 200 },
     members_count: 180,
-    domains: ["frontend", "backend"],
+    tags: tags(["Frontend", "Backend"]),
+    tracks: tracks(["Frontend", "Backend"]),
     participant_type: "student",
     venue: { format: "hybrid", location: "Москва, Технопарк" },
     team_size: { min: 2, max: 5 },
@@ -568,7 +615,8 @@ const mockCompetitions: CompetitionModel[] = [
     },
     participant_limits: { max: 100 },
     members_count: 25,
-    domains: ["ai", "backend"],
+    tags: tags(["AI", "Backend", "Python"]),
+    tracks: tracks(["AI/ML", "Backend"]),
     participant_type: "any",
     venue: { format: "online", location: null },
     team_size: { min: 1, max: 3 },
@@ -593,7 +641,8 @@ const mockCompetitions: CompetitionModel[] = [
     },
     participant_limits: { max: 150 },
     members_count: 70,
-    domains: ["mobile"],
+    tags: tags(["Mobile"]),
+    tracks: tracks(["Mobile"]),
     participant_type: "schoolchild",
     venue: { format: "offline", location: "Санкт-Петербург" },
     team_size: { min: 2, max: 4 },
@@ -604,6 +653,31 @@ const mockCompetitions: CompetitionModel[] = [
     is_archived: false,
     created_at: "2025-12-15T12:00:00Z",
     updated_at: "2025-12-15T12:00:00Z",
+  },
+];
+
+let mockApplications: ApplicationModel[] = [
+  {
+    id: "app-1",
+    competition_id: "comp-1",
+    competition_name: "Хакатон по веб-разработке 2026",
+    track: { name: "Backend" },
+    status: "pending",
+    created_at: "2026-02-10T10:00:00Z",
+    form_data: { experience: "Node.js, Python" },
+    participant: {
+      id: "participant-1",
+      full_name: "Анна Смирнова",
+      participant_type: "student",
+      age: 21,
+      bio: "Frontend developer interested in product hackathons.",
+      skills: [
+        { name: "Vue", level: "ADVANCED" },
+        { name: "TypeScript", level: "INTERMEDIATE" },
+      ],
+      experience_level: "MID",
+      contacts: [{ title: "GitHub", value: "https://github.com/anna" }],
+    },
   },
 ];
 
@@ -850,6 +924,18 @@ export const useMockApi = () => {
       };
     }
 
+    const selectedTags = tagsByIds(form.tag_ids);
+    if (selectedTags.length !== form.tag_ids.length) {
+      return {
+        data: null,
+        error: {
+          code: "COMPETITION_TAG_NOT_FOUND",
+          message: "Competition tag not found",
+          meta: null,
+        },
+      };
+    }
+
     const newCompetition: CompetitionModel = {
       id: `comp-${Date.now()}`,
       organizer_id: "123e4567-e89b-12d3-a456-426614174001",
@@ -858,7 +944,8 @@ export const useMockApi = () => {
       description: form.description,
       schedule: form.schedule,
       participant_limits: form.participant_limits,
-      domains: form.domains,
+      tags: selectedTags,
+      tracks: form.tracks,
       participant_type: form.participant_type,
       venue: form.venue,
       team_size: form.team_size,
@@ -908,6 +995,38 @@ export const useMockApi = () => {
     };
   };
 
+  const getExploreCompetition = async (
+    competitionId: string,
+  ): Promise<{ data: CompetitionModel | null; error: ApiError | null }> => {
+    await delay(300);
+
+    const organizerCompetition = mockCompetitions.find((c) => c.id === competitionId);
+    if (organizerCompetition) {
+      return { data: organizerCompetition, error: null };
+    }
+
+    const preview = mockPreviewCompetitions.find((c) => c.id === competitionId);
+    if (!preview) {
+      return {
+        data: null,
+        error: {
+          code: "COMPETITION_NOT_FOUND",
+          message: "Competition not found",
+          meta: null,
+        },
+      };
+    }
+
+    return {
+      data: {
+        ...preview,
+        organizer_id: preview.organizer.id,
+        auto_accept: false,
+      },
+      error: null,
+    };
+  };
+
   const updateCompetition = async (
     competitionId: string,
     form: UpdateCompetitionForm,
@@ -929,6 +1048,18 @@ export const useMockApi = () => {
 
     // Update the competition
     const currentCompetition = mockCompetitions[index]!;
+    const selectedTags = tagsByIds(form.tag_ids);
+    if (selectedTags.length !== form.tag_ids.length) {
+      return {
+        data: null,
+        error: {
+          code: "COMPETITION_TAG_NOT_FOUND",
+          message: "Competition tag not found",
+          meta: null,
+        },
+      };
+    }
+
     mockCompetitions[index] = {
       id: currentCompetition.id,
       organizer_id: currentCompetition.organizer_id,
@@ -937,7 +1068,8 @@ export const useMockApi = () => {
       description: form.description,
       schedule: form.schedule,
       participant_limits: form.participant_limits,
-      domains: form.domains,
+      tags: selectedTags,
+      tracks: form.tracks,
       participant_type: form.participant_type,
       venue: form.venue,
       team_size: form.team_size,
@@ -1052,6 +1184,72 @@ export const useMockApi = () => {
       data: {
         items,
         total: mockPreviewCompetitions.length,
+        page,
+      },
+      error: null,
+    };
+  };
+
+  const exploreCompetitions = async (
+    filters: ExploreCompetitionsFilters = {},
+  ): Promise<{ data: ExploreCompetitionsList | null; error: ApiError | null }> => {
+    await delay(350);
+
+    const page = filters.page ?? 1;
+    if (page < 1) {
+      return {
+        data: null,
+        error: { code: "VALIDATION_ERROR", message: "Invalid page", meta: null },
+      };
+    }
+
+    let filtered = mockPreviewCompetitions;
+
+    const search = filters.search?.trim().toLowerCase();
+    if (search) {
+      filtered = filtered.filter((competition) =>
+        competition.title.toLowerCase().includes(search) ||
+        competition.tags.some((tag) => tag.value.toLowerCase().includes(search)),
+      );
+    }
+
+    if (filters.tag_ids?.length) {
+      const requested = new Set(filters.tag_ids);
+      filtered = filtered.filter((competition) =>
+        competition.tags.some((tag) => requested.has(tag.id)),
+      );
+    }
+
+    if (filters.min_team_size !== undefined) {
+      filtered = filtered.filter((competition) =>
+        (competition.team_size?.min ?? 1) >= filters.min_team_size!,
+      );
+    }
+
+    if (filters.max_team_size !== undefined) {
+      filtered = filtered.filter((competition) =>
+        (competition.team_size?.max ?? 1) <= filters.max_team_size!,
+      );
+    }
+
+    if (filters.auto_accept !== undefined) {
+      filtered = filtered.filter(() => filters.auto_accept === false);
+    }
+
+    const sorted = [...filtered].sort((a, b) => {
+      if ((filters.sort_by ?? "most_popular") === "newest") {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+      return b.members_count - a.members_count;
+    });
+
+    const pageSize = 10;
+    const start = (page - 1) * pageSize;
+
+    return {
+      data: {
+        items: sorted.slice(start, start + pageSize),
+        total: sorted.length,
         page,
       },
       error: null,
@@ -1275,6 +1473,126 @@ export const useMockApi = () => {
     return { data: {}, error: null };
   };
 
+  const listTags = async (
+    filters: CompetitionTagsFilters = {},
+  ): Promise<{ data: CompetitionTagsList | null; error: ApiError | null }> => {
+    await delay(250);
+
+    const page = filters.page ?? 1;
+    if (page < 1) {
+      return {
+        data: null,
+        error: { code: "VALIDATION_ERROR", message: "Invalid page", meta: null },
+      };
+    }
+
+    const query = filters.search?.trim().toLowerCase();
+    const filtered = mockTags
+      .filter((tag) => !query || tag.value.toLowerCase().includes(query))
+      .sort((a, b) => a.value.localeCompare(b.value) || a.id.localeCompare(b.id));
+    const pageSize = 30;
+    const start = (page - 1) * pageSize;
+
+    return {
+      data: {
+        items: filtered.slice(start, start + pageSize),
+        total: filtered.length,
+        page,
+      },
+      error: null,
+    };
+  };
+
+  const listAdminTags = listTags;
+
+  const createAdminTag = async (
+    form: CompetitionTagForm,
+  ): Promise<{ data: CompetitionTag | null; error: ApiError | null }> => {
+    await delay(300);
+
+    const value = form.value.trim();
+    if (!value) {
+      return {
+        data: null,
+        error: {
+          code: "INVALID_COMPETITION_DATA",
+          message: "Tag value cannot be blank",
+          meta: null,
+        },
+      };
+    }
+
+    if (value.length > 100) {
+      return {
+        data: null,
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Tag value is too long",
+          meta: null,
+        },
+      };
+    }
+
+    if (mockTags.some((tag) => tag.value.toLowerCase() === value.toLowerCase())) {
+      return {
+        data: null,
+        error: {
+          code: "COMPETITION_TAG_ALREADY_EXISTS",
+          message: "Competition tag already exists",
+          meta: null,
+        },
+      };
+    }
+
+    const tag = { id: crypto.randomUUID(), value };
+    mockTags = [...mockTags, tag];
+    return { data: tag, error: null };
+  };
+
+  const readAdminTag = async (
+    tagId: string,
+  ): Promise<{ data: CompetitionTag | null; error: ApiError | null }> => {
+    await delay(200);
+
+    const tag = mockTags.find((item) => item.id === tagId);
+    if (!tag) {
+      return {
+        data: null,
+        error: {
+          code: "COMPETITION_TAG_NOT_FOUND",
+          message: "Competition tag not found",
+          meta: null,
+        },
+      };
+    }
+
+    return { data: tag, error: null };
+  };
+
+  const deleteAdminTag = async (
+    tagId: string,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    await delay(300);
+
+    if (!mockTags.some((tag) => tag.id === tagId)) {
+      return {
+        data: null,
+        error: {
+          code: "COMPETITION_TAG_NOT_FOUND",
+          message: "Competition tag not found",
+          meta: null,
+        },
+      };
+    }
+
+    mockTags = mockTags.filter((tag) => tag.id !== tagId);
+    for (const competition of [...mockCompetitions, ...mockPreviewCompetitions]) {
+      competition.tags = competition.tags.filter((tag) => tag.id !== tagId);
+    }
+
+    return { data: {}, error: null };
+  };
+
   const registerParticipant = async (
     form: ParticipantForm,
   ): Promise<{ data: CreatedParticipant | null; error: ApiError | null }> => {
@@ -1307,6 +1625,41 @@ export const useMockApi = () => {
       },
       error: null,
     };
+  };
+
+  const updateParticipant = async (
+    form: UpdateParticipantForm,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    await delay(400);
+
+    if (!form.full_name.trim() || form.full_name.length > 70) {
+      return {
+        data: null,
+        error: { code: "VALIDATION_ERROR", message: "Некорректное имя", meta: null },
+      };
+    }
+
+    if ((form.contacts?.length ?? 0) > 15) {
+      return {
+        data: null,
+        error: { code: "VALIDATION_ERROR", message: "Too many contacts", meta: null },
+      };
+    }
+
+    mockParticipantUser.participant = {
+      id: mockParticipantUser.participant?.id ?? crypto.randomUUID(),
+      user_id: mockParticipantUser.user_id,
+      full_name: form.full_name,
+      participant_type: form.participant_type,
+      age: form.age,
+      bio: form.bio ?? null,
+      skills: form.skills ?? [],
+      experience_level: form.experience_level ?? null,
+      contacts: form.contacts ?? [],
+    };
+
+    isParticipantRegistered = true;
+    return { data: {}, error: null };
   };
 
   const MOCK_SUPERUSER_PASSWORD = "superuser123";
@@ -1400,6 +1753,218 @@ const mockExportJobs = new Map<string, ExportJobModel>();
     };
   };
 
+  const submitApplication = async (
+    competitionId: string,
+    form: SubmitApplicationForm,
+  ): Promise<{ data: CreatedApplication | null; error: ApiError | null }> => {
+    await delay(500);
+
+    const competition = mockCompetitions.find((item) => item.id === competitionId) ??
+      (await getExploreCompetition(competitionId)).data;
+    if (!competition) {
+      return {
+        data: null,
+        error: {
+          code: "COMPETITION_NOT_FOUND",
+          message: "Competition not found",
+          meta: null,
+        },
+      };
+    }
+
+    const normalizedTrack = form.track.name.trim().toLowerCase();
+    const selectedTrack = competition.tracks.find(
+      (track) => track.name.trim().toLowerCase() === normalizedTrack,
+    );
+    if (!selectedTrack) {
+      return {
+        data: null,
+        error: {
+          code: "INVALID_APPLICATION_DATA",
+          message: "Selected track is not available for this competition",
+          meta: null,
+        },
+      };
+    }
+
+    if (mockApplications.some((item) => item.competition_id === competitionId)) {
+      return {
+        data: null,
+        error: {
+          code: "APPLICATION_ALREADY_EXISTS",
+          message: "Application already exists",
+          meta: null,
+        },
+      };
+    }
+
+    const applicationId = crypto.randomUUID();
+    mockApplications.unshift({
+      id: applicationId,
+      competition_id: competitionId,
+      competition_name: competition.title,
+      track: selectedTrack,
+      status: "pending",
+      created_at: new Date().toISOString(),
+      form_data: form.form_data,
+      participant: {
+        id: mockParticipantUser.participant?.id ?? crypto.randomUUID(),
+        full_name: mockParticipantUser.participant?.full_name ?? "Иван Петров",
+        bio: mockParticipantUser.participant?.bio ?? null,
+        participant_type: mockParticipantUser.participant?.participant_type ?? "student",
+        age: mockParticipantUser.participant?.age ?? 22,
+        skills: mockParticipantUser.participant?.skills ?? [],
+        experience_level: mockParticipantUser.participant?.experience_level ?? null,
+        contacts: mockParticipantUser.participant?.contacts ?? [],
+      },
+    });
+
+    return { data: { application_id: applicationId }, error: null };
+  };
+
+  const toMyApplication = (application: ApplicationModel): MyApplicationModel => ({
+    id: application.id,
+    participant_id: application.participant.id,
+    competition_id: application.competition_id,
+    competition_name: application.competition_name,
+    track: application.track,
+    status: application.status,
+    created_at: application.created_at,
+    form_data: application.form_data,
+  });
+
+  const listApplicationsByCompetition = async (
+    competitionId: string,
+    page: number = 1,
+    _sortOrder: SortOrder = "desc",
+    status?: ApplicationStatus,
+  ): Promise<{ data: ApplicationsList | null; error: ApiError | null }> => {
+    await delay(300);
+
+    let filtered = mockApplications.filter((application) => application.competition_id === competitionId);
+    if (status) {
+      filtered = filtered.filter((application) => application.status === status);
+    }
+
+    const pageSize = 10;
+    const start = (page - 1) * pageSize;
+    return {
+      data: {
+        items: filtered.slice(start, start + pageSize),
+        total: filtered.length,
+        page,
+      },
+      error: null,
+    };
+  };
+
+  const listMyApplications = async (
+    page: number = 1,
+    _sortOrder: SortOrder = "desc",
+    status?: ApplicationStatus,
+  ): Promise<{ data: MyApplicationsList | null; error: ApiError | null }> => {
+    await delay(300);
+
+    let filtered = mockApplications;
+    if (status) {
+      filtered = filtered.filter((application) => application.status === status);
+    }
+
+    const pageSize = 10;
+    const start = (page - 1) * pageSize;
+    return {
+      data: {
+        items: filtered.slice(start, start + pageSize).map(toMyApplication),
+        total: filtered.length,
+        page,
+      },
+      error: null,
+    };
+  };
+
+  const readMyApplication = async (
+    applicationId: string,
+  ): Promise<{ data: MyApplicationModel | null; error: ApiError | null }> => {
+    await delay(250);
+
+    const application = mockApplications.find((item) => item.id === applicationId);
+    if (!application) {
+      return {
+        data: null,
+        error: {
+          code: "APPLICATION_NOT_FOUND",
+          message: "Application not found",
+          meta: null,
+        },
+      };
+    }
+
+    return { data: toMyApplication(application), error: null };
+  };
+
+  const readApplication = async (
+    applicationId: string,
+  ): Promise<{ data: ApplicationModel | null; error: ApiError | null }> => {
+    await delay(250);
+
+    const application = mockApplications.find((item) => item.id === applicationId);
+    if (!application) {
+      return {
+        data: null,
+        error: {
+          code: "APPLICATION_NOT_FOUND",
+          message: "Application not found",
+          meta: null,
+        },
+      };
+    }
+
+    return { data: application, error: null };
+  };
+
+  const withdrawApplication = async (
+    applicationId: string,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    await delay(300);
+
+    const before = mockApplications.length;
+    mockApplications = mockApplications.filter((item) => item.id !== applicationId);
+    if (mockApplications.length === before) {
+      return {
+        data: null,
+        error: {
+          code: "APPLICATION_NOT_FOUND",
+          message: "Application not found",
+          meta: null,
+        },
+      };
+    }
+
+    return { data: {}, error: null };
+  };
+
+  const resolveApplication = async (
+    applicationId: string,
+    status: "accepted" | "rejected",
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    await delay(300);
+
+    const application = mockApplications.find((item) => item.id === applicationId);
+    if (!application) {
+      return {
+        data: null,
+        error: {
+          code: "APPLICATION_NOT_FOUND",
+          message: "Application not found",
+          meta: null,
+        },
+      };
+    }
+
+    application.status = status;
+    return { data: {}, error: null };
+  };
+
   const readExportJob = async (
     jobId: string,
   ): Promise<{ data: ExportJobModel | null; error: ApiError | null }> => {
@@ -1434,7 +1999,7 @@ const mockExportJobs = new Map<string, ExportJobModel>();
     getUserProfile,
     listCompetitions,
     getPreviewCompetitions,
-    exploreCompetitions: notImplemented,
+    exploreCompetitions,
     createCompetition,
     getCompetition,
     updateCompetition,
@@ -1449,24 +2014,29 @@ const mockExportJobs = new Map<string, ExportJobModel>();
     readAdminUser,
     blockAdminUser,
     unblockAdminUser,
+    listTags,
+    listAdminTags,
+    createAdminTag,
+    readAdminTag,
+    deleteAdminTag,
     registerParticipant,
-    updateParticipant: notImplemented,
+    updateParticipant,
     updateOrganizer: notImplemented,
     registerSuperuser,
     getApplicationForm: notImplemented,
     getMyApplicationForm: notImplemented,
     createApplicationForm: notImplemented,
     deleteApplicationForm: notImplemented,
-    submitApplication: notImplemented,
-    listApplicationsByCompetition: notImplemented,
-    listMyApplications: notImplemented,
-    readMyApplication: notImplemented,
-    readApplication: notImplemented,
-    withdrawApplication: notImplemented,
-    acceptApplication: notImplemented,
-    rejectApplication: notImplemented,
+    submitApplication,
+    listApplicationsByCompetition,
+    listMyApplications,
+    readMyApplication,
+    readApplication,
+    withdrawApplication,
+    acceptApplication: (applicationId: string) => resolveApplication(applicationId, "accepted"),
+    rejectApplication: (applicationId: string) => resolveApplication(applicationId, "rejected"),
     createExportJob,
     readExportJob,
-    getExploreCompetition: notImplemented,
+    getExploreCompetition,
   };
 };

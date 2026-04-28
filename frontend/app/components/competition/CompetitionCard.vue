@@ -64,8 +64,8 @@ const handleDelete = () => {
         {{ competition.description }}
       </p>
 
-      <!-- Domains -->
-      <CompetitionDomainBadges :domains="competition.domains" />
+      <!-- Tags -->
+      <CompetitionTagBadges :tags="competition.tags" />
 
       <!-- Meta Information -->
       <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600 dark:text-gray-400">

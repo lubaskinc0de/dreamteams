@@ -74,7 +74,8 @@ const formState = ref<UpdateCompetitionForm>({
   participant_limits: {
     max: 100,
   },
-  domains: [],
+  tag_ids: [],
+  tracks: [{ name: '' }],
   participant_type: 'any',
   venue: {
     format: 'online',
@@ -195,7 +196,10 @@ const initializeForm = (comp: any) => {
   formState.value.schedule.team_formation_start = comp.schedule.team_formation_start;
   formState.value.schedule.team_formation_end = comp.schedule.team_formation_end;
   formState.value.participant_limits.max = comp.participant_limits.max;
-  formState.value.domains = [...comp.domains];
+  formState.value.tag_ids = comp.tags.map((tag: { id: string }) => tag.id);
+  formState.value.tracks = comp.tracks.length
+    ? comp.tracks.map((track: { name: string }) => ({ name: track.name }))
+    : [{ name: 'Общий' }];
   formState.value.participant_type = comp.participant_type;
   formState.value.venue.format = comp.venue.format;
   formState.value.venue.location = comp.venue.location;
@@ -414,7 +418,9 @@ const { getErrorMessage } = useErrorHandler();
               <CompetitionFormBasicInfoFormSection
                 v-model:title="formState.title"
                 v-model:description="formState.description"
-                v-model:domains="formState.domains"
+                v-model:tag-ids="formState.tag_ids"
+                v-model:tracks="formState.tracks"
+                :initial-tags="competition.tags"
                 v-model:participant-type="formState.participant_type"
                 v-model:is-team-competition="isTeamCompetition"
                 v-model:auto-accept="formState.auto_accept"

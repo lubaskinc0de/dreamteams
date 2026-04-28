@@ -156,15 +156,11 @@ const exportHint = computed(() => (
                 <p class="text-lg font-semibold text-gray-900 dark:text-white truncate">
                   {{ app.participant.full_name }}
                 </p>
-                <div class="flex flex-wrap gap-1.5">
-                  <UBadge
-                    v-for="domain in app.domains"
-                    :key="domain"
-                    size="sm"
-                    variant="soft"
-                    :label="domain"
-                  />
-                </div>
+                <UBadge
+                  size="sm"
+                  variant="soft"
+                  :label="app.track.name"
+                />
                 <p class="text-sm text-gray-500 dark:text-gray-400">
                   {{ t('applications.submittedAt') }}: {{ new Date(app.created_at).toLocaleDateString() }}
                 </p>

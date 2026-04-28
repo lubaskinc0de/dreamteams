@@ -70,7 +70,7 @@ const handleRegister = () => {
         <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white leading-tight mb-4">
           {{ competition.title }}
         </h2>
-        <CompetitionDomainBadges :domains="competition.domains" size="md" />
+        <CompetitionTagBadges :tags="competition.tags" size="md" />
       </div>
     </template>
 
@@ -269,7 +269,7 @@ const handleRegister = () => {
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white leading-tight">
           {{ competition.title }}
         </h2>
-        <CompetitionDomainBadges :domains="competition.domains" size="sm" />
+        <CompetitionTagBadges :tags="competition.tags" size="sm" />
       </div>
     </template>
 

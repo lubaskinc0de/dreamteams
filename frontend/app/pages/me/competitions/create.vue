@@ -43,7 +43,7 @@ const stepperItems = computed<StepperItem[]>(() => [
 ]);
 
 const stepFields: string[][] = [
-  ['title', 'description', 'domains'],
+  ['title', 'description', 'tag_ids', 'tracks'],
   ['schedule', 'participant_limits', 'team_size'],
   ['venue'],
   ['milestones'],
@@ -123,7 +123,8 @@ const formState = reactive<CompetitionForm & { is_team: boolean }>({
   participant_limits: {
     max: 100,
   },
-  domains: [],
+  tag_ids: [],
+  tracks: [{ name: 'Общий' }],
   participant_type: 'any',
   venue: {
     format: 'online',
@@ -320,7 +321,8 @@ const goBack = () => {
             <CompetitionFormBasicInfoFormSection
               v-model:title="formState.title"
               v-model:description="formState.description"
-              v-model:domains="formState.domains"
+              v-model:tag-ids="formState.tag_ids"
+              v-model:tracks="formState.tracks"
               v-model:participant-type="formState.participant_type"
               v-model:is-team-competition="isTeamCompetition"
               v-model:auto-accept="formState.auto_accept"

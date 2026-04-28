@@ -116,7 +116,6 @@ export interface AdminUserParticipant {
   bio: string | null;
   skills: Array<{ name: string; level: string }>;
   experience_level: string | null;
-  preferred_domains: string[];
   contacts: Array<{ title: string; value: string }>;
   created_at: string;
   updated_at: string;
@@ -153,6 +152,8 @@ export type ErrorCode =
   | "PARTICIPANT_NOT_FOUND"
   | "INVALID_PARTICIPANT_DATA"
   | "COMPETITION_NOT_FOUND"
+  | "COMPETITION_TAG_NOT_FOUND"
+  | "COMPETITION_TAG_ALREADY_EXISTS"
   | "INVALID_COMPETITION_DATA"
   | "APPLICATION_FORM_ALREADY_EXISTS"
   | "APPLICATION_FORM_NOT_FOUND"
@@ -166,7 +167,8 @@ export type ErrorCode =
   | "PARTICIPANT_TYPE_MISMATCH"
   | "INVALID_ROLE"
   | "EXPORT_JOB_NOT_FOUND"
-  | "EXPORT_RATE_LIMIT_EXCEEDED";
+  | "EXPORT_RATE_LIMIT_EXCEEDED"
+  | "NETWORK_ERROR";
 
 export interface CreatedSuperuser {
   user_id: string;
@@ -175,7 +177,6 @@ export interface CreatedSuperuser {
 // Participant types
 export type ExperienceLevel = "JUNIOR" | "MID" | "SENIOR";
 export type SkillLevel = "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT";
-export type ParticipantDomain = Domain;
 export type ParticipantRoleType = "schoolchild" | "student";
 
 export interface ParticipantSkill {
@@ -197,7 +198,6 @@ export interface ParticipantProfile {
   bio: string | null;
   skills: ParticipantSkill[];
   experience_level: ExperienceLevel | null;
-  preferred_domains: ParticipantDomain[];
   contacts: ParticipantContact[];
 }
 
@@ -218,7 +218,6 @@ export interface ParticipantForm {
   bio?: string | null;
   skills?: ParticipantSkillForm[];
   experience_level?: ExperienceLevel | null;
-  preferred_domains?: Domain[];
   contacts?: ParticipantContactForm[];
 }
 
@@ -229,7 +228,6 @@ export interface UpdateParticipantForm {
   bio?: string | null;
   skills?: ParticipantSkillForm[];
   experience_level?: ExperienceLevel | null;
-  preferred_domains?: Domain[];
   contacts?: ParticipantContactForm[];
 }
 
@@ -244,7 +242,29 @@ export interface CreatedParticipant {
 }
 
 // Competition types
-export type Domain = "frontend" | "mobile" | "backend" | "ai" | "devops";
+export interface CompetitionTag {
+  id: string;
+  value: string;
+}
+
+export interface CompetitionTrack {
+  name: string;
+}
+
+export interface CompetitionTagsList {
+  items: CompetitionTag[];
+  total: number;
+  page: number;
+}
+
+export interface CompetitionTagForm {
+  value: string;
+}
+
+export interface CompetitionTagsFilters {
+  page?: number;
+  search?: string;
+}
 
 export type ParticipantType = "schoolchild" | "student" | "any";
 
@@ -296,7 +316,8 @@ export interface CompetitionForm {
   description: string;
   schedule: CompetitionSchedule;
   participant_limits: ParticipantLimits;
-  domains: Domain[];
+  tag_ids: string[];
+  tracks: CompetitionTrack[];
   participant_type: ParticipantType;
   venue: CompetitionVenue;
   team_size: TeamSizeRange | null;
@@ -309,7 +330,8 @@ export interface UpdateCompetitionForm {
   description: string;
   schedule: CompetitionSchedule;
   participant_limits: ParticipantLimits;
-  domains: Domain[];
+  tag_ids: string[];
+  tracks: CompetitionTrack[];
   participant_type: ParticipantType;
   venue: CompetitionVenue;
   team_size: TeamSizeRange | null;
@@ -326,7 +348,8 @@ export interface CompetitionModel {
   description: string;
   schedule: CompetitionSchedule;
   participant_limits: ParticipantLimits;
-  domains: Domain[];
+  tags: CompetitionTag[];
+  tracks: CompetitionTrack[];
   participant_type: ParticipantType;
   venue: CompetitionVenue;
   team_size: TeamSizeRange | null;
@@ -363,7 +386,8 @@ export interface PreviewCompetitionModel {
   description: string;
   schedule: CompetitionSchedule;
   participant_limits: ParticipantLimits;
-  domains: Domain[];
+  tags: CompetitionTag[];
+  tracks: CompetitionTrack[];
   participant_type: ParticipantType;
   venue: CompetitionVenue;
   team_size: TeamSizeRange | null;
@@ -389,7 +413,7 @@ export interface ExploreCompetitionsFilters {
   min_team_size?: number;
   max_team_size?: number;
   auto_accept?: boolean;
-  domains?: Domain[];
+  tag_ids?: string[];
 }
 
 export type ExploreCompetitionModel = PreviewCompetitionModel;
@@ -444,7 +468,7 @@ export interface ApplicationFormModel {
 export type ApplicationStatus = "pending" | "accepted" | "rejected";
 
 export interface SubmitApplicationForm {
-  domains: Domain[];
+  track: CompetitionTrack;
   form_data: Record<string, any> | null;
 }
 
@@ -462,7 +486,6 @@ export interface ParticipantInfo {
   age: number;
   skills: ParticipantSkill[];
   experience_level: ExperienceLevel | null;
-  preferred_domains: ParticipantDomain[];
   contacts: ParticipantContact[];
 }
 
@@ -472,7 +495,7 @@ export interface MyApplicationModel {
   participant_id: string;
   competition_id: string;
   competition_name: string;
-  domains: Domain[];
+  track: CompetitionTrack;
   status: ApplicationStatus;
   created_at: string;
   form_data: Record<string, any> | null;
@@ -489,7 +512,7 @@ export interface ApplicationModel {
   id: string;
   competition_id: string;
   competition_name: string;
-  domains: Domain[];
+  track: CompetitionTrack;
   status: ApplicationStatus;
   created_at: string;
   form_data: Record<string, any> | null;

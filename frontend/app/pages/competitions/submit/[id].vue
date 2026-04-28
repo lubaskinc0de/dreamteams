@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useMyApplicationsStore } from '~/stores/myApplications';
 import { useNotificationsStore } from '~/stores/notifications';
-import type { CompetitionModel, Domain, FieldModel } from '~/types/api';
+import type { CompetitionModel, FieldModel } from '~/types/api';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -12,7 +12,6 @@ const { hasProfile } = useAuth();
 const userStore = useUserStore();
 const { navigateBack } = useBackNavigation('/explore');
 const {
-  getDomainLabel,
   getFormatLabel,
   getParticipantTypeLabel,
   formatDateRange,
@@ -31,7 +30,7 @@ const competitionError = ref<string | null>(null);
 
 const applicationForm = ref<{ fields: FieldModel[] } | null>(null);
 
-const selectedDomains = ref<Domain[]>([]);
+const selectedTrackName = ref("");
 const formAnswers = ref<Record<string, any>>({});
 
 onMounted(async () => {
@@ -55,8 +54,8 @@ onMounted(async () => {
   }
 });
 
-const domainOptions = computed(() =>
-  (competition.value?.domains ?? []).map((d: Domain) => ({ value: d, label: getDomainLabel(d) }))
+const trackOptions = computed(() =>
+  (competition.value?.tracks ?? []).map((track) => ({ value: track.name, label: track.name }))
 );
 
 const isParticipant = computed(() => userStore.isParticipant);
@@ -75,12 +74,12 @@ const descriptionPreview = computed(() => {
 });
 
 const handleApply = async () => {
-  if (selectedDomains.value.length === 0) return;
+  if (!selectedTrackName.value) return;
 
   const form_data = applicationForm.value ? { ...formAnswers.value } : null;
 
   const result = await appStore.submit(competitionId.value, {
-    domains: selectedDomains.value,
+    track: { name: selectedTrackName.value },
     form_data,
   });
 
@@ -144,21 +143,15 @@ const handleApply = async () => {
                 </template>
 
                 <div class="space-y-4">
-                  <UFormField :label="t('myApplications.selectDomains')" required>
-                    <div class="flex flex-wrap gap-2">
-                      <UCheckbox
-                        v-for="opt in domainOptions"
-                        :key="opt.value"
-                        :label="opt.label"
-                        :model-value="selectedDomains.includes(opt.value)"
-                        @update:model-value="(checked) => {
-                          if (checked) selectedDomains.push(opt.value);
-                          else selectedDomains = selectedDomains.filter(d => d !== opt.value);
-                        }"
-                      />
-                    </div>
-                    <p v-if="selectedDomains.length === 0" class="text-xs text-red-500 mt-1">
-                      {{ t('myApplications.domainsRequired') }}
+                  <UFormField :label="t('myApplications.selectTrack')" required>
+                    <URadioGroup
+                      v-model="selectedTrackName"
+                      :items="trackOptions"
+                      value-key="value"
+                      size="lg"
+                    />
+                    <p v-if="!selectedTrackName" class="text-xs text-red-500 mt-1">
+                      {{ t('myApplications.trackRequired') }}
                     </p>
                   </UFormField>
 
@@ -221,7 +214,7 @@ const handleApply = async () => {
                       icon="i-heroicons-paper-airplane"
                       :label="appStore.submitting ? t('myApplications.applying') : t('myApplications.applyButton')"
                       :loading="appStore.submitting"
-                      :disabled="appStore.submitting || selectedDomains.length === 0"
+                      :disabled="appStore.submitting || !selectedTrackName"
                       @click="handleApply"
                     />
                   </div>

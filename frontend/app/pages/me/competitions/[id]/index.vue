@@ -7,7 +7,6 @@ const route = useRoute();
 const router = useRouter();
 const competitionStore = useCompetitionStore();
 const notifications = useNotificationsStore();
-const { getDomainLabel } = useCompetitionFormatters();
 const { getRegistrationStatus } = useCompetitionStatus();
 const { navigateBack } = useBackNavigation('/me/competitions');
 
@@ -106,16 +105,7 @@ const handleDelete = async () => {
               />
             </div>
 
-            <!-- Domains under title -->
-            <div class="flex flex-wrap gap-2 mb-4">
-              <UBadge
-                v-for="domain in competition.domains"
-                :key="domain"
-                variant="soft"
-                size="md"
-                :label="getDomainLabel(domain)"
-              />
-            </div>
+            <CompetitionTagBadges :tags="competition.tags" size="md" class="mb-4" />
 
             <!-- Action buttons -->
             <CompetitionActions

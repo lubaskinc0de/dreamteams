@@ -4,7 +4,6 @@ import type {
   UpdateParticipantForm,
   ParticipantRoleType,
   ExperienceLevel,
-  Domain,
 } from "~/types/api";
 import { createParticipantSchemas, type ParticipantUpdateSchema } from "~/schemas/participant";
 import { useParticipantStore } from "~/stores/participant";
@@ -18,7 +17,6 @@ interface Props {
   age: number;
   bio?: string | null;
   experienceLevel?: ExperienceLevel | null;
-  preferredDomains?: Domain[];
   skills?: { name: string; level: SkillLevel }[];
   contacts?: { title: string; value: string }[];
 }
@@ -37,7 +35,6 @@ const state = reactive({
   age: props.age as number | null,
   bio: props.bio ?? "",
   experience_level: (props.experienceLevel ?? null) as ExperienceLevel | null,
-  preferred_domains: [...(props.preferredDomains ?? [])] as Domain[],
   skills: [...(props.skills ?? [])].map((s) => ({ name: s.name, level: s.level })),
   contacts: [...(props.contacts ?? [])].map((c) => ({ title: c.title, value: c.value })),
 });
@@ -51,7 +48,6 @@ watch(
       state.age = props.age;
       state.bio = props.bio ?? "";
       state.experience_level = props.experienceLevel ?? null;
-      state.preferred_domains = [...(props.preferredDomains ?? [])];
       state.skills = [...(props.skills ?? [])].map((s) => ({ name: s.name, level: s.level }));
       state.contacts = [...(props.contacts ?? [])].map((c) => ({ title: c.title, value: c.value }));
       participantStore.clearError();
@@ -78,14 +74,6 @@ const skillLevelOptions = computed(() => [
   { value: "EXPERT", label: t("profile.participant.skillLevels.EXPERT") },
 ]);
 
-const domainOptions: { value: Domain; label: string }[] = [
-  { value: "frontend", label: "Frontend" },
-  { value: "mobile", label: "Mobile" },
-  { value: "backend", label: "Backend" },
-  { value: "ai", label: "AI" },
-  { value: "devops", label: "DevOps" },
-];
-
 const addSkill = () => {
   state.skills.push({ name: "", level: "BEGINNER" });
 };
@@ -95,20 +83,13 @@ const removeSkill = (index: number) => {
 };
 
 const addContact = () => {
-  state.contacts.push({ title: "", value: "" });
+  if (state.contacts.length < 15) {
+    state.contacts.push({ title: "", value: "" });
+  }
 };
 
 const removeContact = (index: number) => {
   state.contacts.splice(index, 1);
-};
-
-const toggleDomain = (domain: Domain) => {
-  const idx = state.preferred_domains.indexOf(domain);
-  if (idx >= 0) {
-    state.preferred_domains.splice(idx, 1);
-  } else {
-    state.preferred_domains.push(domain);
-  }
 };
 
 const onSubmit = async (event: FormSubmitEvent<ParticipantUpdateSchema>) => {
@@ -118,7 +99,6 @@ const onSubmit = async (event: FormSubmitEvent<ParticipantUpdateSchema>) => {
     age: event.data.age,
     bio: event.data.bio || null,
     experience_level: event.data.experience_level ?? null,
-    preferred_domains: event.data.preferred_domains,
     skills: event.data.skills,
     contacts: event.data.contacts,
   };
@@ -228,23 +208,6 @@ const apiError = computed(() => getErrorMessage(participantStore.error));
             />
           </UFormField>
 
-          <!-- Preferred Domains -->
-          <UFormField :label="t('form.preferredDomains.label')" name="preferred_domains">
-            <div class="flex flex-wrap gap-2 mt-1">
-              <UButton
-                v-for="opt in domainOptions"
-                :key="opt.value"
-                size="sm"
-                :color="state.preferred_domains.includes(opt.value) ? 'primary' : 'neutral'"
-                :variant="state.preferred_domains.includes(opt.value) ? 'soft' : 'outline'"
-                @click="toggleDomain(opt.value)"
-                type="button"
-              >
-                {{ opt.label }}
-              </UButton>
-            </div>
-          </UFormField>
-
           <!-- Skills -->
           <div>
             <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -332,6 +295,7 @@ const apiError = computed(() => getErrorMessage(participantStore.error));
               size="sm"
               type="button"
               class="mt-2"
+              :disabled="state.contacts.length >= 15"
               @click="addContact"
             >
               {{ t("form.contacts.addButton") }}

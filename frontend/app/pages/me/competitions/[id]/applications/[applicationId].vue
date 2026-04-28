@@ -156,22 +156,6 @@ const handleReject = async () => {
 
               <div>
                 <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-                  {{ t('applications.participantDomains') }}
-                </p>
-                <div v-if="app.participant.preferred_domains.length > 0" class="flex flex-wrap gap-1.5">
-                  <UBadge
-                    v-for="d in app.participant.preferred_domains"
-                    :key="d"
-                    size="sm"
-                    variant="outline"
-                    :label="d"
-                  />
-                </div>
-                <p v-else class="text-sm text-gray-400 italic">{{ t('applications.notProvided') }}</p>
-              </div>
-
-              <div>
-                <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
                   {{ t('applications.participantSkills') }}
                 </p>
                 <div v-if="app.participant.skills.length > 0" class="flex flex-wrap gap-1.5">
@@ -234,17 +218,9 @@ const handleReject = async () => {
 
               <div>
                 <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-                  {{ t('applications.domains') }}
+                  {{ t('applications.track') }}
                 </p>
-                <div class="flex flex-wrap gap-1.5">
-                  <UBadge
-                    v-for="domain in app.domains"
-                    :key="domain"
-                    size="sm"
-                    variant="soft"
-                    :label="domain"
-                  />
-                </div>
+                <UBadge size="sm" variant="soft" :label="app.track.name" />
               </div>
 
               <div>
