@@ -4,9 +4,9 @@ import pytest
 from hypothesis import assume, given
 from hypothesis import strategies as st
 
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.competition.schedule import CompetitionSchedule, ScheduleData, schedule_factory
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
+from dreamteams_common.clock import Clock
 from tests.unit.composite import dt_past, past_schedule, valid_schedule_data
 
 

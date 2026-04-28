@@ -10,9 +10,9 @@ from dreamteams.adapters.cache.auth_user_cache import AuthUserCache
 from dreamteams.adapters.cache.blocked_user_cache import BlockedUserCache  # adapter read+write protocol
 from dreamteams.application.common.gateway.user import UserGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.logger import Logger
 from dreamteams.application.errors.user import UserBlockedError
 from dreamteams.entities.common.identifiers import UserId
+from dreamteams_common.logger import Logger
 
 _tracer = trace.get_tracer("dreamteams.adapters")
 

@@ -12,8 +12,8 @@ from dreamteams.bootstrap.di.providers.adapter import AdapterProvider
 from dreamteams.bootstrap.di.providers.config import ConfigProvider
 from dreamteams.bootstrap.di.providers.interactor import InteractorProvider
 from dreamteams.bootstrap.di.providers.metrics import MetricsProvider
-from dreamteams.bootstrap.observability import OTelConfig
 from dreamteams.presentation.fast_api.config import ServerConfig
+from dreamteams_common.observability.config import OTelConfig
 
 
 def get_async_container(config: Config) -> AsyncContainer:
@@ -28,7 +28,7 @@ def get_async_container(config: Config) -> AsyncContainer:
     context = {
         Config: config,
         DbConfig: config.db,
-        WebAuthUserIdProviderConfig: config.web_auth_user_id_provider,
+        WebAuthUserIdProviderConfig: config.auth,
         S3Config: config.s3,
         SuperuserConfig: config.superuser,
         SentryConfig: config.sentry,

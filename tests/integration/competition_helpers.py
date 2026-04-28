@@ -14,13 +14,13 @@ from dreamteams.application.update_my_competition import (
     UpdateCompetitionGeneralInfoForm,
 )
 from dreamteams.application.view_my_competitions.list_competitions import PAGE_SIZE, CompetitionsList
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
 from dreamteams.entities.competition.milestone import Milestone
 from dreamteams.entities.competition.schedule import schedule_factory
 from dreamteams.entities.competition.tag import CompetitionTag
 from dreamteams.entities.competition.track import CompetitionTrack
 from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
+from dreamteams_common.clock import Clock
 
 
 def create_competitions_list(

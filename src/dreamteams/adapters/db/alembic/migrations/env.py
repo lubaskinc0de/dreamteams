@@ -23,8 +23,7 @@ def get_url() -> str:
     if injected is not None:
         return cast(str, injected.render_as_string(hide_password=False))
 
-    db_config = DbConfig.from_env(max_total_pool_size=1, max_total_overflow=0)
-    return db_config.connection_url.render_as_string(hide_password=False)
+    return DbConfig.load().connection_url.render_as_string(hide_password=False)
 
 
 def run_migrations_offline() -> None:

@@ -6,7 +6,7 @@ from faker import Faker
 from hypothesis import HealthCheck, settings
 from polyfactory.pytest_plugin import register_fixture
 
-from dreamteams.entities.common.clock import Clock
+from dreamteams_common.clock import Clock
 from tests.common.factory.entities.organizer import OrganizerFactory
 from tests.common.factory.entities.organizer_invite import OrganizerInviteFactory
 from tests.common.factory.entities.participant import ParticipantDataFactory

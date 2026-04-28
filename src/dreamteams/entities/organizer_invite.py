@@ -1,8 +1,8 @@
 import secrets
-from dataclasses import field
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
-from dreamteams.entities.base import Entity, model
+from dreamteams.entities.base import Entity
 from dreamteams.entities.common.identifiers import OrganizerInviteId, UserId
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.invite import (
@@ -13,7 +13,7 @@ from dreamteams.entities.errors.invite import (
 from dreamteams.entities.user import Organizer, User
 
 
-@model
+@dataclass
 class OrganizerInvite(Entity):
     """An invite code that permits one user to register as an organizer."""
 

@@ -3,7 +3,7 @@ from uuid import uuid4
 from dishka import AsyncContainer
 
 from dreamteams.application.common.gateway.competition import CompetitionGateway
-from dreamteams.entities.common.clock import Clock
+from dreamteams_common.clock import Clock
 from tests.integration.api_client import ApiClient
 from tests.integration.competition_helpers import competition_form_to_model
 from tests.integration.helpers.facade import Gateway

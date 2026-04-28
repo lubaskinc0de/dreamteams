@@ -2,7 +2,7 @@ from typing import Any, ClassVar, override
 
 from pydantic import BaseModel
 
-from dreamteams.entities.errors.base import AppError, app_error
+from dreamteams_common.errors import AppError, app_error
 
 
 class ErrorResponse(BaseModel):

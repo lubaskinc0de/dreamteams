@@ -3,11 +3,11 @@ from pydantic import BaseModel, EmailStr, Field
 
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.interactor import interactor
-from dreamteams.application.common.logger import Logger
-from dreamteams.application.common.uow import UoW
 from dreamteams.application.errors.organizer import OrganizerAlreadyExistsError, OrganizerNotFoundError
 from dreamteams.entities.user import UpdateOrganizerData
+from dreamteams_common.interactor import interactor
+from dreamteams_common.logger import Logger
+from dreamteams_common.uow import UoW
 
 logger: Logger = structlog.get_logger(__name__)
 

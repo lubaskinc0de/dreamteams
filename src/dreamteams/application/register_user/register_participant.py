@@ -3,12 +3,8 @@ from pydantic import BaseModel, Field
 
 from dreamteams.application.common.dto.participant_contact import ParticipantContactForm
 from dreamteams.application.common.dto.participant_skill import ParticipantSkillForm
-from dreamteams.application.common.interactor import interactor
-from dreamteams.application.common.logger import Logger
 from dreamteams.application.common.metrics import MetricsGateway
-from dreamteams.application.common.uow import UoW
 from dreamteams.application.register_user.shared.user_factory import UserFactory
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import ParticipantId, UserId
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.participant.vo.age import Age
@@ -21,6 +17,10 @@ from dreamteams.entities.user import (
     ParticipantData,
     participant_factory,
 )
+from dreamteams_common.clock import Clock
+from dreamteams_common.interactor import interactor
+from dreamteams_common.logger import Logger
+from dreamteams_common.uow import UoW
 
 logger: Logger = structlog.get_logger(__name__)
 

@@ -4,7 +4,7 @@ from uuid import uuid4
 from dishka import AsyncContainer
 
 from dreamteams.application.common.gateway.competition import CompetitionGateway
-from dreamteams.entities.common.clock import Clock
+from dreamteams_common.clock import Clock
 from tests.common.factory.competition import RescheduleCompetitionFormFactory
 from tests.common.helpers.competition import schedule_from_deltas
 from tests.integration.api_client import ApiClient

@@ -6,15 +6,15 @@ from dreamteams.application.common.gateway.organizer import OrganizerGateway
 from dreamteams.application.common.gateway.participant import ParticipantGateway
 from dreamteams.application.common.gateway.user import UserGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.interactor import interactor
-from dreamteams.application.common.logger import Logger
-from dreamteams.application.common.uow import UoW
 from dreamteams.application.errors.user import UserNotFoundError
 from dreamteams.entities.common.identifiers import OrganizerId, ParticipantId, UserId
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
 from dreamteams.entities.user import ExperienceLevel
+from dreamteams_common.interactor import interactor
+from dreamteams_common.logger import Logger
+from dreamteams_common.uow import UoW
 
 logger: Logger = structlog.get_logger(__name__)
 

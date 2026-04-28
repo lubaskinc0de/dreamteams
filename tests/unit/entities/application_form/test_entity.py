@@ -9,8 +9,8 @@ from dreamteams.entities.application_form.entity import (
 )
 from dreamteams.entities.application_form.vo.field import Field, FieldType
 from dreamteams.entities.application_form.vo.fields import ApplicationFormFields
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.errors.base import AccessDeniedError
+from dreamteams_common.clock import Clock
 from tests.unit.composite import valid_application_form, valid_application_form_data, valid_competition
 from tests.unit.entities.application_form.conftest import STRING_FIELD, make_form, make_form_via_factory
 from tests.unit.helpers.facade import Gateway

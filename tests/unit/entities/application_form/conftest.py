@@ -3,9 +3,9 @@ from uuid import uuid4
 from dreamteams.entities.application_form.entity import ApplicationForm, ApplicationFormData, application_form_factory
 from dreamteams.entities.application_form.vo.field import Field, FieldChoice, FieldType
 from dreamteams.entities.application_form.vo.fields import ApplicationFormFields
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.competition.entity import Competition
 from dreamteams.entities.user import Organizer
+from dreamteams_common.clock import Clock
 from tests.unit.conftest import NOW
 
 

@@ -20,7 +20,6 @@ from dreamteams.adapters.cache.redis_auth_user_cache import RedisAuthUserCache
 from dreamteams.adapters.cache.redis_blocked_user_cache import RedisBlockedUserCache
 from dreamteams.adapters.cache.redis_competition_cache import RedisCompetitionCache
 from dreamteams.adapters.cache.redis_competition_tag_cache import RedisCompetitionTagCache
-from dreamteams.adapters.clock import SystemClock
 from dreamteams.adapters.db.config import DbConfig
 from dreamteams.adapters.db.gateway.application import SAApplicationGateway
 from dreamteams.adapters.db.gateway.application_form import SAApplicationFormGateway
@@ -35,9 +34,10 @@ from dreamteams.adapters.db.pool_metrics import register_pool_metrics
 from dreamteams.application.common.application_form_cache import ApplicationFormCache
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.competition_tag import CompetitionTagGateway
-from dreamteams.application.common.uow import UoW
-from dreamteams.bootstrap.observability import OTelConfig
 from dreamteams.presentation.fast_api.config import ServerConfig
+from dreamteams_common.clock import SystemClock
+from dreamteams_common.observability.config import OTelConfig
+from dreamteams_common.uow import UoW
 
 
 class AdapterProvider(Provider):

@@ -4,12 +4,12 @@ from dreamteams.application.common.dto.competition import CompetitionModel
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.interactor import interactor
-from dreamteams.application.common.logger import Logger
 from dreamteams.application.errors.organizer import OrganizerNotFoundError
 from dreamteams.entities.common.identifiers import CompetitionId
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import CompetitionNotFoundError
+from dreamteams_common.interactor import interactor
+from dreamteams_common.logger import Logger
 
 logger: Logger = structlog.get_logger(__name__)
 

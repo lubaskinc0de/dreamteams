@@ -22,7 +22,7 @@ just clear-all      # needed once so postgres initdb creates the Authentik role 
 just up-silent
 ```
 
-`authentik-server` and `authentik-worker` will start. `oauth2-proxy` may fail until you create the OIDC provider and set a real client secret in `.config/.env.oauthproxy`.
+`authentik-server` and `authentik-worker` will start. `oauth2-proxy` may fail until you create the OIDC provider and set a real client secret in `docker/docker-compose.yml`.
 
 ### 2. Complete Authentik initial setup
 
@@ -66,11 +66,11 @@ http://127.0.0.1.sslip.io:8080/application/o/dreamteams/
 
 ### 4. Paste credentials into oauth2-proxy
 
-Edit `.config/.env.oauthproxy` and set the client secret:
+Edit the `oauth2-proxy` service environment in `docker/docker-compose.yml` and set the client secret:
 
-```ini
-OAUTH2_PROXY_CLIENT_ID=dreamteams-oauth2-proxy
-OAUTH2_PROXY_CLIENT_SECRET=<paste generated client secret>
+```yaml
+OAUTH2_PROXY_CLIENT_ID: dreamteams-oauth2-proxy
+OAUTH2_PROXY_CLIENT_SECRET: <paste generated client secret>
 ```
 
 `OAUTH2_PROXY_COOKIE_SECRET` can stay as-is unless you want to rotate it.
@@ -88,7 +88,7 @@ This matches Authentik's documented behavior for full logout from an OIDC relyin
 ### 6. Restart oauth2-proxy and verify discovery
 
 ```bash
-docker compose -f docker/docker-compose.yml --env-file=./.config/.env restart oauth2-proxy
+docker compose -f docker/docker-compose.yml restart oauth2-proxy
 ```
 
 Then check:

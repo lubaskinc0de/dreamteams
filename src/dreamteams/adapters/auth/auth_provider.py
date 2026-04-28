@@ -8,9 +8,9 @@ from dreamteams.adapters.auth.idp.base import AuthUserIdProvider
 from dreamteams.adapters.auth.model import AuthUser
 from dreamteams.application.common.auth_provider import AuthProvider
 from dreamteams.application.common.gateway.user import UserGateway
-from dreamteams.application.common.logger import Logger
-from dreamteams.application.common.uow import UoW
 from dreamteams.entities.user import User
+from dreamteams_common.logger import Logger
+from dreamteams_common.uow import UoW
 
 logger: Logger = structlog.get_logger(__name__)
 

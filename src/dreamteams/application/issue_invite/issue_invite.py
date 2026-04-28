@@ -5,12 +5,12 @@ from pydantic import BaseModel
 
 from dreamteams.application.common.gateway.user import UserGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.interactor import interactor
-from dreamteams.application.common.logger import Logger
-from dreamteams.application.common.uow import UoW
 from dreamteams.application.errors.user import UserNotFoundError
 from dreamteams.entities.common.identifiers import OrganizerInviteId
 from dreamteams.entities.organizer_invite import organizer_invite_factory
+from dreamteams_common.interactor import interactor
+from dreamteams_common.logger import Logger
+from dreamteams_common.uow import UoW
 
 logger: Logger = structlog.get_logger(__name__)
 

@@ -1,13 +1,13 @@
 import pytest
 from hypothesis import given, settings
 
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.competition.entity import Competition, CompetitionData, competition_factory
 from dreamteams.entities.competition.milestone import milestone_factory
 from dreamteams.entities.competition.schedule import CompetitionSchedule, ScheduleData
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.vo.milestones import CompetitionMilestones
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
+from dreamteams_common.clock import Clock
 from tests.unit.composite import (
     positive_ordered_pairs,
     valid_competition_data,

@@ -8,13 +8,13 @@ from fastapi import APIRouter, UploadFile
 
 from dreamteams.application.attach_avatar.attach_avatar import AttachAvatar, AvatarForm
 from dreamteams.application.attach_avatar.detach_avatar import DetachAvatar
-from dreamteams.application.common.logger import Logger
 from dreamteams.application.manage_profile import ProfileModel, ReadProfile
 from dreamteams.application.manage_profile.delete_profile import DeleteProfile
 from dreamteams.application.manage_profile.update_organizer import UpdateOrganizer, UpdateOrganizerForm
 from dreamteams.application.manage_profile.update_participant import UpdateParticipant, UpdateParticipantForm
 from dreamteams.application.register_user.register_superuser import CreatedSuperuser, RegisterSuperuser, SuperuserForm
 from dreamteams.presentation.fast_api.errors import InvalidAvatarError
+from dreamteams_common.logger import Logger
 
 logger: Logger = structlog.get_logger(__name__)
 router = APIRouter(

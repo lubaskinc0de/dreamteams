@@ -30,7 +30,6 @@ from dreamteams.application.common.gateway.competition import (
     ExploreSortBy,
 )
 from dreamteams.application.common.gateway.sorting import SortOrder
-from dreamteams.application.common.logger import Logger
 from dreamteams.entities.application.entity import ApplicationStatus
 from dreamteams.entities.common.identifiers import CompetitionId, CompetitionTagId, OrganizerId, ParticipantId
 from dreamteams.entities.common.vo.participant_type import ParticipantType
@@ -42,6 +41,7 @@ from dreamteams.entities.competition.vo.milestones import CompetitionMilestones
 from dreamteams.entities.competition.vo.tags import CompetitionTags
 from dreamteams.entities.competition.vo.tracks import CompetitionTracks
 from dreamteams.entities.user import Organizer
+from dreamteams_common.logger import Logger
 
 _tracer = trace.get_tracer("dreamteams.adapters")
 

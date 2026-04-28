@@ -1,8 +1,8 @@
 import pytest
 
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.user import BanStatus
+from dreamteams_common.clock import Clock
 from tests.unit.conftest import NOW
 from tests.unit.helpers.facade import Gateway
 

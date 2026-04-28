@@ -8,7 +8,6 @@ from dreamteams.entities.application.entity import ApplicationData
 from dreamteams.entities.application_form.entity import ApplicationForm, ApplicationFormData, application_form_factory
 from dreamteams.entities.application_form.vo.field import Field, FieldChoice, FieldType
 from dreamteams.entities.application_form.vo.fields import ApplicationFormFields
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import (
     Competition,
@@ -40,6 +39,7 @@ from dreamteams.entities.user import (
     User,
     participant_factory,
 )
+from dreamteams_common.clock import Clock
 from tests.unit.conftest import NOW_NAIVE
 
 

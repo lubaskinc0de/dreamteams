@@ -4,9 +4,9 @@ import pytest
 from faker import Faker
 from hypothesis import given
 
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.competition.milestone import Milestone, MilestoneData, milestone_factory
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
+from dreamteams_common.clock import Clock
 from tests.unit.composite import dt_past, milestone_data
 
 

@@ -4,10 +4,10 @@ from dreamteams.application.common.competition_tag_cache import CompetitionTagCa
 from dreamteams.application.common.gateway.competition_tag import CompetitionTagGateway
 from dreamteams.application.common.gateway.user import UserGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.interactor import interactor
-from dreamteams.application.common.uow import UoW
 from dreamteams.application.errors.competition_tag import CompetitionTagNotFoundError
 from dreamteams.entities.common.identifiers import CompetitionTagId
+from dreamteams_common.interactor import interactor
+from dreamteams_common.uow import UoW
 
 
 @interactor

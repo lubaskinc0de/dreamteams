@@ -3,10 +3,10 @@ from pydantic import BaseModel, Field
 from dreamteams.application.common.gateway.competition_tag import CompetitionTagGateway
 from dreamteams.application.common.gateway.user import UserGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.interactor import interactor
 from dreamteams.application.errors.user import UserNotFoundError
 from dreamteams.entities.competition.tag import CompetitionTag
 from dreamteams.entities.errors.base import AccessDeniedError
+from dreamteams_common.interactor import interactor
 
 PAGE_SIZE = 30
 

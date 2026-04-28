@@ -9,8 +9,8 @@ from redis.exceptions import RedisError
 from dreamteams.adapters.auth.model import AuthUserId
 from dreamteams.adapters.cache.auth_user_cache import AuthUserCache
 from dreamteams.adapters.cache.config import CacheConfig
-from dreamteams.application.common.logger import Logger
 from dreamteams.entities.common.identifiers import UserId
+from dreamteams_common.logger import Logger
 
 _KEY_PREFIX = "idp:auth_user:"
 logger: Logger = structlog.get_logger(__name__)

@@ -12,8 +12,8 @@ from botocore.exceptions import ClientError
 from opentelemetry import trace
 
 from dreamteams.application.common.avatar_storage import AvatarStorage
-from dreamteams.application.common.logger import Logger
 from dreamteams.entities.common.identifiers import UserId
+from dreamteams_common.logger import Logger
 
 _tracer = trace.get_tracer("dreamteams.adapters")
 

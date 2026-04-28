@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.datetime_utils import normalize_datetime
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
+from dreamteams_common.clock import Clock
 
 
 @dataclass

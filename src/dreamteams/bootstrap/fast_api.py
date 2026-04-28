@@ -12,10 +12,10 @@ from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from dreamteams.adapters.sentry import SentryConfig
 from dreamteams.bootstrap.config.loader import Config
 from dreamteams.bootstrap.di.container import get_async_container
-from dreamteams.bootstrap.logs import configure_structlog
-from dreamteams.bootstrap.observability import setup_observability
 from dreamteams.presentation.fast_api import include_exception_handlers, include_routers
 from dreamteams.presentation.fast_api.tracing import tracing_middleware
+from dreamteams_common.logs import configure_structlog
+from dreamteams_common.observability.setup import setup_observability
 
 log_config = configure_structlog()
 
@@ -26,7 +26,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     container: AsyncContainer = app.state.dishka_container
     sentry_config = await container.get(SentryConfig)
 
-    if sentry_config.dsn is not None:
+    if sentry_config.dsn:
         sentry_sdk.init(sentry_config.dsn)
 
     yield
@@ -75,8 +75,8 @@ def run_api() -> None:
     uvicorn.run(
         "dreamteams.bootstrap.fast_api:app_factory",
         factory=True,
-        port=config.server.server_port,
-        host=config.server.server_host,
+        port=config.server.port,
+        host=config.server.host,
         workers=config.server.workers,
         log_config=log_config,
     )

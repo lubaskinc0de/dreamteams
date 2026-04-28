@@ -3,8 +3,7 @@ from datetime import UTC, datetime
 from enum import Enum
 from uuid import uuid4
 
-from dreamteams.entities.base import Entity, model
-from dreamteams.entities.common.clock import Clock
+from dreamteams.entities.base import Entity
 from dreamteams.entities.common.identifiers import OrganizerId, ParticipantId, UserId
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.errors.base import AccessDeniedError
@@ -18,6 +17,7 @@ from dreamteams.entities.errors.participant import (
 from dreamteams.entities.participant.vo.age import Age
 from dreamteams.entities.participant.vo.participant_contacts import ParticipantContacts
 from dreamteams.entities.participant.vo.participant_skills import ParticipantSkills
+from dreamteams_common.clock import Clock
 
 type Avatar = str
 
@@ -31,7 +31,7 @@ class BanStatus:
     blocked_at: datetime | None = None
 
 
-@model
+@dataclass
 class Organizer(Entity):
     """The organization that hosts competitions."""
 
@@ -48,7 +48,7 @@ class Organizer(Entity):
         self.contact_email = data.contact_email
 
 
-@model
+@dataclass
 class User(Entity):
     """Domain entity representing a user in the application.
 
@@ -139,7 +139,7 @@ class ParticipantData:
     age: Age
 
 
-@model
+@dataclass
 class Participant(Entity):
     """Participant role attached to a user account."""
 

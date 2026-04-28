@@ -2,17 +2,17 @@ set windows-powershell := true
 
 up:
     just down
-    docker compose -f docker/docker-compose.yml --env-file=./.config/.env up --build
+    docker compose -f docker/docker-compose.yml up --build
 
 up-server:
     just down
-    docker compose -f docker/docker-compose.yml --env-file=./.config/.env up --build
+    docker compose -f docker/docker-compose.yml up --build
 
 up-silent:
-    docker compose -f docker/docker-compose.yml --env-file=./.config/.env up --build -d
+    docker compose -f docker/docker-compose.yml up --build -d
 
 up-db:
-    docker compose -f docker/docker-compose.yml --env-file=./.config/.env up db -d
+    docker compose -f docker/docker-compose.yml up db -d
 
 test:
     pytest -vvv -n auto --dist=worksteal
@@ -24,21 +24,21 @@ test-unit:
     pytest -vvv tests/unit -n auto --dist=worksteal --cov=src/dreamteams/entities --cov-report=term-missing
 
 down:
-    docker compose -f docker/docker-compose.yml --env-file=./.config/.env stop frontend migrations api exporter-api exporter-worker
-    docker compose -f docker/docker-compose.yml --env-file=./.config/.env rm -f frontend migrations api exporter-api exporter-worker
+    docker compose -f docker/docker-compose.yml stop frontend migrations api exporter-api exporter-worker
+    docker compose -f docker/docker-compose.yml rm -f frontend migrations api exporter-api exporter-worker
 
 down-all:
-    docker compose -f docker/docker-compose.yml --env-file=./.config/.env down
+    docker compose -f docker/docker-compose.yml down
 
 clear:
-    docker compose -f docker/docker-compose.yml --env-file=./.config/.env down
-    docker compose -f docker/docker-compose.yml --env-file=./.config/.env up db -d --wait
-    docker compose -f docker/docker-compose.yml --env-file=./.config/.env exec -T db psql -U postgres -d postgres < ./.config/reset-app-db.sql
-    docker compose -f docker/docker-compose.yml --env-file=./.config/.env down
+    docker compose -f docker/docker-compose.yml down
+    docker compose -f docker/docker-compose.yml up db -d --wait
+    docker compose -f docker/docker-compose.yml exec -T db psql -U postgres -d postgres < ./.config/reset-app-db.sql
+    docker compose -f docker/docker-compose.yml down
     docker volume rm -f docker_redis_data docker_nats_data docker_rustfs_data
 
 clear-all:
-    docker compose -f docker/docker-compose.yml --env-file=./.config/.env down -v
+    docker compose -f docker/docker-compose.yml down -v
 
 lint:
     ruff format
@@ -55,7 +55,7 @@ dev-environment:
 generate-migration NAME:
     just up-db
     sleep 1s
-    set -a && source ./.config/.env.migrations.local && set +a && dreamteams migrations autogenerate "{{NAME}}"
+    APP_CONFIG_PATH=./.config/migrations.local.toml dreamteams migrations autogenerate "{{NAME}}"
     just down
 
 cookie-secret:
@@ -75,7 +75,7 @@ docs:
 
 # --- Profiling ---------------------------------------------------------------
 profile-up:
-    PROFILE_BUILD=1 docker compose -f docker/docker-compose.yml --env-file=./.config/.env up --build api -d
+    PROFILE_BUILD=1 docker compose -f docker/docker-compose.yml up --build api -d
 
 # Record a flamegraph from the running api process.
 profile DURATION="30":

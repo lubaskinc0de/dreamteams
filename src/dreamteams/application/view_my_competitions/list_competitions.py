@@ -6,9 +6,9 @@ from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
 from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.interactor import interactor
-from dreamteams.application.common.logger import Logger
 from dreamteams.entities.errors.base import AccessDeniedError
+from dreamteams_common.interactor import interactor
+from dreamteams_common.logger import Logger
 
 logger: Logger = structlog.get_logger(__name__)
 PAGE_SIZE = 10

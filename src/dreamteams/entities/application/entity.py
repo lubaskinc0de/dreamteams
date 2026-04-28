@@ -6,14 +6,14 @@ from uuid import uuid4
 
 from dreamteams.entities.application.form_data_validator import validate_form_data
 from dreamteams.entities.application_form.entity import ApplicationForm
-from dreamteams.entities.base import Entity, model
-from dreamteams.entities.common.clock import Clock
+from dreamteams.entities.base import Entity
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId, ParticipantId
 from dreamteams.entities.competition.entity import Competition
 from dreamteams.entities.competition.track import CompetitionTrack
 from dreamteams.entities.errors.application import ApplicationAlreadyResolvedError, InvalidApplicationDataError
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.user import Organizer, Participant
+from dreamteams_common.clock import Clock
 
 
 class ApplicationStatus(StrEnum):
@@ -24,7 +24,7 @@ class ApplicationStatus(StrEnum):
     REJECTED = auto()
 
 
-@model
+@dataclass
 class Application(Entity):
     """Participant's intention to participate in a competition."""
 

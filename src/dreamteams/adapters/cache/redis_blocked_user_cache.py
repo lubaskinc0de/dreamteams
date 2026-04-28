@@ -9,9 +9,9 @@ from redis.exceptions import RedisError
 
 from dreamteams.adapters.cache.blocked_user_cache import BlockedUserCache  # full read+write protocol
 from dreamteams.adapters.cache.config import CacheConfig
-from dreamteams.application.common.logger import Logger
 from dreamteams.entities.common.identifiers import UserId
 from dreamteams.entities.user import BanStatus
+from dreamteams_common.logger import Logger
 
 _KEY_PREFIX = "idp:blocked:"
 _retort = Retort()

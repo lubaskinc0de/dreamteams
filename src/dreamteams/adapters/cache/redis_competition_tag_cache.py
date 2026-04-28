@@ -10,8 +10,8 @@ from redis.exceptions import RedisError
 from dreamteams.adapters.cache.competition_tag_read_cache import CompetitionTagReadCache
 from dreamteams.adapters.cache.config import CacheConfig
 from dreamteams.application.common.competition_tag_cache import CompetitionTagCache
-from dreamteams.application.common.logger import Logger
 from dreamteams.entities.competition.tag import CompetitionTag
+from dreamteams_common.logger import Logger
 
 _KEY_PREFIX = "tags:"
 _retort = Retort()

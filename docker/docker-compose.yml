@@ -49,8 +49,10 @@ services:
         image: quay.io/oauth2-proxy/oauth2-proxy:v7.11.0-alpine
         container_name: oauth2-proxy
         command: ["--config=/etc/oauth2-proxy/oauth2-proxy.toml"]
-        env_file:
-            - ../.config/.env.oauthproxy
+        environment:
+            OAUTH2_PROXY_CLIENT_ID: HqJWguLclaHUCVzHhuf93iFueVn6zmpt8BCZV3FJ
+            OAUTH2_PROXY_CLIENT_SECRET: 4boxWM0HsJZdXOFGg2HZnUsXakHCjFpQECV1iln67Ap00XsV2aVDcNeqUv2lFmxkxIvftIF0rw0B58esvgeVetgIx9OyE6OBpY7a7EDBo43XM6bWgOJvUZ4v8R95AowX
+            OAUTH2_PROXY_COOKIE_SECRET: z2VpXUQxfDgXzQQwIEST3XTbTDosjHJa
         ports:
             - 4180:8000
         volumes:
@@ -114,8 +116,10 @@ services:
         build:
             context: ../
             dockerfile: docker/Dockerfile
-        env_file:
-            - "../.config/.env.migrations"
+        environment:
+            APP_CONFIG_PATH: /etc/dreamteams/migrations.toml
+        volumes:
+            - "../.config/migrations.toml:/etc/dreamteams/migrations.toml"
         depends_on:
             db:
                 condition: service_healthy
@@ -132,8 +136,8 @@ services:
             args:
                 # set PROFILE_BUILD=1 in env (or `--build-arg PROFILE_BUILD=1`) to bake py-spy into the image
                 PROFILE_BUILD: ${PROFILE_BUILD:-0}
-        env_file:
-            - "../.config/.env"
+        environment:
+            APP_CONFIG_PATH: /etc/dreamteams/config.toml
         volumes:
             - "../.config/config.toml:/etc/dreamteams/config.toml"
         # required for py-spy to attach to the running python process
@@ -145,7 +149,7 @@ services:
                     "CMD",
                     "curl",
                     "-f",
-                    "http://localhost:${APP_SERVER_PORT}/internal/ready",
+                    "http://localhost:5000/internal/ready",
                 ]
             interval: 4s
             timeout: 10s
@@ -231,8 +235,9 @@ services:
             - "postgres"
             - "-c"
             - "config_file=/etc/postgresql/postgresql.conf"
-        env_file:
-            - ../.config/.env.pg
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
         ports:
             - 5432:5432
         healthcheck:
@@ -249,8 +254,28 @@ services:
         container_name: pgbouncer
         restart: unless-stopped
         image: edoburu/pgbouncer:v1.23.1-p3
-        env_file:
-            - ../.config/.env.pgbouncer
+        environment:
+            DB_HOST: db
+            DB_PORT: 5432
+            DB_USER: app_user
+            DB_PASSWORD: app-password
+            DB_NAME: postgres
+            POOL_MODE: transaction
+            MAX_CLIENT_CONN: 1000
+            DEFAULT_POOL_SIZE: 200
+            RESERVE_POOL_SIZE: 20
+            RESERVE_POOL_TIMEOUT: 3
+            SERVER_LIFETIME: 3600
+            SERVER_IDLE_TIMEOUT: 600
+            # Protocol-level prepared statements tracked by pgbouncer (1.21+) — lets asyncpg keep its
+            # statement cache under transaction pooling.
+            MAX_PREPARED_STATEMENTS: 100
+            # App has no session state (no SET LOCAL, no temp tables, no LISTEN/NOTIFY) — skip
+            # DISCARD ALL per transaction to save a round-trip.
+            SERVER_RESET_QUERY: ""
+            AUTH_TYPE: scram-sha-256
+            IGNORE_STARTUP_PARAMETERS: extra_float_digits,search_path
+            LISTEN_PORT: 6432
         expose:
             - 6432
         ports:
@@ -268,8 +293,8 @@ services:
             - 9000:9000
             - 9001:9001
         environment:
-            - RUSTFS_ACCESS_KEY=${APP_S3_ACCESS_KEY}
-            - RUSTFS_SECRET_KEY=${APP_S3_SECRET_KEY}
+            - RUSTFS_ACCESS_KEY=admin0
+            - RUSTFS_SECRET_KEY=admin0
         volumes:
             - rustfs_data:/data
         networks:
@@ -280,8 +305,16 @@ services:
         container_name: authentik-server
         restart: unless-stopped
         command: ["server"]
-        env_file:
-            - ../.config/.env.authentik
+        environment:
+            AUTHENTIK_SECRET_KEY: replace-me-with-a-long-random-secret
+            AUTHENTIK_LOG_LEVEL: info
+            AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+            AUTHENTIK_POSTGRESQL__HOST: db
+            AUTHENTIK_POSTGRESQL__PORT: 5432
+            AUTHENTIK_POSTGRESQL__NAME: authentik
+            AUTHENTIK_POSTGRESQL__USER: authentik
+            AUTHENTIK_POSTGRESQL__PASSWORD: authentik-password
+            AUTHENTIK_POSTGRESQL__SSLMODE: disable
         ports:
             - "8080:9000"
         healthcheck:
@@ -310,8 +343,16 @@ services:
         container_name: authentik-worker
         restart: unless-stopped
         command: ["worker"]
-        env_file:
-            - ../.config/.env.authentik
+        environment:
+            AUTHENTIK_SECRET_KEY: replace-me-with-a-long-random-secret
+            AUTHENTIK_LOG_LEVEL: info
+            AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+            AUTHENTIK_POSTGRESQL__HOST: db
+            AUTHENTIK_POSTGRESQL__PORT: 5432
+            AUTHENTIK_POSTGRESQL__NAME: authentik
+            AUTHENTIK_POSTGRESQL__USER: authentik
+            AUTHENTIK_POSTGRESQL__PASSWORD: authentik-password
+            AUTHENTIK_POSTGRESQL__SSLMODE: disable
         depends_on:
             db:
                 condition: service_healthy

@@ -24,16 +24,15 @@ import tests.assets
 from dreamteams.adapters.auth.idp.auth_user import WebAuthUserIdProviderConfig
 from dreamteams.adapters.avatar_storage import S3Config
 from dreamteams.adapters.cache.config import CacheConfig
-from dreamteams.adapters.clock import SystemClock
 from dreamteams.adapters.db.alembic.config import get_alembic_config_path
 from dreamteams.adapters.db.config import DbConfig
 from dreamteams.adapters.sentry import SentryConfig
 from dreamteams.application.register_user.register_superuser import SuperuserConfig
 from dreamteams.bootstrap.config.loader import Config
 from dreamteams.bootstrap.fast_api import create_app
-from dreamteams.bootstrap.observability import OTelConfig
-from dreamteams.entities.common.clock import Clock
 from dreamteams.presentation.fast_api.config import ApiConfig, CorsConfig, ServerConfig
+from dreamteams_common.clock import Clock, SystemClock
+from dreamteams_common.observability.config import OTelConfig
 from tests.common.factory.application import SubmitApplicationInputFactory
 from tests.common.factory.application_form import ApplicationFormInputFactory
 from tests.common.factory.competition import (
@@ -148,7 +147,7 @@ def app_config(
             max_total_pool_size=5,
             max_total_overflow=5,
         ),
-        web_auth_user_id_provider=WebAuthUserIdProviderConfig(
+        auth=WebAuthUserIdProviderConfig(
             user_id_header="X-Auth-User",
             user_email_header="X-Auth-User-Email",
             access_token_header="X-Access-Token",
@@ -163,7 +162,7 @@ def app_config(
             instrument_sqlalchemy=False,
             enabled=False,
         ),
-        server=ServerConfig(server_host="localhost", server_port=0, workers=1),
+        server=ServerConfig(host="localhost", port=0, workers=1),
         cors=CorsConfig(
             allow_origins=["*"],
             allow_credentials=True,
@@ -248,9 +247,9 @@ async def api_client(app: object, app_config: Config) -> AsyncIterator[ApiClient
         yield ApiClient(
             session=http,
             config=APIClientConfig(
-                auth_user_id_header=app_config.web_auth_user_id_provider.user_id_header,
-                auth_user_email_header=app_config.web_auth_user_id_provider.user_email_header,
-                access_token_header=app_config.web_auth_user_id_provider.access_token_header,
+                auth_user_id_header=app_config.auth.user_id_header,
+                auth_user_email_header=app_config.auth.user_email_header,
+                access_token_header=app_config.auth.access_token_header,
             ),
         )
 

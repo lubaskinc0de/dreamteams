@@ -12,8 +12,8 @@ from dreamteams.adapters.cache.config import CacheConfig
 from dreamteams.application.common.competition_cache import CompetitionCache
 from dreamteams.application.common.dto.competition import CompetitionModel
 from dreamteams.application.common.dto.preview_competition import PreviewCompetitionModel
-from dreamteams.application.common.logger import Logger
 from dreamteams.entities.common.identifiers import CompetitionId
+from dreamteams_common.logger import Logger
 
 _READ_KEY_PREFIX = "competition:read:"
 _PREVIEW_KEY_PREFIX = "competitions:preview:"

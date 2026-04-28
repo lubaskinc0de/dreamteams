@@ -7,16 +7,16 @@ from dreamteams.application.common.gateway.organizer import OrganizerGateway
 from dreamteams.application.common.gateway.organizer_invite import OrganizerInviteGateway
 from dreamteams.application.common.gateway.user import UserGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.interactor import interactor
-from dreamteams.application.common.logger import Logger
 from dreamteams.application.common.metrics import MetricsGateway
 from dreamteams.application.common.phone_number import RussianPhoneNumber
-from dreamteams.application.common.uow import UoW
 from dreamteams.application.errors.invite import InviteNotFoundError
 from dreamteams.application.errors.organizer import OrganizerAlreadyExistsError
 from dreamteams.application.register_user.shared.user_factory import UserFactory
 from dreamteams.entities.common.identifiers import OrganizerId, UserId
 from dreamteams.entities.user import Organizer
+from dreamteams_common.interactor import interactor
+from dreamteams_common.logger import Logger
+from dreamteams_common.uow import UoW
 
 logger: Logger = structlog.get_logger(__name__)
 

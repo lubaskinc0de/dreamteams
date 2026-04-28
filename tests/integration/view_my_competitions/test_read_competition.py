@@ -5,8 +5,8 @@ import pytest
 from dishka import AsyncContainer
 
 from dreamteams.application.common.gateway.competition import CompetitionGateway
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.competition.schedule import ScheduleData
+from dreamteams_common.clock import Clock
 from tests.common.factory.competition import CompetitionFormFactory
 from tests.integration.api_client import ApiClient
 from tests.integration.competition_helpers import competition_form_to_model

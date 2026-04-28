@@ -11,6 +11,7 @@ service_name = "dreamteams"
 sample_ratio = 0.1
 metric_export_interval_ms = 10000
 instrument_sqlalchemy = true
+enabled = true
 
 [cors]
 allow_origins = ["http://localhost:3001"]
@@ -22,16 +23,37 @@ allow_headers=["*"]
 root_path = "/api"
 
 [server]
+host = "0.0.0.0"
+port = 5000
 # Number of uvicorn worker processes. Engine pool_size / max_overflow are derived
 # from db.max_total_pool_size / max_total_overflow divided by this value.
 workers = 4
 
 [db]
+user = "app_user"
+password = "app-password"
+host = "pgbouncer"
+port = 6432
+db_name = "postgres"
 # Collective pool caps across all API workers. Per-worker = total // server.workers at startup.
 # Total (max_total_pool_size + max_total_overflow) must stay below pgbouncer's
 # DEFAULT_POOL_SIZE to avoid client-side queueing. DEFAULT_POOL_SIZE=200 currently.
 max_total_pool_size = 160
 max_total_overflow = 40
+
+[s3]
+bucket_name = "users"
+endpoint_url = "http://rustfs:9000"
+access_key = "admin0"
+secret_key = "admin0"
+region = "us-east-1"
+public_url = "http://localhost/s3"
+
+[superuser]
+password_hash = '$argon2id$v=19$m=65536,t=3,p=4$WtB09we21GMOQ8kjBOFnrQ$ZU8lTm3cNPhFe90PGfH5sliQvzlbZf6DKztbxNlOl2s'
+
+[sentry]
+dsn = ""
 
 [cache]
 # Redis-backed cache for authenticated request hot paths.

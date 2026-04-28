@@ -7,12 +7,12 @@ from dreamteams.application.common.avatar_storage import AvatarStorage
 from dreamteams.application.common.gateway.organizer_invite import OrganizerInviteGateway
 from dreamteams.application.common.gateway.user import UserGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.interactor import interactor
-from dreamteams.application.common.logger import Logger
 from dreamteams.application.errors.user import UserNotFoundError
 from dreamteams.entities.common.identifiers import OrganizerId, OrganizerInviteId, UserId
 from dreamteams.entities.organizer_invite import ensure_can_list_invites
 from dreamteams.entities.user import Organizer
+from dreamteams_common.interactor import interactor
+from dreamteams_common.logger import Logger
 
 logger: Logger = structlog.get_logger(__name__)
 PAGE_SIZE = 20

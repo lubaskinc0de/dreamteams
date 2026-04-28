@@ -2,8 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import uuid4
 
-from dreamteams.entities.base import Entity, model
-from dreamteams.entities.common.clock import Clock
+from dreamteams.entities.base import Entity
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.milestone import MilestoneData, milestone_factory
@@ -17,11 +16,12 @@ from dreamteams.entities.competition.vo.tracks import CompetitionTracks
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 from dreamteams.entities.user import Organizer
+from dreamteams_common.clock import Clock
 
 type Banner = str
 
 
-@model
+@dataclass
 class Competition(Entity):
     """Hackathon or olympiad event created by an organizer."""
 

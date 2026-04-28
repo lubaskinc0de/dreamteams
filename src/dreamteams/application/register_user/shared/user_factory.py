@@ -3,10 +3,10 @@ from uuid import uuid4
 import structlog
 
 from dreamteams.application.common.auth_provider import AuthProvider
-from dreamteams.application.common.interactor import interactor
-from dreamteams.application.common.logger import Logger
-from dreamteams.application.common.uow import UoW
 from dreamteams.entities.user import User, user_factory
+from dreamteams_common.interactor import interactor
+from dreamteams_common.logger import Logger
+from dreamteams_common.uow import UoW
 
 logger: Logger = structlog.get_logger(__name__)
 

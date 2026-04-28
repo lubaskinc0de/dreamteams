@@ -1,9 +1,9 @@
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.participant.vo.age import Age
 from dreamteams.entities.user import Participant, UpdateParticipantData
+from dreamteams_common.clock import Clock
 from tests.unit.composite import (
     valid_participant,
     valid_participant_update_data,

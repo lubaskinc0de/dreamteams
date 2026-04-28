@@ -2,10 +2,10 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.competition.entity import Competition, UpdateCompetitionGeneralInfoData
 from dreamteams.entities.competition.vo.milestones import CompetitionMilestones
 from dreamteams.entities.errors.base import AccessDeniedError
+from dreamteams_common.clock import Clock
 from tests.unit.composite import (
     valid_competition,
     valid_competition_general_info_data,

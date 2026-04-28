@@ -9,7 +9,6 @@ from dreamteams.entities.application.submit_service import submit_application
 from dreamteams.entities.application_form.entity import ApplicationForm, ApplicationFormData, application_form_factory
 from dreamteams.entities.application_form.vo.field import Field, FieldChoice, FieldType
 from dreamteams.entities.application_form.vo.fields import ApplicationFormFields
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.track import CompetitionTrack
@@ -19,6 +18,7 @@ from dreamteams.entities.errors.application import (
     ParticipantLimitsExceededError,
     ParticipantTypeMismatchError,
 )
+from dreamteams_common.clock import Clock
 from tests.unit.composite import (
     valid_application_data,
     valid_application_form_data,

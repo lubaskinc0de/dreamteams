@@ -9,7 +9,7 @@ from opentelemetry import trace
 from dreamteams.adapters.auth.errors.base import UnauthorizedError, UnauthorizedReason
 from dreamteams.adapters.auth.idp.base import AuthUserIdProvider
 from dreamteams.adapters.auth.model import AuthUserId
-from dreamteams.application.common.logger import Logger
+from dreamteams_common.logger import Logger
 
 _tracer = trace.get_tracer("dreamteams.adapters")
 

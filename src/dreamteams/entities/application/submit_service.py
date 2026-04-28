@@ -1,6 +1,5 @@
 from dreamteams.entities.application.entity import Application, ApplicationData, application_factory
 from dreamteams.entities.application_form.entity import ApplicationForm
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import Competition
 from dreamteams.entities.errors.application import (
@@ -9,6 +8,7 @@ from dreamteams.entities.errors.application import (
     ParticipantTypeMismatchError,
 )
 from dreamteams.entities.user import Participant
+from dreamteams_common.clock import Clock
 
 
 def submit_application(  # noqa: PLR0913

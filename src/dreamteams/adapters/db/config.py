@@ -1,23 +1,14 @@
+import os
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Self
 
+import toml_rs
+from adaptix import Retort
 from sqlalchemy import URL
 
-from dreamteams.adapters.env_loader import env
-
-
-@dataclass(slots=True, frozen=True, kw_only=True)
-class DbPoolTomlConfig:
-    """Pool sizing expressed as collective caps across all API workers.
-
-    Per-worker ``pool_size`` and ``max_overflow`` are derived at engine-build time by
-    dividing these totals by ``server.workers``. The total ``max_total_pool_size +
-    max_total_overflow`` must stay below pgbouncer's DEFAULT_POOL_SIZE to avoid
-    client-side queueing.
-    """
-
-    max_total_pool_size: int
-    max_total_overflow: int
+_CONFIG_PATH_ENV = "APP_CONFIG_PATH"
+_retort = Retort()
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)
@@ -37,17 +28,17 @@ class DbConfig:
     max_total_overflow: int
 
     @classmethod
-    def from_env(cls, *, max_total_pool_size: int, max_total_overflow: int) -> Self:
-        """Creates database configuration by reading connection parameters from environment variables."""
-        return cls(
-            user=env("DB_USER"),
-            password=env("DB_PASSWORD"),
-            host=env("DB_HOST"),
-            port=env("DB_PORT", int),
-            db_name=env("DB_NAME"),
-            max_total_pool_size=max_total_pool_size,
-            max_total_overflow=max_total_overflow,
-        )
+    def load(cls) -> Self:
+        """Loads the ``[db]`` section from the TOML config pointed at by ``APP_CONFIG_PATH``."""
+        config_path = os.environ.get(_CONFIG_PATH_ENV)
+        if config_path is None:
+            msg = f"'{_CONFIG_PATH_ENV}' must point at the main app TOML config"
+            raise RuntimeError(msg)
+
+        with Path(config_path).open("rb") as fh:
+            data = toml_rs.load(fh)
+
+        return _retort.load(data["db"], cls)
 
     @property
     def connection_url(self) -> URL:

@@ -9,11 +9,11 @@ from redis.exceptions import RedisError
 
 from dreamteams.adapters.cache.config import CacheConfig
 from dreamteams.application.common.application_form_cache import ApplicationFormCache
-from dreamteams.application.common.logger import Logger
 from dreamteams.entities.application_form.entity import ApplicationForm
 from dreamteams.entities.application_form.vo.field import Field
 from dreamteams.entities.application_form.vo.fields import ApplicationFormFields
 from dreamteams.entities.common.identifiers import CompetitionId
+from dreamteams_common.logger import Logger
 
 _KEY_PREFIX = "application_form:"
 _field_retort = Retort()

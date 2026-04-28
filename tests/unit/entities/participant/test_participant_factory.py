@@ -2,7 +2,6 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.errors.participant import InvalidParticipantDataError
 from dreamteams.entities.participant.vo.age import Age
 from dreamteams.entities.user import (
@@ -10,6 +9,7 @@ from dreamteams.entities.user import (
     ParticipantData,
     participant_factory,
 )
+from dreamteams_common.clock import Clock
 from tests.unit.composite import valid_participant_data
 from tests.unit.helpers.facade import Gateway
 

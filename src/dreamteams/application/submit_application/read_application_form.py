@@ -6,12 +6,12 @@ from dreamteams.application.common.gateway.application_form import ApplicationFo
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.participant import ParticipantGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.interactor import interactor
-from dreamteams.application.common.logger import Logger
 from dreamteams.application.errors.application_form import ApplicationFormNotFoundError
 from dreamteams.entities.common.identifiers import CompetitionId
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import CompetitionNotFoundError
+from dreamteams_common.interactor import interactor
+from dreamteams_common.logger import Logger
 
 logger: Logger = structlog.get_logger(__name__)
 

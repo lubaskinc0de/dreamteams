@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dreamteams.application.common.logger import Logger
+from dreamteams_common.logger import Logger
 
 logger: Logger = structlog.get_logger(__name__)
 router = APIRouter(

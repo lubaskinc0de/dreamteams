@@ -4,8 +4,8 @@ from uuid import uuid4
 
 import pytest
 
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.competition.schedule import ScheduleData
+from dreamteams_common.clock import Clock
 from tests.common.factory.competition import CompetitionFormFactory
 from tests.common.helpers.competition import (
     INVALID_COMPETITION_DATA_CASES,

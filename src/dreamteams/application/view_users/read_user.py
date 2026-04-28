@@ -5,11 +5,11 @@ from dreamteams.application.block_user.shared import ensure_admin
 from dreamteams.application.common.avatar_storage import AvatarStorage
 from dreamteams.application.common.gateway.user import UserGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.interactor import interactor
-from dreamteams.application.common.logger import Logger
 from dreamteams.application.errors.user import UserNotFoundError
 from dreamteams.application.view_users.models import AdminOrganizerModel, AdminParticipantModel, AdminUserModel
 from dreamteams.entities.common.identifiers import UserId
+from dreamteams_common.interactor import interactor
+from dreamteams_common.logger import Logger
 
 logger: Logger = structlog.get_logger(__name__)
 

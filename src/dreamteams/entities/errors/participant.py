@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from dreamteams.entities.errors import AppError, app_error
+from dreamteams_common.errors import AppError, app_error
 
 
 @app_error

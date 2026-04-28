@@ -6,8 +6,8 @@ from dreamteams.application.common.dto.preview_competition import (  # noqa: F40
     PreviewOrganizerModel,
 )
 from dreamteams.application.common.gateway.competition import CompetitionGateway
-from dreamteams.application.common.interactor import interactor
-from dreamteams.application.common.logger import Logger
+from dreamteams_common.interactor import interactor
+from dreamteams_common.logger import Logger
 
 PAGE_SIZE = 10
 logger: Logger = structlog.get_logger(__name__)

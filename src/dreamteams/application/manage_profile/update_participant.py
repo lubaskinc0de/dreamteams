@@ -5,11 +5,7 @@ from dreamteams.application.common.dto.participant_contact import ParticipantCon
 from dreamteams.application.common.dto.participant_skill import ParticipantSkillForm
 from dreamteams.application.common.gateway.participant import ParticipantGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.interactor import interactor
-from dreamteams.application.common.logger import Logger
-from dreamteams.application.common.uow import UoW
 from dreamteams.application.errors.participant import ParticipantNotFoundError
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.participant.vo.age import Age
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
@@ -17,6 +13,10 @@ from dreamteams.entities.participant.vo.participant_contacts import ParticipantC
 from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
 from dreamteams.entities.participant.vo.participant_skills import ParticipantSkills
 from dreamteams.entities.user import ExperienceLevel, UpdateParticipantData
+from dreamteams_common.clock import Clock
+from dreamteams_common.interactor import interactor
+from dreamteams_common.logger import Logger
+from dreamteams_common.uow import UoW
 
 logger: Logger = structlog.get_logger(__name__)
 

@@ -5,9 +5,9 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.competition.entity import Competition
 from dreamteams.entities.errors.base import AccessDeniedError
+from dreamteams_common.clock import Clock
 from tests.unit.composite import valid_competition
 from tests.unit.helpers.facade import Gateway
 

@@ -11,18 +11,18 @@ from dreamteams.application.common.gateway.application_form import ApplicationFo
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.participant import ParticipantGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.interactor import interactor
-from dreamteams.application.common.logger import Logger
 from dreamteams.application.common.metrics import MetricsGateway
-from dreamteams.application.common.uow import UoW
 from dreamteams.application.errors.application import ApplicationAlreadyExistsError
 from dreamteams.entities.application.entity import ApplicationData, ApplicationStatus
 from dreamteams.entities.application.submit_service import submit_application
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId
 from dreamteams.entities.competition.track import CompetitionTrack
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import CompetitionNotFoundError
+from dreamteams_common.clock import Clock
+from dreamteams_common.interactor import interactor
+from dreamteams_common.logger import Logger
+from dreamteams_common.uow import UoW
 
 logger: Logger = structlog.get_logger(__name__)
 

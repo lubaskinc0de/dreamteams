@@ -2,9 +2,9 @@
 
 from dataclasses import dataclass
 
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.user import Participant, User, participant_factory
+from dreamteams_common.clock import Clock
 from tests.common.factory.entities.participant import ParticipantDataFactory
 from tests.unit.helpers.user_gateway import UserGateway
 

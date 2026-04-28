@@ -1,11 +1,12 @@
+from dataclasses import dataclass
 from uuid import uuid4
 
-from dreamteams.entities.base import Entity, model
+from dreamteams.entities.base import Entity
 from dreamteams.entities.common.identifiers import CompetitionTagId
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 
 
-@model
+@dataclass
 class CompetitionTag(Entity):
     """Tag used for competition discovery."""
 

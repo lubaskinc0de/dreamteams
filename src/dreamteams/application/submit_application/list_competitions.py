@@ -8,10 +8,10 @@ from dreamteams.application.common.dto.explore_competition import (  # noqa: F40
 from dreamteams.application.common.gateway.competition import CompetitionGateway, ExploreSortBy
 from dreamteams.application.common.gateway.participant import ParticipantGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.interactor import interactor
-from dreamteams.application.common.logger import Logger
 from dreamteams.entities.common.identifiers import CompetitionTagId
 from dreamteams.entities.errors.base import AccessDeniedError
+from dreamteams_common.interactor import interactor
+from dreamteams_common.logger import Logger
 
 PAGE_SIZE = 10
 logger: Logger = structlog.get_logger(__name__)

@@ -9,7 +9,6 @@ from opentelemetry.trace import StatusCode
 from dreamteams.adapters.auth.errors.auth_user import AuthUserAlreadyExistsError
 from dreamteams.adapters.auth.errors.base import UnauthorizedError
 from dreamteams.adapters.errors.http.response import ErrorResponse, InternalServerError, ValidationError
-from dreamteams.application.common.logger import Logger
 from dreamteams.application.errors.application import ApplicationAlreadyExistsError, ApplicationNotFoundError
 from dreamteams.application.errors.application_form import (
     ApplicationFormAlreadyExistsError,
@@ -31,11 +30,13 @@ from dreamteams.entities.errors.application import (
     ParticipantTypeMismatchError,
 )
 from dreamteams.entities.errors.application_form import InvalidApplicationFormDataError
-from dreamteams.entities.errors.base import AccessDeniedError, AppError
+from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.errors.competition import CompetitionNotFoundError, InvalidCompetitionDataError
 from dreamteams.entities.errors.invite import InviteAlreadyRevokedError, InviteAlreadyUsedError, InviteRevokedError
 from dreamteams.entities.errors.participant import InvalidParticipantDataError
 from dreamteams.presentation.fast_api.errors import InvalidAvatarError
+from dreamteams_common.errors import AppError
+from dreamteams_common.logger import Logger
 
 SERVER_ERROR = 500
 logger: Logger = structlog.get_logger(__name__)
