@@ -2,7 +2,7 @@ from uuid import uuid4
 
 from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.manage_application_form import ApplicationFormInput
-from dreamteams.application.manage_application_form.create import FieldForm
+from dreamteams.application.manage_application_form.create_application_form import FieldForm
 from dreamteams.application.submit_application import CreatedApplication
 from dreamteams.entities.application_form.vo.field import FieldType
 from dreamteams.entities.common.vo.participant_type import ParticipantType

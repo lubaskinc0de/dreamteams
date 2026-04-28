@@ -4,14 +4,14 @@ Actor: Organizer
 Organizer creates and publishes a new competition.
 """
 
-from dreamteams.application.publish_competition.create import (
+from dreamteams.application.publish_competition.publish_competition import (
     CompetitionForm,
-    CreateCompetition,
     CreatedCompetition,
+    PublishCompetition,
 )
 
 __all__ = [
     "CompetitionForm",
-    "CreateCompetition",
     "CreatedCompetition",
+    "PublishCompetition",
 ]

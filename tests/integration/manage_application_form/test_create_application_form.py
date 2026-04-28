@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 from dreamteams.application.manage_application_form import ApplicationFormInput, CreatedApplicationForm
-from dreamteams.application.manage_application_form.create import FieldChoiceForm, FieldForm
+from dreamteams.application.manage_application_form.create_application_form import FieldChoiceForm, FieldForm
 from dreamteams.entities.application_form.vo.field import FieldType
 from tests.common.factory.application_form import ApplicationFormInputFactory
 from tests.integration.api_client import ApiClient

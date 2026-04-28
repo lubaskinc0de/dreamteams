@@ -1,0 +1,106 @@
+import structlog
+from pydantic import BaseModel, Field
+
+from dreamteams.application.common.dto.participant_contact import ParticipantContactForm
+from dreamteams.application.common.dto.participant_skill import ParticipantSkillForm
+from dreamteams.application.common.interactor import interactor
+from dreamteams.application.common.logger import Logger
+from dreamteams.application.common.metrics import MetricsGateway
+from dreamteams.application.common.uow import UoW
+from dreamteams.application.register_user.shared.user_factory import UserFactory
+from dreamteams.entities.common.clock import Clock
+from dreamteams.entities.common.identifiers import ParticipantId, UserId
+from dreamteams.entities.common.vo.participant_type import ParticipantType
+from dreamteams.entities.participant.vo.age import Age
+from dreamteams.entities.participant.vo.participant_contact import ParticipantContact
+from dreamteams.entities.participant.vo.participant_contacts import ParticipantContacts
+from dreamteams.entities.participant.vo.participant_skill import ParticipantSkill
+from dreamteams.entities.participant.vo.participant_skills import ParticipantSkills
+from dreamteams.entities.user import (
+    ExperienceLevel,
+    ParticipantData,
+    participant_factory,
+)
+
+logger: Logger = structlog.get_logger(__name__)
+
+
+class CreatedParticipant(BaseModel):
+    """Response model containing the info about newly created ``Participant``."""
+
+    participant_id: ParticipantId
+    user_id: UserId
+
+
+class ParticipantForm(BaseModel):
+    """Form for registering as ``Participant``."""
+
+    full_name: str = Field(min_length=1, max_length=70)
+    participant_type: ParticipantType
+    age: int
+    bio: str | None = Field(default=None, max_length=500)
+    skills: list[ParticipantSkillForm] = Field(default_factory=list)
+    experience_level: ExperienceLevel | None = None
+    contacts: list[ParticipantContactForm] = Field(default_factory=list, max_length=15)
+
+
+@interactor
+class RegisterParticipant:
+    """Interactor for registering as ``Participant``."""
+
+    uow: UoW
+    user_factory: UserFactory
+    clock: Clock
+    metrics: MetricsGateway
+
+    async def execute(self, data: ParticipantForm) -> CreatedParticipant:
+        """Creates a new ``User`` and ``Participant`` role."""
+        logger.debug("Registering as participant", **data.model_dump())
+
+        user = await self.user_factory.create_user()
+
+        participant_data = ParticipantData(
+            full_name=data.full_name,
+            bio=data.bio,
+            skills=ParticipantSkills(
+                [
+                    ParticipantSkill(
+                        name=s.name,
+                        level=s.level,
+                    )
+                    for s in data.skills
+                ],
+            ),
+            experience_level=data.experience_level,
+            contacts=ParticipantContacts([ParticipantContact(title=c.title, value=c.value) for c in data.contacts]),
+            participant_type=data.participant_type,
+            age=Age(data.age),
+        )
+
+        participant = participant_factory(
+            data=participant_data,
+            user=user,
+            clock=self.clock,
+        )
+
+        logger.debug(
+            "Creating role 'Participant' for user",
+            user_id=user.id,
+            participant_id=participant.id,
+        )
+        user.make_participant(participant=participant)
+
+        self.uow.add(participant)
+        await self.uow.commit()
+        self.metrics.record_registration(role="participant")
+
+        logger.info(
+            "Participant created",
+            user_id=user.id,
+            participant_id=participant.id,
+        )
+
+        return CreatedParticipant(
+            participant_id=participant.id,
+            user_id=user.id,
+        )

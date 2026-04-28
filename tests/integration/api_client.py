@@ -9,27 +9,27 @@ from adaptix.load_error import LoadError
 
 from dreamteams.adapters.auth.model import AuthUserId
 from dreamteams.adapters.errors.http.response import ErrorResponse
+from dreamteams.application.block_user import AdminUserDetails, UsersList
 from dreamteams.application.common.gateway.application import ApplicationSortBy
 from dreamteams.application.common.gateway.competition import CompetitionSortBy, ExploreSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.common.gateway.user import UserRoleFilter
+from dreamteams.application.delete_competition import CompetitionModel, CompetitionsList
+from dreamteams.application.issue_invite import InviteIssued, InviteModel, InvitesList
 from dreamteams.application.manage_application_form import ApplicationFormModel, CreatedApplicationForm
-from dreamteams.application.manage_applications import ApplicationModel, ApplicationsList
-from dreamteams.application.manage_competitions import CompetitionModel, CompetitionsList
-from dreamteams.application.manage_invites import InviteIssued, InviteModel, InvitesList
-from dreamteams.application.manage_my_applications import ApplicationsList as MyApplicationsList
-from dreamteams.application.manage_my_applications import MyApplicationModel
 from dreamteams.application.manage_profile import ProfileModel
 from dreamteams.application.manage_tags import (
     CompetitionTagsList,
 )
-from dreamteams.application.manage_users import AdminUserDetails, UsersList
-from dreamteams.application.preview_competition.list import PreviewCompetitionsList
+from dreamteams.application.preview_competitions.preview_competitions import PreviewCompetitionsList
 from dreamteams.application.publish_competition import CreatedCompetition
-from dreamteams.application.register.register_organizer import CreatedOrganizer
-from dreamteams.application.register.register_participant import CreatedParticipant
-from dreamteams.application.register.register_superuser import CreatedSuperuser
+from dreamteams.application.register_user.register_organizer import CreatedOrganizer
+from dreamteams.application.register_user.register_participant import CreatedParticipant
+from dreamteams.application.register_user.register_superuser import CreatedSuperuser
+from dreamteams.application.review_application import ApplicationModel, ApplicationsList
 from dreamteams.application.submit_application import CreatedApplication, ExploreCompetitionsList
+from dreamteams.application.view_my_applications import ApplicationsList as MyApplicationsList
+from dreamteams.application.view_my_applications import MyApplicationModel
 from dreamteams.application.view_tags import CompetitionTagsList as ViewCompetitionTagsList
 from dreamteams.entities.application.entity import ApplicationStatus
 from dreamteams.entities.common.identifiers import (

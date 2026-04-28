@@ -4,7 +4,7 @@ from polyfactory.factories.pydantic_factory import ModelFactory
 
 from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.common.dto.milestone import MilestoneForm
-from dreamteams.application.manage_competitions import UpdateCompetitionForm
+from dreamteams.application.delete_competition import UpdateCompetitionForm
 from dreamteams.application.publish_competition import CompetitionForm
 from dreamteams.entities.common.identifiers import CompetitionTagId
 from dreamteams.entities.common.vo.participant_type import ParticipantType

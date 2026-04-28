@@ -11,5 +11,6 @@
 ## Related
 
 - [OrganizerInvite entity](../entities/organizer-invite.md)
-- [Manage Invites use cases](../usecase/manage_invites/usecase.md)
-- [Register Organizer](../usecase/register/register_organizer.md)
+- [Issue Invite use cases](../usecase/issue_invite/usecase.md)
+- [View Issued Invites use cases](../usecase/view_issued_invites/usecase.md)
+- [Register Organizer](../usecase/register_user/register_organizer.md)

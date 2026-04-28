@@ -4,7 +4,7 @@ from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter, Query
 
-from dreamteams.application.manage_competitions import (
+from dreamteams.application.delete_competition import (
     CompetitionModel,
     CompetitionsList,
     DeleteCompetition,
@@ -13,13 +13,13 @@ from dreamteams.application.manage_competitions import (
     UpdateCompetition,
     UpdateCompetitionForm,
 )
-from dreamteams.application.manage_competitions import ReadCompetition as ReadCompetitionAsOrganizer
-from dreamteams.application.preview_competition.list import (
+from dreamteams.application.delete_competition import ReadCompetition as ReadCompetitionAsOrganizer
+from dreamteams.application.preview_competitions.preview_competitions import (
     PreviewCompetitions,
     PreviewCompetitionsInput,
     PreviewCompetitionsList,
 )
-from dreamteams.application.publish_competition import CompetitionForm, CreateCompetition, CreatedCompetition
+from dreamteams.application.publish_competition import CompetitionForm, CreatedCompetition, PublishCompetition
 from dreamteams.application.submit_application import (
     ExploreCompetitions,
     ExploreCompetitionsInput,
@@ -64,7 +64,7 @@ async def list_competitions(
 
 @router.post("/")
 async def create_competition(
-    interactor: FromDishka[CreateCompetition],
+    interactor: FromDishka[PublishCompetition],
     data: CompetitionForm,
 ) -> CreatedCompetition:
     """HTTP endpoint for creating a competition."""

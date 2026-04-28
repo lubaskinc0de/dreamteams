@@ -3,7 +3,7 @@ from uuid import uuid4
 import pytest
 
 from dreamteams.application.manage_tags import CompetitionTagsList
-from dreamteams.application.manage_tags.list import PAGE_SIZE
+from dreamteams.application.manage_tags.list_tags import PAGE_SIZE
 from dreamteams.entities.competition.tag import CompetitionTag
 from tests.integration.api_client import ApiClient
 from tests.integration.helpers.facade import Gateway

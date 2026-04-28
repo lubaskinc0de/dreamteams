@@ -17,4 +17,5 @@
 ## Related
 
 - [Participant entity](../entities/participant.md)
-- [Register Participant](../usecase/register/register_participant.md)
+- [Register Participant](../usecase/register_user/register_participant.md)
+- [Attach Avatar](../usecase/attach_avatar/usecase.md)

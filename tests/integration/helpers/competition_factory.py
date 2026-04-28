@@ -12,9 +12,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from dreamteams.adapters.db.models import competition_table
 from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.common.dto.milestone import MilestoneForm
-from dreamteams.application.manage_competitions import CompetitionModel
-from dreamteams.application.manage_competitions.update import UpdateCompetitionForm
-from dreamteams.application.publish_competition.create import CompetitionForm
+from dreamteams.application.delete_competition import CompetitionModel
+from dreamteams.application.publish_competition.publish_competition import CompetitionForm
+from dreamteams.application.update_my_competition.update import UpdateCompetitionForm
 from dreamteams.entities.common.identifiers import CompetitionId, CompetitionTagId
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.participant_limits import ParticipantLimits

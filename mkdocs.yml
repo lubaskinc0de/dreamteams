@@ -62,18 +62,20 @@ nav:
   - Home: index.md
   - Setup:
     - Authentik: authentik-setup.md
+  - Public API:
+    - User Bans: user-bans.md
   - Entities:
     - entities/index.md
     - User: entities/user.md
     - Organizer: entities/organizer.md
     - Participant: entities/participant.md
     - Competition: entities/competition.md
+    - Competition Tag: entities/competition-tag.md
     - Application: entities/application.md
     - Application Form: entities/application-form.md
     - Organizer Invite: entities/organizer-invite.md
   - Value Objects:
     - value-objects/index.md
-    - Domain: value-objects/domain.md
     - Competition Format: value-objects/competition-format.md
     - Competition Schedule: value-objects/competition-schedule.md
     - Competition Venue: value-objects/competition-venue.md
@@ -84,6 +86,9 @@ nav:
     - Team Size Range: value-objects/team-size-range.md
     - Milestone: value-objects/milestone.md
     - Competition Milestones: value-objects/competition-milestones.md
+    - Competition Track: value-objects/competition-track.md
+    - Competition Tracks: value-objects/competition-tracks.md
+    - Competition Tags: value-objects/competition-tags.md
     - Field: value-objects/field.md
     - Field Type: value-objects/field-type.md
     - Field Choice: value-objects/field-choice.md
@@ -91,41 +96,62 @@ nav:
     - Participant Skills: value-objects/participant-skills.md
     - Participant Contacts: value-objects/participant-contacts.md
   - Use Cases:
-    - Register:
-      - Overview: usecase/register/usecase.md
-      - Register Organizer: usecase/register/register_organizer.md
-      - Register Participant: usecase/register/register_participant.md
-      - Register Superuser: usecase/register/register_superuser.md
+    - Register User:
+      - Overview: usecase/register_user/usecase.md
+      - Register Organizer: usecase/register_user/register_organizer.md
+      - Register Participant: usecase/register_user/register_participant.md
+      - Register Superuser: usecase/register_user/register_superuser.md
     - Manage Profile:
       - Overview: usecase/manage_profile/usecase.md
       - Read Profile: usecase/manage_profile/read_profile.md
       - Update Organizer: usecase/manage_profile/update_organizer.md
       - Update Participant: usecase/manage_profile/update_participant.md
-    - Manage Invites:
-      - Overview: usecase/manage_invites/usecase.md
-      - Issue Invite: usecase/manage_invites/issue_invite.md
-      - Revoke Invite: usecase/manage_invites/revoke_invite.md
-      - Read Invite: usecase/manage_invites/read_invite.md
-      - List Invites: usecase/manage_invites/list_invites.md
-    - Manage Users:
-      - Overview: usecase/manage_users/usecase.md
-      - Block User: usecase/manage_users/block_user.md
-      - Unblock User: usecase/manage_users/unblock_user.md
-      - List Users: usecase/manage_users/list_users.md
-      - Read User By Admin: usecase/manage_users/read_user_by_admin.md
+      - Delete Profile: usecase/manage_profile/delete_profile.md
+    - Attach Avatar:
+      - Overview: usecase/attach_avatar/usecase.md
+      - Attach Avatar: usecase/attach_avatar/attach_avatar.md
+      - Detach Avatar: usecase/attach_avatar/detach_avatar.md
+    - Block User:
+      - Overview: usecase/block_user/usecase.md
+      - Block User: usecase/block_user/block_user.md
+      - Unblock User: usecase/block_user/unblock_user.md
+    - View Users:
+      - Overview: usecase/view_users/usecase.md
+      - List Users: usecase/view_users/list_users.md
+      - Read User: usecase/view_users/read_user.md
+    - Issue Invite:
+      - Overview: usecase/issue_invite/usecase.md
+      - Issue Invite: usecase/issue_invite/issue_invite.md
+      - Revoke Invite: usecase/issue_invite/revoke_invite.md
+      - Read Invite: usecase/issue_invite/read_invite.md
+    - View Issued Invites:
+      - Overview: usecase/view_issued_invites/usecase.md
+      - List Invites: usecase/view_issued_invites/list_invites.md
+    - Manage Tags:
+      - Overview: usecase/manage_tags/usecase.md
+      - Create Tag: usecase/manage_tags/create_tag.md
+      - Read Tag: usecase/manage_tags/read_tag.md
+      - List Tags: usecase/manage_tags/list_tags.md
+      - Delete Tag: usecase/manage_tags/delete_tag.md
+    - View Tags:
+      - Overview: usecase/view_tags/usecase.md
+      - List Tags: usecase/view_tags/list_tags.md
     - Publish Competition:
       - Overview: usecase/publish_competition/usecase.md
-      - Create Competition: usecase/publish_competition/create_competition.md
-    - Manage Competitions:
-      - Overview: usecase/manage_competitions/usecase.md
-      - List Competitions: usecase/manage_competitions/list_competitions.md
-      - Read Competition: usecase/manage_competitions/read_competition.md
-      - Update Competition: usecase/manage_competitions/update_competition.md
-      - Delete Competition: usecase/manage_competitions/delete_competition.md
-    - Preview Competition:
-      - Overview: usecase/preview_competition/usecase.md
-      - List Competitions: usecase/preview_competition/list_competitions.md
-      - Read Competition: usecase/preview_competition/read_competition.md
+      - Publish Competition: usecase/publish_competition/publish_competition.md
+    - View My Competitions:
+      - Overview: usecase/view_my_competitions/usecase.md
+      - List Competitions: usecase/view_my_competitions/list_competitions.md
+      - Read Competition: usecase/view_my_competitions/read_competition.md
+    - Update My Competition:
+      - Overview: usecase/update_my_competition/usecase.md
+      - Update Competition: usecase/update_my_competition/update.md
+    - Delete Competition:
+      - Overview: usecase/delete_competition/usecase.md
+      - Delete Competition: usecase/delete_competition/delete_competition.md
+    - Preview Competitions:
+      - Overview: usecase/preview_competitions/usecase.md
+      - Preview Competitions: usecase/preview_competitions/preview_competitions.md
     - Manage Application Form:
       - Overview: usecase/manage_application_form/usecase.md
       - Create Application Form: usecase/manage_application_form/create_application_form.md
@@ -137,17 +163,19 @@ nav:
       - Read Competition: usecase/submit_application/read_competition.md
       - Read Application Form: usecase/submit_application/read_application_form.md
       - Submit Application: usecase/submit_application/submit_application.md
-    - Manage My Applications:
-      - Overview: usecase/manage_my_applications/usecase.md
-      - List My Applications: usecase/manage_my_applications/list_my_applications.md
-      - Read My Application: usecase/manage_my_applications/read_my_application.md
-      - Withdraw Application: usecase/manage_my_applications/withdraw_application.md
-    - Manage Applications:
-      - Overview: usecase/manage_applications/usecase.md
-      - List Applications: usecase/manage_applications/list_applications.md
-      - Read Application: usecase/manage_applications/read_application.md
-      - Accept Application: usecase/manage_applications/accept_application.md
-      - Reject Application: usecase/manage_applications/reject_application.md
+      - Withdraw Application: usecase/submit_application/withdraw_application.md
+    - View My Applications:
+      - Overview: usecase/view_my_applications/usecase.md
+      - List My Applications: usecase/view_my_applications/list_my_applications.md
+      - Read My Application: usecase/view_my_applications/read_my_application.md
+    - View Submitted Applications:
+      - Overview: usecase/view_submitted_applications/usecase.md
+      - List Applications: usecase/view_submitted_applications/list_applications.md
+    - Review Application:
+      - Overview: usecase/review_application/usecase.md
+      - Read Application: usecase/review_application/read_application.md
+      - Accept Application: usecase/review_application/accept_application.md
+      - Reject Application: usecase/review_application/reject_application.md
   - Errors:
     - errors/index.md
     - Authentication & Authorization: errors/auth.md
@@ -159,6 +187,7 @@ nav:
     - Generic: errors/generic.md
   - Exporter:
     - exporter/index.md
+    - Public HTTP API: exporter/public-http-api.md
     - Entities:
       - Export Job: exporter/entities/export-job.md
     - Value Objects:

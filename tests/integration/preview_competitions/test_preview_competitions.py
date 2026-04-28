@@ -2,7 +2,7 @@ import pytest
 
 from dreamteams.application.common.gateway.competition import CompetitionSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
-from dreamteams.application.preview_competition.list import PAGE_SIZE, PreviewCompetitionsList
+from dreamteams.application.preview_competitions.preview_competitions import PAGE_SIZE, PreviewCompetitionsList
 from tests.integration.api_client import ApiClient
 from tests.integration.competition_helpers import competitions_list_to_preview_list, create_competitions_list
 from tests.integration.helpers.facade import Gateway

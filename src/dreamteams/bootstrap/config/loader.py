@@ -11,7 +11,7 @@ from dreamteams.adapters.cache.config import CacheConfig
 from dreamteams.adapters.db.config import DbConfig, DbPoolTomlConfig
 from dreamteams.adapters.env_loader import env, optional_env
 from dreamteams.adapters.sentry import SentryConfig
-from dreamteams.application.register.register_superuser import SuperuserConfig
+from dreamteams.application.register_user.register_superuser import SuperuserConfig
 from dreamteams.bootstrap.observability import OTelConfig
 from dreamteams.presentation.fast_api.config import ApiConfig, CorsConfig, ServerConfig, ServerTomlConfig
 

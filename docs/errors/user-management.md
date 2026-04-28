@@ -23,4 +23,4 @@
 - [User entity](../entities/user.md)
 - [User Bans](../user-bans.md)
 - [Organizer entity](../entities/organizer.md)
-- [Register Organizer use case](../usecase/register/register_organizer.md)
+- [Register Organizer use case](../usecase/register_user/register_organizer.md)

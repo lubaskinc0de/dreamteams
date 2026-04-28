@@ -1,7 +1,11 @@
 from redis.asyncio import Redis
 
 from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
-from dreamteams.application.manage_application_form.create import ApplicationFormInput, FieldChoiceForm, FieldForm
+from dreamteams.application.manage_application_form.create_application_form import (
+    ApplicationFormInput,
+    FieldChoiceForm,
+    FieldForm,
+)
 from dreamteams.application.submit_application import SubmitApplicationInput
 from dreamteams.entities.application_form.vo.field import FieldType
 from dreamteams_exporter.entities.common.identifiers import UserId

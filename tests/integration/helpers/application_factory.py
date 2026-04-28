@@ -7,9 +7,9 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 
 from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
-from dreamteams.application.manage_applications import ApplicationModel
-from dreamteams.application.manage_my_applications import MyApplicationModel
+from dreamteams.application.review_application import ApplicationModel
 from dreamteams.application.submit_application import SubmitApplicationInput
+from dreamteams.application.view_my_applications import MyApplicationModel
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId
 from tests.common.factory.application import SubmitApplicationInputFactory
 from tests.integration.api_client import ApiClient

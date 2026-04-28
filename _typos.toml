@@ -1,6 +1,7 @@
 [default.extend-words]
 selectin = "selectin"
 ba = "ba"
+Fo = "Fo"
 
 [type.jpg]
 extend-glob = ["*.jpg"]

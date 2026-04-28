@@ -4,7 +4,7 @@ from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter, Query
 
-from dreamteams.application.manage_applications import (
+from dreamteams.application.review_application import (
     AcceptApplication,
     ApplicationModel,
     ApplicationsList,
@@ -13,14 +13,6 @@ from dreamteams.application.manage_applications import (
     ReadApplication,
     RejectApplication,
 )
-from dreamteams.application.manage_my_applications import (
-    ListMyApplications,
-    ListMyApplicationsInput,
-    MyApplicationModel,
-    ReadMyApplication,
-    WithdrawApplication,
-)
-from dreamteams.application.manage_my_applications.list import ApplicationsList as MyApplicationsList
 from dreamteams.application.submit_application import (
     ApplicationFormModel,
     CreatedApplication,
@@ -28,6 +20,14 @@ from dreamteams.application.submit_application import (
     SubmitApplication,
     SubmitApplicationInput,
 )
+from dreamteams.application.view_my_applications import (
+    ListMyApplications,
+    ListMyApplicationsInput,
+    MyApplicationModel,
+    ReadMyApplication,
+    WithdrawApplication,
+)
+from dreamteams.application.view_my_applications.list_my_applications import ApplicationsList as MyApplicationsList
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId
 
 competitions_router = APIRouter(

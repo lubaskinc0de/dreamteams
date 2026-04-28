@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from dreamteams.adapters.db.models.auth_user import auth_user_table
 from dreamteams.adapters.db.models.user import user_table
-from dreamteams.application.manage_invites import InviteModel
+from dreamteams.application.issue_invite import InviteModel
 from dreamteams.entities.common.identifiers import UserId
 from dreamteams.presentation.fast_api.routers.admin_users import BlockUserRequest
 from tests.integration.api_client import ApiClient

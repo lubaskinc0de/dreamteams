@@ -4,7 +4,7 @@ from typing import override
 from adaptix import ExtraSkip, Retort, name_mapping
 
 from dreamteams.application.common.dto.application import ApplicationModel, ParticipantInfo
-from dreamteams.application.manage_profile.read import ProfileModel
+from dreamteams.application.manage_profile.read_profile import ProfileModel
 from dreamteams.entities.application.entity import ApplicationStatus as MainApplicationStatus
 from dreamteams.entities.participant.vo.participant_contact import ParticipantContact as MainParticipantContact
 from dreamteams_exporter.adapters.auth.model import AuthUserId

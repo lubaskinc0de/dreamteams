@@ -1,6 +1,6 @@
 # ReadCompetition
 
-**Actor**: Participant — see [manage_competitions/read_competition.md](../manage_competitions/read_competition.md) for the organizer variant.
+**Actor**: Participant — see [view_my_competitions/read_competition.md](../view_my_competitions/read_competition.md) for the organizer variant.
 
 ## Input
 

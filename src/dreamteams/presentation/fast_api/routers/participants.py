@@ -2,7 +2,7 @@ from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter
 
-from dreamteams.application.register.register_participant import (
+from dreamteams.application.register_user.register_participant import (
     CreatedParticipant,
     ParticipantForm,
     RegisterParticipant,

@@ -39,18 +39,18 @@ The platform follows strict **Clean Architecture** with five layers enforced by 
 
 ### Organizer Registration
 
-1. Admin [issues an invite](usecase/manage_invites/issue_invite.md) with a unique code
-2. Visitor [registers as organizer](usecase/register/register_organizer.md) using the invite code
-3. Organizer [creates a competition](usecase/publish_competition/create_competition.md)
+1. Admin [issues an invite](usecase/issue_invite/issue_invite.md) with a unique code
+2. Visitor [registers as organizer](usecase/register_user/register_organizer.md) using the invite code
+3. Organizer [publishes a competition](usecase/publish_competition/publish_competition.md)
 4. Organizer optionally [creates an application form](usecase/manage_application_form/create_application_form.md) for the competition
 
 ### Participant Flow
 
-1. Visitor [registers as participant](usecase/register/register_participant.md)
-2. Participant [browses competitions](usecase/preview_competition/list_competitions.md)
+1. Visitor [registers as participant](usecase/register_user/register_participant.md)
+2. Participant [browses competitions](usecase/submit_application/list_competitions.md)
 3. Participant [submits an application](usecase/submit_application/submit_application.md) to a competition
-4. Organizer [accepts or rejects](usecase/manage_applications/usecase.md) the application
-5. Participant can [withdraw](usecase/manage_my_applications/withdraw_application.md) a pending application
+4. Organizer [accepts or rejects](usecase/review_application/usecase.md) the application
+5. Participant can [withdraw](usecase/submit_application/withdraw_application.md) a pending application
 
 ---
 
@@ -71,18 +71,25 @@ The platform follows strict **Clean Architecture** with five layers enforced by 
 
 | Module | Actor | Actions |
 |--------|-------|---------|
-| [Register](usecase/register/usecase.md) | Visitor | Register organizer, participant, or superuser |
-| [Manage Profile](usecase/manage_profile/usecase.md) | Organizer | Read and update profile |
-| [Manage Invites](usecase/manage_invites/usecase.md) | Admin | Issue, revoke, list invites |
+| [Register User](usecase/register_user/usecase.md) | Visitor | Register organizer, participant, or superuser |
+| [Manage Profile](usecase/manage_profile/usecase.md) | User | Read, update, and delete own profile |
+| [Attach Avatar](usecase/attach_avatar/usecase.md) | User | Attach or detach own profile avatar |
+| [Block User](usecase/block_user/usecase.md) | Admin | Block and unblock user accounts |
+| [View Users](usecase/view_users/usecase.md) | Admin | List and read platform users |
+| [Issue Invite](usecase/issue_invite/usecase.md) | Admin | Issue, inspect, and revoke organizer invites |
+| [View Issued Invites](usecase/view_issued_invites/usecase.md) | Admin | List invites issued by the admin |
 | [Manage Tags](usecase/manage_tags/usecase.md) | Admin | Create, read, list, delete competition tags |
 | [View Tags](usecase/view_tags/usecase.md) | Participant/Organizer | Search and list available competition tags |
-| [Publish Competition](usecase/publish_competition/usecase.md) | Organizer | Create competition |
-| [Manage Competitions](usecase/manage_competitions/usecase.md) | Organizer | List, read, update, delete competitions |
-| [Preview Competition](usecase/preview_competition/usecase.md) | Visitor/Participant | Browse public competition listings |
+| [Publish Competition](usecase/publish_competition/usecase.md) | Organizer | Create and publish competition |
+| [View My Competitions](usecase/view_my_competitions/usecase.md) | Organizer | List and read owned competitions |
+| [Update My Competition](usecase/update_my_competition/usecase.md) | Organizer | Update owned competition |
+| [Delete Competition](usecase/delete_competition/usecase.md) | Organizer | Delete owned competition |
+| [Preview Competitions](usecase/preview_competitions/usecase.md) | Visitor | Browse public competition listings |
 | [Manage Application Form](usecase/manage_application_form/usecase.md) | Organizer | Create, read, delete application forms |
-| [Submit Application](usecase/submit_application/usecase.md) | Participant | Apply to a competition |
-| [Manage My Applications](usecase/manage_my_applications/usecase.md) | Participant | View and withdraw own applications |
-| [Manage Applications](usecase/manage_applications/usecase.md) | Organizer | List, read, accept, reject applications |
+| [Submit Application](usecase/submit_application/usecase.md) | Participant | Explore competitions, apply, and withdraw pending application |
+| [View My Applications](usecase/view_my_applications/usecase.md) | Participant | List and read own applications |
+| [View Submitted Applications](usecase/view_submitted_applications/usecase.md) | Organizer | List applications submitted to an owned competition |
+| [Review Application](usecase/review_application/usecase.md) | Organizer | Read, accept, and reject applications |
 
 ---
 

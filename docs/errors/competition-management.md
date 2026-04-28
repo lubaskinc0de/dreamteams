@@ -11,4 +11,6 @@
 
 - [Competition entity](../entities/competition.md)
 - [Publish Competition](../usecase/publish_competition/usecase.md)
-- [Manage Competitions](../usecase/manage_competitions/usecase.md)
+- [View My Competitions](../usecase/view_my_competitions/usecase.md)
+- [Update My Competition](../usecase/update_my_competition/usecase.md)
+- [Delete Competition](../usecase/delete_competition/usecase.md)

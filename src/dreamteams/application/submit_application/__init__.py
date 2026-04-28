@@ -2,7 +2,7 @@
 
 Actor: Participant
 Participant browses available competitions, reads a competition's application form,
-and submits an application to join a specific competition.
+submits an application to join a specific competition, and withdraws their own application.
 """
 
 from dreamteams.application.common.dto.application_form import (

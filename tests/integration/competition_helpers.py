@@ -5,12 +5,12 @@ from dreamteams.application.common.dto.explore_competition import ExploreCompeti
 from dreamteams.application.common.dto.preview_competition import PreviewCompetitionModel, PreviewOrganizerModel
 from dreamteams.application.common.gateway.competition import CompetitionSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
-from dreamteams.application.manage_competitions import CompetitionModel
-from dreamteams.application.manage_competitions.list import PAGE_SIZE, CompetitionsList
-from dreamteams.application.manage_competitions.update import UpdateCompetitionForm
-from dreamteams.application.preview_competition.list import PreviewCompetitionsList
-from dreamteams.application.publish_competition.create import CompetitionForm
+from dreamteams.application.delete_competition import CompetitionModel
+from dreamteams.application.preview_competitions.preview_competitions import PreviewCompetitionsList
+from dreamteams.application.publish_competition.publish_competition import CompetitionForm
 from dreamteams.application.submit_application.list_competitions import ExploreCompetitionsList
+from dreamteams.application.update_my_competition.update import UpdateCompetitionForm
+from dreamteams.application.view_my_competitions.list_competitions import PAGE_SIZE, CompetitionsList
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
 from dreamteams.entities.competition.milestone import Milestone

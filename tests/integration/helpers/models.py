@@ -4,9 +4,9 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from dreamteams.application.publish_competition import CreatedCompetition
-from dreamteams.application.publish_competition.create import CompetitionForm
-from dreamteams.application.register.register_organizer import CreatedOrganizer
-from dreamteams.application.register.register_participant import CreatedParticipant, ParticipantForm
+from dreamteams.application.publish_competition.publish_competition import CompetitionForm
+from dreamteams.application.register_user.register_organizer import CreatedOrganizer
+from dreamteams.application.register_user.register_participant import CreatedParticipant, ParticipantForm
 from dreamteams.entities.common.identifiers import UserId
 from dreamteams.presentation.fast_api.routers.organizers import OrganizerForm
 

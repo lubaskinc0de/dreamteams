@@ -5,7 +5,7 @@ from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter, Query
 from pydantic import BaseModel
 
-from dreamteams.application.manage_users import (
+from dreamteams.application.block_user import (
     AdminUserDetails,
     BlockUser,
     BlockUserForm,
