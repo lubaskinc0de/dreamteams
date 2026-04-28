@@ -9,7 +9,10 @@ from dreamteams.application.delete_my_competition import CompetitionModel
 from dreamteams.application.preview_competitions.preview_competitions import PreviewCompetitionsList
 from dreamteams.application.publish_competition.publish_competition import CompetitionForm
 from dreamteams.application.submit_application.list_competitions import ExploreCompetitionsList
-from dreamteams.application.update_my_competition.update import UpdateCompetitionForm
+from dreamteams.application.update_my_competition import (
+    RescheduleCompetitionForm,
+    UpdateCompetitionGeneralInfoForm,
+)
 from dreamteams.application.view_my_competitions.list_competitions import PAGE_SIZE, CompetitionsList
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import CompetitionId, OrganizerId
@@ -96,45 +99,72 @@ def competition_form_to_model(
     )
 
 
-def competition_update_form_to_model(
+def competition_general_info_form_to_model(
     competition_id: CompetitionId,
     organizer_id: OrganizerId,
     created_at: datetime,
     updated_at: datetime,
-    form: UpdateCompetitionForm,
-    clock: Clock,
+    current: CompetitionModel,
+    form: UpdateCompetitionGeneralInfoForm,
     *,
     members_count: int = 0,
     tags: list[CompetitionTag] | None = None,
 ) -> CompetitionModel:
-    """Transform competition update form and additional data to CompetitionModel."""
+    """Transform competition general-info update form and existing data to CompetitionModel."""
     return CompetitionModel(
         id=competition_id,
         organizer_id=organizer_id,
         title=form.title,
-        banner=None,
+        banner=current.banner,
         description=form.description,
-        schedule=schedule_factory(form.schedule, clock),
+        schedule=current.schedule,
         participant_limits=form.participant_limits,
         tags=sorted(tags or [], key=lambda tag: tag.value),
         tracks=[CompetitionTrack(track.name) for track in sorted(form.tracks, key=lambda item: item.name)],
         participant_type=form.participant_type,
         venue=form.venue,
-        team_size=form.team_size,
+        team_size=current.team_size,
         milestones=[
             Milestone(
                 timestamp=milestone.timestamp,
                 title=milestone.title,
                 description=milestone.description,
             )
-            for milestone in sorted(form.milestones, key=lambda item: item.timestamp)
-        ]
-        if form.milestones
-        else [],
+            for milestone in sorted(form.milestones or [], key=lambda item: item.timestamp)
+        ],
         auto_accept=form.auto_accept,
-        is_archived=form.is_archived,
+        is_archived=current.is_archived,
         members_count=members_count,
         created_at=created_at,
+        updated_at=updated_at,
+    )
+
+
+def competition_reschedule_form_to_model(
+    current: CompetitionModel,
+    form: RescheduleCompetitionForm,
+    updated_at: datetime,
+    clock: Clock,
+) -> CompetitionModel:
+    """Transform competition reschedule form and existing data to CompetitionModel."""
+    return CompetitionModel(
+        id=current.id,
+        organizer_id=current.organizer_id,
+        title=current.title,
+        banner=current.banner,
+        description=current.description,
+        schedule=schedule_factory(form.schedule, clock),
+        participant_limits=current.participant_limits,
+        tags=current.tags,
+        tracks=current.tracks,
+        participant_type=current.participant_type,
+        venue=current.venue,
+        team_size=form.team_size,
+        milestones=current.milestones,
+        auto_accept=current.auto_accept,
+        is_archived=current.is_archived,
+        members_count=current.members_count,
+        created_at=current.created_at,
         updated_at=updated_at,
     )
 

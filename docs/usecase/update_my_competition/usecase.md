@@ -9,4 +9,6 @@ Organizer updates competition details for a competition they own.
 
 ## Interactors
 
-- [UpdateCompetition](./update.md) — update competition data
+- [UpdateCompetitionGeneralInfo](./update_general_info.md) — update descriptive and participation settings
+- [RescheduleCompetition](./reschedule.md) — update schedule and paired team size
+- [ChangeCompetitionArchiveStatus](./change_archive_status.md) — archive or unarchive competition

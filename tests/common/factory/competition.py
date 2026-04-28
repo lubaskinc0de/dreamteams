@@ -4,8 +4,12 @@ from polyfactory.factories.pydantic_factory import ModelFactory
 
 from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.common.dto.milestone import MilestoneForm
-from dreamteams.application.delete_my_competition import UpdateCompetitionForm
 from dreamteams.application.publish_competition import CompetitionForm
+from dreamteams.application.update_my_competition import (
+    ChangeCompetitionArchiveStatusForm,
+    RescheduleCompetitionForm,
+    UpdateCompetitionGeneralInfoForm,
+)
 from dreamteams.entities.common.identifiers import CompetitionTagId
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
@@ -125,16 +129,29 @@ class CompetitionFormFactory(ModelFactory[CompetitionForm]):
     milestones = _milestones_provider
 
 
-class UpdateCompetitionFormFactory(ModelFactory[UpdateCompetitionForm]):
-    """Factory of UpdateCompetitionForm models."""
+class UpdateCompetitionGeneralInfoFormFactory(ModelFactory[UpdateCompetitionGeneralInfoForm]):
+    """Factory of UpdateCompetitionGeneralInfoForm models."""
 
-    __model__ = UpdateCompetitionForm
+    __model__ = UpdateCompetitionGeneralInfoForm
 
-    schedule = _competition_schedule_provider
     participant_limits = _participant_limits_provider
     venue = _competition_venue_provider
-    team_size = _team_size_provider
     tag_ids = _tag_ids_provider
     tracks = _tracks_provider
     participant_type = _participant_type_provider
     milestones = _milestones_provider
+
+
+class RescheduleCompetitionFormFactory(ModelFactory[RescheduleCompetitionForm]):
+    """Factory of RescheduleCompetitionForm models."""
+
+    __model__ = RescheduleCompetitionForm
+
+    schedule = _competition_schedule_provider
+    team_size = _team_size_provider
+
+
+class ChangeCompetitionArchiveStatusFormFactory(ModelFactory[ChangeCompetitionArchiveStatusForm]):
+    """Factory of ChangeCompetitionArchiveStatusForm models."""
+
+    __model__ = ChangeCompetitionArchiveStatusForm

@@ -82,7 +82,7 @@ The platform follows strict **Clean Architecture** with five layers enforced by 
 | [View Tags](usecase/view_tags/usecase.md) | Participant/Organizer | Search and list available competition tags |
 | [Publish Competition](usecase/publish_competition/usecase.md) | Organizer | Create and publish competition |
 | [View My Competitions](usecase/view_my_competitions/usecase.md) | Organizer | List and read owned competitions |
-| [Update My Competition](usecase/update_my_competition/usecase.md) | Organizer | Update owned competition |
+| [Update My Competition](usecase/update_my_competition/usecase.md) | Organizer | Update general info, schedule, and archive status |
 | [Delete Competition](usecase/delete_competition/usecase.md) | Organizer | Delete owned competition |
 | [Preview Competitions](usecase/preview_competitions/usecase.md) | Visitor | Browse public competition listings |
 | [Manage Application Form](usecase/manage_application_form/usecase.md) | Organizer | Create, read, delete application forms |

@@ -1,48 +1,40 @@
-from typing import Any
 from uuid import uuid4
 
-import pytest
 from dishka import AsyncContainer
 
 from dreamteams.application.common.gateway.competition import CompetitionGateway
-from dreamteams.entities.common.clock import Clock
-from tests.common.factory.competition import UpdateCompetitionFormFactory
-from tests.common.helpers.competition import (
-    INVALID_COMPETITION_DATA_CASES,
-    milestones_from_deltas,
-    schedule_from_deltas,
-)
+from tests.common.factory.competition import UpdateCompetitionGeneralInfoFormFactory
 from tests.integration.api_client import ApiClient
-from tests.integration.competition_helpers import competition_update_form_to_model
+from tests.integration.competition_helpers import competition_general_info_form_to_model
 from tests.integration.helpers.facade import Gateway
 
 
-async def test_update_competition_as_owner_succeeds(
+async def test_general_info_update_as_owner_succeeds(
     gateway: Gateway,
-    update_competition_form_factory: UpdateCompetitionFormFactory,
+    update_competition_general_info_form_factory: UpdateCompetitionGeneralInfoFormFactory,
     request_container: AsyncContainer,
-    clock: Clock,
 ) -> None:
-    """Test updating competition as owner."""
+    """General information update succeeds for the owning organizer."""
     # Arrange
     owner = await gateway.organizer.create_with_admin(gateway.admin)
     comp = await gateway.competition.create(owner.organizer.auth_id)
 
-    update_form = update_competition_form_factory.build()
+    update_form = update_competition_general_info_form_factory.build()
 
     competition_gateway = await request_container.get(CompetitionGateway)
     db_competition = await competition_gateway.get(comp.created.competition_id)
-    expected_model = competition_update_form_to_model(
+    current_model = await gateway.competition.read(comp.created.competition_id, owner.organizer.auth_id)
+    expected_model = competition_general_info_form_to_model(
         competition_id=comp.created.competition_id,
         updated_at=db_competition.updated_at,
         created_at=db_competition.created_at,
         organizer_id=db_competition.organizer_id,
+        current=current_model,
         form=update_form,
-        clock=clock,
     )
 
     # Act
-    actual_model = await gateway.competition.update(
+    actual_model = await gateway.competition.update_general_info(
         comp.created.competition_id,
         update_form,
         owner.organizer.auth_id,
@@ -54,13 +46,12 @@ async def test_update_competition_as_owner_succeeds(
     assert actual_model == expected_model
 
 
-async def test_update_competition_persists_tags(
+async def test_general_info_update_persists_tags(
     gateway: Gateway,
-    update_competition_form_factory: UpdateCompetitionFormFactory,
+    update_competition_general_info_form_factory: UpdateCompetitionGeneralInfoFormFactory,
     request_container: AsyncContainer,
-    clock: Clock,
 ) -> None:
-    """Updating a competition with tag_ids returns the attached tag entities on read."""
+    """General information update returns attached tag entities on read."""
     # Arrange
     owner = await gateway.organizer.create_with_admin(gateway.admin)
     comp = await gateway.competition.create(owner.organizer.auth_id)
@@ -69,22 +60,23 @@ async def test_update_competition_persists_tags(
         ["MobileUpdateTag", "BackendUpdateTag"],
     )
 
-    update_form = update_competition_form_factory.build(tag_ids=[mobile.id, backend.id])
+    update_form = update_competition_general_info_form_factory.build(tag_ids=[mobile.id, backend.id])
 
     competition_gateway = await request_container.get(CompetitionGateway)
     db_competition = await competition_gateway.get(comp.created.competition_id)
-    expected_model = competition_update_form_to_model(
+    current_model = await gateway.competition.read(comp.created.competition_id, owner.organizer.auth_id)
+    expected_model = competition_general_info_form_to_model(
         competition_id=comp.created.competition_id,
         updated_at=db_competition.updated_at,
         created_at=db_competition.created_at,
         organizer_id=db_competition.organizer_id,
+        current=current_model,
         form=update_form,
-        clock=clock,
         tags=[backend, mobile],
     )
 
     # Act
-    actual_model = await gateway.competition.update(
+    actual_model = await gateway.competition.update_general_info(
         comp.created.competition_id,
         update_form,
         owner.organizer.auth_id,
@@ -96,127 +88,118 @@ async def test_update_competition_persists_tags(
     assert actual_model == expected_model
 
 
-async def test_update_competition_rejects_more_than_thirty_tag_ids(
+async def test_general_info_update_rejects_more_than_thirty_tag_ids(
     api_client: ApiClient,
     gateway: Gateway,
-    update_competition_form_factory: UpdateCompetitionFormFactory,
+    update_competition_general_info_form_factory: UpdateCompetitionGeneralInfoFormFactory,
 ) -> None:
-    """Updating a competition with more than 30 tag_ids is rejected by request validation."""
+    """General information update rejects more than 30 tag IDs."""
     # Arrange
     owner = await gateway.organizer.create_with_admin(gateway.admin)
     comp = await gateway.competition.create(owner.organizer.auth_id)
-    data = update_competition_form_factory.build().model_dump(mode="json")
+    data = update_competition_general_info_form_factory.build().model_dump(mode="json")
     data["tag_ids"] = [str(uuid4()) for _ in range(31)]
 
     # Act
     with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
-        response = await api_client.update_competition(comp.created.competition_id, data)
+        response = await api_client.update_competition_general_info(comp.created.competition_id, data)
 
     # Assert
     response.assert_error(422, "VALIDATION_ERROR")
 
 
-async def test_update_competition_fails_if_description_is_empty(
+async def test_general_info_update_rejects_empty_description(
     api_client: ApiClient,
     gateway: Gateway,
-    update_competition_form_factory: UpdateCompetitionFormFactory,
+    update_competition_general_info_form_factory: UpdateCompetitionGeneralInfoFormFactory,
 ) -> None:
-    """Test updating competition with empty description is rejected with 422."""
+    """General information update rejects an empty description."""
     # Arrange
     owner = await gateway.organizer.create_with_admin(gateway.admin)
     comp = await gateway.competition.create(owner.organizer.auth_id)
-    data = update_competition_form_factory.build().model_copy(update={"description": ""})
+    data = update_competition_general_info_form_factory.build().model_copy(update={"description": ""})
 
     # Act
     with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
-        response = await api_client.update_competition(comp.created.competition_id, data.model_dump(mode="json"))
+        response = await api_client.update_competition_general_info(
+            comp.created.competition_id,
+            data.model_dump(mode="json"),
+        )
 
     # Assert
     response.assert_error(422, "VALIDATION_ERROR")
 
 
-@pytest.mark.parametrize(("update_data", "expected_error"), INVALID_COMPETITION_DATA_CASES)
-async def test_update_competition_with_invalid_data(
+async def test_general_info_update_rejects_unknown_tag(
     api_client: ApiClient,
     gateway: Gateway,
-    update_competition_form_factory: UpdateCompetitionFormFactory,
-    update_data: dict[str, Any],
-    expected_error: str,
+    update_competition_general_info_form_factory: UpdateCompetitionGeneralInfoFormFactory,
 ) -> None:
-    """Test updating competition with invalid data."""
+    """General information update rejects tag IDs that do not exist."""
     # Arrange
     owner = await gateway.organizer.create_with_admin(gateway.admin)
     comp = await gateway.competition.create(owner.organizer.auth_id)
-
-    base_data = update_competition_form_factory.build().model_dump(mode="json")
-    update_data = update_data.copy()
-
-    if "schedule" in update_data:
-        update_data["schedule"] = schedule_from_deltas(**update_data["schedule"])
-    if "milestones" in update_data:
-        update_data["milestones"] = milestones_from_deltas(update_data["milestones"])
-    base_data.update(update_data)
+    data = update_competition_general_info_form_factory.build(tag_ids=[uuid4()]).model_dump(mode="json")
 
     # Act
     with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
-        response = await api_client.update_competition(comp.created.competition_id, base_data)
+        response = await api_client.update_competition_general_info(comp.created.competition_id, data)
 
     # Assert
-    response.assert_error(422, expected_error)
+    response.assert_error(404, "COMPETITION_TAG_NOT_FOUND")
 
 
-async def test_update_competition_fails_if_unauthorized(
+async def test_general_info_update_fails_if_unauthorized(
     api_client: ApiClient,
     gateway: Gateway,
-    update_competition_form_factory: UpdateCompetitionFormFactory,
+    update_competition_general_info_form_factory: UpdateCompetitionGeneralInfoFormFactory,
 ) -> None:
-    """Test updating competition fails when user is unauthorized."""
+    """General information update fails when user is unauthorized."""
     # Arrange
     owner = await gateway.organizer.create_with_admin(gateway.admin)
     comp = await gateway.competition.create(owner.organizer.auth_id)
-    data = update_competition_form_factory.build().model_dump(mode="json")
+    data = update_competition_general_info_form_factory.build().model_dump(mode="json")
 
     # Act
-    response = await api_client.update_competition(comp.created.competition_id, data)
+    response = await api_client.update_competition_general_info(comp.created.competition_id, data)
 
     # Assert
     response.assert_error(401, "UNAUTHORIZED")
 
 
-async def test_update_competition_fails_if_not_owner(
+async def test_general_info_update_fails_if_not_owner(
     api_client: ApiClient,
     gateway: Gateway,
-    update_competition_form_factory: UpdateCompetitionFormFactory,
+    update_competition_general_info_form_factory: UpdateCompetitionGeneralInfoFormFactory,
 ) -> None:
-    """Test updating competition fails when user is not the owner."""
+    """General information update fails when user is not the owner."""
     # Arrange
     owner = await gateway.organizer.create_with_admin(gateway.admin)
     interloper = await gateway.organizer.create(owner.admin.auth_id)
     comp = await gateway.competition.create(owner.organizer.auth_id)
-    data = update_competition_form_factory.build().model_dump(mode="json")
+    data = update_competition_general_info_form_factory.build().model_dump(mode="json")
 
     # Act
     with api_client.authenticate(auth_user_id=interloper.auth_id):
-        response = await api_client.update_competition(comp.created.competition_id, data)
+        response = await api_client.update_competition_general_info(comp.created.competition_id, data)
 
     # Assert
     response.assert_error(403, "ACCESS_DENIED")
 
 
-async def test_update_competition_fails_if_not_found(
+async def test_general_info_update_fails_if_not_found(
     api_client: ApiClient,
     gateway: Gateway,
-    update_competition_form_factory: UpdateCompetitionFormFactory,
+    update_competition_general_info_form_factory: UpdateCompetitionGeneralInfoFormFactory,
 ) -> None:
-    """Test updating competition fails when competition does not exist."""
+    """General information update fails when competition does not exist."""
     # Arrange
     owner = await gateway.organizer.create_with_admin(gateway.admin)
-    non_existent_id = uuid4()
-    data = update_competition_form_factory.build().model_dump(mode="json")
+    data = update_competition_general_info_form_factory.build().model_dump(mode="json")
 
     # Act
     with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
-        response = await api_client.update_competition(non_existent_id, data)
+        response = await api_client.update_competition_general_info(uuid4(), data)
 
     # Assert
     response.assert_error(404, "COMPETITION_NOT_FOUND")

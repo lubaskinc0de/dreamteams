@@ -15,11 +15,9 @@ from dreamteams.application.errors.organizer import OrganizerNotFoundError
 from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.identifiers import CompetitionId, CompetitionTagId
 from dreamteams.entities.common.vo.participant_type import ParticipantType
-from dreamteams.entities.competition.entity import UpdateCompetitionData
+from dreamteams.entities.competition.entity import UpdateCompetitionGeneralInfoData
 from dreamteams.entities.competition.milestone import MilestoneData, milestone_factory
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
-from dreamteams.entities.competition.schedule import ScheduleData
-from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.competition.track import CompetitionTrack
 from dreamteams.entities.competition.venue import CompetitionVenue
 from dreamteams.entities.competition.vo.milestones import CompetitionMilestones
@@ -30,26 +28,23 @@ from dreamteams.entities.errors.competition import CompetitionNotFoundError
 logger: Logger = structlog.get_logger(__name__)
 
 
-class UpdateCompetitionForm(BaseModel):
-    """Form for updating a competition."""
+class UpdateCompetitionGeneralInfoForm(BaseModel):
+    """Form for updating competition general information."""
 
     title: str = Field(max_length=200)
     description: str = Field(min_length=1)
-    schedule: ScheduleData
     participant_limits: ParticipantLimits
     tag_ids: list[CompetitionTagId] = Field(default_factory=list, max_length=30)
     tracks: list[CompetitionTrackForm] = Field(min_length=1)
     participant_type: ParticipantType
     venue: CompetitionVenue
-    team_size: TeamSizeRange | None
     milestones: list[MilestoneForm] | None
     auto_accept: bool
-    is_archived: bool
 
 
 @interactor
-class UpdateCompetition:
-    """Interactor for updating a competition."""
+class UpdateCompetitionGeneralInfo:
+    """Interactor for updating competition general information."""
 
     uow: UoW
     idp: IdProvider
@@ -58,10 +53,10 @@ class UpdateCompetition:
     competition_tag_gateway: CompetitionTagGateway
     clock: Clock
 
-    async def execute(self, competition_id: CompetitionId, data: UpdateCompetitionForm) -> None:
-        """Updates competition by organizer who created it."""
+    async def execute(self, competition_id: CompetitionId, data: UpdateCompetitionGeneralInfoForm) -> None:
+        """Update competition general information by organizer who created it."""
         user_id = await self.idp.get_user_id()
-        logger.debug("Updating competition", competition_id=competition_id, user_id=user_id)
+        logger.debug("Updating competition general information", competition_id=competition_id, user_id=user_id)
 
         competition = await self.competition_gateway.get(
             competition_id,
@@ -87,19 +82,17 @@ class UpdateCompetition:
             raise CompetitionTagNotFoundError
 
         tags = [tag_by_id[tag_id] for tag_id in data.tag_ids]
-        competition.update(
+        competition.update_general_info(
             organizer=organizer,
             clock=self.clock,
-            data=UpdateCompetitionData(
+            data=UpdateCompetitionGeneralInfoData(
                 title=data.title,
                 description=data.description,
-                schedule=data.schedule,
                 participant_limits=data.participant_limits,
                 tags=CompetitionTags(tags),
                 tracks=CompetitionTracks([CompetitionTrack(track.name) for track in data.tracks]),
                 participant_type=data.participant_type,
                 venue=data.venue,
-                team_size=data.team_size,
                 milestones=CompetitionMilestones(
                     [
                         milestone_factory(
@@ -116,10 +109,9 @@ class UpdateCompetition:
                 if data.milestones is not None
                 else None,
                 auto_accept=data.auto_accept,
-                is_archived=data.is_archived,
             ),
         )
 
         await self.uow.commit()
 
-        logger.info("Competition updated", competition_id=competition_id, user_id=user_id)
+        logger.info("Competition general information updated", competition_id=competition_id, user_id=user_id)

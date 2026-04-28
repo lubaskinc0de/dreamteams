@@ -36,7 +36,12 @@ from dreamteams.entities.common.clock import Clock
 from dreamteams.presentation.fast_api.config import ApiConfig, CorsConfig, ServerConfig
 from tests.common.factory.application import SubmitApplicationInputFactory
 from tests.common.factory.application_form import ApplicationFormInputFactory
-from tests.common.factory.competition import CompetitionFormFactory, UpdateCompetitionFormFactory
+from tests.common.factory.competition import (
+    ChangeCompetitionArchiveStatusFormFactory,
+    CompetitionFormFactory,
+    RescheduleCompetitionFormFactory,
+    UpdateCompetitionGeneralInfoFormFactory,
+)
 from tests.common.factory.organizer import OrganizerFormFactory, UpdateOrganizerFormFactory
 from tests.common.factory.participant import ParticipantFormFactory, UpdateParticipantFormFactory
 from tests.integration.api_client import ApiClient, APIClientConfig
@@ -270,7 +275,9 @@ def assets() -> Traversable:
 register_fixture(ApplicationFormInputFactory)
 register_fixture(SubmitApplicationInputFactory)
 register_fixture(CompetitionFormFactory)
-register_fixture(UpdateCompetitionFormFactory)
+register_fixture(UpdateCompetitionGeneralInfoFormFactory)
+register_fixture(RescheduleCompetitionFormFactory)
+register_fixture(ChangeCompetitionArchiveStatusFormFactory)
 register_fixture(OrganizerFormFactory)
 register_fixture(UpdateOrganizerFormFactory)
 register_fixture(ParticipantFormFactory)
@@ -311,14 +318,12 @@ def competition_gateway(
     api_client: ApiClient,
     session: AsyncSession,
     competition_form_factory: CompetitionFormFactory,
-    update_competition_form_factory: UpdateCompetitionFormFactory,
 ) -> CompetitionGateway:
     """Gateway for competition creation and state manipulation."""
     return CompetitionGateway(
         api_client=api_client,
         session=session,
         competition_form_factory=competition_form_factory,
-        update_competition_form_factory=update_competition_form_factory,
     )
 
 

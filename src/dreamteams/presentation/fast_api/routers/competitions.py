@@ -10,8 +10,6 @@ from dreamteams.application.delete_my_competition import (
     DeleteCompetition,
     ListCompetitions,
     ListCompetitionsInput,
-    UpdateCompetition,
-    UpdateCompetitionForm,
 )
 from dreamteams.application.delete_my_competition import ReadCompetition as ReadCompetitionAsOrganizer
 from dreamteams.application.preview_competitions.preview_competitions import (
@@ -26,6 +24,14 @@ from dreamteams.application.submit_application import (
     ExploreCompetitionsList,
 )
 from dreamteams.application.submit_application import ReadCompetition as ReadCompetitionAsParticipant
+from dreamteams.application.update_my_competition import (
+    ChangeCompetitionArchiveStatus,
+    ChangeCompetitionArchiveStatusForm,
+    RescheduleCompetition,
+    RescheduleCompetitionForm,
+    UpdateCompetitionGeneralInfo,
+    UpdateCompetitionGeneralInfoForm,
+)
 from dreamteams.entities.common.identifiers import CompetitionId
 
 router = APIRouter(
@@ -89,13 +95,33 @@ async def read_competition(
     return await interactor.execute(competition_id)
 
 
-@router.put("/{competition_id}")
-async def update_competition(
-    interactor: FromDishka[UpdateCompetition],
+@router.patch("/{competition_id}/general-info")
+async def update_competition_general_info(
+    interactor: FromDishka[UpdateCompetitionGeneralInfo],
     competition_id: CompetitionId,
-    data: UpdateCompetitionForm,
+    data: UpdateCompetitionGeneralInfoForm,
 ) -> None:
-    """HTTP endpoint for updating a competition."""
+    """HTTP endpoint for updating competition general information."""
+    await interactor.execute(competition_id, data)
+
+
+@router.patch("/{competition_id}/schedule")
+async def reschedule_competition(
+    interactor: FromDishka[RescheduleCompetition],
+    competition_id: CompetitionId,
+    data: RescheduleCompetitionForm,
+) -> None:
+    """HTTP endpoint for rescheduling a competition."""
+    await interactor.execute(competition_id, data)
+
+
+@router.patch("/{competition_id}/archive-status")
+async def change_competition_archive_status(
+    interactor: FromDishka[ChangeCompetitionArchiveStatus],
+    competition_id: CompetitionId,
+    data: ChangeCompetitionArchiveStatusForm,
+) -> None:
+    """HTTP endpoint for changing competition archive status."""
     await interactor.execute(competition_id, data)
 
 

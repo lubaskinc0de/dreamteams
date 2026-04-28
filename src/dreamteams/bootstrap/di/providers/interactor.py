@@ -6,7 +6,6 @@ from dreamteams.application.block_user import BlockUser, ListUsers, ReadUserByAd
 from dreamteams.application.delete_my_competition import (
     DeleteCompetition,
     ListCompetitions,
-    UpdateCompetition,
 )
 from dreamteams.application.delete_my_competition import ReadCompetition as ReadCompetitionAsOrganizer
 from dreamteams.application.issue_invite import IssueInvite, ListInvites, ReadInvite, RevokeInvite
@@ -40,6 +39,11 @@ from dreamteams.application.review_application import (
 from dreamteams.application.submit_application import ExploreCompetitions, SubmitApplication
 from dreamteams.application.submit_application import ReadApplicationForm as ReadApplicationFormAsParticipant
 from dreamteams.application.submit_application import ReadCompetition as ReadCompetitionAsParticipant
+from dreamteams.application.update_my_competition import (
+    ChangeCompetitionArchiveStatus,
+    RescheduleCompetition,
+    UpdateCompetitionGeneralInfo,
+)
 from dreamteams.application.view_my_applications import (
     ListMyApplications,
     ReadMyApplication,
@@ -63,7 +67,9 @@ class InteractorProvider(Provider):
         ReadCompetitionAsOrganizer,
         ReadCompetitionAsParticipant,
         DeleteCompetition,
-        UpdateCompetition,
+        UpdateCompetitionGeneralInfo,
+        RescheduleCompetition,
+        ChangeCompetitionArchiveStatus,
         AttachAvatar,
         DetachAvatar,
         UpdateParticipant,

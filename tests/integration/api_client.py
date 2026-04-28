@@ -411,14 +411,40 @@ class ApiClient:
         )
         return await self._load_response(response, response_type=CompetitionModel)
 
-    async def update_competition(
+    async def update_competition_general_info(
         self,
         competition_id: CompetitionId,
         data: dict[str, Any],
     ) -> APIResponse[None]:
-        """Update competition via PUT /competitions/{competition_id}."""
-        response = await self.session.put(
-            f"{COMPETITIONS_URL}/{competition_id}",
+        """Update competition general information via PATCH /competitions/{competition_id}/general-info."""
+        response = await self.session.patch(
+            f"{COMPETITIONS_URL}/{competition_id}/general-info",
+            headers=self._headers,
+            json=data,
+        )
+        return await self._load_response(response, response_type=None)
+
+    async def reschedule_competition(
+        self,
+        competition_id: CompetitionId,
+        data: dict[str, Any],
+    ) -> APIResponse[None]:
+        """Reschedule competition via PATCH /competitions/{competition_id}/schedule."""
+        response = await self.session.patch(
+            f"{COMPETITIONS_URL}/{competition_id}/schedule",
+            headers=self._headers,
+            json=data,
+        )
+        return await self._load_response(response, response_type=None)
+
+    async def change_competition_archive_status(
+        self,
+        competition_id: CompetitionId,
+        data: dict[str, Any],
+    ) -> APIResponse[None]:
+        """Change competition archive status via PATCH /competitions/{competition_id}/archive-status."""
+        response = await self.session.patch(
+            f"{COMPETITIONS_URL}/{competition_id}/archive-status",
             headers=self._headers,
             json=data,
         )

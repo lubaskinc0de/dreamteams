@@ -13,7 +13,7 @@ from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.entity import (
     Competition,
     CompetitionData,
-    UpdateCompetitionData,
+    UpdateCompetitionGeneralInfoData,
     competition_factory,
 )
 from dreamteams.entities.competition.milestone import Milestone, MilestoneData
@@ -290,26 +290,16 @@ def valid_competition(
 
 
 @st.composite
-def valid_competition_update_data(draw: st.DrawFn) -> UpdateCompetitionData:
-    """Valid competition update data."""
+def valid_competition_general_info_data(draw: st.DrawFn) -> UpdateCompetitionGeneralInfoData:
+    """Valid competition general-info update data."""
     max_participants = draw(st.integers(min_value=1, max_value=10_000))
     venue_format = draw(st.sampled_from(CompetitionFormat))
 
-    has_teams = draw(st.booleans())
-    if has_teams:
-        min_team, max_team = draw(positive_ordered_pairs())
-        team_size: TeamSizeRange | None = TeamSizeRange(min=min_team, max=max_team)
-        schedule = draw(valid_schedule_data())
-    else:
-        team_size = None
-        schedule = draw(valid_schedule_data_no_team_formation())
-
     milestones = draw(st.one_of(st.none(), st.lists(milestone(), max_size=5)))
 
-    return UpdateCompetitionData(
+    return UpdateCompetitionGeneralInfoData(
         title=draw(valid_text()),
         description=draw(valid_text()),
-        schedule=schedule,
         participant_limits=ParticipantLimits(max=max_participants),
         tags=CompetitionTags(
             draw(
@@ -336,11 +326,9 @@ def valid_competition_update_data(draw: st.DrawFn) -> UpdateCompetitionData:
             if venue_format in [CompetitionFormat.OFFLINE, CompetitionFormat.HYBRID]
             else None,
         ),
-        team_size=team_size,
         participant_type=draw(st.sampled_from(ParticipantType)),
         milestones=(CompetitionMilestones(_deduplicate_milestones(milestones)) if milestones is not None else None),
         auto_accept=draw(st.booleans()),
-        is_archived=draw(st.booleans()),
     )
 
 

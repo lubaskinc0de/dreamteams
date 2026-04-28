@@ -24,11 +24,11 @@ async def test_participant_can_read_competition(
     competition_gateway = await request_container.get(CompetitionGateway)
     db_competition = await competition_gateway.get(comp.created.competition_id)
     expected_model = competition_form_to_model(
-        comp.created.competition_id,
-        owner.organizer.created.organizer_id,
-        db_competition.created_at,
-        db_competition.updated_at,
-        comp.form,
+        form=comp.form,
+        competition_id=comp.created.competition_id,
+        organizer_id=owner.organizer.created.organizer_id,
+        created_at=db_competition.created_at,
+        updated_at=db_competition.updated_at,
         clock=clock,
     )
 

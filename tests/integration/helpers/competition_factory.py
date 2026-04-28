@@ -14,12 +14,15 @@ from dreamteams.application.common.dto.competition_track import CompetitionTrack
 from dreamteams.application.common.dto.milestone import MilestoneForm
 from dreamteams.application.delete_my_competition import CompetitionModel
 from dreamteams.application.publish_competition.publish_competition import CompetitionForm
-from dreamteams.application.update_my_competition.update import UpdateCompetitionForm
+from dreamteams.application.update_my_competition import (
+    ChangeCompetitionArchiveStatusForm,
+    RescheduleCompetitionForm,
+    UpdateCompetitionGeneralInfoForm,
+)
 from dreamteams.entities.common.identifiers import CompetitionId, CompetitionTagId
 from dreamteams.entities.common.vo.participant_type import ParticipantType
 from dreamteams.entities.competition.participant_limits import ParticipantLimits
-from dreamteams.entities.competition.schedule import ScheduleData
-from tests.common.factory.competition import CompetitionFormFactory, UpdateCompetitionFormFactory
+from tests.common.factory.competition import CompetitionFormFactory
 from tests.integration.api_client import ApiClient
 from tests.integration.helpers.models import CompetitionCreated
 
@@ -31,7 +34,6 @@ class CompetitionGateway:
     api_client: ApiClient
     session: AsyncSession
     competition_form_factory: CompetitionFormFactory
-    update_competition_form_factory: UpdateCompetitionFormFactory
 
     # --- Direct DB helpers ---
 
@@ -50,15 +52,46 @@ class CompetitionGateway:
         with self.api_client.authenticate(auth_user_id=organizer_auth_id):
             return (await self.api_client.read_competition(competition_id)).assert_status(200).ensure_content()
 
-    async def update(
+    async def update_general_info(
         self,
         competition_id: CompetitionId,
-        data: UpdateCompetitionForm,
+        data: UpdateCompetitionGeneralInfoForm,
         organizer_auth_id: str,
     ) -> CompetitionModel:
-        """Update competition and return the updated model."""
+        """Update competition general information and return the updated model."""
         with self.api_client.authenticate(auth_user_id=organizer_auth_id):
-            (await self.api_client.update_competition(competition_id, data.model_dump(mode="json"))).assert_status(200)
+            (
+                await self.api_client.update_competition_general_info(competition_id, data.model_dump(mode="json"))
+            ).assert_status(200)
+            return (await self.api_client.read_competition(competition_id)).assert_status(200).ensure_content()
+
+    async def reschedule(
+        self,
+        competition_id: CompetitionId,
+        data: RescheduleCompetitionForm,
+        organizer_auth_id: str,
+    ) -> CompetitionModel:
+        """Reschedule competition and return the updated model."""
+        with self.api_client.authenticate(auth_user_id=organizer_auth_id):
+            (await self.api_client.reschedule_competition(competition_id, data.model_dump(mode="json"))).assert_status(
+                200,
+            )
+            return (await self.api_client.read_competition(competition_id)).assert_status(200).ensure_content()
+
+    async def change_archive_status(
+        self,
+        competition_id: CompetitionId,
+        data: ChangeCompetitionArchiveStatusForm,
+        organizer_auth_id: str,
+    ) -> CompetitionModel:
+        """Change competition archive status and return the updated model."""
+        with self.api_client.authenticate(auth_user_id=organizer_auth_id):
+            (
+                await self.api_client.change_competition_archive_status(
+                    competition_id,
+                    data.model_dump(mode="json"),
+                )
+            ).assert_status(200)
             return (await self.api_client.read_competition(competition_id)).assert_status(200).ensure_content()
 
     # --- State manipulation ---
@@ -181,17 +214,10 @@ class CompetitionGateway:
         competition_model = await self.read(competition_id, organizer_auth_id)
         await self.make_all_active([competition_model], organizer_auth_id)
 
-        update_form = UpdateCompetitionForm(
+        general_info_form = UpdateCompetitionGeneralInfoForm(
             title=competition_model.title,
             description=competition_model.description,
-            schedule=ScheduleData(
-                registration_start=competition_model.schedule.registration_start,
-                registration_end=competition_model.schedule.registration_end,
-                team_formation_start=competition_model.schedule.team_formation_start,
-                team_formation_end=competition_model.schedule.team_formation_end,
-            ),
             venue=competition_model.venue,
-            team_size=competition_model.team_size,
             milestones=[
                 MilestoneForm(
                     title=m.title,
@@ -202,14 +228,22 @@ class CompetitionGateway:
             ],
             participant_type=participant_type,
             participant_limits=ParticipantLimits(max=max_participants),
-            is_archived=False,
             tag_ids=tag_ids,
             tracks=tracks,
             auto_accept=auto_accept,
         )
         with self.api_client.authenticate(auth_user_id=organizer_auth_id):
             (
-                await self.api_client.update_competition(competition_id, update_form.model_dump(mode="json"))
+                await self.api_client.update_competition_general_info(
+                    competition_id,
+                    general_info_form.model_dump(mode="json"),
+                )
+            ).assert_status(200)
+            (
+                await self.api_client.change_competition_archive_status(
+                    competition_id,
+                    ChangeCompetitionArchiveStatusForm(is_archived=False).model_dump(mode="json"),
+                )
             ).assert_status(200)
 
     # --- Creation ---
@@ -257,14 +291,11 @@ class CompetitionGateway:
     ) -> CompetitionCreated:
         """Create a competition that is visible (unarchived) but whose registration hasn't started yet."""
         comp = await self.create(organizer_auth_id)
-        update_form = self.update_competition_form_factory.build(
-            participant_type=ParticipantType.ANY,
-            is_archived=False,
-            tag_ids=comp.form.tag_ids,
-            tracks=comp.form.tracks,
-            auto_accept=comp.form.auto_accept,
+        await self.change_archive_status(
+            comp.created.competition_id,
+            ChangeCompetitionArchiveStatusForm(is_archived=False),
+            organizer_auth_id,
         )
-        await self.update(comp.created.competition_id, update_form, organizer_auth_id)
         return comp
 
     async def create_from_form(self, organizer_auth_id: str, form: CompetitionForm) -> CompetitionModel:
