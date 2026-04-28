@@ -5,7 +5,7 @@ from dreamteams.application.common.dto.explore_competition import ExploreCompeti
 from dreamteams.application.common.dto.preview_competition import PreviewCompetitionModel, PreviewOrganizerModel
 from dreamteams.application.common.gateway.competition import CompetitionSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
-from dreamteams.application.delete_competition import CompetitionModel
+from dreamteams.application.delete_my_competition import CompetitionModel
 from dreamteams.application.preview_competitions.preview_competitions import PreviewCompetitionsList
 from dreamteams.application.publish_competition.publish_competition import CompetitionForm
 from dreamteams.application.submit_application.list_competitions import ExploreCompetitionsList

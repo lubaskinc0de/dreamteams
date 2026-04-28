@@ -14,7 +14,7 @@ from dreamteams.application.common.gateway.application import ApplicationSortBy
 from dreamteams.application.common.gateway.competition import CompetitionSortBy, ExploreSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.common.gateway.user import UserRoleFilter
-from dreamteams.application.delete_competition import CompetitionModel, CompetitionsList
+from dreamteams.application.delete_my_competition import CompetitionModel, CompetitionsList
 from dreamteams.application.issue_invite import InviteIssued, InviteModel, InvitesList
 from dreamteams.application.manage_application_form import ApplicationFormModel, CreatedApplicationForm
 from dreamteams.application.manage_profile import ProfileModel

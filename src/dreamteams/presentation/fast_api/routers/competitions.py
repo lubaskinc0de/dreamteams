@@ -4,7 +4,7 @@ from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter, Query
 
-from dreamteams.application.delete_competition import (
+from dreamteams.application.delete_my_competition import (
     CompetitionModel,
     CompetitionsList,
     DeleteCompetition,
@@ -13,7 +13,7 @@ from dreamteams.application.delete_competition import (
     UpdateCompetition,
     UpdateCompetitionForm,
 )
-from dreamteams.application.delete_competition import ReadCompetition as ReadCompetitionAsOrganizer
+from dreamteams.application.delete_my_competition import ReadCompetition as ReadCompetitionAsOrganizer
 from dreamteams.application.preview_competitions.preview_competitions import (
     PreviewCompetitions,
     PreviewCompetitionsInput,

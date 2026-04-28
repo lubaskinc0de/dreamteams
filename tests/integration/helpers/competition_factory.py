@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from dreamteams.adapters.db.models import competition_table
 from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.common.dto.milestone import MilestoneForm
-from dreamteams.application.delete_competition import CompetitionModel
+from dreamteams.application.delete_my_competition import CompetitionModel
 from dreamteams.application.publish_competition.publish_competition import CompetitionForm
 from dreamteams.application.update_my_competition.update import UpdateCompetitionForm
 from dreamteams.entities.common.identifiers import CompetitionId, CompetitionTagId

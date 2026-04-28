@@ -3,12 +3,12 @@ from dishka import BaseScope, Provider, Scope, provide, provide_all
 from dreamteams.application.attach_avatar.attach_avatar import AttachAvatar
 from dreamteams.application.attach_avatar.detach_avatar import DetachAvatar
 from dreamteams.application.block_user import BlockUser, ListUsers, ReadUserByAdmin, UnblockUser
-from dreamteams.application.delete_competition import (
+from dreamteams.application.delete_my_competition import (
     DeleteCompetition,
     ListCompetitions,
     UpdateCompetition,
 )
-from dreamteams.application.delete_competition import ReadCompetition as ReadCompetitionAsOrganizer
+from dreamteams.application.delete_my_competition import ReadCompetition as ReadCompetitionAsOrganizer
 from dreamteams.application.issue_invite import IssueInvite, ListInvites, ReadInvite, RevokeInvite
 from dreamteams.application.manage_application_form import (
     CreateApplicationForm,
