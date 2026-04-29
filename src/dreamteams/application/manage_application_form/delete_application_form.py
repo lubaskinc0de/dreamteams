@@ -6,7 +6,6 @@ from dreamteams.application.common.gateway.application_form import ApplicationFo
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.metrics import MetricsGateway
 from dreamteams.application.errors.application_form import ApplicationFormNotFoundError
 from dreamteams.application.errors.organizer import OrganizerNotFoundError
 from dreamteams.entities.common.identifiers import CompetitionId
@@ -29,7 +28,6 @@ class DeleteApplicationForm:
     competition_gateway: CompetitionGateway
     application_form_gateway: ApplicationFormGateway
     event_bus: EventBus
-    metrics: MetricsGateway
 
     async def execute(self, competition_id: CompetitionId) -> None:
         """Delete the application form attached to a competition."""
@@ -64,5 +62,4 @@ class DeleteApplicationForm:
             ApplicationFormDeleted(application_form_id=form.id, competition_id=competition_id),
         )
 
-        self.metrics.record_application_form_deleted()
         logger.info("Application form deleted", competition_id=competition_id, user_id=user_id)

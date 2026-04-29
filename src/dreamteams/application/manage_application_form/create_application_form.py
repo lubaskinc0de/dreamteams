@@ -7,7 +7,6 @@ from dreamteams.application.common.gateway.application_form import ApplicationFo
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.metrics import MetricsGateway
 from dreamteams.application.errors.application_form import ApplicationFormAlreadyExistsError
 from dreamteams.application.errors.organizer import OrganizerNotFoundError
 from dreamteams.entities.application_form.entity import ApplicationFormData, application_form_factory
@@ -62,7 +61,6 @@ class CreateApplicationForm:
     application_form_gateway: ApplicationFormGateway
     event_bus: EventBus
     clock: Clock
-    metrics: MetricsGateway
 
     async def execute(self, competition_id: CompetitionId, data: ApplicationFormInput) -> CreatedApplicationForm:
         """Create a new ApplicationForm and attach it to a competition."""
@@ -110,6 +108,5 @@ class CreateApplicationForm:
             ApplicationFormCreated(application_form_id=form.id, competition_id=competition_id),
         )
 
-        self.metrics.record_application_form_created()
         logger.info("Application form created", form_id=form.id, competition_id=competition_id)
         return CreatedApplicationForm(application_form_id=form.id)

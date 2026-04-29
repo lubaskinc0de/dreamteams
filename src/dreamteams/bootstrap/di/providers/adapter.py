@@ -43,6 +43,18 @@ from dreamteams.adapters.db.gateway.user import SAUserGateway
 from dreamteams.adapters.db.pool_metrics import register_pool_metrics
 from dreamteams.adapters.event_bus import InMemoryEventBus
 from dreamteams.adapters.event_handler_registry import EventHandlersRegistry
+from dreamteams.adapters.metrics import (
+    ApplicationAcceptedMetricsEventHandler,
+    ApplicationFormCreatedMetricsEventHandler,
+    ApplicationFormDeletedMetricsEventHandler,
+    ApplicationRejectedMetricsEventHandler,
+    ApplicationSubmittedMetricsEventHandler,
+    ApplicationWithdrawnMetricsEventHandler,
+    AvatarAttachedMetricsEventHandler,
+    AvatarDetachedMetricsEventHandler,
+    CompetitionCreatedMetricsEventHandler,
+    RegistrationMetricsEventHandler,
+)
 from dreamteams.application.common.event_bus import EventBus
 from dreamteams.application.common.gateway.application_form import ApplicationFormGateway
 from dreamteams.application.common.gateway.competition import CompetitionGateway
@@ -89,6 +101,19 @@ class AdapterProvider(Provider):
         ApplicationFormCacheEventHandler,
         ApplicationCacheEventHandler,
         scope=Scope.REQUEST,
+    )
+    metrics_handlers = provide_all(
+        RegistrationMetricsEventHandler,
+        CompetitionCreatedMetricsEventHandler,
+        ApplicationSubmittedMetricsEventHandler,
+        ApplicationAcceptedMetricsEventHandler,
+        ApplicationRejectedMetricsEventHandler,
+        ApplicationWithdrawnMetricsEventHandler,
+        ApplicationFormCreatedMetricsEventHandler,
+        ApplicationFormDeletedMetricsEventHandler,
+        AvatarAttachedMetricsEventHandler,
+        AvatarDetachedMetricsEventHandler,
+        scope=Scope.APP,
     )
     event_handlers_registry = provide(EventHandlersRegistry, scope=Scope.REQUEST)
 

@@ -1,10 +1,11 @@
 import structlog
 
+from dreamteams.application.common.event_bus import EventBus
+from dreamteams.application.common.events import ApplicationRejected
 from dreamteams.application.common.gateway.application import ApplicationGateway
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.metrics import MetricsGateway
 from dreamteams.application.errors.application import ApplicationNotFoundError
 from dreamteams.application.errors.organizer import OrganizerNotFoundError
 from dreamteams.entities.common.identifiers import ApplicationId
@@ -25,7 +26,7 @@ class RejectApplication:
     organizer_gateway: OrganizerGateway
     application_gateway: ApplicationGateway
     competition_gateway: CompetitionGateway
-    metrics: MetricsGateway
+    event_bus: EventBus
 
     async def execute(self, application_id: ApplicationId) -> None:
         """Reject a pending application; delegates access and status checks to the domain."""
@@ -50,5 +51,7 @@ class RejectApplication:
         self.uow.add(application)
         await self.uow.commit()
 
-        self.metrics.record_application_rejected()
+        await self.event_bus.publish(
+            ApplicationRejected(application_id=application.id, competition_id=application.competition_id),
+        )
         logger.info("Application rejected", application_id=application_id, user_id=user_id)

@@ -1,9 +1,10 @@
 import structlog
 
 from dreamteams.application.common.avatar_storage import AvatarStorage
+from dreamteams.application.common.event_bus import EventBus
+from dreamteams.application.common.events import AvatarDetached
 from dreamteams.application.common.gateway.user import UserGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.metrics import MetricsGateway
 from dreamteams.application.errors.user import UserNotFoundError
 from dreamteams_common.interactor import interactor
 from dreamteams_common.logger import Logger
@@ -20,7 +21,7 @@ class DetachAvatar:
     idp: IdProvider
     user_gateway: UserGateway
     storage: AvatarStorage
-    metrics: MetricsGateway
+    event_bus: EventBus
 
     async def execute(self) -> None:
         """Detach avatar from user profile."""
@@ -36,4 +37,4 @@ class DetachAvatar:
         user.avatar = None
 
         await self.uow.commit()
-        self.metrics.record_avatar_detached()
+        await self.event_bus.publish(AvatarDetached(user_id=user_id))

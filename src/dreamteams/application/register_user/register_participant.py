@@ -3,7 +3,8 @@ from pydantic import BaseModel, Field
 
 from dreamteams.application.common.dto.participant_contact import ParticipantContactForm
 from dreamteams.application.common.dto.participant_skill import ParticipantSkillForm
-from dreamteams.application.common.metrics import MetricsGateway
+from dreamteams.application.common.event_bus import EventBus
+from dreamteams.application.common.events import UserRegistered
 from dreamteams.application.register_user.shared.user_factory import UserFactory
 from dreamteams.entities.common.identifiers import ParticipantId, UserId
 from dreamteams.entities.common.participant_type import ParticipantType
@@ -51,7 +52,7 @@ class RegisterParticipant:
     uow: UoW
     user_factory: UserFactory
     clock: Clock
-    metrics: MetricsGateway
+    event_bus: EventBus
 
     async def execute(self, data: ParticipantForm) -> CreatedParticipant:
         """Creates a new ``User`` and ``Participant`` role."""
@@ -92,7 +93,7 @@ class RegisterParticipant:
 
         self.uow.add(participant)
         await self.uow.commit()
-        self.metrics.record_registration(role="participant")
+        await self.event_bus.publish(UserRegistered(role="participant"))
 
         logger.info(
             "Participant created",

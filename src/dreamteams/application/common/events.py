@@ -16,6 +16,13 @@ class DomainEvent(ABC):  # noqa: B024
 
 
 @dataclass(frozen=True, slots=True)
+class UserRegistered(DomainEvent):
+    """Event emitted when a user registers for an application role."""
+
+    role: str
+
+
+@dataclass(frozen=True, slots=True)
 class UserBlocked(DomainEvent):
     """Event emitted when an admin blocks a user."""
 
@@ -82,8 +89,46 @@ class ApplicationFormDeleted(DomainEvent):
 
 
 @dataclass(frozen=True, slots=True)
+class ApplicationSubmitted(DomainEvent):
+    """Event emitted when a participant submits an application."""
+
+    application_id: ApplicationId
+    competition_id: CompetitionId
+
+
+@dataclass(frozen=True, slots=True)
 class ApplicationAccepted(DomainEvent):
     """Event emitted when an application is accepted."""
 
     application_id: ApplicationId
     competition_id: CompetitionId
+
+
+@dataclass(frozen=True, slots=True)
+class ApplicationRejected(DomainEvent):
+    """Event emitted when an application is rejected."""
+
+    application_id: ApplicationId
+    competition_id: CompetitionId
+
+
+@dataclass(frozen=True, slots=True)
+class ApplicationWithdrawn(DomainEvent):
+    """Event emitted when an application is withdrawn."""
+
+    application_id: ApplicationId
+    competition_id: CompetitionId
+
+
+@dataclass(frozen=True, slots=True)
+class AvatarAttached(DomainEvent):
+    """Event emitted when a user attaches an avatar."""
+
+    user_id: UserId
+
+
+@dataclass(frozen=True, slots=True)
+class AvatarDetached(DomainEvent):
+    """Event emitted when a user detaches an avatar."""
+
+    user_id: UserId

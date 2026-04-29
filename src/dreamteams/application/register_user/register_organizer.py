@@ -3,11 +3,12 @@ from uuid import uuid4
 import structlog
 from pydantic import BaseModel, EmailStr, Field
 
+from dreamteams.application.common.event_bus import EventBus
+from dreamteams.application.common.events import UserRegistered
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
 from dreamteams.application.common.gateway.organizer_invite import OrganizerInviteGateway
 from dreamteams.application.common.gateway.user import UserGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.metrics import MetricsGateway
 from dreamteams.application.common.phone_number import RussianPhoneNumber
 from dreamteams.application.errors.invite import InviteNotFoundError
 from dreamteams.application.errors.organizer import OrganizerAlreadyExistsError
@@ -47,7 +48,7 @@ class RegisterOrganizer:
     user_factory: UserFactory
     organizer_gateway: OrganizerGateway
     organizer_invite_gateway: OrganizerInviteGateway
-    metrics: MetricsGateway
+    event_bus: EventBus
 
     async def execute(self, data: OrganizerForm) -> CreatedOrganizer:
         """Creates a new ``User`` and ``Organizer`` role."""
@@ -89,7 +90,7 @@ class RegisterOrganizer:
 
         self.uow.add(organizer)
         await self.uow.commit()
-        self.metrics.record_registration(role="organizer")
+        await self.event_bus.publish(UserRegistered(role="organizer"))
 
         logger.info("Organizer created", organizer=organizer)
         return CreatedOrganizer(organizer_id=organizer_id, user_id=user.id)

@@ -1,9 +1,10 @@
 import structlog
 
+from dreamteams.application.common.event_bus import EventBus
+from dreamteams.application.common.events import ApplicationWithdrawn
 from dreamteams.application.common.gateway.application import ApplicationGateway
 from dreamteams.application.common.gateway.participant import ParticipantGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.metrics import MetricsGateway
 from dreamteams.application.errors.application import ApplicationNotFoundError
 from dreamteams.application.errors.participant import ParticipantNotFoundError
 from dreamteams.entities.common.identifiers import ApplicationId
@@ -22,7 +23,7 @@ class WithdrawApplication:
     idp: IdProvider
     participant_gateway: ParticipantGateway
     application_gateway: ApplicationGateway
-    metrics: MetricsGateway
+    event_bus: EventBus
 
     async def execute(self, application_id: ApplicationId) -> None:
         """Withdraw a pending application; only the submitting participant may do this."""
@@ -43,5 +44,7 @@ class WithdrawApplication:
         await self.uow.delete(application)
         await self.uow.commit()
 
-        self.metrics.record_application_withdrawn()
+        await self.event_bus.publish(
+            ApplicationWithdrawn(application_id=application.id, competition_id=application.competition_id),
+        )
         logger.info("Application withdrawn", application_id=application_id, user_id=user_id)

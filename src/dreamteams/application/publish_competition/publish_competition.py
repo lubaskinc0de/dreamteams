@@ -8,7 +8,6 @@ from dreamteams.application.common.events import CompetitionCreated
 from dreamteams.application.common.gateway.competition_tag import CompetitionTagGateway
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.metrics import MetricsGateway
 from dreamteams.application.errors.competition_tag import CompetitionTagNotFoundError
 from dreamteams.application.errors.organizer import OrganizerNotFoundError
 from dreamteams.entities.common.identifiers import CompetitionId, CompetitionTagId
@@ -62,7 +61,6 @@ class PublishCompetition:
     competition_tag_gateway: CompetitionTagGateway
     event_bus: EventBus
     clock: Clock
-    metrics: MetricsGateway
 
     async def execute(self, data: CompetitionForm) -> CreatedCompetition:
         """Creates a new competition."""
@@ -112,7 +110,6 @@ class PublishCompetition:
         self.uow.add(competition)
         await self.uow.commit()
         await self.event_bus.publish(CompetitionCreated(competition_id=competition.id))
-        self.metrics.record_competition_created()
 
         logger.info("Competition saved", competition_id=competition.id, user_id=user_id)
         return CreatedCompetition(competition_id=competition.id)

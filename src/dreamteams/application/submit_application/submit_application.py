@@ -5,13 +5,12 @@ from pydantic import BaseModel
 
 from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.common.event_bus import EventBus
-from dreamteams.application.common.events import ApplicationAccepted
+from dreamteams.application.common.events import ApplicationAccepted, ApplicationSubmitted
 from dreamteams.application.common.gateway.application import ApplicationGateway
 from dreamteams.application.common.gateway.application_form import ApplicationFormGateway
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.participant import ParticipantGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.metrics import MetricsGateway
 from dreamteams.application.errors.application import ApplicationAlreadyExistsError
 from dreamteams.entities.application.entity import ApplicationData, ApplicationStatus
 from dreamteams.entities.application.submit_service import submit_application
@@ -52,7 +51,6 @@ class SubmitApplication:
     application_form_gateway: ApplicationFormGateway
     event_bus: EventBus
     clock: Clock
-    metrics: MetricsGateway
 
     async def execute(self, competition_id: CompetitionId, data: SubmitApplicationInput) -> CreatedApplication:
         """Submit a new application to a competition."""
@@ -99,12 +97,13 @@ class SubmitApplication:
         self.uow.add(application)
         await self.uow.commit()
 
-        self.metrics.record_application_submitted()
+        await self.event_bus.publish(
+            ApplicationSubmitted(application_id=application.id, competition_id=competition_id),
+        )
         if application.status == ApplicationStatus.ACCEPTED:
             await self.event_bus.publish(
                 ApplicationAccepted(application_id=application.id, competition_id=competition_id),
             )
-            self.metrics.record_application_accepted()
 
         logger.info(
             "Application submitted",

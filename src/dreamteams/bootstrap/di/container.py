@@ -11,7 +11,6 @@ from dreamteams.bootstrap.config_loader import Config
 from dreamteams.bootstrap.di.providers.adapter import AdapterProvider
 from dreamteams.bootstrap.di.providers.config import ConfigProvider
 from dreamteams.bootstrap.di.providers.interactor import InteractorProvider
-from dreamteams.bootstrap.di.providers.metrics import MetricsProvider
 from dreamteams.presentation.fast_api.config import ServerConfig
 from dreamteams_common.observability.config import OTelConfig
 
@@ -22,7 +21,6 @@ def get_async_container(config: Config) -> AsyncContainer:
         ConfigProvider(),
         FastapiProvider(),
         AdapterProvider(),
-        MetricsProvider(),
         InteractorProvider(),
     ]
     context = {

@@ -6,7 +6,6 @@ from dreamteams.application.common.gateway.application import ApplicationGateway
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
 from dreamteams.application.common.idp import IdProvider
-from dreamteams.application.common.metrics import MetricsGateway
 from dreamteams.application.errors.application import ApplicationNotFoundError
 from dreamteams.application.errors.organizer import OrganizerNotFoundError
 from dreamteams.entities.common.identifiers import ApplicationId
@@ -28,7 +27,6 @@ class AcceptApplication:
     application_gateway: ApplicationGateway
     competition_gateway: CompetitionGateway
     event_bus: EventBus
-    metrics: MetricsGateway
 
     async def execute(self, application_id: ApplicationId) -> None:
         """Accept a pending application; delegates access and status checks to the domain."""
@@ -56,5 +54,4 @@ class AcceptApplication:
             ApplicationAccepted(application_id=application.id, competition_id=application.competition_id),
         )
 
-        self.metrics.record_application_accepted()
         logger.info("Application accepted", application_id=application_id, user_id=user_id)
