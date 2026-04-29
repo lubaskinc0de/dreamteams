@@ -13,6 +13,7 @@ from dreamteams_exporter.adapters.cache.redis_export_job_gateway import RedisExp
 from dreamteams_exporter.adapters.cache.redis_rate_limiter import RedisExportRateLimiter
 from dreamteams_exporter.adapters.event_bus import InMemoryEventBus
 from dreamteams_exporter.adapters.event_handler_registry import EventHandlersRegistry
+from dreamteams_exporter.adapters.http.client import DreamTeamsApiClient
 from dreamteams_exporter.adapters.http.config import DreamteamsApiConfig
 from dreamteams_exporter.adapters.http.session import aiohttp_session
 from dreamteams_exporter.adapters.http.user_gateway import HttpUserGateway
@@ -35,6 +36,7 @@ class AdapterProvider(Provider):
 
     clock = provide(SystemClock, scope=Scope.APP, provides=Clock)
     rate_limiter = provide(RedisExportRateLimiter, scope=Scope.APP, provides=ExportRateLimiter)
+    dreamteams_api_client = provide(DreamTeamsApiClient, scope=Scope.APP)
     user_gateway = provide(HttpUserGateway, scope=Scope.APP)
     export_job_gateway = provide(RedisExportJobGateway, scope=Scope.APP, provides=ExportJobGateway)
     metrics_handlers = provide_all(

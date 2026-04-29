@@ -22,6 +22,9 @@ export_file_lifetime_days = 1
 base_url = "http://api:5000/api"
 auth_header_name = "X-Auth-User"
 timeout_seconds = 10.0
+retry_attempts = 3
+retry_backoff_base_seconds = 0.1
+retry_backoff_max_seconds = 1.0
 
 [server]
 host = "0.0.0.0"

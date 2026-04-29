@@ -1,37 +1,9 @@
-from typing import Any
-from uuid import UUID
-
-import aiohttp
-from adaptix import ExtraSkip, P, Retort, loader, name_mapping
 from opentelemetry import trace
 
 from dreamteams_exporter.adapters.auth.model import AuthUserId
-from dreamteams_exporter.adapters.http.config import DreamteamsApiConfig
-from dreamteams_exporter.application.errors.auth import UnauthorizedError
+from dreamteams_exporter.adapters.http.client import DreamTeamsApiClient
 from dreamteams_exporter.entities.user import User
 
-
-def _extract_id(payload: dict[str, Any] | None) -> UUID | None:
-    """Pulls ``id`` out of an optional organizer/participant sub-object."""
-    if payload is None:
-        return None
-    return UUID(payload["id"])
-
-
-_retort = Retort(
-    recipe=[
-        name_mapping(
-            User,
-            map={
-                "organizer_id": "organizer",
-                "participant_id": "participant",
-            },
-            extra_in=ExtraSkip(),
-        ),
-        loader(P[User].organizer_id, _extract_id),
-        loader(P[User].participant_id, _extract_id),
-    ],
-)
 _tracer = trace.get_tracer(__name__)
 
 
@@ -43,26 +15,18 @@ class HttpUserGateway:
     protocol — the application layer only knows ``IdProvider``.
     """
 
-    def __init__(self, session: aiohttp.ClientSession, config: DreamteamsApiConfig) -> None:
-        self._session = session
-        self._config = config
+    def __init__(self, client: DreamTeamsApiClient) -> None:
+        self._client = client
 
     async def get_me(self, user_id: AuthUserId) -> User:
         """Issues ``GET {base}/users/me`` with the caller's ``X-Auth-User`` header forwarded verbatim."""
-        url = f"{self._config.base_url}/users/me"
-        headers = {self._config.auth_header_name: user_id}
-
         with _tracer.start_as_current_span("dreamteams_exporter.main_api.get_me") as span:
             span.set_attribute("dreamteams_exporter.main_api.route", "/users/me")
 
-            async with self._session.get(url, headers=headers) as response:
-                span.set_attribute("http.response.status_code", response.status)
-                if response.status in (401, 403):
-                    raise UnauthorizedError
-                response.raise_for_status()
-                payload = await response.json()
+            response = await self._client.get_me(user_id)
+            user = response.content
 
-            user = _retort.load(payload, User)
+            span.set_attribute("http.response.status_code", response.status)
             span.set_attribute("dreamteams_exporter.main_api.user_id", str(user.user_id))
             span.set_attribute("dreamteams_exporter.main_api.has_organizer", user.organizer_id is not None)
             span.set_attribute("dreamteams_exporter.main_api.has_participant", user.participant_id is not None)

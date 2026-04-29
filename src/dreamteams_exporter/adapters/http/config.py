@@ -15,6 +15,12 @@ class DreamteamsApiConfig:
     base_url: str
     auth_header_name: str
     timeout_seconds: float
+    connect_timeout_seconds: float | None = None
+    sock_connect_timeout_seconds: float | None = None
+    sock_read_timeout_seconds: float | None = None
+    retry_attempts: int = 3
+    retry_backoff_base_seconds: float = 0.1
+    retry_backoff_max_seconds: float = 1.0
 
     @classmethod
     def from_toml(cls, path: str | Path) -> Self:
