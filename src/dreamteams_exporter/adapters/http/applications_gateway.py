@@ -3,6 +3,7 @@ from typing import override
 
 import aiohttp
 from adaptix import ExtraSkip, Retort, name_mapping
+from opentelemetry import trace
 
 from dreamteams_exporter.adapters.auth.model import AuthUserId
 from dreamteams_exporter.adapters.http.config import DreamteamsApiConfig
@@ -29,6 +30,7 @@ _retort = Retort(
         name_mapping(Participant, extra_in=ExtraSkip()),
     ],
 )
+_tracer = trace.get_tracer(__name__)
 
 
 class HttpApplicationsGateway(ApplicationsGateway):
@@ -63,14 +65,25 @@ class HttpApplicationsGateway(ApplicationsGateway):
         if status is not None:
             params["status"] = status.value
 
-        async with self._session.get(url, headers=headers, params=params) as response:
-            response.raise_for_status()
-            payload = await response.json()
+        with _tracer.start_as_current_span("dreamteams_exporter.main_api.list_applications") as span:
+            span.set_attribute("dreamteams_exporter.main_api.route", "/competitions/{competition_id}/applications/")
+            span.set_attribute("dreamteams_exporter.main_api.page", page)
+            span.set_attribute("dreamteams_exporter.main_api.page_size", page_size)
+            span.set_attribute("dreamteams_exporter.main_api.competition_id", str(competition_id))
+            if status is not None:
+                span.set_attribute("dreamteams_exporter.main_api.application_status", status.value)
 
-        parsed = _retort.load(payload, _ApplicationsListPayload)
-        return ApplicationsPage(
-            items=parsed.items,
-            page=parsed.page,
-            page_size=page_size,
-            total=parsed.total,
-        )
+            async with self._session.get(url, headers=headers, params=params) as response:
+                span.set_attribute("http.response.status_code", response.status)
+                response.raise_for_status()
+                payload = await response.json()
+
+            parsed = _retort.load(payload, _ApplicationsListPayload)
+            span.set_attribute("dreamteams_exporter.main_api.items_count", len(parsed.items))
+            span.set_attribute("dreamteams_exporter.main_api.total_count", parsed.total)
+            return ApplicationsPage(
+                items=parsed.items,
+                page=parsed.page,
+                page_size=page_size,
+                total=parsed.total,
+            )

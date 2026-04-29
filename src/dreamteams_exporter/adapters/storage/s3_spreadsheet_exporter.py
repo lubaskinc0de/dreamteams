@@ -7,6 +7,7 @@ from urllib.parse import quote
 
 import aioboto3
 from botocore.exceptions import ClientError
+from opentelemetry import trace
 
 from dreamteams_exporter.adapters.storage.config import S3Config
 from dreamteams_exporter.application.common.dto.export_row import ExportRow
@@ -18,6 +19,7 @@ from dreamteams_exporter.application.common.spreadsheet_exporter import (
 _CONTENT_TYPE = "text/csv; charset=utf-8"
 _PART_SIZE = 5 * 1024 * 1024  # S3's minimum for non-final multipart parts
 _UTF8_BOM = b"\xef\xbb\xbf"  # lets Excel detect UTF-8 when opening the CSV
+_tracer = trace.get_tracer(__name__)
 
 
 class CsvS3SpreadsheetSession(SpreadsheetSession):
@@ -59,19 +61,26 @@ class CsvS3SpreadsheetSession(SpreadsheetSession):
             await self._upload_part(part)
 
     async def _upload_part(self, data: bytes) -> None:
-        async with self._aws_session.client(
-            service_name="s3",
-            endpoint_url=self._config.endpoint_url,
-            region_name=self._config.region,
-        ) as s3_client:
-            response = await s3_client.upload_part(
-                Bucket=self._config.bucket_name,
-                Key=self._key,
-                UploadId=self._upload_id,
-                PartNumber=self._part_number,
-                Body=data,
-            )
-        self._parts.append({"PartNumber": self._part_number, "ETag": response["ETag"]})
+        part_number = self._part_number
+        with _tracer.start_as_current_span("dreamteams_exporter.s3.upload_part") as span:
+            span.set_attribute("dreamteams_exporter.s3.bucket", self._config.bucket_name)
+            span.set_attribute("dreamteams_exporter.s3.key", self._key)
+            span.set_attribute("dreamteams_exporter.s3.part_number", part_number)
+            span.set_attribute("dreamteams_exporter.s3.part_size_bytes", len(data))
+
+            async with self._aws_session.client(
+                service_name="s3",
+                endpoint_url=self._config.endpoint_url,
+                region_name=self._config.region,
+            ) as s3_client:
+                response = await s3_client.upload_part(
+                    Bucket=self._config.bucket_name,
+                    Key=self._key,
+                    UploadId=self._upload_id,
+                    PartNumber=part_number,
+                    Body=data,
+                )
+        self._parts.append({"PartNumber": part_number, "ETag": response["ETag"]})
         self._part_number += 1
 
     @override
@@ -84,17 +93,22 @@ class CsvS3SpreadsheetSession(SpreadsheetSession):
         await self._upload_part(bytes(self._buffer))
         self._buffer.clear()
 
-        async with self._aws_session.client(
-            service_name="s3",
-            endpoint_url=self._config.endpoint_url,
-            region_name=self._config.region,
-        ) as s3_client:
-            await s3_client.complete_multipart_upload(
-                Bucket=self._config.bucket_name,
-                Key=self._key,
-                UploadId=self._upload_id,
-                MultipartUpload={"Parts": self._parts},
-            )
+        with _tracer.start_as_current_span("dreamteams_exporter.s3.complete_multipart_upload") as span:
+            span.set_attribute("dreamteams_exporter.s3.bucket", self._config.bucket_name)
+            span.set_attribute("dreamteams_exporter.s3.key", self._key)
+            span.set_attribute("dreamteams_exporter.s3.parts_count", len(self._parts))
+
+            async with self._aws_session.client(
+                service_name="s3",
+                endpoint_url=self._config.endpoint_url,
+                region_name=self._config.region,
+            ) as s3_client:
+                await s3_client.complete_multipart_upload(
+                    Bucket=self._config.bucket_name,
+                    Key=self._key,
+                    UploadId=self._upload_id,
+                    MultipartUpload={"Parts": self._parts},
+                )
         self._closed = True
         return self._public_url()
 
@@ -103,16 +117,21 @@ class CsvS3SpreadsheetSession(SpreadsheetSession):
         """Aborts the S3 multipart upload, releasing any parts already uploaded."""
         if self._closed:
             return
-        async with self._aws_session.client(
-            service_name="s3",
-            endpoint_url=self._config.endpoint_url,
-            region_name=self._config.region,
-        ) as s3_client:
-            await s3_client.abort_multipart_upload(
-                Bucket=self._config.bucket_name,
-                Key=self._key,
-                UploadId=self._upload_id,
-            )
+        with _tracer.start_as_current_span("dreamteams_exporter.s3.abort_multipart_upload") as span:
+            span.set_attribute("dreamteams_exporter.s3.bucket", self._config.bucket_name)
+            span.set_attribute("dreamteams_exporter.s3.key", self._key)
+            span.set_attribute("dreamteams_exporter.s3.parts_count", len(self._parts))
+
+            async with self._aws_session.client(
+                service_name="s3",
+                endpoint_url=self._config.endpoint_url,
+                region_name=self._config.region,
+            ) as s3_client:
+                await s3_client.abort_multipart_upload(
+                    Bucket=self._config.bucket_name,
+                    Key=self._key,
+                    UploadId=self._upload_id,
+                )
         self._closed = True
 
     def _public_url(self) -> str:
@@ -132,46 +151,58 @@ class CsvS3SpreadsheetExporter(SpreadsheetExporter):
 
     async def ensure_bucket(self) -> None:
         """Creates the S3 bucket if it does not exist and applies a public-read policy."""
-        async with self._aws_session.client(
-            service_name="s3",
-            endpoint_url=self._config.endpoint_url,
-            region_name=self._config.region,
-        ) as s3_client:
-            try:
-                await s3_client.create_bucket(Bucket=self._config.bucket_name)
-            except ClientError as exc:
-                if exc.response.get("Error", {}).get("Code") != "BucketAlreadyOwnedByYou":
-                    raise
-            await s3_client.put_bucket_policy(
-                Bucket=self._config.bucket_name,
-                Policy=json.dumps(
-                    {
-                        "Version": "2012-10-17",
-                        "Statement": [
-                            {
-                                "Effect": "Allow",
-                                "Principal": "*",
-                                "Action": ["s3:GetObject"],
-                                "Resource": [f"arn:aws:s3:::{self._config.bucket_name}/*"],
-                            },
-                        ],
-                    },
-                ),
-            )
+        with _tracer.start_as_current_span("dreamteams_exporter.s3.ensure_bucket") as span:
+            span.set_attribute("dreamteams_exporter.s3.bucket", self._config.bucket_name)
+
+            async with self._aws_session.client(
+                service_name="s3",
+                endpoint_url=self._config.endpoint_url,
+                region_name=self._config.region,
+            ) as s3_client:
+                try:
+                    await s3_client.create_bucket(Bucket=self._config.bucket_name)
+                    bucket_created = True
+                    span.set_attribute("dreamteams_exporter.s3.bucket_created", bucket_created)
+                except ClientError as exc:
+                    if exc.response.get("Error", {}).get("Code") != "BucketAlreadyOwnedByYou":
+                        raise
+                    bucket_created = False
+                    span.set_attribute("dreamteams_exporter.s3.bucket_created", bucket_created)
+                await s3_client.put_bucket_policy(
+                    Bucket=self._config.bucket_name,
+                    Policy=json.dumps(
+                        {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Principal": "*",
+                                    "Action": ["s3:GetObject"],
+                                    "Resource": [f"arn:aws:s3:::{self._config.bucket_name}/*"],
+                                },
+                            ],
+                        },
+                    ),
+                )
 
     @override
     async def start(self, *, key: str, headers: list[str]) -> SpreadsheetSession:
         """Creates an S3 multipart upload, seeds the header row, and returns a session ready to accept rows."""
-        async with self._aws_session.client(
-            service_name="s3",
-            endpoint_url=self._config.endpoint_url,
-            region_name=self._config.region,
-        ) as s3_client:
-            create = await s3_client.create_multipart_upload(
-                Bucket=self._config.bucket_name,
-                Key=key,
-                ContentType=_CONTENT_TYPE,
-            )
+        with _tracer.start_as_current_span("dreamteams_exporter.s3.start_multipart_upload") as span:
+            span.set_attribute("dreamteams_exporter.s3.bucket", self._config.bucket_name)
+            span.set_attribute("dreamteams_exporter.s3.key", key)
+            span.set_attribute("dreamteams_exporter.s3.headers_count", len(headers))
+
+            async with self._aws_session.client(
+                service_name="s3",
+                endpoint_url=self._config.endpoint_url,
+                region_name=self._config.region,
+            ) as s3_client:
+                create = await s3_client.create_multipart_upload(
+                    Bucket=self._config.bucket_name,
+                    Key=key,
+                    ContentType=_CONTENT_TYPE,
+                )
         return CsvS3SpreadsheetSession(
             self._aws_session,
             self._config,

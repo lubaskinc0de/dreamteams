@@ -5,7 +5,8 @@ import structlog
 from dreamteams_common.clock import Clock
 from dreamteams_common.interactor import interactor
 from dreamteams_common.logger import Logger
-from dreamteams_exporter.application.common.event_bus import JobEventBus
+from dreamteams_exporter.application.common.event_bus import EventBus, JobEventBus
+from dreamteams_exporter.application.common.events import ExportJobCreated, ExportJobEnqueued
 from dreamteams_exporter.application.common.gateway.export_job import ExportJobGateway
 from dreamteams_exporter.application.common.idp import IdProvider
 from dreamteams_exporter.entities.common.identifiers import CompetitionId, ExportJobId
@@ -38,7 +39,8 @@ class CreateExportApplicationsJob:
 
     gateway: ExportJobGateway
     idp: IdProvider
-    event_bus: JobEventBus
+    job_event_bus: JobEventBus
+    event_bus: EventBus
     clock: Clock
 
     async def execute(self, data: CreateExportJobInput) -> CreatedExportJob:
@@ -59,6 +61,8 @@ class CreateExportApplicationsJob:
             clock=self.clock,
         )
         await self.gateway.create(job)
+        await self.event_bus.publish(ExportJobCreated(application_status=job.application_status))
 
-        await self.event_bus.publish_process(job.id)
+        await self.job_event_bus.publish_process(job.id)
+        await self.event_bus.publish(ExportJobEnqueued(application_status=job.application_status))
         return CreatedExportJob(job_id=job.id)

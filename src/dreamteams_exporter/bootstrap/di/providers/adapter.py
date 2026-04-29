@@ -1,7 +1,7 @@
 from collections.abc import AsyncIterator
 
 from aiohttp import ClientSession
-from dishka import Provider, Scope, provide
+from dishka import Provider, Scope, provide, provide_all
 from faststream.nats import NatsBroker
 from faststream.nats.publisher.usecase import LogicPublisher
 from redis.asyncio import Redis
@@ -11,11 +11,20 @@ from dreamteams_exporter.adapters.broker.config import NatsConfig
 from dreamteams_exporter.adapters.cache.config import CacheConfig
 from dreamteams_exporter.adapters.cache.redis_export_job_gateway import RedisExportJobGateway
 from dreamteams_exporter.adapters.cache.redis_rate_limiter import RedisExportRateLimiter
+from dreamteams_exporter.adapters.event_bus import InMemoryEventBus
+from dreamteams_exporter.adapters.event_handler_registry import EventHandlersRegistry
 from dreamteams_exporter.adapters.http.config import DreamteamsApiConfig
 from dreamteams_exporter.adapters.http.session import aiohttp_session
 from dreamteams_exporter.adapters.http.user_gateway import HttpUserGateway
+from dreamteams_exporter.adapters.metrics import (
+    ExportJobCreatedMetricsEventHandler,
+    ExportJobEnqueuedMetricsEventHandler,
+    ExportJobFailedMetricsEventHandler,
+    ExportJobSucceededMetricsEventHandler,
+)
 from dreamteams_exporter.adapters.storage.config import S3Config
 from dreamteams_exporter.adapters.storage.s3_spreadsheet_exporter import CsvS3SpreadsheetExporter
+from dreamteams_exporter.application.common.event_bus import EventBus
 from dreamteams_exporter.application.common.gateway.export_job import ExportJobGateway
 from dreamteams_exporter.application.common.rate_limiter import ExportRateLimiter
 from dreamteams_exporter.application.common.spreadsheet_exporter import SpreadsheetExporter
@@ -28,6 +37,19 @@ class AdapterProvider(Provider):
     rate_limiter = provide(RedisExportRateLimiter, scope=Scope.APP, provides=ExportRateLimiter)
     user_gateway = provide(HttpUserGateway, scope=Scope.APP)
     export_job_gateway = provide(RedisExportJobGateway, scope=Scope.APP, provides=ExportJobGateway)
+    metrics_handlers = provide_all(
+        ExportJobCreatedMetricsEventHandler,
+        ExportJobEnqueuedMetricsEventHandler,
+        ExportJobSucceededMetricsEventHandler,
+        ExportJobFailedMetricsEventHandler,
+        scope=Scope.APP,
+    )
+    event_handlers_registry = provide(EventHandlersRegistry, scope=Scope.REQUEST)
+
+    @provide(scope=Scope.REQUEST, provides=EventBus)
+    def get_event_bus(self, handlers: EventHandlersRegistry) -> InMemoryEventBus:
+        """Provide the in-memory event bus with adapter-side exporter handlers."""
+        return InMemoryEventBus(handlers.as_mapping())
 
     @provide(scope=Scope.APP)
     async def get_spreadsheet_exporter(self, config: S3Config) -> AsyncIterator[SpreadsheetExporter]:

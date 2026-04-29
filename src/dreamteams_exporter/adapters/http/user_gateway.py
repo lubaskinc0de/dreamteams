@@ -3,6 +3,7 @@ from uuid import UUID
 
 import aiohttp
 from adaptix import ExtraSkip, P, Retort, loader, name_mapping
+from opentelemetry import trace
 
 from dreamteams_exporter.adapters.auth.model import AuthUserId
 from dreamteams_exporter.adapters.http.config import DreamteamsApiConfig
@@ -31,6 +32,7 @@ _retort = Retort(
         loader(P[User].participant_id, _extract_id),
     ],
 )
+_tracer = trace.get_tracer(__name__)
 
 
 class HttpUserGateway:
@@ -50,10 +52,18 @@ class HttpUserGateway:
         url = f"{self._config.base_url}/users/me"
         headers = {self._config.auth_header_name: user_id}
 
-        async with self._session.get(url, headers=headers) as response:
-            if response.status in (401, 403):
-                raise UnauthorizedError
-            response.raise_for_status()
-            payload = await response.json()
+        with _tracer.start_as_current_span("dreamteams_exporter.main_api.get_me") as span:
+            span.set_attribute("dreamteams_exporter.main_api.route", "/users/me")
 
-        return _retort.load(payload, User)
+            async with self._session.get(url, headers=headers) as response:
+                span.set_attribute("http.response.status_code", response.status)
+                if response.status in (401, 403):
+                    raise UnauthorizedError
+                response.raise_for_status()
+                payload = await response.json()
+
+            user = _retort.load(payload, User)
+            span.set_attribute("dreamteams_exporter.main_api.user_id", str(user.user_id))
+            span.set_attribute("dreamteams_exporter.main_api.has_organizer", user.organizer_id is not None)
+            span.set_attribute("dreamteams_exporter.main_api.has_participant", user.participant_id is not None)
+            return user

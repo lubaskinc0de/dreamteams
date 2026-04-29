@@ -1,7 +1,17 @@
 from abc import abstractmethod
 from typing import Protocol
 
+from dreamteams_exporter.application.common.events import DomainEvent
 from dreamteams_exporter.entities.common.identifiers import ExportJobId
+
+
+class EventBus(Protocol):
+    """Publishes exporter-local domain events."""
+
+    @abstractmethod
+    async def publish(self, event: DomainEvent) -> None:
+        """Publish a domain event."""
+        raise NotImplementedError
 
 
 class JobEventBus(Protocol):
