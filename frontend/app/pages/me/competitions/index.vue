@@ -128,15 +128,38 @@ const handleDelete = async () => {
           @create="goToCreate"
         />
 
+        <!-- Error alert + retry -->
+        <UAlert
+          v-if="competitionStore.error && !competitionStore.loading"
+          color="error"
+          variant="soft"
+          :title="t('apiErrors.' + competitionStore.error.code)"
+          icon="i-heroicons-exclamation-circle"
+          class="mb-4"
+        />
+        <UButton
+          v-if="competitionStore.error && !competitionStore.loading"
+          variant="soft"
+          icon="i-heroicons-arrow-path"
+          :label="t('common.retry')"
+          @click="fetchCompetitions"
+          class="mb-4"
+        />
+
         <div class="flex gap-4 md:gap-6 min-h-[calc(100vh-280px)]">
           <!-- Filters Sidebar -->
           <CompetitionCompetitionsFiltersSidebar
             v-model:filter-status="filterStatus"
           />
 
+          <!-- Loading skeleton -->
+          <div v-if="competitionStore.loading && competitionStore.competitions.length === 0" class="flex-1 space-y-4">
+            <USkeleton v-for="i in 4" :key="i" class="h-28 w-full rounded-lg" />
+          </div>
+
           <!-- Competitions List -->
           <CompetitionCompetitionsEmptyState
-            v-if="!competitionStore.loading && competitionStore.competitions.length === 0"
+            v-else-if="!competitionStore.loading && competitionStore.competitions.length === 0"
             @create="goToCreate"
           />
 

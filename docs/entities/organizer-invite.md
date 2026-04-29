@@ -11,7 +11,7 @@ Represents an invitation to register as an organizer on the platform. Invites ar
 | `id` | `OrganizerInviteId` (UUID) | Invite identifier |
 | `code` | `str` | Unique invite code used during registration |
 | `display_name` | `str \| None` | Optional human-readable name for the invite |
-| `created_by` | `UserId` (UUID) | Reference to admin user who created the invite |
+| `created_by` | `UserId` (UUID) | Reference to admin [User](user.md) who created the invite |
 | `is_revoked` | `bool` | Whether the invite has been revoked by admin |
 | `is_used` | `bool` | Whether the invite has been used for registration |
 | `created_at` | `datetime` | Timestamp when invite was created |

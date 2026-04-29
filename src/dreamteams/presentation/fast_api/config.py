@@ -5,8 +5,9 @@ from dataclasses import dataclass
 class ServerConfig:
     """HTTP-server configuration."""
 
-    server_port: int
-    server_host: str
+    host: str
+    port: int
+    workers: int
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)

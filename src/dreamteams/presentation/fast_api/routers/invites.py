@@ -2,7 +2,7 @@ from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter
 
-from dreamteams.application.manage_invites import (
+from dreamteams.application.issue_invite import (
     InviteIssued,
     InviteModel,
     InvitesList,

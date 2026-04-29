@@ -57,6 +57,13 @@ export const useCompetitionFormatters = () => {
   };
 
   /**
+   * Форматирует счётчик участников: "N / M"
+   */
+  const formatParticipants = (membersCount: number, max: number) => {
+    return `${membersCount} / ${max}`;
+  };
+
+  /**
    * Форматирует размер команды
    * Если min=1 и max=1, возвращает "Индивидуальное"
    * Иначе возвращает диапазон: "от 2 до 5"
@@ -66,13 +73,6 @@ export const useCompetitionFormatters = () => {
       return t('competitions.card.noTeams');
     }
     return formatNumericRange(teamSize.min, teamSize.max);
-  };
-
-  /**
-   * Возвращает локализованное название домена
-   */
-  const getDomainLabel = (domain: string) => {
-    return t(`competition.form.domains.options.${domain}`);
   };
 
   /**
@@ -95,8 +95,8 @@ export const useCompetitionFormatters = () => {
     formatDateTime,
     formatDateRange,
     formatNumericRange,
+    formatParticipants,
     formatTeamSize,
-    getDomainLabel,
     getFormatLabel,
     getParticipantTypeLabel,
   };

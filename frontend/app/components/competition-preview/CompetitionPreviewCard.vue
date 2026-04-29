@@ -3,9 +3,12 @@ import type { PreviewCompetitionModel } from "~/types/api";
 
 interface Props {
   competition: PreviewCompetitionModel;
+  canRegister?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  canRegister: true,
+});
 
 const emit = defineEmits<{
   register: [id: string];
@@ -15,7 +18,7 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const {
   formatDateRange,
-  formatNumericRange,
+  formatParticipants,
   formatTeamSize,
   getFormatLabel,
 } = useCompetitionFormatters();
@@ -47,9 +50,9 @@ const handleCardClick = () => {
       {{ competition.description }}
     </p>
 
-    <!-- Domains -->
+    <!-- Tags -->
     <div class="mb-5">
-      <CompetitionDomainBadges :domains="competition.domains" size="sm" />
+      <CompetitionTagBadges :tags="competition.tags" size="sm" />
     </div>
 
     <!-- Meta -->
@@ -62,11 +65,11 @@ const handleCardClick = () => {
       <div class="flex flex-wrap gap-x-5 gap-y-2">
         <UiInfoRow
           icon="i-heroicons-users"
-          :value="`${formatNumericRange(competition.participant_limits.min, competition.participant_limits.max)} ${t('competitionsPreview.card.participantsSuffix')}`"
+          :value="`${formatParticipants(competition.members_count, competition.participant_limits.max)} ${t('competitionsPreview.card.participantsSuffix')}`"
           size="sm"
         />
         <UiInfoRow
-          v-if="!(competition.team_size.min === 1 && competition.team_size.max === 1)"
+          v-if="competition.team_size"
           icon="i-heroicons-user-group"
           :value="formatTeamSize(competition.team_size)"
           size="sm"
@@ -91,8 +94,9 @@ const handleCardClick = () => {
       </div>
     </div>
 
-    <!-- CTA -->
+    <!-- CTA — hidden for organizers (they can't apply to competitions) -->
     <UButton
+      v-if="canRegister"
       :label="t('competitionsPreview.card.registerButton')"
       icon="i-heroicons-bolt"
       trailing

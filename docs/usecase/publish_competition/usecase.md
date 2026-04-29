@@ -9,4 +9,4 @@ Organizer creates and publishes a new competition in the system.
 
 ## Interactors
 
-- [CreateCompetition](./create_competition.md) — create new competition
+- [PublishCompetition](./publish_competition.md) — create and publish a new competition

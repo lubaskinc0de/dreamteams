@@ -1,6 +1,5 @@
-from .base import AppError, app_error
+from .base import AccessDeniedError
 
 __all__ = [
-    "AppError",
-    "app_error",
+    "AccessDeniedError",
 ]

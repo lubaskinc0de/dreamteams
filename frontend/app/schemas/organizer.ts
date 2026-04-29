@@ -17,20 +17,52 @@ export const createOrganizerSchemas = (t: (key: string) => string) => {
     .string()
     .min(1, t("form.inviteCode.required"));
 
+  const privacyConsentSchema = z
+    .boolean()
+    .refine((val) => val === true, {
+      message: t("form.privacyConsent.required"),
+    });
+
+  const termsConsentSchema = z
+    .boolean()
+    .refine((val) => val === true, {
+      message: t("form.termsConsent.required"),
+    });
+
+  const contactEmailSchema = z
+    .string()
+    .min(1, t("form.contactEmail.required"))
+    .email(t("form.contactEmail.invalid"));
+
   const organizerRegistrationSchema = z.object({
     organizer_name: organizerNameSchema,
     phone_number: phoneSchema,
     invite_code: inviteCodeSchema,
+    privacy_consent: privacyConsentSchema,
+    terms_consent: termsConsentSchema,
+  });
+
+  const organizerUpdateSchema = z.object({
+    organizer_name: organizerNameSchema,
+    contact_email: contactEmailSchema,
   });
 
   return {
     phoneSchema,
     organizerNameSchema,
     inviteCodeSchema,
+    contactEmailSchema,
+    privacyConsentSchema,
+    termsConsentSchema,
     organizerRegistrationSchema,
+    organizerUpdateSchema,
   };
 };
 
 export type OrganizerRegistrationSchema = z.infer<
   ReturnType<typeof createOrganizerSchemas>["organizerRegistrationSchema"]
+>;
+
+export type OrganizerUpdateSchema = z.infer<
+  ReturnType<typeof createOrganizerSchemas>["organizerUpdateSchema"]
 >;

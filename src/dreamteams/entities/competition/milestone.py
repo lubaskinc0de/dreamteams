@@ -1,23 +1,21 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.common.datetime_utils import normalize_datetime
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
+from dreamteams_common.clock import Clock
 
 
 @dataclass
 class Milestone:
-    """Competition milestone with timestamp and title."""
+    """Competition milestone with timestamp, title, and optional description."""
 
     timestamp: datetime
     title: str
+    description: str | None = None
 
     def __post_init__(self) -> None:
-        """Validate milestone data and normalize timestamp."""
-        if not self.title or not self.title.strip():
-            raise InvalidCompetitionDataError(message="Milestone title must not be empty")
-
+        """Normalize timestamp."""
         normalized_ts = normalize_datetime(self.timestamp)
         self.timestamp = normalized_ts
 
@@ -28,6 +26,7 @@ class MilestoneData:
 
     title: str
     timestamp: datetime
+    description: str | None = None
 
 
 def milestone_factory(data: MilestoneData, clock: Clock) -> Milestone:
@@ -38,4 +37,4 @@ def milestone_factory(data: MilestoneData, clock: Clock) -> Milestone:
     if normalized_ts <= now:
         raise InvalidCompetitionDataError(message="Milestone timestamp cannot be in past")
 
-    return Milestone(normalized_ts, data.title)
+    return Milestone(timestamp=normalized_ts, title=data.title, description=data.description)

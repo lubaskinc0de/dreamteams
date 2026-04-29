@@ -9,7 +9,7 @@ Represents an organization that hosts hackathons and competitions on the platfor
 | Attribute | Type | Description |
 |-----------|------|-------------|
 | `id` | `OrganizerId` (UUID) | Organizer identifier |
-| `user_id` | `UserId` (UUID) | Reference to user account |
+| `user_id` | `UserId` (UUID) | Reference to [User](user.md) account |
 | `organizer_name` | `str` | Organization name |
 | `phone_number` | `str` | Contact phone number |
 | `contact_email` | `str` | Contact email address |

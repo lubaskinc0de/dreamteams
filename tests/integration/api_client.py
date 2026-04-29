@@ -1,24 +1,48 @@
+from contextvars import ContextVar, Token
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Self
 
+import httpx
 from adaptix import Retort
 from adaptix.load_error import LoadError
-from aiohttp import ClientResponse, ClientResponseError, ClientSession, FormData
 
 from dreamteams.adapters.auth.model import AuthUserId
 from dreamteams.adapters.errors.http.response import ErrorResponse
-from dreamteams.adapters.tracing import TraceId, TracingConfig
-from dreamteams.application.common.gateway.competition import CompetitionSortBy
+from dreamteams.application.block_user import AdminUserDetails, UsersList
+from dreamteams.application.common.gateway.application import ApplicationSortBy
+from dreamteams.application.common.gateway.competition import CompetitionSortBy, ExploreSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
-from dreamteams.application.manage_competitions import CompetitionModel, CompetitionsList
-from dreamteams.application.manage_invites import InviteIssued, InviteModel, InvitesList
+from dreamteams.application.common.gateway.user import UserRoleFilter
+from dreamteams.application.delete_my_competition import CompetitionModel, CompetitionsList
+from dreamteams.application.issue_invite import InviteIssued, InviteModel, InvitesList
+from dreamteams.application.manage_application_form import ApplicationFormModel, CreatedApplicationForm
 from dreamteams.application.manage_profile import ProfileModel
-from dreamteams.application.preview_competition.list import PreviewCompetitionsList
+from dreamteams.application.manage_tags import (
+    CompetitionTagsList,
+)
+from dreamteams.application.preview_competitions.preview_competitions import PreviewCompetitionsList
 from dreamteams.application.publish_competition import CreatedCompetition
-from dreamteams.application.register.register_organizer import CreatedOrganizer
-from dreamteams.application.register.register_superuser import CreatedSuperuser
-from dreamteams.entities.common.identifiers import CompetitionId, OrganizerInviteId
+from dreamteams.application.register_user.register_organizer import CreatedOrganizer
+from dreamteams.application.register_user.register_participant import CreatedParticipant
+from dreamteams.application.register_user.register_superuser import CreatedSuperuser
+from dreamteams.application.review_application import ApplicationModel, ApplicationsList
+from dreamteams.application.submit_application import CreatedApplication, ExploreCompetitionsList
+from dreamteams.application.view_my_applications import ApplicationsList as MyApplicationsList
+from dreamteams.application.view_my_applications import MyApplicationModel
+from dreamteams.application.view_tags import CompetitionTagsList as ViewCompetitionTagsList
+from dreamteams.entities.application.entity import ApplicationStatus
+from dreamteams.entities.common.identifiers import (
+    ApplicationId,
+    CompetitionId,
+    CompetitionTagId,
+    OrganizerInviteId,
+    UserId,
+)
+from dreamteams.entities.competition.tag import CompetitionTag
+from dreamteams_exporter.application.common.dto.export_job import ExportJobModel
+from dreamteams_exporter.application.export_applications_sheets.create_job import CreatedExportJob
+from dreamteams_exporter.entities.common.identifiers import ExportJobId
 
 retort = Retort()
 
@@ -27,6 +51,12 @@ USERS_URL = "/users"
 SUPERUSER_URL = f"{USERS_URL}/superuser/"
 COMPETITIONS_URL = "/competitions"
 INVITES_URL = "/invites"
+PARTICIPANT_URL = "/participants"
+APPLICATIONS_URL = "/applications"
+EXPORTS_URL = "/exports"
+ADMIN_USERS_URL = "/admin/users"
+ADMIN_TAGS_URL = "/admin/tags"
+TAGS_URL = "/tags"
 
 
 @dataclass
@@ -39,7 +69,7 @@ class APIResponse[T]:
     """Response from API."""
 
     content: T | None
-    http_response: ClientResponse
+    http_response: httpx.Response
     status: int
     error: ErrorResponse | None = None
 
@@ -84,7 +114,12 @@ class APIClientConfig:
 
 
 class AuthContext:
-    """Context manager for setting authentication."""
+    """
+    Context manager for setting authentication.
+
+    Auth headers live in a ``ContextVar`` so concurrent tasks (e.g. ``asyncio.gather``)
+    each carry their own snapshot and do not overwrite each other's credentials.
+    """
 
     def __init__(
         self,
@@ -92,31 +127,24 @@ class AuthContext:
         auth_user_id: AuthUserId,
         auth_user_email: str | None,
         config: APIClientConfig,
-        access_token: str | None,
     ) -> None:
         self._api_client = api_client
         self._auth_user_id = auth_user_id
         self._auth_user_email = auth_user_email
         self._config = config
-        self._access_token = access_token
+        self._token: Token[dict[str, str] | None] | None = None
 
     def __enter__(self) -> None:
-        """Set authentication header for the duration of the context."""
-        self._api_client.set_header(self._config.auth_user_id_header, self._auth_user_id)
-        if self._access_token:
-            self._api_client.set_header(
-                self._config.access_token_header,
-                self._access_token,
-            )
+        """Set authentication headers for the duration of the context."""
+        headers = {self._config.auth_user_id_header: self._auth_user_id}
         if self._auth_user_email is not None:
-            self._api_client.set_header(
-                self._config.auth_user_email_header,
-                self._auth_user_email,
-            )
+            headers[self._config.auth_user_email_header] = self._auth_user_email
+        self._token = self._api_client._push_auth(headers)  # noqa: SLF001
 
     def __exit__(self, *exc_info: object) -> None:
-        """Remove authentication header after the context."""
-        self._api_client.remove_header(self._config.auth_user_id_header)
+        """Reset authentication headers after the context."""
+        assert self._token is not None
+        self._api_client._pop_auth(self._token)  # noqa: SLF001
         if exc_info[0] is not None:  # exc type
             raise exc_info[1]  # type: ignore[misc] # exc value
 
@@ -126,116 +154,163 @@ class ApiClient:
 
     def __init__(
         self,
-        session: ClientSession,
+        session: httpx.AsyncClient,
         config: APIClientConfig,
-        trace_id: TraceId,
-        tracing_config: TracingConfig,
-        access_token: str | None,
     ) -> None:
         self.session = session
-        self.trace_id = trace_id
-        self._headers: dict[str, str] = {
-            tracing_config.trace_id_header: self.trace_id,
-        }
+        self._auth_headers: ContextVar[dict[str, str] | None] = ContextVar("_auth_headers", default=None)
         self._config = config
-        self._access_token = access_token
 
-    async def _load_response[T](self, response: ClientResponse, response_type: type[T] | None) -> APIResponse[T]:
+    @property
+    def _headers(self) -> dict[str, str]:
+        """Current auth headers for the calling task."""
+        return self._auth_headers.get() or {}
+
+    def _push_auth(self, headers: dict[str, str]) -> Token[dict[str, str] | None]:
+        """Install auth headers for the calling task; call ``_pop_auth`` to restore."""
+        return self._auth_headers.set(headers)
+
+    def _pop_auth(self, token: Token[dict[str, str] | None]) -> None:
+        """Restore prior auth headers using the token returned by ``_push_auth``."""
+        self._auth_headers.reset(token)
+
+    async def _load_response[T](self, response: httpx.Response, response_type: type[T] | None) -> APIResponse[T]:
         """Load response content or error from HTTP response."""
-        try:
-            response.raise_for_status()
-        except ClientResponseError as response_error:
-            try:
-                return APIResponse(
-                    content=None,
-                    error=retort.load(await response.json(), ErrorResponse),
-                    status=response.status,
-                    http_response=response,
-                )
-            except LoadError as load_error:
-                raise load_error from response_error
-        else:
+        if response.is_success:
             return APIResponse(
-                content=retort.load(await response.json(), response_type),
+                content=retort.load(response.json(), response_type),
                 http_response=response,
-                status=response.status,
+                status=response.status_code,
             )
-
-    def set_header(self, header: str, value: str) -> None:
-        """Add HTTP header."""
-        self._headers[header] = value
-
-    def remove_header(self, header: str) -> None:
-        """Remove HTTP header."""
-        del self._headers[header]
+        try:
+            return APIResponse(
+                content=None,
+                error=retort.load(response.json(), ErrorResponse),
+                status=response.status_code,
+                http_response=response,
+            )
+        except LoadError as load_error:
+            raise load_error from httpx.HTTPStatusError(
+                message=f"{response.status_code}",
+                request=response.request,
+                response=response,
+            )
 
     def authenticate(self, *, auth_user_id: AuthUserId, auth_user_email: str | None = None) -> AuthContext:
         """Set auth user ID for requests."""
-        return AuthContext(self, auth_user_id, auth_user_email, self._config, self._access_token)
-
-    @property
-    def headers(self) -> dict[str, str]:
-        """API client headers."""
-        return self._headers
+        return AuthContext(self, auth_user_id, auth_user_email, self._config)
 
     async def readiness(self) -> APIResponse[EmptyResponse]:
         """GET /internal/ready."""
-        url = "/internal/ready"
-        async with self.session.get(url, headers=self._headers) as response:
-            return await self._load_response(
-                response,
-                response_type=EmptyResponse,
-            )
+        response = await self.session.get("/internal/ready", headers=self._headers)
+        return await self._load_response(response, response_type=EmptyResponse)
 
     async def liveness(self) -> APIResponse[EmptyResponse]:
         """GET /internal/alive."""
-        url = "/internal/alive"
-        async with self.session.get(url, headers=self._headers) as response:
-            return await self._load_response(
-                response,
-                response_type=EmptyResponse,
-            )
+        response = await self.session.get("/internal/alive", headers=self._headers)
+        return await self._load_response(response, response_type=EmptyResponse)
 
     async def register_superuser(self, data: dict[str, Any]) -> APIResponse[CreatedSuperuser]:
         """Register as superuser via POST /users/superuser/."""
-        async with self.session.post(SUPERUSER_URL, headers=self._headers, json=data) as response:
-            return await self._load_response(response, response_type=CreatedSuperuser)
+        response = await self.session.post(SUPERUSER_URL, headers=self._headers, json=data)
+        return await self._load_response(response, response_type=CreatedSuperuser)
 
     async def register_organizer(self, data: dict[str, Any]) -> APIResponse[CreatedOrganizer]:
         """Register as organizer via POST /organizers/."""
-        url = ORGANIZER_URL
-        async with self.session.post(url, headers=self._headers, json=data) as response:
-            return await self._load_response(
-                response,
-                response_type=CreatedOrganizer,
-            )
+        response = await self.session.post(ORGANIZER_URL, headers=self._headers, json=data)
+        return await self._load_response(response, response_type=CreatedOrganizer)
+
+    async def register_participant(self, data: dict[str, Any]) -> APIResponse[CreatedParticipant]:
+        """Register as participant via POST /participants/."""
+        response = await self.session.post(PARTICIPANT_URL, headers=self._headers, json=data)
+        return await self._load_response(response, response_type=CreatedParticipant)
+
+    async def block_user(self, user_id: UserId, data: dict[str, Any]) -> APIResponse[None]:
+        """Block a user via POST /admin/users/{user_id}/block."""
+        response = await self.session.post(f"{ADMIN_USERS_URL}/{user_id}/block", headers=self._headers, json=data)
+        return await self._load_response(response, response_type=None)
+
+    async def unblock_user(self, user_id: UserId) -> APIResponse[None]:
+        """Unblock a user via POST /admin/users/{user_id}/unblock."""
+        response = await self.session.post(f"{ADMIN_USERS_URL}/{user_id}/unblock", headers=self._headers)
+        return await self._load_response(response, response_type=None)
+
+    async def list_admin_users(
+        self,
+        *,
+        page: int = 1,
+        search: str | None = None,
+        is_admin: bool | None = None,
+        is_blocked: bool | None = None,
+        role: UserRoleFilter | str | None = None,
+    ) -> APIResponse[UsersList]:
+        """List users via GET /admin/users/."""
+        params: dict[str, str | int | bool] = {"page": page}
+        if search is not None:
+            params["search"] = search
+        if is_admin is not None:
+            params["is_admin"] = str(is_admin).lower()
+        if is_blocked is not None:
+            params["is_blocked"] = str(is_blocked).lower()
+        if role is not None:
+            params["role"] = role.value if isinstance(role, UserRoleFilter) else role
+        response = await self.session.get(f"{ADMIN_USERS_URL}/", headers=self._headers, params=params)
+        return await self._load_response(response, response_type=UsersList)
+
+    async def read_admin_user(self, user_id: UserId) -> APIResponse[AdminUserDetails]:
+        """Read user via GET /admin/users/{user_id}."""
+        response = await self.session.get(f"{ADMIN_USERS_URL}/{user_id}", headers=self._headers)
+        return await self._load_response(response, response_type=AdminUserDetails)
+
+    async def create_tag(self, data: dict[str, Any]) -> APIResponse[CompetitionTag]:
+        """Create tag via POST /admin/tags/."""
+        response = await self.session.post(
+            f"{ADMIN_TAGS_URL}/",
+            headers=self._headers,
+            json=data,
+        )
+        return await self._load_response(response, response_type=CompetitionTag)
+
+    async def list_admin_tags(self, *, page: int = 1, search: str | None = None) -> APIResponse[CompetitionTagsList]:
+        """List tags via GET /admin/tags/."""
+        params: dict[str, str | int] = {"page": page}
+        if search is not None:
+            params["search"] = search
+        response = await self.session.get(f"{ADMIN_TAGS_URL}/", headers=self._headers, params=params)
+        return await self._load_response(response, response_type=CompetitionTagsList)
+
+    async def read_tag(self, tag_id: CompetitionTagId) -> APIResponse[CompetitionTag]:
+        """Read tag via GET /admin/tags/{tag_id}."""
+        response = await self.session.get(f"{ADMIN_TAGS_URL}/{tag_id}", headers=self._headers)
+        return await self._load_response(response, response_type=CompetitionTag)
+
+    async def delete_tag(self, tag_id: CompetitionTagId) -> APIResponse[None]:
+        """Delete tag via DELETE /admin/tags/{tag_id}."""
+        response = await self.session.delete(f"{ADMIN_TAGS_URL}/{tag_id}", headers=self._headers)
+        return await self._load_response(response, response_type=None)
+
+    async def list_tags(self, *, page: int = 1, search: str | None = None) -> APIResponse[ViewCompetitionTagsList]:
+        """List tags via GET /tags/."""
+        params: dict[str, str | int] = {"page": page}
+        if search is not None:
+            params["search"] = search
+        response = await self.session.get(f"{TAGS_URL}/", headers=self._headers, params=params)
+        return await self._load_response(response, response_type=ViewCompetitionTagsList)
 
     async def view_profile(self) -> APIResponse[ProfileModel]:
         """View user profile via GET /users/me."""
-        url = f"{USERS_URL}/me"
-        async with self.session.get(url, headers=self._headers) as response:
-            return await self._load_response(
-                response,
-                response_type=ProfileModel,
-            )
+        response = await self.session.get(f"{USERS_URL}/me", headers=self._headers)
+        return await self._load_response(response, response_type=ProfileModel)
 
     async def delete_profile(self) -> APIResponse[None]:
         """Delete user profile via DELETE /users/me."""
-        url = f"{USERS_URL}/me"
-        async with self.session.delete(url, headers=self._headers) as response:
-            return await self._load_response(
-                response,
-                response_type=None,
-            )
+        response = await self.session.delete(f"{USERS_URL}/me", headers=self._headers)
+        return await self._load_response(response, response_type=None)
 
     async def detach_avatar(self) -> APIResponse[None]:
         """Detach user avatar via DELETE /users/me/avatar."""
-        url = f"{USERS_URL}/me/avatar"
-        async with self.session.delete(url, headers=self._headers) as response:
-            return await self._load_response(
-                response,
-                response_type=None,
-            )
+        response = await self.session.delete(f"{USERS_URL}/me/avatar", headers=self._headers)
+        return await self._load_response(response, response_type=None)
 
     async def attach_avatar(
         self,
@@ -245,28 +320,17 @@ class ApiClient:
     ) -> APIResponse[None]:
         """Attach user avatar via PUT /users/me/avatar."""
         with image_path.open("rb") as f:
-            url = f"{USERS_URL}/me/avatar"
-            data = FormData()
-            data.add_field(
-                name="file",
-                value=f,
-                filename=filename,
-                content_type=content_type,
+            response = await self.session.put(
+                f"{USERS_URL}/me/avatar",
+                headers=self._headers,
+                files={"file": (filename, f, content_type)},
             )
-            async with self.session.put(url, headers=self._headers, data=data) as response:
-                return await self._load_response(
-                    response,
-                    response_type=None,
-                )
+        return await self._load_response(response, response_type=None)
 
     async def create_competition(self, data: dict[str, Any]) -> APIResponse[CreatedCompetition]:
         """Create competition via POST /competitions/."""
-        url = COMPETITIONS_URL
-        async with self.session.post(url, headers=self._headers, json=data) as response:
-            return await self._load_response(
-                response,
-                response_type=CreatedCompetition,
-            )
+        response = await self.session.post(COMPETITIONS_URL, headers=self._headers, json=data)
+        return await self._load_response(response, response_type=CreatedCompetition)
 
     async def list_competitions(
         self,
@@ -278,82 +342,265 @@ class ApiClient:
         search: str | None = None,
     ) -> APIResponse[CompetitionsList]:
         """List competitions via GET /competitions/."""
-        params = {
+        params: dict[str, Any] = {
             "page": page,
             "sort_by": sort_by,
             "sort_order": sort_order,
             "is_archived": int(is_archived) if is_archived is not None else None,
             "search": search,
         }
-        url = f"{COMPETITIONS_URL}"
-        async with self.session.get(
-            url,
+        response = await self.session.get(
+            COMPETITIONS_URL,
             headers=self._headers,
             params={name: value for name, value in params.items() if value is not None},
-        ) as response:
-            return await self._load_response(
-                response,
-                response_type=CompetitionsList,
-            )
+        )
+        return await self._load_response(response, response_type=CompetitionsList)
 
     async def list_preview_competitions(self, page: int = 1) -> APIResponse[PreviewCompetitionsList]:
         """Call GET /preview/competitions endpoint."""
-        params = {
-            "page": page,
-        }
+        response = await self.session.get(
+            f"{COMPETITIONS_URL}/preview/",
+            headers=self._headers,
+            params={"page": page},
+        )
+        return await self._load_response(response, response_type=PreviewCompetitionsList)
 
-        async with self.session.get(f"{COMPETITIONS_URL}/preview/", headers=self._headers, params=params) as response:
-            return await self._load_response(response, response_type=PreviewCompetitionsList)
+    async def explore_competitions(
+        self,
+        *,
+        page: int = 1,
+        sort_by: ExploreSortBy = ExploreSortBy.MOST_POPULAR,
+        search: str | None = None,
+        min_team_size: int | None = None,
+        max_team_size: int | None = None,
+        auto_accept: bool | None = None,
+        tag_ids: list[CompetitionTagId] | None = None,
+    ) -> APIResponse[ExploreCompetitionsList]:
+        """Call GET /competitions/explore (participant-facing)."""
+        params: list[tuple[str, str | int | float | bool | None]] = [
+            ("page", page),
+            ("sort_by", sort_by.value),
+        ]
+        if search is not None:
+            params.append(("search", search))
+        if min_team_size is not None:
+            params.append(("min_team_size", min_team_size))
+        if max_team_size is not None:
+            params.append(("max_team_size", max_team_size))
+        if auto_accept is not None:
+            params.append(("auto_accept", str(auto_accept).lower()))
+        if tag_ids is not None:
+            params.extend(("tag_ids", str(tag_id)) for tag_id in tag_ids)
+
+        response = await self.session.get(
+            f"{COMPETITIONS_URL}/explore",
+            headers=self._headers,
+            params=params,
+        )
+        return await self._load_response(response, response_type=ExploreCompetitionsList)
 
     async def read_competition(self, competition_id: CompetitionId) -> APIResponse[CompetitionModel]:
         """Read competition via GET /competitions/{competition_id}."""
-        url = f"{COMPETITIONS_URL}/{competition_id}"
-        async with self.session.get(url, headers=self._headers) as response:
-            return await self._load_response(
-                response,
-                response_type=CompetitionModel,
-            )
+        response = await self.session.get(f"{COMPETITIONS_URL}/{competition_id}", headers=self._headers)
+        return await self._load_response(response, response_type=CompetitionModel)
 
-    async def update_competition(
+    async def read_explore_competition(self, competition_id: CompetitionId) -> APIResponse[CompetitionModel]:
+        """Read competition via GET /competitions/explore/{competition_id} (participant)."""
+        response = await self.session.get(
+            f"{COMPETITIONS_URL}/explore/{competition_id}",
+            headers=self._headers,
+        )
+        return await self._load_response(response, response_type=CompetitionModel)
+
+    async def update_competition_general_info(
         self,
         competition_id: CompetitionId,
         data: dict[str, Any],
     ) -> APIResponse[None]:
-        """Update competition via PUT /competitions/{competition_id}."""
-        url = f"{COMPETITIONS_URL}/{competition_id}"
-        async with self.session.put(url, headers=self._headers, json=data) as response:
-            return await self._load_response(
-                response,
-                response_type=None,
-            )
+        """Update competition general information via PATCH /competitions/{competition_id}/general-info."""
+        response = await self.session.patch(
+            f"{COMPETITIONS_URL}/{competition_id}/general-info",
+            headers=self._headers,
+            json=data,
+        )
+        return await self._load_response(response, response_type=None)
+
+    async def reschedule_competition(
+        self,
+        competition_id: CompetitionId,
+        data: dict[str, Any],
+    ) -> APIResponse[None]:
+        """Reschedule competition via PATCH /competitions/{competition_id}/schedule."""
+        response = await self.session.patch(
+            f"{COMPETITIONS_URL}/{competition_id}/schedule",
+            headers=self._headers,
+            json=data,
+        )
+        return await self._load_response(response, response_type=None)
+
+    async def change_competition_archive_status(
+        self,
+        competition_id: CompetitionId,
+        data: dict[str, Any],
+    ) -> APIResponse[None]:
+        """Change competition archive status via PATCH /competitions/{competition_id}/archive-status."""
+        response = await self.session.patch(
+            f"{COMPETITIONS_URL}/{competition_id}/archive-status",
+            headers=self._headers,
+            json=data,
+        )
+        return await self._load_response(response, response_type=None)
 
     async def delete_competition(self, competition_id: CompetitionId) -> APIResponse[None]:
         """Delete competition via DELETE /competitions/{competition_id}."""
-        url = f"{COMPETITIONS_URL}/{competition_id}"
-        async with self.session.delete(url, headers=self._headers) as response:
-            return await self._load_response(
-                response,
-                response_type=None,
-            )
+        response = await self.session.delete(f"{COMPETITIONS_URL}/{competition_id}", headers=self._headers)
+        return await self._load_response(response, response_type=None)
 
     async def issue_invite(self, data: dict[str, Any]) -> APIResponse[InviteIssued]:
         """Issue an organizer invite via POST /invites/."""
-        async with self.session.post(INVITES_URL, headers=self._headers, json=data) as response:
-            return await self._load_response(response, response_type=InviteIssued)
+        response = await self.session.post(INVITES_URL, headers=self._headers, json=data)
+        return await self._load_response(response, response_type=InviteIssued)
 
     async def list_invites(self, page: int = 1) -> APIResponse[InvitesList]:
         """List organizer invites via GET /invites/."""
-        async with self.session.get(INVITES_URL, headers=self._headers, params={"page": page}) as response:
-            return await self._load_response(response, response_type=InvitesList)
+        response = await self.session.get(INVITES_URL, headers=self._headers, params={"page": page})
+        return await self._load_response(response, response_type=InvitesList)
 
     async def read_invite(self, invite_id: OrganizerInviteId) -> APIResponse[InviteModel]:
         """Read a single organizer invite via GET /invites/{invite_id}."""
-        url = f"{INVITES_URL}/{invite_id}"
-        async with self.session.get(url, headers=self._headers) as response:
-            return await self._load_response(response, response_type=InviteModel)
+        response = await self.session.get(f"{INVITES_URL}/{invite_id}", headers=self._headers)
+        return await self._load_response(response, response_type=InviteModel)
 
     async def revoke_invite(self, invite_id: OrganizerInviteId) -> APIResponse[None]:
         """Revoke an organizer invite via DELETE /invites/{invite_id}."""
-        url = f"{INVITES_URL}/{invite_id}"
-        async with self.session.delete(url, headers=self._headers) as response:
-            return await self._load_response(response, response_type=None)
+        response = await self.session.delete(f"{INVITES_URL}/{invite_id}", headers=self._headers)
+        return await self._load_response(response, response_type=None)
+
+    async def create_application_form(
+        self,
+        competition_id: CompetitionId,
+        data: dict[str, Any],
+    ) -> APIResponse[CreatedApplicationForm]:
+        """Create application form via POST /competitions/{competition_id}/application-form/."""
+        url = f"{COMPETITIONS_URL}/{competition_id}/application-form/"
+        response = await self.session.post(url, headers=self._headers, json=data)
+        return await self._load_response(response, response_type=CreatedApplicationForm)
+
+    async def read_application_form(self, competition_id: CompetitionId) -> APIResponse[ApplicationFormModel]:
+        """Read application form via GET /competitions/{competition_id}/application-form/."""
+        url = f"{COMPETITIONS_URL}/{competition_id}/application-form/"
+        response = await self.session.get(url, headers=self._headers)
+        return await self._load_response(response, response_type=ApplicationFormModel)
+
+    async def delete_application_form(self, competition_id: CompetitionId) -> APIResponse[None]:
+        """Delete application form via DELETE /competitions/{competition_id}/application-form/."""
+        url = f"{COMPETITIONS_URL}/{competition_id}/application-form/"
+        response = await self.session.delete(url, headers=self._headers)
+        return await self._load_response(response, response_type=None)
+
+    async def submit_application(
+        self,
+        competition_id: CompetitionId,
+        data: dict[str, Any],
+    ) -> APIResponse[CreatedApplication]:
+        """Submit an application via POST /competitions/{competition_id}/applications/."""
+        url = f"{COMPETITIONS_URL}/{competition_id}/applications/"
+        response = await self.session.post(url, headers=self._headers, json=data)
+        return await self._load_response(response, response_type=CreatedApplication)
+
+    async def read_application_form_for_submission(
+        self,
+        competition_id: CompetitionId,
+    ) -> APIResponse[ApplicationFormModel]:
+        """Read application form via GET /competitions/{competition_id}/applications/form/ (participant)."""
+        url = f"{COMPETITIONS_URL}/{competition_id}/applications/form/"
+        response = await self.session.get(url, headers=self._headers)
+        return await self._load_response(response, response_type=ApplicationFormModel)
+
+    async def list_applications_by_competition(
+        self,
+        competition_id: CompetitionId,
+        page: int = 1,
+        page_size: int | None = None,
+        *,
+        sort_by: ApplicationSortBy = ApplicationSortBy.CREATED_AT,
+        sort_order: SortOrder = SortOrder.DESC,
+        status: ApplicationStatus | None = None,
+    ) -> APIResponse[ApplicationsList]:
+        """List applications for a competition via GET /competitions/{competition_id}/applications/."""
+        url = f"{COMPETITIONS_URL}/{competition_id}/applications/"
+        params: dict[str, str | int] = {
+            "page": page,
+            "sort_by": sort_by.value,
+            "sort_order": sort_order.value,
+        }
+        if page_size is not None:
+            params["page_size"] = page_size
+        if status is not None:
+            params["status"] = status.value
+        response = await self.session.get(url, headers=self._headers, params=params)
+        return await self._load_response(response, response_type=ApplicationsList)
+
+    async def list_my_applications(
+        self,
+        page: int = 1,
+        *,
+        sort_by: ApplicationSortBy = ApplicationSortBy.CREATED_AT,
+        sort_order: SortOrder = SortOrder.DESC,
+        status: ApplicationStatus | None = None,
+    ) -> APIResponse[MyApplicationsList]:
+        """List own applications via GET /applications/."""
+        params: dict[str, str | int] = {
+            "page": page,
+            "sort_by": sort_by.value,
+            "sort_order": sort_order.value,
+        }
+        if status is not None:
+            params["status"] = status.value
+        response = await self.session.get(APPLICATIONS_URL + "/", headers=self._headers, params=params)
+        return await self._load_response(response, response_type=MyApplicationsList)
+
+    async def read_my_application(self, application_id: ApplicationId) -> APIResponse[MyApplicationModel]:
+        """Read own application via GET /applications/{application_id}/my/."""
+        response = await self.session.get(f"{APPLICATIONS_URL}/{application_id}/my/", headers=self._headers)
+        return await self._load_response(response, response_type=MyApplicationModel)
+
+    async def read_application(self, application_id: ApplicationId) -> APIResponse[ApplicationModel]:
+        """Read application (organizer) via GET /applications/{application_id}/."""
+        response = await self.session.get(f"{APPLICATIONS_URL}/{application_id}/", headers=self._headers)
+        return await self._load_response(response, response_type=ApplicationModel)
+
+    async def withdraw_application(self, application_id: ApplicationId) -> APIResponse[None]:
+        """Withdraw application via DELETE /applications/{application_id}/."""
+        response = await self.session.delete(f"{APPLICATIONS_URL}/{application_id}/", headers=self._headers)
+        return await self._load_response(response, response_type=None)
+
+    async def accept_application(self, application_id: ApplicationId) -> APIResponse[None]:
+        """Accept application via POST /applications/{application_id}/accept/."""
+        response = await self.session.post(f"{APPLICATIONS_URL}/{application_id}/accept/", headers=self._headers)
+        return await self._load_response(response, response_type=None)
+
+    async def reject_application(self, application_id: ApplicationId) -> APIResponse[None]:
+        """Reject application via POST /applications/{application_id}/reject/."""
+        response = await self.session.post(f"{APPLICATIONS_URL}/{application_id}/reject/", headers=self._headers)
+        return await self._load_response(response, response_type=None)
+
+    async def update_participant(self, data: dict[str, Any]) -> APIResponse[None]:
+        """Update participant profile via PUT /users/me/participant."""
+        response = await self.session.put(f"{USERS_URL}/me/participant", headers=self._headers, json=data)
+        return await self._load_response(response, response_type=None)
+
+    async def update_organizer(self, data: dict[str, Any]) -> APIResponse[None]:
+        """Update organizer profile via PUT /users/me/organizer."""
+        response = await self.session.put(f"{USERS_URL}/me/organizer", headers=self._headers, json=data)
+        return await self._load_response(response, response_type=None)
+
+    async def create_export(self, data: dict[str, Any]) -> APIResponse[CreatedExportJob]:
+        """Create export job via POST /exports/."""
+        response = await self.session.post(f"{EXPORTS_URL}/", headers=self._headers, json=data)
+        return await self._load_response(response, response_type=CreatedExportJob)
+
+    async def read_export(self, job_id: ExportJobId) -> APIResponse[ExportJobModel]:
+        """Read export job via GET /exports/{job_id}."""
+        response = await self.session.get(f"{EXPORTS_URL}/{job_id}", headers=self._headers)
+        return await self._load_response(response, response_type=ExportJobModel)

@@ -7,6 +7,7 @@ export interface MilestoneInput {
   title: string;
   date: any;
   time: any;
+  description: string | null;
 }
 
 interface Props {
@@ -62,11 +63,11 @@ const updateMilestone = (index: number, field: keyof MilestoneInput, value: any)
       >
         <div class="space-y-4">
           <!-- Title -->
-          <UFormField
-            :label="t('competition.form.milestone.title.label')"
-            required
-            size="lg"
-          >
+          <UFormField required size="lg">
+            <template #label>
+              {{ t('competition.form.milestone.title.label') }}
+              <HelpTooltip :text="t('competition.form.milestone.title.tooltip')" />
+            </template>
             <UInput
               :model-value="milestone.title"
               @update:model-value="updateMilestone(index, 'title', $event)"
@@ -77,11 +78,11 @@ const updateMilestone = (index: number, field: keyof MilestoneInput, value: any)
           </UFormField>
 
           <!-- Date and Time -->
-          <UFormField
-            :label="t('competition.form.milestone.datetime.label')"
-            required
-            size="lg"
-          >
+          <UFormField required size="lg">
+            <template #label>
+              {{ t('competition.form.milestone.datetime.label') }}
+              <HelpTooltip :text="t('competition.form.milestone.datetime.tooltip')" />
+            </template>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               <UInputDate
                 :model-value="(milestone.date as any)"
@@ -117,6 +118,26 @@ const updateMilestone = (index: number, field: keyof MilestoneInput, value: any)
                 leading-icon="i-heroicons-clock"
               />
             </div>
+          </UFormField>
+
+          <!-- Description -->
+          <UFormField size="lg">
+            <template #label>
+              {{ t('competition.form.milestone.description.label') }}
+              <HelpTooltip :text="t('competition.form.milestone.description.tooltip')" />
+            </template>
+            <UTextarea
+              :model-value="milestone.description ?? ''"
+              @update:model-value="updateMilestone(index, 'description', ($event as string).length > 0 ? $event : null)"
+              :placeholder="t('competition.form.milestone.description.placeholder')"
+              :maxlength="300"
+              :rows="3"
+              size="xl"
+              class="w-full"
+            />
+            <template #hint>
+              {{ (milestone.description ?? '').length }}/300
+            </template>
           </UFormField>
 
           <!-- Remove Button -->

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useOnboarding } from "~/composables/useOnboarding";
+import { useParticipantStore } from "~/stores/participant";
 
 const { t } = useI18n();
 const { completeOnboarding } = useOnboarding();
@@ -14,16 +15,33 @@ definePageMeta({
   layout: "onboarding",
 });
 
-const showForm = ref(false);
+const showOrganizerForm = ref(false);
+const showParticipantForm = ref(false);
 const organizerStore = useOrganizerStore();
+const participantStore = useParticipantStore();
 
-const startRegistration = () => {
-  showForm.value = true;
+const startOrganizerRegistration = () => {
+  showOrganizerForm.value = true;
+  showParticipantForm.value = false;
+};
+
+const startParticipantRegistration = () => {
+  showParticipantForm.value = true;
+  showOrganizerForm.value = false;
 };
 
 // Watch for successful registration to complete onboarding
 watch(
   () => organizerStore.registrationSuccess,
+  async (success) => {
+    if (success) {
+      await completeOnboarding();
+    }
+  }
+);
+
+watch(
+  () => participantStore.registrationSuccess,
   async (success) => {
     if (success) {
       await completeOnboarding();
@@ -38,7 +56,7 @@ watch(
       <div class="flex items-center justify-center px-4 min-h-[60vh]">
         <div class="w-full max-w-md mx-auto">
           <!-- Role Selection -->
-          <div v-if="!showForm" class="text-center">
+          <div v-if="!showOrganizerForm && !showParticipantForm" class="text-center">
             <!-- Icon -->
             <div class="inline-flex p-4 rounded-2xl bg-primary-500/10 mb-6">
               <UIcon
@@ -48,31 +66,75 @@ watch(
             </div>
 
             <!-- Title -->
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               {{ t('onboarding.roleSelection.title') }}
             </h1>
 
-            <!-- Button -->
-            <UButton
-              @click="startRegistration"
-              color="primary"
-              size="lg"
-              icon="i-heroicons-building-office"
-              class="shadow-lg hover:shadow-xl transition-all"
-            >
-              {{ t('onboarding.roleSelection.organizerButton') }}
-            </UButton>
+            <!-- Buttons -->
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+              <UButton
+                @click="startParticipantRegistration"
+                color="primary"
+                size="lg"
+                icon="i-heroicons-user"
+                class="w-full sm:w-auto justify-center shadow-lg hover:shadow-xl transition-all"
+              >
+                {{ t('onboarding.roleSelection.participantButton') }}
+              </UButton>
+
+              <UButton
+                @click="startOrganizerRegistration"
+                color="neutral"
+                variant="outline"
+                size="lg"
+                icon="i-heroicons-building-office"
+                class="w-full sm:w-auto justify-center shadow-lg hover:shadow-xl transition-all"
+              >
+                {{ t('onboarding.roleSelection.organizerButton') }}
+              </UButton>
+            </div>
           </div>
 
-          <!-- Registration Form -->
-          <div v-else class="animate-fade-in">
+          <!-- Organizer Registration Form -->
+          <div v-else-if="showOrganizerForm" class="animate-fade-in">
             <div class="mb-6 text-center">
+              <UButton
+                @click="showOrganizerForm = false"
+                icon="i-heroicons-arrow-left"
+                color="neutral"
+                variant="ghost"
+                size="sm"
+                class="mb-4"
+              >
+                {{ t('common.back') }}
+              </UButton>
               <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 {{ t("register.title") }}
               </h2>
             </div>
 
             <OrganizerRegistrationForm />
+          </div>
+
+          <!-- Participant Registration Form -->
+          <div v-else-if="showParticipantForm" class="animate-fade-in">
+            <div class="mb-6 text-center">
+              <UButton
+                @click="showParticipantForm = false"
+                icon="i-heroicons-arrow-left"
+                color="neutral"
+                variant="ghost"
+                size="sm"
+                class="mb-4"
+              >
+                {{ t('common.back') }}
+              </UButton>
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                {{ t("participant.register.title") }}
+              </h2>
+            </div>
+
+            <ParticipantRegistrationForm />
           </div>
         </div>
       </div>

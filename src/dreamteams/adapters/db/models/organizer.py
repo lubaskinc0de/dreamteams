@@ -21,7 +21,7 @@ mapper_registry.map_imperatively(
     properties={
         "user": relationship(
             User,
-            lazy="selectin",
+            lazy="raise_on_sql",
             back_populates="organizer",
         ),
     },

@@ -16,6 +16,6 @@ mapper_registry.map_imperatively(
     AuthUser,
     auth_user_table,
     properties={
-        "user": relationship("User", lazy="selectin"),
+        "user": relationship("User", lazy="raise_on_sql"),
     },
 )

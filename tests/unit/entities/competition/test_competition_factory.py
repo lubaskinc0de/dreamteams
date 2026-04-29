@@ -1,36 +1,43 @@
 import pytest
-from hypothesis import HealthCheck, given, settings
-from hypothesis import strategies as st
+from hypothesis import given, settings
 
-from dreamteams.entities.common.clock import Clock
 from dreamteams.entities.competition.entity import Competition, CompetitionData, competition_factory
 from dreamteams.entities.competition.milestone import milestone_factory
-from dreamteams.entities.competition.schedule import CompetitionSchedule
+from dreamteams.entities.competition.milestones import CompetitionMilestones
+from dreamteams.entities.competition.schedule import CompetitionSchedule, ScheduleData
+from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
-from dreamteams.entities.user import User
-from tests.unit.composite import milestone_data, valid_competition_data
+from dreamteams_common.clock import Clock
+from tests.unit.composite import (
+    positive_ordered_pairs,
+    valid_competition_data,
+    valid_schedule_data,
+    valid_schedule_data_no_team_formation,
+)
+from tests.unit.helpers.facade import Gateway
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(max_examples=30)
 @given(valid_competition_data())
 def test_create_competition_with_valid_data(
-    organizer_user: User,
+    gateway: Gateway,
     clock: Clock,
     data: CompetitionData,
 ) -> None:
     """Test creating competition succeeds."""
+    organizer = gateway.organizer.create()
+
     competition = competition_factory(
-        user=organizer_user,
+        organizer=organizer,
         data=data,
         clock=clock,
     )
 
-    assert organizer_user.organizer is not None
     assert competition.created_at == competition.updated_at
     assert competition == Competition(
         id=competition.id,
-        organizer_id=organizer_user.organizer.id,
-        organizer=organizer_user.organizer,
+        organizer_id=organizer.id,
+        organizer=organizer,
         title=data.title,
         description=data.description,
         schedule=CompetitionSchedule(
@@ -40,72 +47,65 @@ def test_create_competition_with_valid_data(
             data.schedule.team_formation_end,
         ),
         participant_limits=data.participant_limits,
-        domains=data.domains,
+        tags=data.tags,
+        tracks=data.tracks,
         participant_type=data.participant_type,
         venue=data.venue,
         team_size=data.team_size,
         banner=None,
-        is_archived=True,
-        milestones=[milestone_factory(milestone_data, clock) for milestone_data in data.milestones]
+        auto_accept=data.auto_accept,
+        is_archived=False,
+        milestones=CompetitionMilestones(
+            [milestone_factory(milestone_data, clock) for milestone_data in data.milestones],
+        )
         if data.milestones is not None
-        else [],
+        else CompetitionMilestones(),
         created_at=competition.created_at,
         updated_at=competition.updated_at,
     )
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-@given(valid_competition_data(), st.data())
-def test_competition_milestones_are_unique(
-    organizer_user: User,
-    clock: Clock,
-    competition_data: CompetitionData,
-    data: st.DataObject,
-) -> None:
-    """Test cannot create competition with duplicate milestones."""
-    competition_data.milestones = [data.draw(milestone_data())] * 2
-
-    with pytest.raises(InvalidCompetitionDataError, match="Milestone timestamps must be unique"):
-        competition_factory(
-            user=organizer_user,
-            data=competition_data,
-            clock=clock,
-        )
-
-
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-@given(valid_competition_data())
-def test_competition_domains_list_is_not_empty(
-    organizer_user: User,
+@settings(max_examples=30)
+@given(valid_competition_data(), valid_schedule_data_no_team_formation(), positive_ordered_pairs())
+def test_team_size_without_team_formation_dates_is_rejected(
+    gateway: Gateway,
     clock: Clock,
     data: CompetitionData,
+    schedule: ScheduleData,
+    team_range: tuple[int, int],
 ) -> None:
-    """Test cannot create competition with empty domains list."""
-    data.domains = []
+    """team_size set with no team_formation_* dates violates the pairing invariant."""
+    # Arrange
+    organizer = gateway.organizer.create()
+    min_team, max_team = team_range
+    data.team_size = TeamSizeRange(min=min_team, max=max_team)
+    data.schedule = schedule
 
-    with pytest.raises(InvalidCompetitionDataError, match="Domains list must not be empty"):
-        competition_factory(
-            user=organizer_user,
-            data=data,
-            clock=clock,
-        )
+    # Act / Assert
+    with pytest.raises(
+        InvalidCompetitionDataError,
+        match=r"team_size and schedule\.team_formation_\* must be set together",
+    ):
+        competition_factory(organizer=organizer, data=data, clock=clock)
 
 
-@pytest.mark.parametrize("empty_string", ["", " ", "   "])
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-@given(valid_competition_data())
-def test_competition_description_is_not_empty(
-    empty_string: str,
-    organizer_user: User,
+@settings(max_examples=30)
+@given(valid_competition_data(), valid_schedule_data())
+def test_team_formation_dates_without_team_size_are_rejected(
+    gateway: Gateway,
     clock: Clock,
     data: CompetitionData,
+    schedule: ScheduleData,
 ) -> None:
-    """Test cannot create competition with empty description."""
-    data.description = empty_string
+    """team_formation_* dates set with no team_size violates the pairing invariant."""
+    # Arrange
+    organizer = gateway.organizer.create()
+    data.team_size = None
+    data.schedule = schedule
 
-    with pytest.raises(InvalidCompetitionDataError, match="Description must not be empty"):
-        competition_factory(
-            user=organizer_user,
-            data=data,
-            clock=clock,
-        )
+    # Act / Assert
+    with pytest.raises(
+        InvalidCompetitionDataError,
+        match=r"team_size and schedule\.team_formation_\* must be set together",
+    ):
+        competition_factory(organizer=organizer, data=data, clock=clock)

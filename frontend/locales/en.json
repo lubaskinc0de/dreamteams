@@ -12,7 +12,11 @@
     "next": "Next",
     "confirm": "Confirm",
     "personalAccount": "Personal Account",
-    "backToHome": "Back to Home"
+    "backToHome": "Back to Home",
+    "retry": "Retry",
+    "creating": "Creating...",
+    "showMore": "Show more",
+    "showLess": "Show less"
   },
   "errors": {
     "unauthorized": {
@@ -30,7 +34,8 @@
     "default": {
       "title": "An Error Occurred",
       "description": "Something went wrong. Please try again"
-    }
+    },
+    "team_size_schedule_pairing": "Team size and team-formation dates must be set together, or both left empty"
   },
   "nav": {
     "home": "Home",
@@ -44,13 +49,24 @@
     "settings": "Settings",
     "theme": "Theme",
     "language": "Language",
-    "adminPanel": "Admin Panel"
+    "adminPanel": "Admin Panel",
+    "applicationForms": "Application Forms",
+    "applications": "Applications",
+    "myCompetitions": "My Competitions",
+    "myApplications": "My Applications",
+    "explore": "Explore",
+    "logout": "Sign Out"
   },
   "home": {
     "title": "DreamTeams",
-    "heroTitle": "Find People — Create the Future!",
-    "heroDescription": "Innovative service for team formation at IT competitions. All current events aggregated in one place.",
-    "ctaText": "All IT hackathons in one place. Find a team or post your event in 5 minutes",
+    "heroTitle": "Browse competitions, publish events, and manage applications in one place.",
+    "heroDescription": "DreamTeams currently helps organizers publish competitions with custom application forms and review incoming applications, while participants can browse the catalog and apply from their profile.",
+    "heroHighlights": {
+      "catalog": "Public competition catalog",
+      "forms": "Custom application forms",
+      "export": "CSV export for organizers"
+    },
+    "ctaText": "Competition discovery and organizer workflows in one place",
     "startButton": "Start Now",
     "findHackathonButton": "Find Competitions",
     "registerButton": "Become an Organizer",
@@ -58,105 +74,94 @@
     "findEvents": "Find Events",
     "about": {
       "title": "About the Platform",
-      "description": "First IT hackathon platform in Russia. Connecting participants and organizers. No more searching through hundreds of sources — everything's here."
+      "description": "DreamTeams is an IT competition platform focused on the workflows that already work today: a public competition catalog, participant applications, organizer competition management, and application review."
     },
-    "featuresTitle": "What We Offer",
-    "featuresDescription": "Everything for successful hackathon participation and hosting",
-    "whyBest": {
-      "title": "Why DreamTeams",
-      "unique": {
-        "title": "Only One in Russia",
-        "description": "First IT hackathon aggregator with built-in team search"
+    "featuresTitle": "What works today",
+    "featuresDescription": "Current product capabilities for participants and organizers",
+    "featuresSections": {
+      "organizers": {
+        "eyebrow": "For organizers",
+        "title": "Launch competitions and manage the applicant flow",
+        "description": "From creating a competition to selecting participants, the core organizer workflow lives in one workspace.",
+        "flowLabel": "organizer route"
       },
-      "demand": {
-        "title": "Real Need",
-        "description": "67% of participants can't find a team. We solve this problem"
+      "participants": {
+        "eyebrow": "For participants",
+        "title": "Find events quickly and apply with less friction",
+        "description": "Participants can discover competitions, complete their profile, and submit applications through a cleaner flow.",
+        "step": "step"
+      }
+    },
+    "current": {
+      "title": "How the platform works",
+      "catalog": {
+        "title": "Competition catalog",
+        "description": "Published competitions are visible in the public listing with schedule, tags, directions, participant limits, and event details."
       },
-      "transparent": {
-        "title": "No Ads",
-        "description": "We earn from event listings, not from your data"
+      "forms": {
+        "title": "Application forms",
+        "description": "Organizers can configure a custom application form per competition and participants submit responses together with a selected direction."
       },
-      "rating": {
-        "title": "Participant Rating",
-        "description": "Choose reliable teammates by participation history"
+      "review": {
+        "title": "Application review",
+        "description": "Incoming applications can be filtered, opened, accepted, and rejected from the organizer dashboard."
+      },
+      "export": {
+        "title": "CSV export",
+        "description": "Organizers can export competition applications by status for offline processing and reporting."
+      }
+    },
+    "roadmap": {
+      "title": "Roadmap",
+      "description": "Next product milestones already planned for the platform",
+      "planned": "Planned",
+      "teamFormation": {
+        "title": "Team formation",
+        "description": "Participant matching, team invitations, and team membership flows inside the platform."
+      },
+      "submissions": {
+        "title": "Project submissions",
+        "description": "Competition-specific submission flow for links, files, and delivery metadata."
+      },
+      "winnerElection": {
+        "title": "Winner team election",
+        "description": "Organizer tools for evaluating finalists and recording winning teams."
       }
     },
     "cta": {
-      "title": "Start Today",
-      "description": "Thousands of participants already found teams. Join now"
-    },
-    "testimonials": {
-      "title": "What People Say",
-      "description": "Stories from participants and organizers who found their teammates",
-      "participants": {
-        "alex": {
-          "name": "Alexander Petrov",
-          "role": "Frontend Developer",
-          "text": "Found a team 2 days before the hackathon. We won first place! Without DreamTeams I'd definitely be sitting at home"
-        },
-        "maria": {
-          "name": "Maria Ivanova",
-          "role": "UX/UI Designer",
-          "text": "First time participating in a hackathon. Immediately found people with the right stack. We made it to the finals together"
-        },
-        "dmitry": {
-          "name": "Dmitry Smirnov",
-          "role": "Backend Developer",
-          "text": "Hackathon aggregator is just a gem. Used to search through 10+ sources. Now everything's in one place"
-        }
-      },
-      "organizers": {
-        "techlab": {
-          "name": "TechLab",
-          "role": "Hackathon Organizer",
-          "text": "Posted our hackathon and got 200+ applications in a week. The audience is truly targeted and active"
-        },
-        "innohub": {
-          "name": "InnoHub",
-          "role": "IT Community",
-          "text": "The platform solves a real problem. Participants come with teams already formed — saves time at the event"
-        },
-        "devfest": {
-          "name": "DevFest Moscow",
-          "role": "Organizer",
-          "text": "Real-time analytics on applications is very helpful. We can see right away who's missing in teams"
-        }
-      }
+      "title": "Use the live workflows",
+      "description": "Browse active competitions or set up your organizer profile and publish the next event."
     },
     "features": {
       "aggregator": {
-        "title": "All Hackathons Here",
-        "description": "Forget dozens of Telegram channels. Smart filters by date, tech stack, and format",
-        "badge": "Time Saver"
-      },
-      "teams": {
-        "title": "Search by Skills",
-        "description": "Need frontend? Find a React developer in a minute. Filters by tech and experience",
-        "badge": "In Minutes"
-      },
-      "organizers": {
-        "title": "For Organizers",
-        "description": "Post your hackathon and get targeted audience. Real-time analytics on registrations",
-        "badge": "Targeted Audience"
-      },
-      "integration": {
-        "title": "API Integrations",
-        "description": "Connect your registration system via open API",
-        "badge": "Open API"
-      }
-    },
-    "stats": {
-      "competitions": {
-        "value": "500+",
-        "label": "IT Competitions on Platform"
-      },
-      "teams": {
-        "value": "1000+",
-        "label": "Teams Formed"
+        "title": "Public competition catalog",
+        "description": "Anyone can browse published competitions and open detailed event pages before signing in.",
+        "badge": "Live now"
       },
       "participants": {
-        "value": "5000+",
-        "label": "Active Participants"
+        "title": "Participant onboarding",
+        "description": "Participants create a profile, discover competitions by tags, and submit applications to competitions that match them.",
+        "badge": "Available"
+      },
+      "submissions": {
+        "title": "Application submission",
+        "description": "Participants apply to competitions with a selected direction and answers collected through the organizer's form.",
+        "badge": "For participants"
+      },
+      "organizers": {
+        "title": "Organizer workspace",
+        "description": "Organizers can create competitions, edit details, configure application forms, and manage incoming applications.",
+        "badge": "Core workflow"
+      },
+      "forms": {
+        "title": "Flexible application forms",
+        "description": "Each competition can have its own form with the questions and answer options the organizer needs.",
+        "badge": "Configurable"
+      },
+      "applications": {
+        "title": "Application review and export",
+        "description": "Review participant details, accept or reject applications, and export applicant lists to CSV by status.",
+        "badge": "New export"
       }
     }
   },
@@ -166,6 +171,7 @@
     "headline": "Dashboard",
     "loadingProfile": "Loading profile...",
     "organizerBadge": "Organizer",
+    "participantBadge": "Participant",
     "userBadge": "User",
     "adminBadge": "Administrator",
     "adminInfo": {
@@ -181,19 +187,40 @@
       "description": "ATTENTION!! All your data, as well as all your activity on the platform, will be permanently deleted WITHOUT the possibility of recovery"
     },
     "notRegistered": {
-      "title": "You're not registered as an organizer yet",
-      "description": "Register to start publishing IT competitions and access participant analytics",
-      "button": "Register as Organizer"
+      "title": "You're not registered yet",
+      "description": "Register as a participant to join competitions, or as an organizer to publish events",
+      "button": "Register"
     },
     "registered": {
       "title": "You're registered as an organizer",
       "description": "You can publish IT competitions and manage events on the platform"
     },
+    "participant": {
+      "bio": "About",
+      "experienceLevel": "Experience",
+      "skills": "Skills",
+      "contacts": "Contacts",
+      "addBio": "Add bio",
+      "addExperience": "Add experience",
+      "addSkills": "Add skills",
+      "addContacts": "Add contacts",
+      "experienceLevels": {
+        "JUNIOR": "Junior",
+        "MID": "Middle",
+        "SENIOR": "Senior"
+      },
+      "skillLevels": {
+        "BEGINNER": "Beginner",
+        "INTERMEDIATE": "Intermediate",
+        "ADVANCED": "Advanced",
+        "EXPERT": "Expert"
+      }
+    },
     "settings": {
       "authentication": {
-          "title": "Authentication",
-          "logout": "Sign out",
-          "delete_profile": "Delete my profile"
+        "title": "Authentication",
+        "logout": "Sign out",
+        "delete_profile": "Delete my profile"
       },
       "appearance": {
         "title": "Appearance",
@@ -220,7 +247,20 @@
   "onboarding": {
     "roleSelection": {
       "title": "Tell us about yourself",
-      "organizerButton": "I'm an organizer"
+      "organizerButton": "I'm an organizer",
+      "participantButton": "I'm a participant",
+      "description": "To register as an organizer, you'll need an invite code from a platform administrator.",
+      "inviteHint": "Don't have an invite code? Contact the platform administrator to request one."
+    }
+  },
+  "participant": {
+    "register": {
+      "title": "Participant Registration",
+      "description": "Fill in your details to start participating in competitions",
+      "goToProfile": "Go to Profile"
+    },
+    "edit": {
+      "title": "Edit Profile"
     }
   },
   "form": {
@@ -247,14 +287,100 @@
       "required": "Invite code is required",
       "hint": "Contact an administrator to get an invite code"
     },
-    "dataProtection": "All data is protected and not shared with third parties"
+    "dataProtection": "All data is protected and not shared with third parties",
+    "privacyConsent": {
+      "label": "I agree to the processing of my personal data in accordance with the",
+      "link": "Privacy Policy",
+      "required": "You must agree to the processing of personal data to register"
+    },
+    "termsConsent": {
+      "label": "I have read and accept the",
+      "link": "Terms of Service",
+      "required": "You must accept the Terms of Service to register"
+    },
+    "fullName": {
+      "label": "Full Name",
+      "placeholder": "Your full name",
+      "required": "Full name is required",
+      "maxLength": "Name must not exceed 70 characters"
+    },
+    "bio": {
+      "label": "About Me",
+      "placeholder": "Tell us about yourself, your experience, and goals...",
+      "maxLength": "Bio must not exceed 500 characters"
+    },
+    "experienceLevel": {
+      "label": "Experience Level",
+      "required": "Please select your experience level",
+      "options": {
+        "none": "Not specified",
+        "JUNIOR": "Junior",
+        "MID": "Middle",
+        "SENIOR": "Senior"
+      }
+    },
+    "participantType": {
+      "label": "Who are you?",
+      "required": "Please select participant type",
+      "options": {
+        "SCHOOLCHILD": "School Student",
+        "STUDENT": "University Student"
+      }
+    },
+    "age": {
+      "label": "Age",
+      "placeholder": "Your age",
+      "required": "Age is required",
+      "positive": "Age must be a positive number",
+      "invalid": "Age is out of allowed range"
+    },
+    "contactEmail": {
+      "label": "Contact Email",
+      "placeholder": "contact{'@'}example.com",
+      "required": "Contact email is required",
+      "invalid": "Enter a valid email address"
+    },
+    "skills": {
+      "label": "Skills",
+      "addButton": "Add Skill",
+      "nameLabel": "Skill Name",
+      "namePlaceholder": "e.g. Python, React, Docker",
+      "nameRequired": "Skill name is required",
+      "nameMaxLength": "Skill name must not exceed 70 characters",
+      "levelLabel": "Proficiency",
+      "levelRequired": "Please select a proficiency level",
+      "minRequired": "Please add at least one skill",
+      "options": {
+        "BEGINNER": "Beginner",
+        "INTERMEDIATE": "Intermediate",
+        "ADVANCED": "Advanced",
+        "EXPERT": "Expert"
+      }
+    },
+    "contacts": {
+      "label": "Contacts (optional)",
+      "addButton": "Add Contact",
+      "titleLabel": "Platform / Label",
+      "titlePlaceholder": "e.g. GitHub, LinkedIn",
+      "titleRequired": "Contact title is required",
+      "titleMaxLength": "Title must not exceed 70 characters",
+      "valueLabel": "Contact",
+      "valuePlaceholder": "username or https://github.com/username",
+      "valueRequired": "Contact value is required",
+      "valueMaxLength": "Contact value must not exceed 2083 characters",
+      "maxItems": "You can add up to 15 contacts"
+    }
   },
   "apiErrors": {
     "UNAUTHORIZED": "Please log in",
+    "ACCOUNT_BLOCKED": "Your account has been restricted",
     "USER_NOT_FOUND": "User not found",
     "USER_HAS_NO_ROLE": "User has no role assigned",
-    "AUTH_USER_ALREADY_EXISTS": "You're already registered as an organizer",
+    "AUTH_USER_ALREADY_EXISTS": "You are already registered on the platform",
     "ORGANIZER_ALREADY_EXISTS": "Phone or email is already in use",
+    "ORGANIZER_NOT_FOUND": "Organizer profile not found",
+    "PARTICIPANT_NOT_FOUND": "Participant profile not found",
+    "INVALID_PARTICIPANT_DATA": "Invalid participant data. Please check the entered values",
     "VALIDATION_ERROR": "Please check the form for errors",
     "ACCESS_DENIED": "Access denied",
     "INTERNAL_SERVER_ERROR": "Internal server error. Please try again later",
@@ -265,7 +391,37 @@
     "INVITE_ALREADY_REVOKED": "This invite has already been revoked",
     "INVITE_ALREADY_USED": "This invite has already been used",
     "INVITE_REVOKED": "This invite has been revoked and cannot be used",
-    "INVALID_SUPERUSER_PASSWORD": "Invalid password. Access denied"
+    "INVALID_SUPERUSER_PASSWORD": "Invalid password. Access denied",
+    "PARTICIPANT_ALREADY_EXISTS": "You're already registered as a participant",
+    "COMPETITION_NOT_FOUND": "Competition not found",
+    "COMPETITION_TAG_NOT_FOUND": "Competition tag not found",
+    "COMPETITION_TAG_ALREADY_EXISTS": "A tag with this value already exists",
+    "APPLICATION_FORM_ALREADY_EXISTS": "An application form already exists. Delete the current one before creating a new one",
+    "APPLICATION_FORM_NOT_FOUND": "Application form not found",
+    "INVALID_APPLICATION_FORM_DATA": "Invalid application form data",
+    "APPLICATION_NOT_FOUND": "Application not found",
+    "APPLICATION_ALREADY_EXISTS": "You have already applied to this competition",
+    "APPLICATION_ALREADY_RESOLVED": "Application has already been processed and cannot be changed",
+    "INVALID_APPLICATION_DATA": "Invalid application data. Check your selected direction and form answers",
+    "INVALID_COMPETITION_DATA": "Invalid competition data. Please check the entered values",
+    "COMPETITION_NOT_ACTIVE": "This competition is not currently accepting applications",
+    "PARTICIPANT_LIMITS_EXCEEDED": "This competition has reached its participant limit",
+    "PARTICIPANT_TYPE_MISMATCH": "Your participant type does not match this competition's requirements",
+    "INVALID_ROLE": "Access denied for your current role",
+    "EXPORT_JOB_NOT_FOUND": "Export job not found",
+    "EXPORT_RATE_LIMIT_EXCEEDED": "Too many export attempts. Please try again later"
+  },
+  "accountRestricted": {
+    "headline": "Account status",
+    "title": "Account is restricted",
+    "description": "Access to authenticated DreamTeams features has been suspended for this session. You can review the terms or sign out.",
+    "reason": "Reason",
+    "blockedAt": "Restricted at",
+    "notProvided": "Not provided",
+    "appealTitle": "Appeal this restriction",
+    "appealDescription": "If you believe this restriction is a mistake, email support.",
+    "tosLink": "Terms of Service",
+    "signOut": "Sign out"
   },
   "superuserRegister": {
     "title": "Superuser Registration",
@@ -275,7 +431,8 @@
     "success": {
       "title": "Superuser created",
       "description": "The superuser account has been successfully registered.",
-      "userId": "User ID"
+      "userId": "User ID",
+      "goToAdmin": "Open Admin Panel"
     }
   },
   "avatar": {
@@ -335,8 +492,48 @@
       "title": "Invite Revoked",
       "description": "The invite code has been revoked successfully"
     },
+    "userBlocked": {
+      "title": "User blocked",
+      "description": "The account restriction has been applied"
+    },
+    "userUnblocked": {
+      "title": "User unblocked",
+      "description": "The account restriction has been removed"
+    },
     "inviteCopyFailed": {
       "title": "Failed to copy code"
+    },
+    "applicationFormCreated": {
+      "title": "Form created!",
+      "description": "Application form created successfully"
+    },
+    "applicationFormDeleted": {
+      "title": "Form deleted",
+      "description": "Application form deleted successfully"
+    },
+    "applicationSubmitted": {
+      "title": "Application submitted!",
+      "description": "Your application has been sent"
+    },
+    "applicationWithdrawn": {
+      "title": "Application withdrawn",
+      "description": "Your application has been removed"
+    },
+    "applicationAccepted": {
+      "title": "Application accepted",
+      "description": "Participant's application has been approved"
+    },
+    "applicationRejected": {
+      "title": "Application rejected",
+      "description": "Participant's application has been rejected"
+    },
+    "tagCreated": {
+      "title": "Tag created",
+      "description": "Competition tag created successfully"
+    },
+    "tagDeleted": {
+      "title": "Tag deleted",
+      "description": "Competition tag deleted successfully"
     }
   },
   "notifications": {
@@ -348,11 +545,82 @@
     "hoursAgo": "{n}h ago"
   },
   "admin": {
+    "users": {
+      "nav": "Users",
+      "title": "User Management",
+      "detailTitle": "User Details",
+      "subtitle": "{total} users total",
+      "empty": "No users match the selected filters.",
+      "emptyTitle": "No users found",
+      "unnamed": "Unnamed user",
+      "notProvided": "Not provided",
+      "adminBadge": "Admin",
+      "roles": {
+        "organizer": "Organizer",
+        "participant": "Participant",
+        "none": "No role"
+      },
+      "status": {
+        "active": "Active",
+        "blocked": "Blocked"
+      },
+      "filters": {
+        "searchPlaceholder": "Search by name or exact user UUID",
+        "allRoles": "All roles",
+        "allAdminStatuses": "All users",
+        "adminOnly": "Admins",
+        "nonAdminOnly": "Non-admins",
+        "allBanStatuses": "All statuses",
+        "blockedOnly": "Blocked",
+        "activeOnly": "Active"
+      },
+      "actions": {
+        "details": "Details",
+        "block": "Block",
+        "unblock": "Unblock"
+      },
+      "fields": {
+        "status": "Status",
+        "reason": "Reason",
+        "blockedAt": "Blocked at",
+        "organizerName": "Organizer name",
+        "phone": "Phone",
+        "email": "Email",
+        "organizerId": "Organizer ID",
+        "fullName": "Full name",
+        "participantType": "Participant type",
+        "age": "Age",
+        "experience": "Experience",
+        "createdAt": "Created at",
+        "updatedAt": "Updated at",
+        "bio": "Bio",
+        "skills": "Skills",
+        "contacts": "Contacts"
+      },
+      "sections": {
+        "banStatus": "Ban status",
+        "organizer": "Organizer profile",
+        "participant": "Participant profile",
+        "noRole": "No organizer or participant profile"
+      },
+      "blockModal": {
+        "title": "Block user",
+        "description": "Block {name}? The user will lose access to authenticated features.",
+        "reason": "Reason (optional)",
+        "reasonPlaceholder": "Describe why this account is being blocked"
+      },
+      "unblockModal": {
+        "title": "Unblock user",
+        "description": "Unblock {name}? The account restriction will be removed."
+      }
+    },
     "invites": {
+      "nav": "Invites",
       "title": "Invite Management",
       "subtitle": "{total} invites total",
       "createButton": "Create Invite",
       "empty": "No invites yet. Create one to allow organizer registration.",
+      "emptyTitle": "No invites yet",
       "copyButton": "Copy code",
       "codeCopied": "Code copied to clipboard!",
       "revokeButton": "Revoke",
@@ -374,6 +642,26 @@
         "title": "Revoke Invite",
         "description": "Are you sure you want to revoke this invite? The code will no longer be usable."
       }
+    },
+    "tags": {
+      "nav": "Tags",
+      "title": "Tag Management",
+      "subtitle": "{total} tags total",
+      "createButton": "Create Tag",
+      "deleteButton": "Delete",
+      "searchPlaceholder": "Search tags",
+      "empty": "No tags yet. Create tags so organizers can classify competitions.",
+      "emptyTitle": "No tags yet",
+      "createModal": {
+        "title": "Create Tag",
+        "value": "Tag value",
+        "placeholder": "e.g. Python",
+        "submit": "Create"
+      },
+      "deleteModal": {
+        "title": "Delete Tag",
+        "description": "Delete \"{value}\"? It will be removed from competitions that reference it."
+      }
     }
   },
   "footer": {
@@ -382,7 +670,21 @@
     "copyright": "© 2025 DreamTeams. All rights reserved",
     "support": "Support",
     "quickLinks": "Quick Links",
-    "contact": "Contact"
+    "contact": "Contact",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "cookiePolicy": "Cookie Policy"
+  },
+  "cookieBanner": {
+    "title": "We use cookies",
+    "description": "This site uses cookies that are required for its operation and authentication. By continuing to use the site, you agree to their use.",
+    "learnMore": "Learn more",
+    "accept": "Accept",
+    "decline": "Decline",
+    "readPolicy": "Read the policy",
+    "requiredHeadline": "Consent required",
+    "requiredTitle": "The site cannot work without cookies",
+    "requiredDescription": "DreamTeams requires cookies to work properly — including for authentication and session persistence. Without them, some features are unavailable. Please accept cookies to continue."
   },
   "theme": {
     "light": "Light Theme",
@@ -392,8 +694,8 @@
   },
   "seo": {
     "home": {
-      "title": "DreamTeams - IT Competition Aggregator and Team Formation",
-      "description": "Find IT competitions, build teams, compete in events. All competitions in one place with smart participant matching."
+      "title": "DreamTeams - IT competitions and organizer workflows",
+      "description": "Discover live IT competitions, publish your own events, collect applications through custom forms, and manage participant selection in DreamTeams."
     },
     "profile": {
       "title": "Profile - DreamTeams",
@@ -434,6 +736,7 @@
     "empty": "You don't have any competitions yet",
     "emptyDescription": "Create your first competition to get started",
     "createButton": "Create Competition",
+    "loadMore": "Load more",
     "searchPlaceholder": "Search competitions...",
     "filters": {
       "title": "Filters",
@@ -461,7 +764,7 @@
       "participants": "Participants",
       "teamSize": "Team Size",
       "noTeams": "No Teams",
-      "domains": "Domains",
+      "tags": "Tags",
       "registrationPeriod": "Registration",
       "venue": "Format"
     },
@@ -495,11 +798,11 @@
       "registration": "Registration",
       "teamFormation": "Team Formation",
       "participants": "Participants",
-      "participantType": "Participant Type",
+      "participantType": "Who participates?",
       "teamSize": "Team Size",
       "venue": "Venue",
       "milestones": "Milestones",
-      "domains": "Domains",
+      "tags": "Tags",
       "organizer": "Organizer",
       "registerButton": "Register for Competition",
       "closeButton": "Close"
@@ -521,6 +824,7 @@
     }
   },
   "competition": {
+    "individual": "Individual competition",
     "create": {
       "title": "Create Competition",
       "description": "Fill in competition information",
@@ -534,10 +838,39 @@
         "venue": "Venue",
         "milestones": "Milestones (optional)"
       },
+      "steps": {
+        "basics": {
+          "title": "Basics",
+          "description": "Name and format"
+        },
+        "schedule": {
+          "title": "Schedule",
+          "description": "Registration dates"
+        },
+        "participants": {
+          "title": "Participants",
+          "description": "Limits and teams"
+        },
+        "venue": {
+          "title": "Venue",
+          "description": "Format and location"
+        },
+        "milestones": {
+          "title": "Milestones",
+          "description": "Key events"
+        },
+        "scheduleParticipants": {
+          "title": "Schedule & Participants"
+        }
+      },
+      "nextStep": "Next",
+      "prevStep": "Back",
       "validation": {
         "errorsFound": "Found {count} errors",
-        "scrollToErrors": "Please check the form fields"
-      }
+        "scrollToErrors": "Please check the form fields",
+        "alertTitle": "Can't save — fix the errors below"
+      },
+      "stepLabel": "Step {current} of {total}"
     },
     "detail": {
       "editButton": "Edit",
@@ -559,32 +892,56 @@
     },
     "edit": {
       "title": "Edit Competition",
-      "description": "Update competition information"
+      "description": "Update competition information",
+      "question": "What do you want to update?",
+      "backToChoices": "Back to update choice",
+      "cards": {
+        "generalInfo": {
+          "title": "General info",
+          "description": "Title, description, tags, tracks, participant limit, venue, and milestones"
+        },
+        "schedule": {
+          "title": "Reschedule",
+          "description": "Registration schedule, team formation period, and team size"
+        },
+        "archiveStatus": {
+          "title": "Change archive state",
+          "archive": "Archive competition",
+          "unarchive": "Restore competition from archive"
+        }
+      }
     },
     "form": {
       "title": {
         "label": "Competition Title",
         "placeholder": "e.g., Web Development Hackathon 2026",
         "required": "Title is required",
-        "maxLength": "Title must not exceed 200 characters"
+        "maxLength": "Title must not exceed 200 characters",
+        "tooltip": "The public name of your competition visible to all participants"
       },
       "description": {
         "label": "Description",
         "placeholder": "Describe your competition, its goals and features...",
-        "required": "Description is required"
+        "required": "Description is required",
+        "tooltip": "Detailed information about goals, tasks, format and requirements"
       },
       "schedule": {
         "registrationPeriod": {
-          "label": "Registration Period"
+          "label": "Registration Period",
+          "tooltip": "The time window during which participants can sign up"
         },
         "teamFormationPeriod": {
-          "label": "Team Formation Period"
+          "label": "Team Formation Period",
+          "tooltip": "Period after registration for participants to form and join teams"
         },
         "startTime": {
           "label": "Start Time"
         },
         "endTime": {
           "label": "End Time"
+        },
+        "timeToggle": {
+          "label": "Set time"
         },
         "registrationStart": {
           "label": "Registration Start",
@@ -603,7 +960,14 @@
           "placeholder": "Not specified"
         },
         "selectDateRange": "Select date range",
-        "lockedNotice": "This date has already passed and cannot be changed",
+        "lockedNotice": {
+          "startOnly": "Registration has already started — the start date can no longer be changed, but you can still adjust the end.",
+          "endOnly": "Registration has already ended — the end date can no longer be changed.",
+          "both": "Registration period is over — neither date can be changed.",
+          "startOnlyTeam": "Team formation has already started — the start date can no longer be changed, but you can still adjust the end.",
+          "endOnlyTeam": "Team formation has already ended — the end date can no longer be changed.",
+          "bothTeam": "Team formation period is over — neither date can be changed."
+        },
         "validation": {
           "registrationEndAfterStart": "Registration end must be after start",
           "teamFormationBothRequired": "Both team formation start and end must be specified",
@@ -614,42 +978,45 @@
         }
       },
       "participantLimits": {
-        "label": "Number of Participants",
-        "min": {
-          "label": "Minimum",
-          "minValue": "Minimum must be at least 1"
-        },
+        "label": "Maximum Participants",
         "max": {
           "label": "Maximum",
           "minValue": "Maximum must be at least 1"
         },
-        "validation": {
-          "minLessThanMax": "Minimum must be less than or equal to maximum"
-        }
+        "tooltip": "Total number of individual participants or teams allowed"
       },
-      "domains": {
-        "label": "Domains",
-        "placeholder": "Select domains",
-        "required": "Please select at least one domain",
-        "options": {
-          "frontend": "Frontend",
-          "mobile": "Mobile",
-          "backend": "Backend",
-          "ai": "AI",
-          "devops": "DevOps"
-        }
+      "tags": {
+        "label": "Tags",
+        "placeholder": "Search tags",
+        "add": "Add tag",
+        "invalid": "Invalid tag identifier",
+        "maxLength": "Select no more than 30 tags",
+        "empty": "No tags found",
+        "tooltip": "Global tags used for discovery and search"
+      },
+      "tracks": {
+        "label": "Directions",
+        "placeholder": "e.g. Backend",
+        "required": "Add at least one direction",
+        "maxLength": "Direction name must not exceed 100 characters",
+        "duplicate": "Direction names must be unique",
+        "add": "Add direction",
+        "remove": "Remove direction",
+        "tooltip": "Directions are competition-specific choices. Applicants select exactly one."
       },
       "participantType": {
-        "label": "Participant Type",
+        "label": "Who participates?",
         "options": {
           "schoolchild": "School Students",
           "student": "University Students",
           "any": "Everyone"
-        }
+        },
+        "tooltip": "Restrict participation to a specific group or open it to everyone"
       },
       "isTeam": {
         "label": "Competition Type",
-        "checkboxLabel": "Team Competition"
+        "checkboxLabel": "Team Competition",
+        "tooltip": "Team competitions require participants to join or form groups"
       },
       "venue": {
         "format": {
@@ -658,11 +1025,13 @@
             "online": "Online",
             "offline": "Offline",
             "hybrid": "Hybrid"
-          }
+          },
+          "tooltip": "Whether the competition takes place online, in-person, or both"
         },
         "location": {
           "label": "Location",
-          "placeholder": "e.g., Moscow, Tech Park"
+          "placeholder": "e.g., Moscow, Tech Park",
+          "tooltip": "Physical address or name of the venue"
         },
         "validation": {
           "locationRequired": "Location is required for offline and hybrid formats"
@@ -680,21 +1049,30 @@
         },
         "validation": {
           "minLessThanMax": "Minimum must be less than or equal to maximum"
-        }
+        },
+        "tooltip": "Number of members allowed per team"
       },
       "milestone": {
         "title": {
           "label": "Milestone Title",
           "placeholder": "e.g., Project Defense",
           "required": "Milestone title is required",
-          "maxLength": "Title must not exceed 50 characters"
+          "maxLength": "Title must not exceed 50 characters",
+          "tooltip": "A short name for this key event or checkpoint"
         },
         "timestamp": {
           "label": "Date and Time",
           "required": "Please specify date and time"
         },
         "datetime": {
-          "label": "Milestone Date and Time"
+          "label": "Milestone Date and Time",
+          "tooltip": "When this milestone takes place"
+        },
+        "description": {
+          "label": "Description",
+          "placeholder": "Optional details about this milestone",
+          "maxLength": "Description must not exceed 300 characters",
+          "tooltip": "Optional details shown below the milestone title"
         },
         "addButton": "Add Milestone",
         "removeButton": "Remove",
@@ -705,6 +1083,11 @@
         "empty": "Click \"Add Milestone\" to create event checkpoints",
         "lockedNotice": "This milestone date has already passed and cannot be changed",
         "selectDate": "Select date"
+      },
+      "autoAccept": {
+        "label": "Auto-Accept Applications",
+        "checkboxLabel": "Automatically accept participant applications",
+        "tooltip": "Skip manual review — all registrations are approved automatically"
       },
       "isArchived": {
         "label": "Archive Status",
@@ -720,6 +1103,152 @@
       "schoolchild": "School Students",
       "student": "University Students",
       "any": "Everyone"
+    }
+  },
+  "applicationForm": {
+    "title": "Application Form",
+    "selectCompetition": "Select a competition to set up its application form",
+    "noForm": "No application form",
+    "noFormDescription": "Create a form for participants to fill in when applying",
+    "createButton": "Create Form",
+    "deleteButton": "Delete Form",
+    "deleteConfirmTitle": "Delete application form?",
+    "deleteConfirmDescription": "Future applicants will not be asked to fill in any form. Already submitted applications are not affected.",
+    "fields": "Form fields",
+    "addField": "Add field",
+    "removeField": "Remove field",
+    "fieldName": {
+      "label": "Field identifier",
+      "placeholder": "e.g. tshirt_size"
+    },
+    "fieldName": {
+      "label": "Question",
+      "placeholder": "e.g. T-shirt size"
+    },
+    "fieldType": {
+      "label": "Field type",
+      "string": "Text",
+      "int": "Number",
+      "select": "Single choice",
+      "multiselect": "Multiple choice"
+    },
+    "fieldRequired": "Required field",
+    "choices": "Choices",
+    "addChoice": "Add choice",
+    "choiceValue": {
+      "label": "Value",
+      "placeholder": "e.g. Small"
+    },
+    "createdAt": "Created",
+    "saving": "Saving...",
+    "tabBuild": "Build",
+    "tabPreview": "Preview",
+    "previewEmpty": "Add fields above to see a preview"
+  },
+  "applications": {
+    "title": "Applications",
+    "selectCompetition": "Select a competition to view its applications",
+    "empty": "No applications yet",
+    "emptyDescription": "No participants have applied to this competition yet",
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "rejected": "Rejected"
+    },
+    "participant": "Participant",
+    "participantAge": "Age",
+    "participantBio": "About",
+    "participantExperience": "Experience",
+    "participantSkills": "Skills",
+    "participantContacts": "Contacts",
+    "notProvided": "Not provided",
+    "applicationDetails": "Application",
+    "competition": "Competition",
+    "track": "Direction",
+    "submittedAt": "Submitted",
+    "formData": "Form data",
+    "noFormData": "No form was required",
+    "acceptButton": "Accept",
+    "rejectButton": "Reject",
+    "accepting": "Accepting...",
+    "rejecting": "Rejecting...",
+    "alreadyResolved": "Application already processed",
+    "backToList": "Back to applications",
+    "filter": {
+      "all": "All",
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "rejected": "Rejected"
+    },
+    "sort": {
+      "newest": "Newest first",
+      "oldest": "Oldest first"
+    },
+    "export": {
+      "button": "Export applications",
+      "buttonAll": "Export all applications",
+      "buttonAcceptedDefault": "Export accepted applications",
+      "exporting": "Exporting...",
+      "allHint": "On the All tab, export includes every application.",
+      "hint": {
+        "pending": "Export pending applications for this competition.",
+        "accepted": "Export accepted applications for this competition.",
+        "rejected": "Export rejected applications for this competition."
+      },
+      "failedTitle": "Export failed",
+      "successTitle": "Export ready",
+      "successDescription": "The CSV file has been generated and opened."
+    }
+  },
+  "myApplications": {
+    "title": "My Applications",
+    "empty": "No applications",
+    "emptyDescription": "Find a competition and submit your application",
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "rejected": "Rejected"
+    },
+    "competition": "Competition",
+    "track": "Direction",
+    "submittedAt": "Submitted",
+    "formData": "Form data",
+    "noFormData": "No form was required",
+    "withdrawButton": "Withdraw application",
+    "withdrawing": "Withdrawing...",
+    "withdrawConfirmTitle": "Withdraw application?",
+    "withdrawConfirmDescription": "The application will be permanently deleted. You can apply again.",
+    "backToList": "Back to applications",
+    "applyButton": "Apply",
+    "applying": "Applying...",
+    "selectTrack": "Select direction",
+    "trackRequired": "Select a direction",
+    "onlyParticipantsCanApply": "Only participants can submit applications"
+  },
+  "explore": {
+    "title": "Explore Competitions",
+    "resultsCount": "{count} competitions available",
+    "empty": "No competitions match your filters",
+    "emptyDescription": "Try broadening your search or clearing some filters",
+    "loadMore": "Load more",
+    "sort": {
+      "mostPopular": "Most popular",
+      "newest": "Newest"
+    },
+    "filters": {
+      "title": "Filters",
+      "search": "Search",
+      "searchPlaceholder": "Find by title or tag",
+      "sort": "Sort by",
+      "teamSize": "Team size",
+      "teamSizeMin": "Min",
+      "teamSizeMax": "Max",
+      "autoAccept": "Auto-accept applications",
+      "autoAcceptAny": "Any",
+      "autoAcceptYes": "Yes",
+      "autoAcceptNo": "No",
+      "tags": "Tags",
+      "tagsPlaceholder": "Search tags"
     }
   }
 }

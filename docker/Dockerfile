@@ -41,6 +41,13 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv build --wheel && \
     uv pip install --no-deps dist/*.whl
 
+# Profiling tooling — kept opt-in via PROFILE_BUILD=1 to keep prod images slim.
+ARG PROFILE_BUILD=0
+RUN --mount=type=cache,target=/root/.cache/uv \
+    if [ "$PROFILE_BUILD" = "1" ]; then \
+        uv pip install --python /venv/bin/python py-spy==0.4.1; \
+    fi
+
 # Stage: final
 # ---------------------------------------------------------
 FROM base

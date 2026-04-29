@@ -55,22 +55,27 @@ const isTeamFormationLocked = computed(() => props.lockedTeamFormationStart && p
     <div class="space-y-6">
       <!-- Registration Period -->
       <div>
-        <!-- Locked notice -->
+        <!-- Locked notice — specific to which parts of the period are in the past -->
         <div v-if="lockedRegistrationStart || lockedRegistrationEnd" class="mb-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
           <p class="text-sm text-amber-700 dark:text-amber-300 flex items-center gap-2">
             <UIcon name="i-heroicons-lock-closed" class="w-4 h-4" />
-            {{ t('competition.form.schedule.lockedNotice') }}
+            <span v-if="isRegistrationLocked">{{ t('competition.form.schedule.lockedNotice.both') }}</span>
+            <span v-else-if="lockedRegistrationStart">{{ t('competition.form.schedule.lockedNotice.startOnly') }}</span>
+            <span v-else>{{ t('competition.form.schedule.lockedNotice.endOnly') }}</span>
           </p>
         </div>
 
         <UFormField
           name="schedule.registration_start"
-          :label="t('competition.form.schedule.registrationPeriod.label')"
           required
           size="xl"
           class="mb-3"
           :error-pattern="/schedule\.(registration_start|registration_end)/"
         >
+          <template #label>
+            {{ t('competition.form.schedule.registrationPeriod.label') }}
+            <HelpTooltip :text="t('competition.form.schedule.registrationPeriod.tooltip')" />
+          </template>
           <UInputDate
             ref="registrationDateInput"
             :model-value="(registrationDateRange as any)"
@@ -107,55 +112,74 @@ const isTeamFormationLocked = computed(() => props.lockedTeamFormationStart && p
           </UInputDate>
         </UFormField>
 
-        <div class="space-y-3 mt-3">
-          <UFormField
-            :label="t('competition.form.schedule.startTime.label')"
-            size="lg"
-          >
-            <UInputTime
-              :model-value="(registrationStartTime as any)"
-              @update:model-value="(val: any) => emit('update:registrationStartTime', val)"
-              size="xl"
-              :hour-cycle="24"
-              leading-icon="i-heroicons-clock"
-              :disabled="lockedRegistrationStart"
-            />
-          </UFormField>
+        <UCollapsible class="mt-3 group">
+          <UButton
+            type="button"
+            variant="ghost"
+            color="neutral"
+            size="sm"
+            trailing-icon="i-heroicons-chevron-down"
+            class="w-full justify-between text-sm font-medium text-gray-600 dark:text-gray-300"
+            :label="t('competition.form.schedule.timeToggle.label')"
+            :ui="{ trailingIcon: 'transition-transform duration-200 group-data-[state=open]:rotate-180' }"
+          />
+          <template #content>
+            <div class="space-y-3 mt-3">
+              <UFormField
+                :label="t('competition.form.schedule.startTime.label')"
+                size="lg"
+              >
+                <UInputTime
+                  :model-value="(registrationStartTime as any)"
+                  @update:model-value="(val: any) => emit('update:registrationStartTime', val)"
+                  size="xl"
+                  :hour-cycle="24"
+                  leading-icon="i-heroicons-clock"
+                  :disabled="lockedRegistrationStart"
+                />
+              </UFormField>
 
-          <UFormField
-            :label="t('competition.form.schedule.endTime.label')"
-            size="lg"
-          >
-            <UInputTime
-              :model-value="(registrationEndTime as any)"
-              @update:model-value="(val: any) => emit('update:registrationEndTime', val)"
-              size="xl"
-              :hour-cycle="24"
-              leading-icon="i-heroicons-clock"
-              :disabled="lockedRegistrationEnd"
-            />
-          </UFormField>
-        </div>
+              <UFormField
+                :label="t('competition.form.schedule.endTime.label')"
+                size="lg"
+              >
+                <UInputTime
+                  :model-value="(registrationEndTime as any)"
+                  @update:model-value="(val: any) => emit('update:registrationEndTime', val)"
+                  size="xl"
+                  :hour-cycle="24"
+                  leading-icon="i-heroicons-clock"
+                  :disabled="lockedRegistrationEnd"
+                />
+              </UFormField>
+            </div>
+          </template>
+        </UCollapsible>
       </div>
 
       <!-- Team Formation Period (only for team competitions) -->
       <div v-if="isTeamCompetition">
-        <!-- Locked notice -->
+        <!-- Locked notice — specific to which parts of the period are in the past -->
         <div v-if="lockedTeamFormationStart || lockedTeamFormationEnd" class="mb-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
           <p class="text-sm text-amber-700 dark:text-amber-300 flex items-center gap-2">
             <UIcon name="i-heroicons-lock-closed" class="w-4 h-4" />
-            {{ t('competition.form.schedule.lockedNotice') }}
+            <span v-if="isTeamFormationLocked">{{ t('competition.form.schedule.lockedNotice.bothTeam') }}</span>
+            <span v-else-if="lockedTeamFormationStart">{{ t('competition.form.schedule.lockedNotice.startOnlyTeam') }}</span>
+            <span v-else>{{ t('competition.form.schedule.lockedNotice.endOnlyTeam') }}</span>
           </p>
         </div>
 
         <UFormField
           name="schedule.team_formation_start"
-          :label="t('competition.form.schedule.teamFormationPeriod.label')"
           :required="isTeamCompetition"
           size="xl"
           class="mb-3"
           :error-pattern="/schedule\.team_formation_(start|end)/"
         >
+          <template #label>
+            {{ t('competition.form.schedule.teamFormationPeriod.label') }}
+            <HelpTooltip :text="t('competition.form.schedule.teamFormationPeriod.tooltip')" />
+          </template>
           <UInputDate
             ref="teamFormationDateInput"
             :model-value="(teamFormationDateRange as any)"
@@ -192,35 +216,49 @@ const isTeamFormationLocked = computed(() => props.lockedTeamFormationStart && p
           </UInputDate>
         </UFormField>
 
-        <div class="space-y-3 mt-3">
-          <UFormField
-            :label="t('competition.form.schedule.startTime.label')"
-            size="lg"
-          >
-            <UInputTime
-              :model-value="(teamFormationStartTime as any)"
-              @update:model-value="(val: any) => emit('update:teamFormationStartTime', val)"
-              size="xl"
-              :hour-cycle="24"
-              leading-icon="i-heroicons-clock"
-              :disabled="lockedTeamFormationStart"
-            />
-          </UFormField>
+        <UCollapsible class="mt-3 group">
+          <UButton
+            type="button"
+            variant="ghost"
+            color="neutral"
+            size="sm"
+            trailing-icon="i-heroicons-chevron-down"
+            class="w-full justify-between text-sm font-medium text-gray-600 dark:text-gray-300"
+            :label="t('competition.form.schedule.timeToggle.label')"
+            :ui="{ trailingIcon: 'transition-transform duration-200 group-data-[state=open]:rotate-180' }"
+          />
+          <template #content>
+            <div class="space-y-3 mt-3">
+              <UFormField
+                :label="t('competition.form.schedule.startTime.label')"
+                size="lg"
+              >
+                <UInputTime
+                  :model-value="(teamFormationStartTime as any)"
+                  @update:model-value="(val: any) => emit('update:teamFormationStartTime', val)"
+                  size="xl"
+                  :hour-cycle="24"
+                  leading-icon="i-heroicons-clock"
+                  :disabled="lockedTeamFormationStart"
+                />
+              </UFormField>
 
-          <UFormField
-            :label="t('competition.form.schedule.endTime.label')"
-            size="lg"
-          >
-            <UInputTime
-              :model-value="(teamFormationEndTime as any)"
-              @update:model-value="(val: any) => emit('update:teamFormationEndTime', val)"
-              size="xl"
-              :hour-cycle="24"
-              leading-icon="i-heroicons-clock"
-              :disabled="lockedTeamFormationEnd"
-            />
-          </UFormField>
-        </div>
+              <UFormField
+                :label="t('competition.form.schedule.endTime.label')"
+                size="lg"
+              >
+                <UInputTime
+                  :model-value="(teamFormationEndTime as any)"
+                  @update:model-value="(val: any) => emit('update:teamFormationEndTime', val)"
+                  size="xl"
+                  :hour-cycle="24"
+                  leading-icon="i-heroicons-clock"
+                  :disabled="lockedTeamFormationEnd"
+                />
+              </UFormField>
+            </div>
+          </template>
+        </UCollapsible>
       </div>
     </div>
   </UCard>

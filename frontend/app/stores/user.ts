@@ -9,8 +9,10 @@ export const useUserStore = defineStore("user", {
   }),
 
   getters: {
-    isOrganizer: (state) => state.profile?.organizer !== null,
-    organizer: (state) => state.profile?.organizer,
+    isOrganizer: (state) => state.profile?.organizer != null,
+    organizer: (state) => state.profile?.organizer ?? null,
+    isParticipant: (state) => state.profile?.participant != null,
+    participant: (state) => state.profile?.participant ?? null,
     isAdmin: (state) => state.profile?.is_admin ?? false,
   },
 

@@ -26,7 +26,8 @@ class OrganizerInviteGateway(Protocol):
         page: int,
         page_size: int,
     ) -> tuple[list[OrganizerInvite], int]:
-        """List invites created by a specific admin user, ordered by created_at DESC.
+        """
+        List invites created by a specific admin user, ordered by created_at DESC.
 
         Returns tuple of (invites list, total count).
         """

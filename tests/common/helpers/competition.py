@@ -35,22 +35,19 @@ INVALID_COMPETITION_DATA_CASES: list[tuple[dict[str, Any], str]] = [
     # Title validation
     ({"title": "a" * 300}, "VALIDATION_ERROR"),  # Title exceeds max length (200 characters)
     # Description validation
-    ({"description": ""}, "INVALID_COMPETITION_DATA"),  # Description cannot be empty
-    ({"description": "   "}, "INVALID_COMPETITION_DATA"),  # Description cannot be whitespace only
-    # Domains validation
-    ({"domains": []}, "INVALID_COMPETITION_DATA"),  # Domains list cannot be empty
-    # Participant limits: min exceeds max
-    ({"participant_limits": {"max": 10, "min": 50}}, "INVALID_COMPETITION_DATA"),
-    # Participant limits: both zero
-    ({"participant_limits": {"max": 0, "min": 0}}, "INVALID_COMPETITION_DATA"),
+    ({"description": ""}, "VALIDATION_ERROR"),  # Description cannot be empty
+    # Tracks validation
+    ({"tracks": []}, "VALIDATION_ERROR"),  # Tracks list cannot be empty
+    # Participant limits: max is zero
+    ({"participant_limits": {"max": 0}}, "INVALID_COMPETITION_DATA"),
+    # Participant limits: max is negative
+    ({"participant_limits": {"max": -10}}, "INVALID_COMPETITION_DATA"),
     # Team size: min exceeds max
     ({"team_size": {"max": 3, "min": 10}}, "INVALID_COMPETITION_DATA"),
     # Team size: max is zero
     ({"team_size": {"max": 0, "min": 1}}, "INVALID_COMPETITION_DATA"),
     # Team size: min is zero (must be at least 1)
     ({"team_size": {"max": 5, "min": 0}}, "INVALID_COMPETITION_DATA"),
-    # Participant limits: negative min
-    ({"participant_limits": {"max": 100, "min": -10}}, "INVALID_COMPETITION_DATA"),
     # Schedule validation: registration start equals registration end
     (
         {
@@ -101,6 +98,21 @@ INVALID_COMPETITION_DATA_CASES: list[tuple[dict[str, Any], str]] = [
         },
         "INVALID_COMPETITION_DATA",
     ),
+    # Pairing invariant: schedule has no team_formation but team_size is set (from factory base)
+    (
+        {
+            "schedule": {
+                "registration_start": timedelta(days=1),
+                "registration_end": timedelta(days=10),
+            },
+        },
+        "INVALID_COMPETITION_DATA",
+    ),
+    # Pairing invariant: team_size is None but schedule.team_formation_* are set (from factory base)
+    (
+        {"team_size": None},
+        "INVALID_COMPETITION_DATA",
+    ),
     # Milestones: duplicate timestamps
     (
         {
@@ -118,16 +130,7 @@ INVALID_COMPETITION_DATA_CASES: list[tuple[dict[str, Any], str]] = [
                 {"timestamp": timedelta(days=20), "title": ""},
             ],
         },
-        "INVALID_COMPETITION_DATA",
-    ),
-    # Milestones: whitespace-only title
-    (
-        {
-            "milestones": [
-                {"timestamp": timedelta(days=21), "title": "   "},
-            ],
-        },
-        "INVALID_COMPETITION_DATA",
+        "VALIDATION_ERROR",
     ),
     # Milestones: too long title
     (

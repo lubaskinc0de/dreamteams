@@ -1,87 +1,384 @@
 services:
-    grafana:
-        extends:
-            file: docker-compose.base.yml
-            service: grafana
+    frontend:
+        image: node:24-bookworm-slim
+        container_name: frontend
+        restart: unless-stopped
+        working_dir: /app
+        command:
+            [
+                "sh",
+                "-c",
+                "npm run dev -- --host 0.0.0.0 --port 3000",
+            ]
+        environment:
+            CHOKIDAR_USEPOLLING: "true"
+            NUXT_DEV_PROXY: "1"
+            NUXT_PUBLIC_API_BASE: http://localhost
+            WATCHPACK_POLLING: "true"
         volumes:
-            - grafana_data:/var/lib/grafana
+            - ../frontend:/app
+            - ../.config/frontend-config.js:/app/public/config.js:ro
+        expose:
+            - 3000
+        networks:
+            - "shared"
 
     nginx:
-        extends:
-            file: docker-compose.base.yml
-            service: nginx
+        image: nginx:1.29.3
+        restart: unless-stopped
+        container_name: nginx
+        ports:
+            - "80:80"
+        volumes:
+            - ../.config/nginx.conf:/etc/nginx/nginx.conf
+            - ../.config/nginx-snippets:/etc/nginx/snippets:ro
         depends_on:
+            frontend:
+                condition: service_started
             api:
+                condition: service_healthy
+            exporter-api:
                 condition: service_healthy
             oauth2-proxy:
                 condition: service_healthy
             rustfs:
                 condition: service_started
+        networks:
+            - "shared"
 
     oauth2-proxy:
-        extends:
-            file: docker-compose.base.yml
-            service: oauth2-proxy
+        image: quay.io/oauth2-proxy/oauth2-proxy:v7.11.0-alpine
+        container_name: oauth2-proxy
+        command: ["--config=/etc/oauth2-proxy/oauth2-proxy.toml"]
+        environment:
+            OAUTH2_PROXY_CLIENT_ID: HqJWguLclaHUCVzHhuf93iFueVn6zmpt8BCZV3FJ
+            OAUTH2_PROXY_CLIENT_SECRET: 4boxWM0HsJZdXOFGg2HZnUsXakHCjFpQECV1iln67Ap00XsV2aVDcNeqUv2lFmxkxIvftIF0rw0B58esvgeVetgIx9OyE6OBpY7a7EDBo43XM6bWgOJvUZ4v8R95AowX
+            OAUTH2_PROXY_COOKIE_SECRET: z2VpXUQxfDgXzQQwIEST3XTbTDosjHJa
+        ports:
+            - 4180:8000
+        volumes:
+            - ../.config/oauth2-proxy.toml:/etc/oauth2-proxy/oauth2-proxy.toml
+        extra_hosts:
+            - "127.0.0.1.sslip.io:host-gateway"
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "wget",
+                    "--no-verbose",
+                    "--tries=1",
+                    "--spider",
+                    "http://localhost:8000/ready",
+                ]
+            interval: 5s
+            timeout: 10s
+            retries: 3
+            start_period: 2s
         depends_on:
             redis:
                 condition: service_healthy
+            authentik-server:
+                condition: service_healthy
+        networks:
+            - "shared"
 
     redis:
-        extends:
-            file: docker-compose.base.yml
-            service: redis
+        image: redis:7.0
+        container_name: redis
+        expose:
+            - 6379
+        command:
+            ["redis-server", "--appendonly", "yes", "--save", "60", "10000"]
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 2s
         volumes:
             - redis_data:/data
+        networks:
+            - "shared"
+
+    nats:
+        image: nats:2.11-alpine
+        container_name: nats
+        restart: unless-stopped
+        command: ["-js", "-sd", "/data", "-m", "8222"]
+        ports:
+            - 4222:4222
+            - 8222:8222
+        volumes:
+            - nats_data:/data
+        networks:
+            - "shared"
 
     migrations:
-        extends:
-            file: docker-compose.base.yml
-            service: migrations
+        command: ["dreamteams", "migrations", "apply"]
+        container_name: migrations
+        restart: no
+        build:
+            context: ../
+            dockerfile: docker/Dockerfile
+        environment:
+            APP_CONFIG_PATH: /etc/dreamteams/migrations.toml
+        volumes:
+            - "../.config/migrations.toml:/etc/dreamteams/migrations.toml"
         depends_on:
             db:
                 condition: service_healthy
+        networks:
+            - "shared"
 
     api:
-        extends:
-            file: docker-compose.base.yml
-            service: api
+        container_name: api
+        restart: unless-stopped
+        command: ["dreamteams", "run", "api"]
+        build:
+            context: ../
+            dockerfile: docker/Dockerfile
+            args:
+                # set PROFILE_BUILD=1 in env (or `--build-arg PROFILE_BUILD=1`) to bake py-spy into the image
+                PROFILE_BUILD: ${PROFILE_BUILD:-0}
+        environment:
+            APP_CONFIG_PATH: /etc/dreamteams/config.toml
+        volumes:
+            - "../.config/config.toml:/etc/dreamteams/config.toml"
+        # required for py-spy to attach to the running python process
+        cap_add:
+            - SYS_PTRACE
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "curl",
+                    "-f",
+                    "http://localhost:5000/internal/ready",
+                ]
+            interval: 4s
+            timeout: 10s
+            retries: 12
+            start_period: 30s
         depends_on:
-            db:
-                condition: service_healthy
+            pgbouncer:
+                condition: service_started
             migrations:
                 condition: service_completed_successfully
             rustfs:
                 condition: service_started
+        networks:
+            - "shared"
+
+    exporter-api:
+        container_name: exporter-api
+        restart: unless-stopped
+        command: ["dreamteams-exporter", "run", "api"]
+        build:
+            context: ../
+            dockerfile: docker/Dockerfile
+            args:
+                PROFILE_BUILD: ${PROFILE_BUILD:-0}
+        environment:
+            EXPORTER_CONFIG_PATH: /etc/dreamteams-exporter/config.toml
+        volumes:
+            - "../.config/exporter.toml:/etc/dreamteams-exporter/config.toml"
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "curl",
+                    "-f",
+                    "http://localhost:8001/internal/ready",
+                ]
+            interval: 4s
+            timeout: 10s
+            retries: 12
+            start_period: 30s
+        depends_on:
+            api:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+            nats:
+                condition: service_started
+            rustfs:
+                condition: service_started
+        networks:
+            - "shared"
+
+    exporter-worker:
+        container_name: exporter-worker
+        restart: unless-stopped
+        command: ["dreamteams-exporter", "run", "worker"]
+        build:
+            context: ../
+            dockerfile: docker/Dockerfile
+            args:
+                PROFILE_BUILD: ${PROFILE_BUILD:-0}
+        environment:
+            EXPORTER_CONFIG_PATH: /etc/dreamteams-exporter/config.toml
+        volumes:
+            - "../.config/exporter.toml:/etc/dreamteams-exporter/config.toml"
+        depends_on:
+            api:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+            nats:
+                condition: service_started
+            rustfs:
+                condition: service_started
+        networks:
+            - "shared"
 
     db:
-        extends:
-            file: docker-compose.base.yml
-            service: db
+        container_name: db
+        restart: unless-stopped
+        image: postgres:18
+        command:
+            - "postgres"
+            - "-c"
+            - "config_file=/etc/postgresql/postgresql.conf"
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+        ports:
+            - 5432:5432
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 2s
         volumes:
-            - pg_data:/var/lib/postgresql/data/
+            - ../.config/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+            - ../.config/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+            - pg_data:/var/lib/postgresql
+        networks:
+            - "shared"
 
-    vector:
-        extends:
-            file: docker-compose.base.yml
-            service: vector
-
-    loki:
-        extends:
-            file: docker-compose.base.yml
-            service: loki
-        volumes:
-            - loki_data:/loki
+    pgbouncer:
+        container_name: pgbouncer
+        restart: unless-stopped
+        image: edoburu/pgbouncer:v1.23.1-p3
+        environment:
+            DB_HOST: db
+            DB_PORT: 5432
+            DB_USER: app_user
+            DB_PASSWORD: app-password
+            DB_NAME: postgres
+            POOL_MODE: transaction
+            MAX_CLIENT_CONN: 1000
+            DEFAULT_POOL_SIZE: 200
+            RESERVE_POOL_SIZE: 20
+            RESERVE_POOL_TIMEOUT: 3
+            SERVER_LIFETIME: 3600
+            SERVER_IDLE_TIMEOUT: 600
+            # Protocol-level prepared statements tracked by pgbouncer (1.21+) — lets asyncpg keep its
+            # statement cache under transaction pooling.
+            MAX_PREPARED_STATEMENTS: 100
+            # App has no session state (no SET LOCAL, no temp tables, no LISTEN/NOTIFY) — skip
+            # DISCARD ALL per transaction to save a round-trip.
+            SERVER_RESET_QUERY: ""
+            AUTH_TYPE: scram-sha-256
+            IGNORE_STARTUP_PARAMETERS: extra_float_digits,search_path
+            LISTEN_PORT: 6432
+        expose:
+            - 6432
+        ports:
+            - 6432:6432
+        depends_on:
+            db:
+                condition: service_healthy
+        networks:
+            - "shared"
 
     rustfs:
-        extends:
-            file: docker-compose.base.yml
-            service: rustfs
+        image: rustfs/rustfs:1.0.0-alpha.82
+        container_name: rustfs
+        ports:
+            - 9000:9000
+            - 9001:9001
+        environment:
+            - RUSTFS_ACCESS_KEY=admin0
+            - RUSTFS_SECRET_KEY=admin0
         volumes:
             - rustfs_data:/data
+        networks:
+            - "shared"
+
+    authentik-server:
+        image: ghcr.io/goauthentik/server:2026.2.2
+        container_name: authentik-server
+        restart: unless-stopped
+        command: ["server"]
+        environment:
+            AUTHENTIK_SECRET_KEY: replace-me-with-a-long-random-secret
+            AUTHENTIK_LOG_LEVEL: info
+            AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+            AUTHENTIK_POSTGRESQL__HOST: db
+            AUTHENTIK_POSTGRESQL__PORT: 5432
+            AUTHENTIK_POSTGRESQL__NAME: authentik
+            AUTHENTIK_POSTGRESQL__USER: authentik
+            AUTHENTIK_POSTGRESQL__PASSWORD: authentik-password
+            AUTHENTIK_POSTGRESQL__SSLMODE: disable
+        ports:
+            - "8080:9000"
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "python",
+                    "-c",
+                    "import urllib.request; urllib.request.urlopen('http://localhost:9000/-/health/ready/', timeout=2)"
+                ]
+            interval: 10s
+            timeout: 10s
+            retries: 12
+            start_period: 30s
+        depends_on:
+            db:
+                condition: service_healthy
+        volumes:
+            - authentik_data:/data
+            - authentik_templates:/templates
+        networks:
+            - "shared"
+
+    authentik-worker:
+        image: ghcr.io/goauthentik/server:2026.2.2
+        container_name: authentik-worker
+        restart: unless-stopped
+        command: ["worker"]
+        environment:
+            AUTHENTIK_SECRET_KEY: replace-me-with-a-long-random-secret
+            AUTHENTIK_LOG_LEVEL: info
+            AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+            AUTHENTIK_POSTGRESQL__HOST: db
+            AUTHENTIK_POSTGRESQL__PORT: 5432
+            AUTHENTIK_POSTGRESQL__NAME: authentik
+            AUTHENTIK_POSTGRESQL__USER: authentik
+            AUTHENTIK_POSTGRESQL__PASSWORD: authentik-password
+            AUTHENTIK_POSTGRESQL__SSLMODE: disable
+        depends_on:
+            db:
+                condition: service_healthy
+        healthcheck:
+            test: ["CMD", "ak", "healthcheck"]
+            interval: 10s
+            timeout: 10s
+            retries: 12
+            start_period: 20s
+        volumes:
+            - authentik_data:/data
+            - authentik_templates:/templates
+        networks:
+            - "shared"
 
 volumes:
     pg_data:
     grafana_data:
     loki_data:
     redis_data:
+    nats_data:
     rustfs_data:
+    authentik_data:
+    authentik_templates:
+
+networks:
+    shared:
+        external: true

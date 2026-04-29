@@ -15,15 +15,15 @@ const { t } = useI18n();
 <template>
   <section class="relative py-12 sm:py-16 md:py-20 overflow-hidden bg-white dark:bg-gray-900">
     <!-- Decorative background -->
-    <div class="absolute inset-0 bg-gradient-to-br from-success-50 via-white to-primary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"></div>
-    <div class="absolute top-0 right-0 w-96 h-96 bg-success-500/10 rounded-full blur-3xl"></div>
+    <div class="absolute inset-0 bg-gradient-to-br from-primary-50/30 via-white to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"></div>
+    <div class="absolute top-0 right-0 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl"></div>
     <div class="absolute bottom-0 left-0 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl"></div>
 
     <!-- Title in container -->
     <UContainer class="relative z-10 mb-8 sm:mb-12 md:mb-16">
       <div class="text-center fade-in-scroll">
         <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4">
-          <span class="bg-gradient-to-r from-success-600 via-primary-600 to-primary-500 dark:from-success-400 dark:via-primary-400 dark:to-primary-300 bg-clip-text text-transparent">
+          <span class="text-primary-600 dark:text-primary-400">
             {{ t('home.testimonials.title') }}
           </span>
         </h2>
@@ -45,7 +45,7 @@ const { t } = useI18n();
             v-for="(testimonial, index) in testimonials"
             :key="`testimonial-row1-${testimonial.name}-${index}`"
             variant="soft"
-            class="w-80 shrink-0"
+            class="w-72 sm:w-80 shrink-0"
           >
             <div class="flex items-start gap-4 mb-4">
               <UAvatar
@@ -89,7 +89,7 @@ const { t } = useI18n();
             v-for="(testimonial, index) in testimonials"
             :key="`testimonial-row2-${testimonial.name}-${index}`"
             variant="soft"
-            class="w-80 shrink-0"
+            class="w-72 sm:w-80 shrink-0"
           >
             <div class="flex items-start gap-4 mb-4">
               <UAvatar

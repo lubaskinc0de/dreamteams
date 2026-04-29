@@ -7,13 +7,13 @@ name = 'dreamteams'
 version = '1.0.0'
 requires-python = '>=3.13'
 dependencies = [
-    "dishka==1.7.2",
+    "dishka==1.9.1",
     "fastapi[standard]==0.123.0",
     "asyncpg==0.31.0",
     "sqlalchemy[postgresql-asyncpg]==2.0.44",
     "alembic==1.17.2",
     "aiohttp==3.13.2",
-    "adaptix==3.0.0b11",
+    "adaptix==3.0.0b12",
     "toml-rs==0.1.0",
     "structlog==25.5.0",
     "pyjwt==2.10.1",
@@ -25,22 +25,49 @@ dependencies = [
     "python-multipart==0.0.20",
     "filetype==1.2.0",
     "argon2-cffi==25.1.0",
+    "sentry-sdk==2.46.0",
+    "opentelemetry-api==1.40.0",
+    "opentelemetry-sdk==1.40.0",
+    "opentelemetry-exporter-otlp-proto-http==1.40.0",
+    "opentelemetry-instrumentation-fastapi==0.61b0",
+    "opentelemetry-instrumentation-sqlalchemy==0.61b0",
+    "redis[hiredis]==7.4.0",
+    "pytest-xdist==3.8.0",
+    "faststream[nats]==0.6.7",
+    "dishka-faststream==0.6.0",
+    "opentelemetry-instrumentation-aiohttp-client==0.61b0",
 ]
 [project.optional-dependencies]
 lint = ['ruff==0.14.8', 'mypy==1.19.0', 'import-linter==2.7', 'typos==1.41.0']
 test = [
     'pytest==9.0.1',
     'pytest-asyncio==1.3.0',
+    'pytest-cov==7.0.0',
     "polyfactory==3.1.0",
     "faker==39.0.0",
     "hypothesis==6.150.2",
+    "testcontainers[postgres,redis]==4.14.2",
+    "httpx==0.28.1",
+    "asgi-lifespan==2.1.0",
 ]
-dev = ['dreamteams[test,lint]']
+docs = [
+    "mkdocs==1.6.1",
+    "mkdocs-material==9.6.14",
+]
+profile = ['py-spy==0.4.1']
+dev = ['dreamteams[test,lint,docs,profile]']
 ci = ['dreamteams[dev]']
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+asyncio_default_test_loop_scope = "session"
+asyncio_default_fixture_loop_scope = "session"
+filterwarnings = [
+    # testcontainers' own RedisContainer still uses the deprecated @wait_container_is_ready decorator;
+    # out of our control until upstream migrates to wait_strategies.
+    "ignore:The @wait_container_is_ready decorator is deprecated.*:DeprecationWarning",
+]
 
 [tool.mypy]
 ignore_missing_imports = true
@@ -64,12 +91,18 @@ enable_error_code = [
 ]
 
 files = ["src/", "tests/"]
-exclude = ["src/dreamteams/adapters/db/alembic/migrations/versions/"]
+exclude = [
+    "src/dreamteams/adapters/db/alembic/migrations/versions/",
+    "src/dreamteams_exporter/adapters/db/alembic/migrations/versions/",
+]
 
 [tool.ruff]
 line-length = 120
 include = ["pyproject.toml", "src/**/*.py", "tests/**/*.py"]
-exclude = ["src/dreamteams/adapters/db/alembic/**/*.py"]
+exclude = [
+    "src/dreamteams/adapters/db/alembic/**/*.py",
+    "src/dreamteams_exporter/adapters/db/alembic/**/*.py",
+]
 
 [tool.ruff.lint]
 select = ['ALL']
@@ -78,8 +111,11 @@ ignore = [
     # Strange and obscure
     'D100',
     'D104',
+    'D203',
+    'D212',
     'D401',
     'RET504',
+    'COM812',
     'D107',
     'S104',
     'ANN401',
@@ -91,10 +127,13 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101", "S311", "PLR0913"]
+"tests/*" = ["S101", "S105", "S106", "S311", "PLR0913", "PLR2004"]
 
 [tool.uv]
 add-bounds = "exact"
+
+[tool.uv.build-backend]
+module-name = ["dreamteams", "dreamteams_common", "dreamteams_exporter"]
 
 [[project.authors]]
 name = 'lubaskinc0de'
@@ -102,3 +141,4 @@ email = 'lubaskincorporation@gmail.com'
 
 [project.scripts]
 dreamteams = "dreamteams.bootstrap.cli:main"
+dreamteams-exporter = "dreamteams_exporter.bootstrap.cli:main"

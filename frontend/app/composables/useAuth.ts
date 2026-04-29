@@ -2,21 +2,32 @@
  * Composable for authentication management
  * Provides authentication state checking and login/logout functionality
  */
+import { useBlockedAccount } from "~/composables/useBlockedAccount";
+import { useRuntimePublicConfig } from "~/composables/useRuntimePublicConfig";
+
 export const useAuth = () => {
   const isAuthenticated = useState<boolean>('auth-isAuthenticated', () => false);
   const needsOnboarding = useState<boolean>('auth-needsOnboarding', () => false);
   const hasProfile = useState<boolean>('auth-hasProfile', () => false);
   const isLoading = useState<boolean>('auth-isLoading', () => true);
-  const config = useRuntimeConfig();
-  const apiBase = config.public.apiBase;
+  const { apiBase } = useRuntimePublicConfig();
   const api = useApi();
   const userStore = useUserStore();
+  const { isAccountBlocked, blockFromError, clearBlockedAccount } = useBlockedAccount();
 
   /**
    * Check authentication status via OAuth2 endpoint
    * If authenticated, fetch user profile to determine onboarding state
    */
   const checkAuthStatus = async () => {
+    if (isAccountBlocked.value) {
+      isAuthenticated.value = true;
+      needsOnboarding.value = false;
+      hasProfile.value = false;
+      isLoading.value = false;
+      return;
+    }
+
     isLoading.value = true;
     try {
       // Step 1: Check OAuth2 authentication
@@ -24,6 +35,7 @@ export const useAuth = () => {
       isAuthenticated.value = authenticated;
 
       if (!authenticated) {
+        clearBlockedAccount();
         needsOnboarding.value = false;
         hasProfile.value = false;
         return;
@@ -33,7 +45,16 @@ export const useAuth = () => {
       const { data, error } = await api.getUserProfile();
 
       if (error) {
-        // 401 or 404 USER_HAS_NO_ROLE means user is in Keycloak but hasn't created profile
+        if (error.code === "ACCOUNT_BLOCKED") {
+          blockFromError(error);
+          isAuthenticated.value = true;
+          needsOnboarding.value = false;
+          hasProfile.value = false;
+          userStore.profile = null;
+          return;
+        }
+
+        // 401 or 404 USER_HAS_NO_ROLE means the user is authenticated but hasn't created a profile yet
         if (error.code === 'UNAUTHORIZED' || error.code === 'USER_HAS_NO_ROLE') {
           needsOnboarding.value = true;
           hasProfile.value = false;
@@ -43,10 +64,16 @@ export const useAuth = () => {
           hasProfile.value = false;
         }
       } else if (data) {
-        // User has profile
         userStore.profile = data;
-        needsOnboarding.value = false;
-        hasProfile.value = true;
+        // A user with no organizer and no participant still needs to pick a role,
+        // even if their profile record exists (e.g. superuser without a role yet)
+        if (data.organizer === null && data.participant === null) {
+          needsOnboarding.value = true;
+          hasProfile.value = false;
+        } else {
+          needsOnboarding.value = false;
+          hasProfile.value = true;
+        }
       }
     } catch (error: any) {
       console.error('Error checking auth status:', error);
@@ -63,15 +90,20 @@ export const useAuth = () => {
    * Uses the redirect parameter to return to current page after login
    */
   const login = () => {
+    clearBlockedAccount();
     const currentPath = window.location.pathname || '/';
     window.location.href = `${apiBase}/oauth2/sign_in?rd=${encodeURIComponent(currentPath)}`;
   };
 
   /**
-   * Redirect to logout page
+   * Logs out both Authentik and oauth2-proxy.
+   * nginx `/logout` redirects -> oauth2-proxy sign_out -> Authentik end-session -> `/`.
+   * Without this full chain the IdP session survives and the next login
+   * silently reuses it instead of prompting.
    */
   const logout = () => {
-    window.location.href = `${apiBase}/oauth2/sign_out?rd=/`;
+    clearBlockedAccount();
+    window.location.href = '/logout';
   };
 
   return {

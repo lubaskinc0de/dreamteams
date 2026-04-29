@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const { t } = useI18n();
 const api = useApi();
+const { checkAuthStatus } = useAuth();
 
 useSeoMeta({
   title: t("superuserRegister.title"),
@@ -21,9 +22,8 @@ const submit = async () => {
 
   const { data, error: apiError } = await api.registerSuperuser(password.value);
 
-  loading.value = false;
-
   if (apiError) {
+    loading.value = false;
     const key = `apiErrors.${apiError.code}`;
     error.value = t(key) !== key ? t(key) : apiError.message;
     return;
@@ -32,7 +32,12 @@ const submit = async () => {
   if (data) {
     createdUserId.value = data.user_id;
     password.value = "";
+    // Refresh auth state so userStore.isAdmin picks up is_admin=true,
+    // otherwise the global middleware will bounce /admin/* to /onboarding.
+    await checkAuthStatus();
   }
+
+  loading.value = false;
 };
 </script>
 
@@ -43,10 +48,10 @@ const submit = async () => {
         <div class="w-full max-w-sm mx-auto">
           <!-- Success state -->
           <div v-if="createdUserId" class="text-center">
-            <div class="inline-flex p-4 rounded-2xl bg-green-500/10 mb-6">
+            <div class="inline-flex p-4 rounded-2xl bg-primary-500/10 mb-6">
               <UIcon
                 name="i-heroicons-check-circle"
-                class="text-6xl text-green-500"
+                class="text-6xl text-primary-500"
               />
             </div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
@@ -63,8 +68,8 @@ const submit = async () => {
                 {{ createdUserId }}
               </p>
             </div>
-            <UButton to="/" icon="i-heroicons-home" size="lg">
-              {{ t("common.backToHome") }}
+            <UButton to="/admin/users" icon="i-heroicons-shield-check" size="lg">
+              {{ t("superuserRegister.success.goToAdmin") }}
             </UButton>
           </div>
 

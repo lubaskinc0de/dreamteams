@@ -4,11 +4,14 @@ from typing import Any, override
 import jwt
 import structlog
 from fastapi import Request
+from opentelemetry import trace
 
 from dreamteams.adapters.auth.errors.base import UnauthorizedError, UnauthorizedReason
 from dreamteams.adapters.auth.idp.base import AuthUserIdProvider
 from dreamteams.adapters.auth.model import AuthUserId
-from dreamteams.application.common.logger import Logger
+from dreamteams_common.logger import Logger
+
+_tracer = trace.get_tracer("dreamteams.adapters")
 
 logger: Logger = structlog.get_logger(__name__)
 
@@ -46,33 +49,19 @@ class WebAuthUserIdProvider(AuthUserIdProvider):
     @override
     async def get_auth_user_id(self) -> AuthUserId:
         """Reads the auth user ID from the configured HTTP header, raises UnauthorizedError if header is missing."""
-        if (user_id := self._http_request.headers.get(self._config.user_id_header)) is None:
-            logger.debug("Request unauthorized due to missing user id header", header=self._config.user_id_header)
-            msg = f"Missing {self._config.user_id_header} header"
-            raise UnauthorizedError(
-                message=msg,
-                reason=UnauthorizedReason.MISSING_USER_ID,
-                header=self._config.user_id_header,
-            )
-
-        if not self._config.allow_unverified_email:
-            try:
-                email_verified: bool = self._get_access_token_data()["email_verified"]
-            except KeyError as e:
-                logger.debug("Request unauthorized due to corrupted access token")
+        with _tracer.start_as_current_span("auth.verify_token"):
+            if (user_id := self._http_request.headers.get(self._config.user_id_header)) is None:
+                logger.debug("Request unauthorized due to missing user id header", header=self._config.user_id_header)
+                msg = f"Missing {self._config.user_id_header} header"
                 raise UnauthorizedError(
-                    message="Corrupted access token",
-                    reason=UnauthorizedReason.CORRUPTED_ACCESS_TOKEN,
-                ) from e
-
-            logger.debug("Email verified status", status=email_verified)
-            if not email_verified:
-                raise UnauthorizedError(
-                    message="Email is not verified",
-                    reason=UnauthorizedReason.EMAIL_IS_NOT_VERIFIED,
+                    message=msg,
+                    reason=UnauthorizedReason.MISSING_USER_ID,
+                    header=self._config.user_id_header,
                 )
 
-        return user_id
+            if not self._config.allow_unverified_email:
+                self._ensure_email_verified()
+            return user_id
 
     def _get_access_token_data(self) -> dict[str, Any]:
         access_token = self._http_request.headers.get(self._config.access_token_header)
@@ -92,3 +81,20 @@ class WebAuthUserIdProvider(AuthUserIdProvider):
             options={"verify_signature": False, "verify_exp": True},
             algorithms=[self._config.access_token_alg],
         )
+
+    def _ensure_email_verified(self) -> None:
+        try:
+            email_verified: bool = self._get_access_token_data()["email_verified"]
+        except KeyError as e:
+            logger.debug("Request unauthorized due to corrupted access token")
+            raise UnauthorizedError(
+                message="Corrupted access token",
+                reason=UnauthorizedReason.CORRUPTED_ACCESS_TOKEN,
+            ) from e
+
+        logger.debug("Email verified status", status=email_verified)
+        if not email_verified:
+            raise UnauthorizedError(
+                message="Email is not verified",
+                reason=UnauthorizedReason.EMAIL_IS_NOT_VERIFIED,
+            )

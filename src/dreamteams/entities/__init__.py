@@ -1,6 +1,5 @@
-from .base import Entity, model
+from .base import Entity
 
 __all__ = [
     "Entity",
-    "model",
 ]

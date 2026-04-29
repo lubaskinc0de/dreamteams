@@ -27,6 +27,7 @@ export interface OrganizerModel {
 export interface ProfileModel {
   user_id: string;
   organizer: OrganizerModel | null;
+  participant: ParticipantProfile | null;
   avatar_url: string | null;
   is_admin: boolean;
 }
@@ -63,11 +64,80 @@ export interface InvitesList {
   page: number;
 }
 
+export interface AdminBanStatus {
+  is_blocked: boolean;
+  reason: string | null;
+  blocked_at: string | null;
+}
+
+export type AdminUserRole = "organizer" | "participant";
+
+export interface AdminUsersFilters {
+  page?: number;
+  search?: string;
+  is_admin?: boolean;
+  is_blocked?: boolean;
+  role?: AdminUserRole;
+}
+
+export interface AdminUserListItem {
+  id: string;
+  is_admin: boolean;
+  ban_status: AdminBanStatus;
+  organizer_name: string | null;
+  participant_full_name: string | null;
+}
+
+export interface AdminUsersList {
+  items: AdminUserListItem[];
+  total: number;
+  page: number;
+}
+
+export interface AdminUserBase {
+  id: string;
+  avatar_url: string | null;
+  is_admin: boolean;
+  ban_status: AdminBanStatus;
+}
+
+export interface AdminUserOrganizer {
+  id: string;
+  user_id: string;
+  organizer_name: string;
+  phone_number: string;
+  contact_email: string;
+}
+
+export interface AdminUserParticipant {
+  full_name: string;
+  participant_type: string;
+  age: number;
+  bio: string | null;
+  skills: Array<{ name: string; level: string }>;
+  experience_level: string | null;
+  contacts: Array<{ title: string; value: string }>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminUserDetails {
+  user: AdminUserBase;
+  organizer: AdminUserOrganizer | null;
+  participant: AdminUserParticipant | null;
+}
+
+export interface AdminBlockUserInput {
+  reason: string | null;
+}
+
 export type ErrorCode =
   | "VALIDATION_ERROR"
   | "UNAUTHORIZED"
+  | "ACCOUNT_BLOCKED"
   | "AUTH_USER_ALREADY_EXISTS"
   | "ORGANIZER_ALREADY_EXISTS"
+  | "ORGANIZER_NOT_FOUND"
   | "USER_NOT_FOUND"
   | "USER_HAS_NO_ROLE"
   | "ACCESS_DENIED"
@@ -77,14 +147,124 @@ export type ErrorCode =
   | "INVITE_ALREADY_REVOKED"
   | "INVITE_ALREADY_USED"
   | "INVITE_REVOKED"
-  | "INVALID_SUPERUSER_PASSWORD";
+  | "INVALID_SUPERUSER_PASSWORD"
+  | "PARTICIPANT_ALREADY_EXISTS"
+  | "PARTICIPANT_NOT_FOUND"
+  | "INVALID_PARTICIPANT_DATA"
+  | "COMPETITION_NOT_FOUND"
+  | "COMPETITION_TAG_NOT_FOUND"
+  | "COMPETITION_TAG_ALREADY_EXISTS"
+  | "INVALID_COMPETITION_DATA"
+  | "APPLICATION_FORM_ALREADY_EXISTS"
+  | "APPLICATION_FORM_NOT_FOUND"
+  | "INVALID_APPLICATION_FORM_DATA"
+  | "APPLICATION_NOT_FOUND"
+  | "APPLICATION_ALREADY_EXISTS"
+  | "APPLICATION_ALREADY_RESOLVED"
+  | "INVALID_APPLICATION_DATA"
+  | "COMPETITION_NOT_ACTIVE"
+  | "PARTICIPANT_LIMITS_EXCEEDED"
+  | "PARTICIPANT_TYPE_MISMATCH"
+  | "INVALID_ROLE"
+  | "EXPORT_JOB_NOT_FOUND"
+  | "EXPORT_RATE_LIMIT_EXCEEDED"
+  | "NETWORK_ERROR";
 
 export interface CreatedSuperuser {
   user_id: string;
 }
 
+// Participant types
+export type ExperienceLevel = "JUNIOR" | "MID" | "SENIOR";
+export type SkillLevel = "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT";
+export type ParticipantRoleType = "schoolchild" | "student";
+
+export interface ParticipantSkill {
+  name: string;
+  level: SkillLevel;
+}
+
+export interface ParticipantContact {
+  title: string;
+  value: string;
+}
+
+export interface ParticipantProfile {
+  id: string;
+  user_id: string;
+  full_name: string;
+  participant_type: ParticipantRoleType;
+  age: number;
+  bio: string | null;
+  skills: ParticipantSkill[];
+  experience_level: ExperienceLevel | null;
+  contacts: ParticipantContact[];
+}
+
+export interface ParticipantSkillForm {
+  name: string;
+  level: SkillLevel;
+}
+
+export interface ParticipantContactForm {
+  title: string;
+  value: string;
+}
+
+export interface ParticipantForm {
+  full_name: string;
+  participant_type: ParticipantRoleType;
+  age: number;
+  bio?: string | null;
+  skills?: ParticipantSkillForm[];
+  experience_level?: ExperienceLevel | null;
+  contacts?: ParticipantContactForm[];
+}
+
+export interface UpdateParticipantForm {
+  full_name: string;
+  participant_type: ParticipantRoleType;
+  age: number;
+  bio?: string | null;
+  skills?: ParticipantSkillForm[];
+  experience_level?: ExperienceLevel | null;
+  contacts?: ParticipantContactForm[];
+}
+
+export interface UpdateOrganizerForm {
+  organizer_name: string;
+  contact_email: string;
+}
+
+export interface CreatedParticipant {
+  participant_id: string;
+  user_id: string;
+}
+
 // Competition types
-export type Domain = "frontend" | "mobile" | "backend" | "ai" | "devops";
+export interface CompetitionTag {
+  id: string;
+  value: string;
+}
+
+export interface CompetitionTrack {
+  name: string;
+}
+
+export interface CompetitionTagsList {
+  items: CompetitionTag[];
+  total: number;
+  page: number;
+}
+
+export interface CompetitionTagForm {
+  value: string;
+}
+
+export interface CompetitionTagsFilters {
+  page?: number;
+  search?: string;
+}
 
 export type ParticipantType = "schoolchild" | "student" | "any";
 
@@ -106,7 +286,6 @@ export interface CompetitionSchedule {
 }
 
 export interface ParticipantLimits {
-  min: number;
   max: number;
 }
 
@@ -123,11 +302,13 @@ export interface CompetitionVenue {
 export interface MilestoneForm {
   title: string;
   timestamp: string;
+  description: string | null;
 }
 
 export interface Milestone {
   title: string;
   timestamp: string;
+  description: string | null;
 }
 
 export interface CompetitionForm {
@@ -135,10 +316,12 @@ export interface CompetitionForm {
   description: string;
   schedule: CompetitionSchedule;
   participant_limits: ParticipantLimits;
-  domains: Domain[];
+  tag_ids: string[];
+  tracks: CompetitionTrack[];
   participant_type: ParticipantType;
   venue: CompetitionVenue;
-  team_size: TeamSizeRange;
+  team_size: TeamSizeRange | null;
+  auto_accept: boolean;
   milestones?: MilestoneForm[];
 }
 
@@ -147,11 +330,34 @@ export interface UpdateCompetitionForm {
   description: string;
   schedule: CompetitionSchedule;
   participant_limits: ParticipantLimits;
-  domains: Domain[];
+  tag_ids: string[];
+  tracks: CompetitionTrack[];
   participant_type: ParticipantType;
   venue: CompetitionVenue;
-  team_size: TeamSizeRange;
+  team_size: TeamSizeRange | null;
   milestones: MilestoneForm[];
+  auto_accept: boolean;
+  is_archived: boolean;
+}
+
+export interface UpdateCompetitionGeneralInfoForm {
+  title: string;
+  description: string;
+  participant_limits: ParticipantLimits;
+  tag_ids: string[];
+  tracks: CompetitionTrack[];
+  participant_type: ParticipantType;
+  venue: CompetitionVenue;
+  milestones: MilestoneForm[] | null;
+  auto_accept: boolean;
+}
+
+export interface RescheduleCompetitionForm {
+  schedule: CompetitionSchedule;
+  team_size: TeamSizeRange | null;
+}
+
+export interface ChangeCompetitionArchiveStatusForm {
   is_archived: boolean;
 }
 
@@ -163,12 +369,15 @@ export interface CompetitionModel {
   description: string;
   schedule: CompetitionSchedule;
   participant_limits: ParticipantLimits;
-  domains: Domain[];
+  tags: CompetitionTag[];
+  tracks: CompetitionTrack[];
   participant_type: ParticipantType;
   venue: CompetitionVenue;
-  team_size: TeamSizeRange;
+  team_size: TeamSizeRange | null;
   milestones: Milestone[];
+  auto_accept: boolean;
   is_archived: boolean;
+  members_count: number;
   created_at: string;
   updated_at: string;
 }
@@ -198,12 +407,14 @@ export interface PreviewCompetitionModel {
   description: string;
   schedule: CompetitionSchedule;
   participant_limits: ParticipantLimits;
-  domains: Domain[];
+  tags: CompetitionTag[];
+  tracks: CompetitionTrack[];
   participant_type: ParticipantType;
   venue: CompetitionVenue;
-  team_size: TeamSizeRange;
+  team_size: TeamSizeRange | null;
   milestones: Milestone[];
   is_archived: boolean;
+  members_count: number;
   created_at: string;
   updated_at: string;
 }
@@ -212,4 +423,148 @@ export interface PreviewCompetitionsList {
   items: PreviewCompetitionModel[];
   total: number;
   page: number;
+}
+
+export type ExploreSortBy = "most_popular" | "newest";
+
+export interface ExploreCompetitionsFilters {
+  page?: number;
+  sort_by?: ExploreSortBy;
+  search?: string;
+  min_team_size?: number;
+  max_team_size?: number;
+  auto_accept?: boolean;
+  tag_ids?: string[];
+}
+
+export type ExploreCompetitionModel = PreviewCompetitionModel;
+
+export interface ExploreCompetitionsList {
+  items: ExploreCompetitionModel[];
+  total: number;
+  page: number;
+}
+
+// Application Form types
+export type FieldType = "string" | "int" | "select" | "multiselect";
+
+export interface FieldChoiceForm {
+  value: string;
+}
+
+export interface FieldForm {
+  name: string;
+  type: FieldType;
+  required?: boolean;
+  choices?: FieldChoiceForm[] | null;
+}
+
+export interface ApplicationFormInput {
+  fields: FieldForm[];
+}
+
+export interface CreatedApplicationForm {
+  application_form_id: string;
+}
+
+export interface FieldChoiceModel {
+  value: string;
+}
+
+export interface FieldModel {
+  name: string;
+  type: FieldType;
+  required: boolean;
+  choices: FieldChoiceModel[] | null;
+}
+
+export interface ApplicationFormModel {
+  id: string;
+  competition_id: string;
+  created_at: string;
+  fields: FieldModel[];
+}
+
+// Application types
+export type ApplicationStatus = "pending" | "accepted" | "rejected";
+
+export interface SubmitApplicationForm {
+  track: CompetitionTrack;
+  form_data: Record<string, any> | null;
+}
+
+export interface CreatedApplication {
+  application_id: string;
+}
+
+// Participant profile nested inside organizer-facing ApplicationModel.
+// Same shape as the participant block in GET /users/profile/.
+export interface ParticipantInfo {
+  id: string;
+  full_name: string;
+  bio: string | null;
+  participant_type: ParticipantRoleType;
+  age: number;
+  skills: ParticipantSkill[];
+  experience_level: ExperienceLevel | null;
+  contacts: ParticipantContact[];
+}
+
+// Participant-facing application view (GET /applications/ and /applications/{id}/my/).
+export interface MyApplicationModel {
+  id: string;
+  participant_id: string;
+  competition_id: string;
+  competition_name: string;
+  track: CompetitionTrack;
+  status: ApplicationStatus;
+  created_at: string;
+  form_data: Record<string, any> | null;
+}
+
+export interface MyApplicationsList {
+  items: MyApplicationModel[];
+  total: number;
+  page: number;
+}
+
+// Organizer-facing application view (GET /competitions/{id}/applications/ and /applications/{id}/).
+export interface ApplicationModel {
+  id: string;
+  competition_id: string;
+  competition_name: string;
+  track: CompetitionTrack;
+  status: ApplicationStatus;
+  created_at: string;
+  form_data: Record<string, any> | null;
+  participant: ParticipantInfo;
+}
+
+export interface ApplicationsList {
+  items: ApplicationModel[];
+  total: number;
+  page: number;
+}
+
+export type ExportJobStatusKind = "pending" | "success" | "failed";
+
+export interface CreateExportJobInput {
+  competition_id: string;
+  application_status?: ApplicationStatus | null;
+}
+
+export interface CreatedExportJob {
+  job_id: string;
+}
+
+export interface ExportJobModel {
+  id: string;
+  user_id: string;
+  competition_id: string;
+  application_status: ApplicationStatus | null;
+  status_kind: ExportJobStatusKind;
+  status_reason: string | null;
+  file_url: string | null;
+  created_at: string;
+  finished_at: string | null;
 }

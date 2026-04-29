@@ -1,7 +1,7 @@
 from typing import Any, ClassVar, override
 
 from dreamteams.adapters.auth.model import AuthUserId
-from dreamteams.entities.errors.base import AppError, app_error
+from dreamteams_common.errors import AppError, app_error
 
 
 @app_error

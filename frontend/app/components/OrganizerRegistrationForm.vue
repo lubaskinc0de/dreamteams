@@ -6,40 +6,21 @@ import {
   type OrganizerRegistrationSchema,
 } from "~/schemas/organizer";
 
-import { useNotificationsStore } from "~/stores/notifications";
-
 const organizerStore = useOrganizerStore();
 const { getErrorMessage, isErrorCode } = useErrorHandler();
 const { t } = useI18n();
-const api = useApi();
-const notifications = useNotificationsStore();
 
 const state = reactive({
   organizer_name: "",
   phone_number: "+7",
   invite_code: "",
+  privacy_consent: false,
+  terms_consent: false,
 });
 
 const {
   organizerRegistrationSchema
 } = createOrganizerSchemas(t);
-
-// Avatar upload state
-const selectedAvatar = ref<File | null>(null);
-const isUploadingAvatar = ref(false);
-const avatarUploadError = ref<string | null>(null);
-
-// Handle avatar upload
-const handleAvatarUpload = async (file: File) => {
-  selectedAvatar.value = file;
-  avatarUploadError.value = null;
-};
-
-// Handle avatar delete
-const handleAvatarDelete = () => {
-  selectedAvatar.value = null;
-  avatarUploadError.value = null;
-};
 
 // Form submission handler
 const onSubmit = async (event: FormSubmitEvent<OrganizerRegistrationSchema>) => {
@@ -50,30 +31,8 @@ const onSubmit = async (event: FormSubmitEvent<OrganizerRegistrationSchema>) => 
   };
 
   await organizerStore.registerOrganizer(formData);
-
-  // If registration is successful and avatar is selected, upload it
-  if (organizerStore.registrationSuccess && selectedAvatar.value) {
-    isUploadingAvatar.value = true;
-    const { error } = await api.attachAvatar(selectedAvatar.value);
-    isUploadingAvatar.value = false;
-
-    if (error) {
-      avatarUploadError.value = getErrorMessage(error);
-      notifications.add({
-        title: t("apiErrors." + error.code),
-        color: "error",
-        icon: "i-heroicons-exclamation-triangle",
-      });
-    } else {
-      notifications.add({
-        title: t("toast.avatarUploaded.title"),
-        description: t("toast.avatarUploaded.description"),
-        color: "success",
-        icon: "i-heroicons-check-circle",
-      });
-    }
-  }
-  // Parent component (onboarding page) will handle redirect on success
+  // Parent component (onboarding page) will handle redirect on success.
+  // Avatar is managed on the profile page after registration completes.
 };
 
 // Error handling using centralized composable
@@ -83,7 +42,7 @@ const showProfileLink = computed(() =>
   isErrorCode(organizerStore.error, "AUTH_USER_ALREADY_EXISTS"),
 );
 
-const isLoading = computed(() => organizerStore.loading || isUploadingAvatar.value);
+const isLoading = computed(() => organizerStore.loading);
 </script>
 
 <template>
@@ -106,16 +65,6 @@ const isLoading = computed(() => organizerStore.loading || isUploadingAvatar.val
     <UForm :schema="organizerRegistrationSchema" :state="state" @submit="onSubmit"
       :validate-on="['input', 'change']"
       class="space-y-5 w-full">
-      <!-- Avatar Upload Section -->
-      <div class="flex justify-center py-2">
-        <AvatarUpload
-          :loading="isUploadingAvatar"
-          :show-delete="!!selectedAvatar"
-          @upload="handleAvatarUpload"
-          @delete="handleAvatarDelete"
-        />
-      </div>
-
       <UFormField :label="t('form.organizerName.label')" name="organizer_name" required :aria-required="true"
         class="w-full">
         <UInput v-model="state.organizer_name" :placeholder="t('form.organizerName.placeholder')"
@@ -127,15 +76,50 @@ const isLoading = computed(() => organizerStore.loading || isUploadingAvatar.val
         class="w-full">
         <UInput v-model="state.phone_number" :placeholder="t('form.phoneNumber.placeholder')" icon="i-heroicons-phone"
           size="xl" type="tel" :aria-label="t('form.phoneNumber.label')" class="w-full" />
+        <p class="mt-1 text-xs text-muted">
+          {{ t("form.phoneNumber.hint") }}
+        </p>
       </UFormField>
 
-      <UFormField :label="t('form.inviteCode.label')" name="invite_code" required :aria-required="true"
-        class="w-full">
+      <UFormField name="invite_code" required class="w-full">
+        <template #label>
+          <span class="flex items-center gap-1">
+            {{ t('form.inviteCode.label') }}
+            <UTooltip :text="t('form.inviteCode.hint')">
+              <UIcon name="i-heroicons-question-mark-circle" class="text-gray-400 size-4 cursor-help" />
+            </UTooltip>
+          </span>
+        </template>
         <UInput v-model="state.invite_code" :placeholder="t('form.inviteCode.placeholder')"
           icon="i-heroicons-key" size="xl" :aria-label="t('form.inviteCode.label')" class="w-full" />
-        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-          {{ t("form.inviteCode.hint") }}
-        </p>
+      </UFormField>
+
+      <UFormField name="privacy_consent" required class="w-full">
+        <UCheckbox v-model="state.privacy_consent" :aria-label="t('form.privacyConsent.label')">
+          <template #label>
+            <span class="text-sm text-gray-700 dark:text-gray-300">
+              {{ t('form.privacyConsent.label') }}
+              <NuxtLink to="/legal/privacy-policy" target="_blank"
+                class="text-primary-500 hover:text-primary-400 underline">
+                {{ t('form.privacyConsent.link') }}
+              </NuxtLink>
+            </span>
+          </template>
+        </UCheckbox>
+      </UFormField>
+
+      <UFormField name="terms_consent" required class="w-full">
+        <UCheckbox v-model="state.terms_consent" :aria-label="t('form.termsConsent.label')">
+          <template #label>
+            <span class="text-sm text-gray-700 dark:text-gray-300">
+              {{ t('form.termsConsent.label') }}
+              <NuxtLink to="/legal/terms-of-service" target="_blank"
+                class="text-primary-500 hover:text-primary-400 underline">
+                {{ t('form.termsConsent.link') }}
+              </NuxtLink>
+            </span>
+          </template>
+        </UCheckbox>
       </UFormField>
 
       <div class="pt-2">
@@ -147,11 +131,6 @@ const isLoading = computed(() => organizerStore.loading || isUploadingAvatar.val
               : t("form.submitButton.register")
           }}
         </UButton>
-
-        <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 justify-center mt-3" role="note">
-          <UIcon name="i-heroicons-shield-check" aria-hidden="true" />
-          <span>{{ t("form.dataProtection") }}</span>
-        </div>
       </div>
     </UForm>
   </div>

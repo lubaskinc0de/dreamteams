@@ -1,5 +1,6 @@
 import asyncio
 from logging.config import fileConfig
+from typing import cast
 
 from alembic import context
 from sqlalchemy import URL, pool
@@ -18,9 +19,11 @@ target_metadata = mapper_registry.metadata
 
 
 def get_url() -> str:
-    config = DbConfig.from_env()
-    url = config.connection_url
-    return url.render_as_string(hide_password=False)
+    injected = config.attributes.get("db_url")
+    if injected is not None:
+        return cast(str, injected.render_as_string(hide_password=False))
+
+    return DbConfig.load().connection_url.render_as_string(hide_password=False)
 
 
 def run_migrations_offline() -> None:

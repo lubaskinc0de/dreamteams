@@ -11,9 +11,12 @@ import { useWindowSize } from "@vueuse/core";
 interface Props {
   competition: PreviewCompetitionModel | null;
   open: boolean;
+  canRegister?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  canRegister: true,
+});
 const emit = defineEmits<{
   close: [];
   register: [id: string];
@@ -22,7 +25,8 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const {
   formatDateRange,
-  formatNumericRange,
+  formatDateTime,
+  formatParticipants,
   formatTeamSize,
   getFormatLabel,
   getParticipantTypeLabel,
@@ -43,45 +47,35 @@ const handleRegister = () => {
     emit("register", props.competition.id);
   }
 };
-
-const handleClose = () => {
-  emit("close");
-};
 </script>
 
 <template>
-  <!-- Desktop: Wide Modal -->
+  <!-- Desktop: UModal with built-in header/body/footer — body scrolls internally,
+       footer stays pinned. Using default (non-scrollable) mode on purpose: the
+       theme gives content a fixed max-h and body gets overflow-y-auto, which is
+       what keeps long content from bleeding past the footer. -->
   <UModal
     v-if="!isMobile && competition"
     v-model:open="isOpen"
+    :close="{ size: 'xl' }"
     :ui="{
-      content: 'sm:max-w-5xl overflow-hidden',
+      content: 'sm:max-w-5xl',
+      header: 'items-start p-4 sm:p-6 lg:p-8',
+      body: 'p-4 sm:p-6 lg:p-8',
+      footer: 'justify-center p-4 sm:p-6 lg:p-8',
     }"
   >
-    <template #content>
-    <div class="relative bg-white dark:bg-gray-900">
-      <!-- Header -->
-      <div class="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-6 sm:px-8 py-6">
-        <div class="flex items-start justify-between gap-4">
-          <div class="flex-1 min-w-0">
-            <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white leading-tight mb-4">
-              {{ competition.title }}
-            </h2>
-            <CompetitionDomainBadges :domains="competition.domains" size="md" />
-          </div>
-          <UButton
-            icon="i-heroicons-x-mark"
-            color="neutral"
-            variant="ghost"
-            size="xl"
-            square
-            @click="handleClose"
-          />
-        </div>
+    <template #header>
+      <div class="flex-1 min-w-0 pr-8">
+        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white leading-tight mb-4">
+          {{ competition.title }}
+        </h2>
+        <CompetitionTagBadges :tags="competition.tags" size="md" />
       </div>
+    </template>
 
-      <!-- Scrollable Content -->
-      <div class="overflow-y-auto max-h-[calc(85vh-180px)] px-6 sm:px-8 py-6 sm:py-8 space-y-8">
+    <template #body>
+      <div class="space-y-8">
         <!-- Description -->
         <section>
           <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
@@ -145,7 +139,7 @@ const handleClose = () => {
                       {{ t('competitionsPreview.card.participants') }}
                     </p>
                     <p class="text-sm text-gray-600 dark:text-gray-400">
-                      {{ formatNumericRange(competition.participant_limits.min, competition.participant_limits.max) }}
+                      {{ formatParticipants(competition.members_count, competition.participant_limits.max) }}
                     </p>
                   </div>
                 </div>
@@ -161,7 +155,7 @@ const handleClose = () => {
                   </div>
                 </div>
                 <div
-                  v-if="!(competition.team_size.min === 1 && competition.team_size.max === 1)"
+                  v-if="competition.team_size"
                   class="flex items-start gap-3"
                 >
                   <UIcon name="i-heroicons-user-group" class="size-6 text-primary-500 mt-0.5 flex-shrink-0" />
@@ -190,7 +184,7 @@ const handleClose = () => {
                   <UIcon name="i-heroicons-map-pin" class="size-6 text-primary-500 mt-0.5 flex-shrink-0" />
                   <div class="flex-1 min-w-0">
                     <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">
-                      Format
+                      {{ t('competition.form.venue.format.label') }}
                     </p>
                     <p class="text-sm text-gray-600 dark:text-gray-400">
                       {{ getFormatLabel(competition.venue.format) }}
@@ -201,7 +195,7 @@ const handleClose = () => {
                   <UIcon name="i-heroicons-building-office-2" class="size-6 text-primary-500 mt-0.5 flex-shrink-0" />
                   <div class="flex-1 min-w-0">
                     <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">
-                      Location
+                      {{ t('competition.form.venue.location.label') }}
                     </p>
                     <p class="text-sm text-gray-600 dark:text-gray-400 break-words">
                       {{ competition.venue.location }}
@@ -240,46 +234,27 @@ const handleClose = () => {
           </h3>
           <UTimeline
             :items="competition.milestones.map((milestone) => ({
-              date: new Date(milestone.timestamp).toLocaleDateString($i18n.locale, {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric'
-              }),
+              date: formatDateTime(milestone.timestamp),
               title: milestone.title,
-              description: new Date(milestone.timestamp).toLocaleTimeString($i18n.locale, {
-                hour: '2-digit',
-                minute: '2-digit'
-              }),
+              description: milestone.description ?? undefined,
               icon: 'i-heroicons-flag',
             }))"
             color="primary"
           />
         </section>
       </div>
+    </template>
 
-      <!-- Footer Actions -->
-      <div class="sticky bottom-0 z-10 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 px-6 sm:px-8 py-6">
-        <div class="flex gap-4">
-          <UButton
-            :label="t('competitionsPreview.detail.closeButton')"
-            color="neutral"
-            variant="ghost"
-            size="xl"
-            class="flex-1"
-            @click="handleClose"
-          />
-          <UButton
-            :label="t('competitionsPreview.detail.registerButton')"
-            icon="i-heroicons-bolt"
-            trailing
-            color="primary"
-            size="xl"
-            class="flex-1"
-            @click="handleRegister"
-          />
-        </div>
-      </div>
-    </div>
+    <template v-if="canRegister" #footer>
+      <UButton
+        :label="t('competitionsPreview.detail.registerButton')"
+        icon="i-heroicons-bolt"
+        trailing
+        color="primary"
+        size="lg"
+        class="w-full sm:w-auto justify-center"
+        @click="handleRegister"
+      />
     </template>
   </UModal>
 
@@ -294,7 +269,7 @@ const handleClose = () => {
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white leading-tight">
           {{ competition.title }}
         </h2>
-        <CompetitionDomainBadges :domains="competition.domains" size="sm" />
+        <CompetitionTagBadges :tags="competition.tags" size="sm" />
       </div>
     </template>
 
@@ -362,7 +337,7 @@ const handleClose = () => {
                     {{ t('competitionsPreview.card.participants') }}
                   </p>
                   <p class="text-xs text-gray-600 dark:text-gray-400">
-                    {{ formatNumericRange(competition.participant_limits.min, competition.participant_limits.max) }}
+                    {{ formatParticipants(competition.members_count, competition.participant_limits.max) }}
                   </p>
                 </div>
               </div>
@@ -378,7 +353,7 @@ const handleClose = () => {
                 </div>
               </div>
               <div
-                v-if="!(competition.team_size.min === 1 && competition.team_size.max === 1)"
+                v-if="competition.team_size"
                 class="flex items-start gap-3"
               >
                 <UIcon name="i-heroicons-user-group" class="size-5 text-primary-500 mt-0.5 flex-shrink-0" />
@@ -403,7 +378,7 @@ const handleClose = () => {
                 <UIcon name="i-heroicons-map-pin" class="size-5 text-primary-500 mt-0.5 flex-shrink-0" />
                 <div class="flex-1 min-w-0">
                   <p class="text-xs font-medium text-gray-900 dark:text-white mb-1">
-                    Format
+                    {{ t('competition.form.venue.format.label') }}
                   </p>
                   <p class="text-xs text-gray-600 dark:text-gray-400">
                     {{ getFormatLabel(competition.venue.format) }}
@@ -414,7 +389,7 @@ const handleClose = () => {
                 <UIcon name="i-heroicons-building-office-2" class="size-5 text-primary-500 mt-0.5 flex-shrink-0" />
                 <div class="flex-1 min-w-0">
                   <p class="text-xs font-medium text-gray-900 dark:text-white mb-1">
-                    Location
+                    {{ t('competition.form.venue.location.label') }}
                   </p>
                   <p class="text-xs text-gray-600 dark:text-gray-400 break-words">
                     {{ competition.venue.location }}
@@ -433,16 +408,9 @@ const handleClose = () => {
           </h3>
           <UTimeline
             :items="competition.milestones.map((milestone) => ({
-              date: new Date(milestone.timestamp).toLocaleDateString($i18n.locale, {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric'
-              }),
+              date: formatDateTime(milestone.timestamp),
               title: milestone.title,
-              description: new Date(milestone.timestamp).toLocaleTimeString($i18n.locale, {
-                hour: '2-digit',
-                minute: '2-digit'
-              }),
+              description: milestone.description ?? undefined,
               icon: 'i-heroicons-flag',
             }))"
             color="primary"
@@ -472,23 +440,15 @@ const handleClose = () => {
       </div>
     </template>
 
-    <template #footer>
-      <div class="flex gap-3">
-        <UButton
-          :label="t('competitionsPreview.detail.closeButton')"
-          color="neutral"
-          variant="ghost"
-          size="lg"
-          class="flex-1"
-          @click="handleClose"
-        />
+    <template v-if="canRegister" #footer>
+      <div class="flex justify-center">
         <UButton
           :label="t('competitionsPreview.detail.registerButton')"
           icon="i-heroicons-bolt"
           trailing
           color="primary"
-          size="lg"
-          class="flex-1"
+          size="md"
+          class="w-full justify-center"
           @click="handleRegister"
         />
       </div>

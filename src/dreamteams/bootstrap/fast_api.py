@@ -1,32 +1,51 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
+import sentry_sdk
 import uvicorn
+from dishka import AsyncContainer
 from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
-from dreamteams.bootstrap.config.loader import Config
+from dreamteams.adapters.sentry import SentryConfig
+from dreamteams.bootstrap.config_loader import Config
 from dreamteams.bootstrap.di.container import get_async_container
-from dreamteams.bootstrap.logs import configure_structlog
 from dreamteams.presentation.fast_api import include_exception_handlers, include_routers
 from dreamteams.presentation.fast_api.tracing import tracing_middleware
+from dreamteams_common.logs import configure_structlog
+from dreamteams_common.observability.setup import setup_observability
 
 log_config = configure_structlog()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """FastAPI lifespan context manager that handles DI container lifecycle during application startup and shutdown."""
+    """Handle DI container lifecycle during application startup and shutdown."""
+    container: AsyncContainer = app.state.dishka_container
+    sentry_config = await container.get(SentryConfig)
+
+    if sentry_config.dsn:
+        sentry_sdk.init(sentry_config.dsn)
+
     yield
-    await app.state.dishka_container.close()
+    await container.close()
 
 
 def create_app(config: Config) -> FastAPI:
-    """Creates and configures the FastAPI application instance with routers, error handlers, and DI container."""
+    """Create and configure the FastAPI application instance."""
+    setup_observability(config.otel)
+
     app = FastAPI(
         lifespan=lifespan,
         root_path=config.api.root_path,
+    )
+
+    # OTel added first → outermost → creates span before tracing_middleware reads it
+    FastAPIInstrumentor.instrument_app(
+        app,
+        excluded_urls="/internal/alive,/internal/ready",
     )
     app.middleware("http")(tracing_middleware)
     app.add_middleware(
@@ -45,13 +64,20 @@ def create_app(config: Config) -> FastAPI:
     return app
 
 
+def app_factory() -> FastAPI:
+    """Module-level zero-arg factory used by uvicorn workers (must be import-string-resolvable)."""
+    return create_app(Config.load())
+
+
 def run_api() -> None:
-    """Starts the FastAPI application server using uvicorn on the configured host and port."""
+    """Start the FastAPI application server."""
     config = Config.load()
     uvicorn.run(
-        create_app(config),
-        port=config.server.server_port,
-        host=config.server.server_host,
+        "dreamteams.bootstrap.fast_api:app_factory",
+        factory=True,
+        port=config.server.port,
+        host=config.server.host,
+        workers=config.server.workers,
         log_config=log_config,
     )
 

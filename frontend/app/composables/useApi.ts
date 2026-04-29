@@ -3,8 +3,14 @@ import type {
   OrganizerForm,
   CreatedOrganizer,
   ProfileModel,
+  ParticipantForm,
+  UpdateParticipantForm,
+  UpdateOrganizerForm,
+  CreatedParticipant,
   CompetitionForm,
-  UpdateCompetitionForm,
+  UpdateCompetitionGeneralInfoForm,
+  RescheduleCompetitionForm,
+  ChangeCompetitionArchiveStatusForm,
   CreatedCompetition,
   CompetitionModel,
   CompetitionsList,
@@ -14,27 +20,124 @@ import type {
   InviteForm,
   CreatedInvite,
   InvitesList,
+  AdminBlockUserInput,
+  AdminUserDetails,
+  AdminUsersFilters,
+  AdminUsersList,
   CreatedSuperuser,
+  CompetitionTag,
+  CompetitionTagForm,
+  CompetitionTagsFilters,
+  CompetitionTagsList,
+  ApplicationFormInput,
+  CreatedApplicationForm,
+  ApplicationFormModel,
+  SubmitApplicationForm,
+  CreatedApplication,
+  ApplicationModel,
+  ApplicationsList,
+  MyApplicationModel,
+  MyApplicationsList,
+  ApplicationStatus,
+  ExploreCompetitionsFilters,
+  ExploreCompetitionsList,
+  CreateExportJobInput,
+  CreatedExportJob,
+  ExportJobModel,
 } from "~/types/api";
+import { useBlockedAccount } from "~/composables/useBlockedAccount";
+import { useRuntimePublicConfig } from "~/composables/useRuntimePublicConfig";
+
+interface RetryConfig {
+  timeout: number;
+  maxRetries: number;
+  baseDelay: number;
+  maxDelay: number;
+}
+
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Wraps a $fetch call with exponential backoff retry logic.
+ * Retries only on transient errors: network failures, 5xx, and 429.
+ * 4xx client errors (except 429) are not retried.
+ */
+const retryFetch = async <T>(
+  fn: () => Promise<T>,
+  cfg: RetryConfig,
+): Promise<T> => {
+  let attempt = 0;
+  while (true) {
+    try {
+      return await fn();
+    } catch (err: any) {
+      const status: number = err.status ?? err.statusCode ?? 0;
+      const isTransient = status === 0 || status === 429 || status >= 500;
+
+      if (!isTransient || attempt >= cfg.maxRetries) {
+        throw err;
+      }
+
+      const jitter = Math.random() * cfg.baseDelay;
+      const delay = Math.min(
+        cfg.baseDelay * Math.pow(2, attempt) + jitter,
+        cfg.maxDelay,
+      );
+      await sleep(delay);
+      attempt++;
+    }
+  }
+};
 
 export const useApi = () => {
-  const config = useRuntimeConfig();
-  const apiBase = config.public.apiBase;
-  const useMock = config.public.useMock;
+  const config = useRuntimePublicConfig();
+  const apiBase = config.apiBase;
+  const useMock = config.useMock;
+  const { isAccountBlocked, accountBlockedError, blockFromError } = useBlockedAccount();
 
   // If mock mode is enabled, use mock API
   if (useMock === "true" || useMock.toString() === "true") {
     return useMockApi();
   }
 
+  const retryCfg: RetryConfig = {
+    timeout: config.apiTimeout,
+    maxRetries: config.apiMaxRetries,
+    baseDelay: config.apiRetryBaseDelay,
+    maxDelay: config.apiRetryMaxDelay,
+  };
+
+  /** $fetch with timeout and automatic exponential-backoff retries. */
+  const redirectToBlockedPage = () => {
+    if (!import.meta.client) {
+      return;
+    }
+
+    const route = useRoute();
+    if (route.path !== "/account-restricted") {
+      void navigateTo("/account-restricted", { replace: true });
+    }
+  };
+
   const handleApiError = (error: any): ApiError => {
+    if (isAccountBlocked.value) {
+      return accountBlockedError.value;
+    }
+
     // Structured API error response with a known error code
     if (error.data && typeof error.data === "object" && error.data.code) {
-      return {
+      const apiError = {
         code: error.data.code,
         message: error.data.message || "An unexpected error occurred",
         meta: error.data.meta || null,
       };
+
+      if (apiError.code === "ACCOUNT_BLOCKED") {
+        blockFromError(apiError);
+        redirectToBlockedPage();
+      }
+
+      return apiError;
     }
 
     // Server responded but without a structured body (e.g. 500 plain-text)
@@ -55,6 +158,23 @@ export const useApi = () => {
     };
   };
 
+  const apiFetch = <T>(
+    url: string,
+    options?: Parameters<typeof $fetch>[1],
+  ): Promise<T> => {
+    if (isAccountBlocked.value) {
+      return Promise.reject({
+        status: 403,
+        data: accountBlockedError.value,
+      });
+    }
+
+    return retryFetch(
+      () => $fetch<T>(url, { timeout: retryCfg.timeout, ...options }),
+      retryCfg,
+    );
+  };
+
   /**
    * Check if user is authenticated via OAuth2
    * Returns true if authenticated, false otherwise
@@ -63,6 +183,7 @@ export const useApi = () => {
     try {
       await $fetch(`${apiBase}/oauth2/auth`, {
         method: "GET",
+        timeout: retryCfg.timeout,
       });
       return true;
     } catch {
@@ -74,12 +195,10 @@ export const useApi = () => {
     form: OrganizerForm,
   ): Promise<{ data: CreatedOrganizer | null; error: ApiError | null }> => {
     try {
-      const data = await $fetch<CreatedOrganizer>(`${apiBase}/api/organizers/`, {
+      const data = await apiFetch<CreatedOrganizer>(`${apiBase}/api/organizers/`, {
         method: "POST",
         body: form,
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
       return { data, error: null };
     } catch (err: any) {
@@ -92,7 +211,7 @@ export const useApi = () => {
     error: ApiError | null;
   }> => {
     try {
-      const data = await $fetch<ProfileModel>(`${apiBase}/api/users/me`, {
+      const data = await apiFetch<ProfileModel>(`${apiBase}/api/users/me`, {
         method: "GET",
       });
       return { data, error: null };
@@ -106,7 +225,7 @@ export const useApi = () => {
     error: ApiError | null;
   }> => {
     try {
-      const data = await $fetch<null>(`${apiBase}/api/users/me`, {
+      const data = await apiFetch<null>(`${apiBase}/api/users/me`, {
         method: "DELETE",
       });
       return { data, error: null };
@@ -137,12 +256,9 @@ export const useApi = () => {
         params.search = search;
       }
 
-      const data = await $fetch<CompetitionsList>(
+      const data = await apiFetch<CompetitionsList>(
         `${apiBase}/api/competitions/`,
-        {
-          method: "GET",
-          params,
-        },
+        { method: "GET", params },
       );
       return { data, error: null };
     } catch (err: any) {
@@ -154,12 +270,32 @@ export const useApi = () => {
     page: number = 1,
   ): Promise<{ data: PreviewCompetitionsList | null; error: ApiError | null }> => {
     try {
-      const data = await $fetch<PreviewCompetitionsList>(
+      const data = await apiFetch<PreviewCompetitionsList>(
         `${apiBase}/api/competitions/preview`,
-        {
-          method: "GET",
-          params: { page },
-        },
+        { method: "GET", params: { page } },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const exploreCompetitions = async (
+    filters: ExploreCompetitionsFilters = {},
+  ): Promise<{ data: ExploreCompetitionsList | null; error: ApiError | null }> => {
+    try {
+      const params: Record<string, any> = {
+        page: filters.page ?? 1,
+        sort_by: filters.sort_by ?? "most_popular",
+      };
+      if (filters.search) params.search = filters.search;
+      if (filters.min_team_size !== undefined) params.min_team_size = filters.min_team_size;
+      if (filters.max_team_size !== undefined) params.max_team_size = filters.max_team_size;
+      if (filters.auto_accept !== undefined) params.auto_accept = filters.auto_accept;
+      if (filters.tag_ids && filters.tag_ids.length > 0) params.tag_ids = filters.tag_ids;
+      const data = await apiFetch<ExploreCompetitionsList>(
+        `${apiBase}/api/competitions/explore`,
+        { method: "GET", params },
       );
       return { data, error: null };
     } catch (err: any) {
@@ -171,15 +307,9 @@ export const useApi = () => {
     form: CompetitionForm,
   ): Promise<{ data: CreatedCompetition | null; error: ApiError | null }> => {
     try {
-      const data = await $fetch<CreatedCompetition>(
+      const data = await apiFetch<CreatedCompetition>(
         `${apiBase}/api/competitions/`,
-        {
-          method: "POST",
-          body: form,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
+        { method: "POST", body: form, headers: { "Content-Type": "application/json" } },
       );
       return { data, error: null };
     } catch (err: any) {
@@ -191,11 +321,9 @@ export const useApi = () => {
     competitionId: string,
   ): Promise<{ data: CompetitionModel | null; error: ApiError | null }> => {
     try {
-      const data = await $fetch<CompetitionModel>(
+      const data = await apiFetch<CompetitionModel>(
         `${apiBase}/api/competitions/${competitionId}`,
-        {
-          method: "GET",
-        },
+        { method: "GET" },
       );
       return { data, error: null };
     } catch (err: any) {
@@ -203,20 +331,63 @@ export const useApi = () => {
     }
   };
 
-  const updateCompetition = async (
+  /**
+   * Participant-facing single-competition read. Same CompetitionModel shape as
+   * the organizer endpoint above, but authorisation checks for a participant
+   * profile instead of ownership.
+   */
+  const getExploreCompetition = async (
     competitionId: string,
-    form: UpdateCompetitionForm,
+  ): Promise<{ data: CompetitionModel | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<CompetitionModel>(
+        `${apiBase}/api/competitions/explore/${competitionId}`,
+        { method: "GET" },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const updateCompetitionGeneralInfo = async (
+    competitionId: string,
+    form: UpdateCompetitionGeneralInfoForm,
   ): Promise<{ data: {} | null; error: ApiError | null }> => {
     try {
-      const data = await $fetch<{}>(
-        `${apiBase}/api/competitions/${competitionId}`,
-        {
-          method: "PUT",
-          body: form,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
+      const data = await apiFetch<{}>(
+        `${apiBase}/api/competitions/${competitionId}/general-info`,
+        { method: "PATCH", body: form, headers: { "Content-Type": "application/json" } },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const rescheduleCompetition = async (
+    competitionId: string,
+    form: RescheduleCompetitionForm,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<{}>(
+        `${apiBase}/api/competitions/${competitionId}/schedule`,
+        { method: "PATCH", body: form, headers: { "Content-Type": "application/json" } },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const changeCompetitionArchiveStatus = async (
+    competitionId: string,
+    form: ChangeCompetitionArchiveStatusForm,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<{}>(
+        `${apiBase}/api/competitions/${competitionId}/archive-status`,
+        { method: "PATCH", body: form, headers: { "Content-Type": "application/json" } },
       );
       return { data, error: null };
     } catch (err: any) {
@@ -228,11 +399,9 @@ export const useApi = () => {
     competitionId: string,
   ): Promise<{ data: {} | null; error: ApiError | null }> => {
     try {
-      const data = await $fetch<{}>(
+      const data = await apiFetch<{}>(
         `${apiBase}/api/competitions/${competitionId}`,
-        {
-          method: "DELETE",
-        },
+        { method: "DELETE" },
       );
       return { data, error: null };
     } catch (err: any) {
@@ -247,7 +416,7 @@ export const useApi = () => {
       const formData = new FormData();
       formData.append("file", file);
 
-      const data = await $fetch<{}>(`${apiBase}/api/users/me/avatar`, {
+      const data = await apiFetch<{}>(`${apiBase}/api/users/me/avatar`, {
         method: "PUT",
         body: formData,
       });
@@ -262,7 +431,7 @@ export const useApi = () => {
     error: ApiError | null;
   }> => {
     try {
-      const data = await $fetch<{}>(`${apiBase}/api/users/me/avatar`, {
+      const data = await apiFetch<{}>(`${apiBase}/api/users/me/avatar`, {
         method: "DELETE",
       });
       return { data, error: null };
@@ -275,12 +444,10 @@ export const useApi = () => {
     form: InviteForm,
   ): Promise<{ data: CreatedInvite | null; error: ApiError | null }> => {
     try {
-      const data = await $fetch<CreatedInvite>(`${apiBase}/api/invites/`, {
+      const data = await apiFetch<CreatedInvite>(`${apiBase}/api/invites/`, {
         method: "POST",
         body: form,
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
       return { data, error: null };
     } catch (err: any) {
@@ -292,7 +459,7 @@ export const useApi = () => {
     page: number = 1,
   ): Promise<{ data: InvitesList | null; error: ApiError | null }> => {
     try {
-      const data = await $fetch<InvitesList>(`${apiBase}/api/invites/`, {
+      const data = await apiFetch<InvitesList>(`${apiBase}/api/invites/`, {
         method: "GET",
         params: { page },
       });
@@ -306,8 +473,215 @@ export const useApi = () => {
     inviteId: string,
   ): Promise<{ data: {} | null; error: ApiError | null }> => {
     try {
-      const data = await $fetch<{}>(`${apiBase}/api/invites/${inviteId}`, {
+      const data = await apiFetch<{}>(`${apiBase}/api/invites/${inviteId}`, {
         method: "DELETE",
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const listAdminUsers = async (
+    filters: AdminUsersFilters = {},
+  ): Promise<{ data: AdminUsersList | null; error: ApiError | null }> => {
+    try {
+      const params: Record<string, any> = {
+        page: filters.page ?? 1,
+      };
+
+      if (filters.search) {
+        params.search = filters.search;
+      }
+
+      if (filters.is_admin !== undefined) {
+        params.is_admin = filters.is_admin;
+      }
+
+      if (filters.is_blocked !== undefined) {
+        params.is_blocked = filters.is_blocked;
+      }
+
+      if (filters.role) {
+        params.role = filters.role;
+      }
+
+      const data = await apiFetch<AdminUsersList>(`${apiBase}/api/admin/users/`, {
+        method: "GET",
+        params,
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const readAdminUser = async (
+    userId: string,
+  ): Promise<{ data: AdminUserDetails | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<AdminUserDetails>(
+        `${apiBase}/api/admin/users/${userId}`,
+        { method: "GET" },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const blockAdminUser = async (
+    userId: string,
+    input: AdminBlockUserInput,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<{}>(`${apiBase}/api/admin/users/${userId}/block`, {
+        method: "POST",
+        body: input,
+        headers: { "Content-Type": "application/json" },
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const unblockAdminUser = async (
+    userId: string,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<{}>(`${apiBase}/api/admin/users/${userId}/unblock`, {
+        method: "POST",
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const listTags = async (
+    filters: CompetitionTagsFilters = {},
+  ): Promise<{ data: CompetitionTagsList | null; error: ApiError | null }> => {
+    try {
+      const params: Record<string, any> = {
+        page: filters.page ?? 1,
+      };
+
+      if (filters.search) {
+        params.search = filters.search;
+      }
+
+      const data = await apiFetch<CompetitionTagsList>(`${apiBase}/api/tags/`, {
+        method: "GET",
+        params,
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const listAdminTags = async (
+    filters: CompetitionTagsFilters = {},
+  ): Promise<{ data: CompetitionTagsList | null; error: ApiError | null }> => {
+    try {
+      const params: Record<string, any> = {
+        page: filters.page ?? 1,
+      };
+
+      if (filters.search) {
+        params.search = filters.search;
+      }
+
+      const data = await apiFetch<CompetitionTagsList>(`${apiBase}/api/admin/tags/`, {
+        method: "GET",
+        params,
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const createAdminTag = async (
+    form: CompetitionTagForm,
+  ): Promise<{ data: CompetitionTag | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<CompetitionTag>(`${apiBase}/api/admin/tags/`, {
+        method: "POST",
+        body: form,
+        headers: { "Content-Type": "application/json" },
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const readAdminTag = async (
+    tagId: string,
+  ): Promise<{ data: CompetitionTag | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<CompetitionTag>(`${apiBase}/api/admin/tags/${tagId}`, {
+        method: "GET",
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const deleteAdminTag = async (
+    tagId: string,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<{}>(`${apiBase}/api/admin/tags/${tagId}`, {
+        method: "DELETE",
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const registerParticipant = async (
+    form: ParticipantForm,
+  ): Promise<{ data: CreatedParticipant | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<CreatedParticipant>(`${apiBase}/api/participants/`, {
+        method: "POST",
+        body: form,
+        headers: { "Content-Type": "application/json" },
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const updateParticipant = async (
+    form: UpdateParticipantForm,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<{}>(`${apiBase}/api/users/me/participant`, {
+        method: "PUT",
+        body: form,
+        headers: { "Content-Type": "application/json" },
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const updateOrganizer = async (
+    form: UpdateOrganizerForm,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<{}>(`${apiBase}/api/users/me/organizer`, {
+        method: "PUT",
+        body: form,
+        headers: { "Content-Type": "application/json" },
       });
       return { data, error: null };
     } catch (err: any) {
@@ -319,10 +693,234 @@ export const useApi = () => {
     password: string,
   ): Promise<{ data: CreatedSuperuser | null; error: ApiError | null }> => {
     try {
-      const data = await $fetch<CreatedSuperuser>(`${apiBase}/api/users/superuser/`, {
+      const data = await apiFetch<CreatedSuperuser>(`${apiBase}/api/users/superuser/`, {
         method: "POST",
         body: { password },
         headers: { "Content-Type": "application/json" },
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  // Application Form endpoints
+
+  const getApplicationForm = async (
+    competitionId: string,
+  ): Promise<{ data: ApplicationFormModel | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<ApplicationFormModel>(
+        `${apiBase}/api/competitions/${competitionId}/application-form/`,
+        { method: "GET" },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  /**
+   * Participant-facing read of an application form — used by the submission
+   * flow to render fields before POSTing the application. Organizer-side reads
+   * still go through `getApplicationForm` (same response shape, different auth).
+   */
+  const getMyApplicationForm = async (
+    competitionId: string,
+  ): Promise<{ data: ApplicationFormModel | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<ApplicationFormModel>(
+        `${apiBase}/api/competitions/${competitionId}/applications/form/`,
+        { method: "GET" },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const createApplicationForm = async (
+    competitionId: string,
+    form: ApplicationFormInput,
+  ): Promise<{ data: CreatedApplicationForm | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<CreatedApplicationForm>(
+        `${apiBase}/api/competitions/${competitionId}/application-form/`,
+        { method: "POST", body: form, headers: { "Content-Type": "application/json" } },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const deleteApplicationForm = async (
+    competitionId: string,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<{}>(
+        `${apiBase}/api/competitions/${competitionId}/application-form/`,
+        { method: "DELETE" },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  // Application endpoints
+
+  const submitApplication = async (
+    competitionId: string,
+    form: SubmitApplicationForm,
+  ): Promise<{ data: CreatedApplication | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<CreatedApplication>(
+        `${apiBase}/api/competitions/${competitionId}/applications/`,
+        { method: "POST", body: form, headers: { "Content-Type": "application/json" } },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const listApplicationsByCompetition = async (
+    competitionId: string,
+    page: number = 1,
+    sortOrder: SortOrder = "desc",
+    status?: ApplicationStatus,
+  ): Promise<{ data: ApplicationsList | null; error: ApiError | null }> => {
+    try {
+      const params: Record<string, any> = {
+        page,
+        sort_by: "created_at",
+        sort_order: sortOrder,
+      };
+      if (status) params.status = status;
+      const data = await apiFetch<ApplicationsList>(
+        `${apiBase}/api/competitions/${competitionId}/applications/`,
+        { method: "GET", params },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const listMyApplications = async (
+    page: number = 1,
+    sortOrder: SortOrder = "desc",
+    status?: ApplicationStatus,
+  ): Promise<{ data: MyApplicationsList | null; error: ApiError | null }> => {
+    try {
+      const params: Record<string, any> = {
+        page,
+        sort_by: "created_at",
+        sort_order: sortOrder,
+      };
+      if (status) params.status = status;
+      const data = await apiFetch<MyApplicationsList>(
+        `${apiBase}/api/applications/`,
+        { method: "GET", params },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const readMyApplication = async (
+    applicationId: string,
+  ): Promise<{ data: MyApplicationModel | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<MyApplicationModel>(
+        `${apiBase}/api/applications/${applicationId}/my/`,
+        { method: "GET" },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const readApplication = async (
+    applicationId: string,
+  ): Promise<{ data: ApplicationModel | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<ApplicationModel>(
+        `${apiBase}/api/applications/${applicationId}/`,
+        { method: "GET" },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const withdrawApplication = async (
+    applicationId: string,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<{}>(
+        `${apiBase}/api/applications/${applicationId}/`,
+        { method: "DELETE" },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const acceptApplication = async (
+    applicationId: string,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<{}>(
+        `${apiBase}/api/applications/${applicationId}/accept/`,
+        { method: "POST" },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const rejectApplication = async (
+    applicationId: string,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<{}>(
+        `${apiBase}/api/applications/${applicationId}/reject/`,
+        { method: "POST" },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const createExportJob = async (
+    input: CreateExportJobInput,
+  ): Promise<{ data: CreatedExportJob | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<CreatedExportJob>(`${apiBase}/api/exports/`, {
+        method: "POST",
+        body: input,
+        headers: { "Content-Type": "application/json" },
+      });
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const readExportJob = async (
+    jobId: string,
+  ): Promise<{ data: ExportJobModel | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<ExportJobModel>(`${apiBase}/api/exports/${jobId}`, {
+        method: "GET",
       });
       return { data, error: null };
     } catch (err: any) {
@@ -336,9 +934,12 @@ export const useApi = () => {
     getUserProfile,
     listCompetitions,
     getPreviewCompetitions,
+    exploreCompetitions,
     createCompetition,
     getCompetition,
-    updateCompetition,
+    updateCompetitionGeneralInfo,
+    rescheduleCompetition,
+    changeCompetitionArchiveStatus,
     deleteCompetition,
     deleteUserProfile,
     attachAvatar,
@@ -346,6 +947,33 @@ export const useApi = () => {
     issueInvite,
     listInvites,
     revokeInvite,
+    listAdminUsers,
+    readAdminUser,
+    blockAdminUser,
+    unblockAdminUser,
+    listTags,
+    listAdminTags,
+    createAdminTag,
+    readAdminTag,
+    deleteAdminTag,
+    registerParticipant,
+    updateParticipant,
+    updateOrganizer,
     registerSuperuser,
+    getApplicationForm,
+    getMyApplicationForm,
+    createApplicationForm,
+    deleteApplicationForm,
+    submitApplication,
+    listApplicationsByCompetition,
+    listMyApplications,
+    readMyApplication,
+    readApplication,
+    withdrawApplication,
+    acceptApplication,
+    rejectApplication,
+    createExportJob,
+    readExportJob,
+    getExploreCompetition,
   };
 };

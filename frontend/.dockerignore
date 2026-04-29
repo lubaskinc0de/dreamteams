@@ -1,0 +1,7 @@
+node_modules
+.nuxt
+.output
+.codex
+.claude
+npm-debug.log*
+Dockerfile

@@ -8,13 +8,14 @@ import type { ParticipantLimits, ParticipantType, TeamSizeRange } from '~/types/
 interface Props {
   participantLimits: ParticipantLimits;
   participantType: ParticipantType;
-  teamSize: TeamSizeRange;
+  teamSize: TeamSizeRange | null;
+  membersCount: number;
 }
 
 defineProps<Props>();
 
 const { t } = useI18n();
-const { formatNumericRange, formatTeamSize, getParticipantTypeLabel } = useCompetitionFormatters();
+const { formatParticipants, formatTeamSize, getParticipantTypeLabel } = useCompetitionFormatters();
 </script>
 
 <template>
@@ -28,7 +29,7 @@ const { formatNumericRange, formatTeamSize, getParticipantTypeLabel } = useCompe
           {{ t('competition.detail.participantCount') }}
         </h3>
         <p class="text-gray-900 dark:text-white">
-          {{ formatNumericRange(participantLimits.min, participantLimits.max) }}
+          {{ formatParticipants(membersCount, participantLimits.max) }}
         </p>
       </div>
 
@@ -41,12 +42,12 @@ const { formatNumericRange, formatTeamSize, getParticipantTypeLabel } = useCompe
         </p>
       </div>
 
-      <div v-if="!(teamSize.min === 1 && teamSize.max === 1)">
+      <div>
         <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
           {{ t('competition.detail.teamSize') }}
         </h3>
         <p class="text-gray-900 dark:text-white">
-          {{ formatTeamSize(teamSize) }}
+          {{ teamSize ? formatTeamSize(teamSize) : t('competition.individual') }}
         </p>
       </div>
     </div>

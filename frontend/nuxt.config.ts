@@ -1,11 +1,23 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
-  devtools: { enabled: true },
+  devtools: {
+    enabled: true,
+
+    timeline: {
+      enabled: true,
+    },
+  },
 
   modules: ["@nuxt/ui", "@pinia/nuxt", "@nuxtjs/i18n"],
 
   css: ["~/assets/css/main.css"],
+
+  app: {
+    head: {
+      script: [{ src: "/config.js", defer: false }],
+    },
+  },
 
   typescript: {
     strict: true,
@@ -16,15 +28,36 @@ export default defineNuxtConfig({
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || "http://localhost",
       useMock: process.env.NUXT_PUBLIC_USE_MOCK || "false",
+      // Request timeout in milliseconds
+      apiTimeout: Number(process.env.NUXT_PUBLIC_API_TIMEOUT) || 10000,
+      // Maximum number of retry attempts after a failed request
+      apiMaxRetries: Number(process.env.NUXT_PUBLIC_API_MAX_RETRIES) || 3,
+      // Base delay in ms for exponential backoff (delay = baseDelay * 2^attempt + jitter)
+      apiRetryBaseDelay: Number(process.env.NUXT_PUBLIC_API_RETRY_BASE_DELAY) || 300,
+      // Upper bound on retry delay in ms
+      apiRetryMaxDelay: Number(process.env.NUXT_PUBLIC_API_RETRY_MAX_DELAY) || 10000,
     },
   },
 
-  nitro: {
+  ...({
+    nitro: {
     prerender: {
       routes: ['/'],
       ignore: ['/me', '/onboarding', '/start'],
       crawlLinks: true,
       failOnError: false,
+    },
+    },
+  } as Record<string, unknown>),
+
+  vite: {
+    server: {
+      hmr:
+        process.env.NUXT_DEV_PROXY === "1"
+          ? {
+              clientPort: 80,
+            }
+          : undefined,
     },
   },
 

@@ -8,9 +8,10 @@ import type { CompetitionModel } from '~/types/api';
 
 interface Props {
   competition: CompetitionModel;
+  showDelete?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), { showDelete: true });
 
 // Emits
 const emit = defineEmits<{
@@ -19,7 +20,7 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-const { formatDateRange, formatNumericRange, formatTeamSize, getFormatLabel } = useCompetitionFormatters();
+const { formatDateRange, formatParticipants, formatTeamSize, getFormatLabel } = useCompetitionFormatters();
 
 // Handle card click
 const handleClick = () => {
@@ -46,11 +47,13 @@ const handleDelete = () => {
         <div class="flex items-center gap-2 shrink-0">
           <CompetitionStatusBadge :competition="competition" />
           <UButton
+            v-if="props.showDelete"
             icon="i-heroicons-trash"
             color="error"
             variant="ghost"
             size="sm"
             square
+            :title="t('common.delete')"
             @click.stop="handleDelete"
           />
         </div>
@@ -61,8 +64,8 @@ const handleDelete = () => {
         {{ competition.description }}
       </p>
 
-      <!-- Domains -->
-      <CompetitionDomainBadges :domains="competition.domains" />
+      <!-- Tags -->
+      <CompetitionTagBadges :tags="competition.tags" />
 
       <!-- Meta Information -->
       <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600 dark:text-gray-400">
@@ -75,11 +78,11 @@ const handleDelete = () => {
         <UiInfoRow
           icon="i-heroicons-users"
           :label="t('competitions.card.participants')"
-          :value="formatNumericRange(competition.participant_limits.min, competition.participant_limits.max)"
+          :value="formatParticipants(competition.members_count, competition.participant_limits.max)"
           size="sm"
         />
         <UiInfoRow
-          v-if="!(competition.team_size.min === 1 && competition.team_size.max === 1)"
+          v-if="competition.team_size"
           icon="i-heroicons-user-group"
           :label="t('competitions.card.teamSize')"
           :value="formatTeamSize(competition.team_size)"
@@ -87,8 +90,8 @@ const handleDelete = () => {
         />
         <UiInfoRow
           v-else
-          icon="i-heroicons-user-group"
-          :value="formatTeamSize(competition.team_size)"
+          icon="i-heroicons-user"
+          :value="t('competition.individual')"
           size="sm"
         />
         <UiInfoRow
