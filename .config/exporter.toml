@@ -16,6 +16,7 @@ access_key = "admin0"
 secret_key = "admin0"
 region = "us-east-1"
 public_url = "http://localhost/s3/exports"
+export_file_lifetime_days = 1
 
 [dreamteams_api]
 base_url = "http://api:5000/api"

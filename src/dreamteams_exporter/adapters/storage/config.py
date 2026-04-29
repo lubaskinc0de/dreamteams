@@ -18,6 +18,7 @@ class S3Config:
     secret_key: str
     region: str
     public_url: str
+    export_file_lifetime_days: int = 1
 
     @classmethod
     def from_toml(cls, path: str | Path) -> Self:

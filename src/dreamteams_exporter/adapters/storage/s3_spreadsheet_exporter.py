@@ -19,6 +19,7 @@ from dreamteams_exporter.application.common.spreadsheet_exporter import (
 _CONTENT_TYPE = "text/csv; charset=utf-8"
 _PART_SIZE = 5 * 1024 * 1024  # S3's minimum for non-final multipart parts
 _UTF8_BOM = b"\xef\xbb\xbf"  # lets Excel detect UTF-8 when opening the CSV
+_EXPORTS_PREFIX = "exports/"
 _tracer = trace.get_tracer(__name__)
 
 
@@ -183,6 +184,19 @@ class CsvS3SpreadsheetExporter(SpreadsheetExporter):
                             ],
                         },
                     ),
+                )
+                await s3_client.put_bucket_lifecycle_configuration(
+                    Bucket=self._config.bucket_name,
+                    LifecycleConfiguration={
+                        "Rules": [
+                            {
+                                "ID": "expire-exported-files",
+                                "Status": "Enabled",
+                                "Filter": {"Prefix": _EXPORTS_PREFIX},
+                                "Expiration": {"Days": self._config.export_file_lifetime_days},
+                            },
+                        ],
+                    },
                 )
 
     @override
