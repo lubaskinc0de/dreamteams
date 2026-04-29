@@ -60,10 +60,34 @@ jobs:
             - name: Run integration tests
               run: pytest -vvv tests/integration -n auto --dist=loadfile
 
+    frontend:
+        name: "Build frontend"
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
+              with:
+                  persist-credentials: false
+
+            - name: Set up Node
+              uses: actions/setup-node@v6
+              with:
+                  node-version: "24"
+                  cache: npm
+                  cache-dependency-path: frontend/package-lock.json
+
+            - name: Install dependencies
+              run: npm ci
+              working-directory: frontend
+
+            - name: Generate static site
+              run: npm run generate
+              working-directory: frontend
+
     bump_version:
         name: "Bump version"
         if: github.ref == 'refs/heads/master'
-        needs: [lint, test]
+        needs: [lint, test, frontend]
         runs-on: ubuntu-latest
         permissions:
             contents: write
@@ -71,7 +95,6 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v6
               with:
-                  ref: ${{ github.event.pull_request.merge_commit_sha }}
                   fetch-depth: "0"
 
             - name: Bump version and push tag
@@ -106,8 +129,8 @@ jobs:
 
     build_and_push:
         name: "Build and push"
-        if: always() && ((github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev') && (needs.lint.result == 'success' && needs.test.result == 'success'))
-        needs: [lint, test, bump_version]
+        if: always() && ((github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev') && (needs.lint.result == 'success' && needs.test.result == 'success' && needs.frontend.result == 'success') && (github.ref != 'refs/heads/master' || needs.bump_version.result == 'success'))
+        needs: [lint, test, frontend, bump_version]
         runs-on: ubuntu-latest
         permissions:
             packages: write
@@ -170,17 +193,17 @@ jobs:
                   STEPS_TAG_OUTPUTS_IMAGE_VERSION: ${{ steps.tag.outputs.IMAGE_VERSION }}
 
             - name: Docker Setup Buildx
-              uses: docker/setup-buildx-action@v2.2.1
+              uses: docker/setup-buildx-action@v3
 
             - name: Docker Login
-              uses: docker/login-action@v2.1.0
+              uses: docker/login-action@v3
               with:
                   registry: ghcr.io
                   username: ${{ github.actor }}
                   password: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Build and push
-              uses: docker/build-push-action@v3.2.0
+            - name: Build and push backend
+              uses: docker/build-push-action@v6
               with:
                   context: .
                   file: ./docker/Dockerfile
@@ -188,3 +211,13 @@ jobs:
                   tags: |
                       ghcr.io/${{ github.repository }}:${{ steps.tag.outputs.IMAGE_VERSION }}
                       ghcr.io/${{ github.repository }}:latest${{ steps.tag.outputs.TAG_SUFFIX }}
+
+            - name: Build and push frontend
+              uses: docker/build-push-action@v6
+              with:
+                  context: ./frontend
+                  file: ./frontend/Dockerfile
+                  push: true
+                  tags: |
+                      ghcr.io/${{ github.repository }}-frontend:${{ steps.tag.outputs.IMAGE_VERSION }}
+                      ghcr.io/${{ github.repository }}-frontend:latest${{ steps.tag.outputs.TAG_SUFFIX }}
