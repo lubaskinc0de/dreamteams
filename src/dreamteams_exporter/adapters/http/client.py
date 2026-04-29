@@ -46,6 +46,14 @@ def _extract_id(payload: dict[str, Any] | None) -> UUID | None:
     return UUID(payload["id"])
 
 
+def _extract_track_name(payload: dict[str, Any]) -> str:
+    """Accept main API's track object while keeping exporter rows flat."""
+    if not isinstance((name := payload.get("name")), str):
+        msg = "Invalid dreamteams track name"
+        raise TypeError(msg)
+    return name
+
+
 _retort = Retort(
     recipe=[
         name_mapping(
@@ -58,6 +66,7 @@ _retort = Retort(
         ),
         loader(P[User].organizer_id, _extract_id),
         loader(P[User].participant_id, _extract_id),
+        loader(P[Application].track, _extract_track_name),
         name_mapping(ApplicationForm, extra_in=ExtraSkip()),
         name_mapping(ApplicationFormField, extra_in=ExtraSkip()),
         name_mapping(Application, extra_in=ExtraSkip()),
