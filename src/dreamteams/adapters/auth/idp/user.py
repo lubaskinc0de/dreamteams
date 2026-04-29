@@ -6,8 +6,8 @@ from opentelemetry import trace
 from dreamteams.adapters.auth.common.gateway.auth_user import AuthUserGateway
 from dreamteams.adapters.auth.errors.base import UnauthorizedError, UnauthorizedReason
 from dreamteams.adapters.auth.idp.base import AuthUserIdProvider
-from dreamteams.adapters.cache.auth_user_cache import AuthUserCache
-from dreamteams.adapters.cache.blocked_user_cache import BlockedUserCache  # adapter read+write protocol
+from dreamteams.adapters.cache.common.auth_user_cache import AuthUserCache
+from dreamteams.adapters.cache.common.blocked_user_cache import BlockedUserCache  # adapter read+write protocol
 from dreamteams.application.common.gateway.user import UserGateway
 from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.errors.user import UserBlockedError

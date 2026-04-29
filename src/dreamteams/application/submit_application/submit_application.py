@@ -3,9 +3,9 @@ from typing import Any
 import structlog
 from pydantic import BaseModel
 
-from dreamteams.application.common.application_form_cache import ApplicationFormCache
-from dreamteams.application.common.competition_cache import CompetitionCache
 from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
+from dreamteams.application.common.event_bus import EventBus
+from dreamteams.application.common.events import ApplicationAccepted
 from dreamteams.application.common.gateway.application import ApplicationGateway
 from dreamteams.application.common.gateway.application_form import ApplicationFormGateway
 from dreamteams.application.common.gateway.competition import CompetitionGateway
@@ -50,8 +50,7 @@ class SubmitApplication:
     competition_gateway: CompetitionGateway
     application_gateway: ApplicationGateway
     application_form_gateway: ApplicationFormGateway
-    application_form_cache: ApplicationFormCache
-    competition_cache: CompetitionCache
+    event_bus: EventBus
     clock: Clock
     metrics: MetricsGateway
 
@@ -83,11 +82,7 @@ class SubmitApplication:
             raise ApplicationAlreadyExistsError
 
         accepted_count = await self.application_gateway.count_accepted_by_competition(competition_id)
-        form = await self.application_form_cache.get(competition_id)
-        if form is None:
-            form = await self.application_form_gateway.get_by_competition_id(competition_id)
-            if form is not None:
-                await self.application_form_cache.set(competition_id, form)
+        form = await self.application_form_gateway.get_by_competition_id(competition_id)
 
         application = submit_application(
             data=ApplicationData(
@@ -104,10 +99,12 @@ class SubmitApplication:
         self.uow.add(application)
         await self.uow.commit()
 
-        if application.status == ApplicationStatus.ACCEPTED:
-            await self.competition_cache.delete_read(competition_id)
-            await self.competition_cache.clear_preview()
         self.metrics.record_application_submitted()
+        if application.status == ApplicationStatus.ACCEPTED:
+            await self.event_bus.publish(
+                ApplicationAccepted(application_id=application.id, competition_id=competition_id),
+            )
+            self.metrics.record_application_accepted()
 
         logger.info(
             "Application submitted",

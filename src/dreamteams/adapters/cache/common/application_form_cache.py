@@ -6,7 +6,7 @@ from dreamteams.entities.common.identifiers import CompetitionId
 
 
 class ApplicationFormCache(Protocol):
-    """Cache for competition application forms."""
+    """Adapter-local cache port for application form read-through decoration."""
 
     @abstractmethod
     async def get(self, competition_id: CompetitionId) -> ApplicationForm | None:

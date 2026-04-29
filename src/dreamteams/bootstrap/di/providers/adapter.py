@@ -10,16 +10,26 @@ from dreamteams.adapters.auth.auth_provider import SimpleAuthProvider
 from dreamteams.adapters.auth.idp.auth_user import WebAuthUserIdProvider
 from dreamteams.adapters.auth.idp.user import IdProviderImpl
 from dreamteams.adapters.avatar_storage import S3AvatarStorage, S3Config
-from dreamteams.adapters.cache.cached_competition_gateway import CachedCompetitionGateway
-from dreamteams.adapters.cache.cached_competition_tag_gateway import CachedCompetitionTagGateway
-from dreamteams.adapters.cache.competition_read_cache import CompetitionReadCache
-from dreamteams.adapters.cache.competition_tag_read_cache import CompetitionTagReadCache
+from dreamteams.adapters.cache.common.application_form_cache import ApplicationFormCache
+from dreamteams.adapters.cache.cached_gateway.cached_application_form_gateway import CachedApplicationFormGateway
+from dreamteams.adapters.cache.cached_gateway.cached_competition_gateway import CachedCompetitionGateway
+from dreamteams.adapters.cache.cached_gateway.cached_competition_tag_gateway import CachedCompetitionTagGateway
+from dreamteams.adapters.cache.common.competition_read_cache import CompetitionReadCache
+from dreamteams.adapters.cache.common.competition_tag_read_cache import CompetitionTagReadCache
 from dreamteams.adapters.cache.config import CacheConfig
-from dreamteams.adapters.cache.redis_application_form_cache import RedisApplicationFormCache
-from dreamteams.adapters.cache.redis_auth_user_cache import RedisAuthUserCache
-from dreamteams.adapters.cache.redis_blocked_user_cache import RedisBlockedUserCache
-from dreamteams.adapters.cache.redis_competition_cache import RedisCompetitionCache
-from dreamteams.adapters.cache.redis_competition_tag_cache import RedisCompetitionTagCache
+from dreamteams.adapters.cache.event_handler import (
+    ApplicationCacheEventHandler,
+    ApplicationFormCacheEventHandler,
+    CompetitionCacheEventHandler,
+    CompetitionTagCacheEventHandler,
+    UserBlockedCacheEventHandler,
+    UserUnblockedCacheEventHandler,
+)
+from dreamteams.adapters.cache.redis_cache.redis_application_form_cache import RedisApplicationFormCache
+from dreamteams.adapters.cache.redis_cache.redis_auth_user_cache import RedisAuthUserCache
+from dreamteams.adapters.cache.redis_cache.redis_blocked_user_cache import RedisBlockedUserCache
+from dreamteams.adapters.cache.redis_cache.redis_competition_cache import RedisCompetitionCache
+from dreamteams.adapters.cache.redis_cache.redis_competition_tag_cache import RedisCompetitionTagCache
 from dreamteams.adapters.db.config import DbConfig
 from dreamteams.adapters.db.gateway.application import SAApplicationGateway
 from dreamteams.adapters.db.gateway.application_form import SAApplicationFormGateway
@@ -31,7 +41,10 @@ from dreamteams.adapters.db.gateway.organizer_invite import SAOrganizerInviteGat
 from dreamteams.adapters.db.gateway.participant import SAParticipantGateway
 from dreamteams.adapters.db.gateway.user import SAUserGateway
 from dreamteams.adapters.db.pool_metrics import register_pool_metrics
-from dreamteams.application.common.application_form_cache import ApplicationFormCache
+from dreamteams.adapters.event_bus import InMemoryEventBus
+from dreamteams.adapters.event_handler_registry import EventHandlersRegistry
+from dreamteams.application.common.event_bus import EventBus
+from dreamteams.application.common.gateway.application_form import ApplicationFormGateway
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.competition_tag import CompetitionTagGateway
 from dreamteams.presentation.fast_api.config import ServerConfig
@@ -54,13 +67,13 @@ class AdapterProvider(Provider):
         WithParents[SAOrganizerGateway],
         WithParents[SAParticipantGateway],
         WithParents[SAOrganizerInviteGateway],
-        WithParents[SAApplicationFormGateway],
         WithParents[SAApplicationGateway],
         scope=Scope.REQUEST,
     )
+    sa_application_form_gateway = provide(SAApplicationFormGateway, scope=Scope.REQUEST)
     sa_competition_gateway = provide(SACompetitionGateway, scope=Scope.REQUEST)
     sa_competition_tag_gateway = provide(SACompetitionTagGateway, scope=Scope.REQUEST)
-    application_form_cache = provide(RedisApplicationFormCache, scope=Scope.APP, provides=ApplicationFormCache)
+    application_form_cache = provide(WithParents[RedisApplicationFormCache], scope=Scope.APP)
     competition_tag_cache = provide(WithParents[RedisCompetitionTagCache], scope=Scope.APP)
     competition_cache = provide(WithParents[RedisCompetitionCache], scope=Scope.APP)
     auth_provider = provide(WithParents[SimpleAuthProvider], scope=Scope.REQUEST)
@@ -68,6 +81,30 @@ class AdapterProvider(Provider):
     password_hasher = provide(WithParents[Argon2PasswordHasher], scope=Scope.APP)
     auth_user_cache = provide(WithParents[RedisAuthUserCache], scope=Scope.APP)
     blocked_user_cache = provide(WithParents[RedisBlockedUserCache], scope=Scope.APP)
+    event_handlers = provide_all(
+        UserBlockedCacheEventHandler,
+        UserUnblockedCacheEventHandler,
+        CompetitionCacheEventHandler,
+        CompetitionTagCacheEventHandler,
+        ApplicationFormCacheEventHandler,
+        ApplicationCacheEventHandler,
+        scope=Scope.REQUEST,
+    )
+    event_handlers_registry = provide(EventHandlersRegistry, scope=Scope.REQUEST)
+
+    @provide(scope=Scope.REQUEST, provides=EventBus)
+    def get_event_bus(self, handlers: EventHandlersRegistry) -> InMemoryEventBus:
+        """Provide the in-memory event bus with adapter-side handlers."""
+        return InMemoryEventBus(handlers.as_mapping())
+
+    @provide(scope=Scope.REQUEST, provides=ApplicationFormGateway)
+    def get_application_form_gateway(
+        self,
+        gateway: SAApplicationFormGateway,
+        cache: ApplicationFormCache,
+    ) -> CachedApplicationFormGateway:
+        """Provide cached application form gateway."""
+        return CachedApplicationFormGateway(gateway, cache)
 
     @provide(scope=Scope.REQUEST, provides=CompetitionGateway)
     def get_competition_gateway(

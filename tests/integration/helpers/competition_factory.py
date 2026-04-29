@@ -10,8 +10,8 @@ from dishka import AsyncContainer
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from dreamteams.adapters.cache.common.competition_read_cache import CompetitionReadCache
 from dreamteams.adapters.db.models import competition_table
-from dreamteams.application.common.competition_cache import CompetitionCache
 from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.common.dto.milestone import MilestoneForm
 from dreamteams.application.delete_my_competition import CompetitionModel
@@ -50,9 +50,8 @@ class CompetitionGateway:
         await self._clear_competition_cache(competition_id)
 
     async def _clear_competition_cache(self, competition_id: CompetitionId) -> None:
-        cache = await self.container.get(CompetitionCache)
+        cache = await self.container.get(CompetitionReadCache)
         await cache.delete_read(competition_id)
-        await cache.clear_preview()
 
     # --- Read / update via API ---
 

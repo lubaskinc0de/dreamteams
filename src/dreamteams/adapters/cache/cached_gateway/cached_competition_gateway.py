@@ -1,6 +1,6 @@
 from typing import override
 
-from dreamteams.adapters.cache.competition_read_cache import CompetitionReadCache
+from dreamteams.adapters.cache.common.competition_read_cache import CompetitionReadCache
 from dreamteams.application.common.dto.competition import CompetitionModel
 from dreamteams.application.common.dto.explore_competition import ExploreCompetitionModel
 from dreamteams.application.common.dto.preview_competition import PreviewCompetitionModel
@@ -96,14 +96,8 @@ class CachedCompetitionGateway(CompetitionGateway):
         page: int,
         page_size: int,
     ) -> tuple[list[PreviewCompetitionModel], int]:
-        """Fetch anonymous preview competitions, using cache for list pages."""
-        cached = await self._cache.get_preview(page=page, page_size=page_size)
-        if cached is not None:
-            return cached
-
-        items, total = await self._wrapped.list_preview(page=page, page_size=page_size)
-        await self._cache.set_preview(page=page, page_size=page_size, items=items, total=total)
-        return items, total
+        """Delegate anonymous preview listing to the wrapped gateway."""
+        return await self._wrapped.list_preview(page=page, page_size=page_size)
 
     @override
     async def explore(

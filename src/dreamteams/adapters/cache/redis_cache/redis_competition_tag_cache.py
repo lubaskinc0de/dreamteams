@@ -7,9 +7,8 @@ from adaptix.load_error import LoadError
 from redis.asyncio import Redis
 from redis.exceptions import RedisError
 
-from dreamteams.adapters.cache.competition_tag_read_cache import CompetitionTagReadCache
+from dreamteams.adapters.cache.common.competition_tag_read_cache import CompetitionTagReadCache
 from dreamteams.adapters.cache.config import CacheConfig
-from dreamteams.application.common.competition_tag_cache import CompetitionTagCache
 from dreamteams.entities.competition.tag import CompetitionTag
 from dreamteams_common.logger import Logger
 
@@ -49,7 +48,7 @@ def _load_tags(payload: list[Any]) -> list[CompetitionTag]:
     return _retort.load(payload, list[CompetitionTag])
 
 
-class RedisCompetitionTagCache(CompetitionTagCache, CompetitionTagReadCache):
+class RedisCompetitionTagCache(CompetitionTagReadCache):
     """Redis cache for competition tags."""
 
     def __init__(self, redis: Redis, config: CacheConfig) -> None:

@@ -1,9 +1,8 @@
 import structlog
 from pydantic import BaseModel
 
-from dreamteams.application.common.application_form_cache import ApplicationFormCache
-from dreamteams.application.common.blocked_user_cache import BlockedUserCache
-from dreamteams.application.common.competition_cache import CompetitionCache
+from dreamteams.application.common.event_bus import EventBus
+from dreamteams.application.common.events import UserUnblocked
 from dreamteams.application.common.gateway.user import UserGateway
 from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.errors.user import UserNotFoundError
@@ -28,12 +27,10 @@ class UnblockUser:
     uow: UoW
     idp: IdProvider
     user_gateway: UserGateway
-    blocked_cache: BlockedUserCache
-    application_form_cache: ApplicationFormCache
-    competition_cache: CompetitionCache
+    event_bus: EventBus
 
     async def execute(self, data: UnblockUserForm) -> None:
-        """Unblock the target user and invalidate the blocked-user cache entry."""
+        """Unblock the target user."""
         user_id = await self.idp.get_user_id()
         admin = await self.user_gateway.get(user_id)
         if admin is None:
@@ -45,9 +42,6 @@ class UnblockUser:
 
         target.unblock(admin)
         await self.uow.commit()
-        await self.blocked_cache.delete(data.target_user_id)
-        await self.application_form_cache.clear()
-        await self.competition_cache.clear_read()
-        await self.competition_cache.clear_preview()
+        await self.event_bus.publish(UserUnblocked(user_id=data.target_user_id))
 
         logger.info("User unblocked", target_user_id=data.target_user_id, admin_user_id=user_id)

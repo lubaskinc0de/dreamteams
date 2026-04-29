@@ -1,6 +1,7 @@
 import structlog
 
-from dreamteams.application.common.competition_cache import CompetitionCache
+from dreamteams.application.common.event_bus import EventBus
+from dreamteams.application.common.events import CompetitionDeleted
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
 from dreamteams.application.common.idp import IdProvider
@@ -23,7 +24,7 @@ class DeleteCompetition:
     idp: IdProvider
     organizer_gateway: OrganizerGateway
     competition_gateway: CompetitionGateway
-    competition_cache: CompetitionCache
+    event_bus: EventBus
 
     async def execute(self, competition_id: CompetitionId) -> None:
         """Deletes competition by organizer who created it."""
@@ -48,7 +49,6 @@ class DeleteCompetition:
 
         await self.uow.delete(competition)
         await self.uow.commit()
-        await self.competition_cache.delete_read(competition_id)
-        await self.competition_cache.clear_preview()
+        await self.event_bus.publish(CompetitionDeleted(competition_id=competition_id))
 
         logger.info("Competition deleted", competition_id=competition_id, user_id=user_id)

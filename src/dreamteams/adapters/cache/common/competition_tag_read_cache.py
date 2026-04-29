@@ -40,3 +40,8 @@ class CompetitionTagReadCache(Protocol):
     ) -> None:
         """Store a tag list page."""
         raise NotImplementedError
+
+    @abstractmethod
+    async def clear(self) -> None:
+        """Clear every tag cache entry."""
+        raise NotImplementedError

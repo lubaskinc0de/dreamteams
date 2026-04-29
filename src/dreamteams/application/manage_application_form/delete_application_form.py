@@ -1,6 +1,7 @@
 import structlog
 
-from dreamteams.application.common.application_form_cache import ApplicationFormCache
+from dreamteams.application.common.event_bus import EventBus
+from dreamteams.application.common.events import ApplicationFormDeleted
 from dreamteams.application.common.gateway.application_form import ApplicationFormGateway
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
@@ -27,7 +28,7 @@ class DeleteApplicationForm:
     organizer_gateway: OrganizerGateway
     competition_gateway: CompetitionGateway
     application_form_gateway: ApplicationFormGateway
-    application_form_cache: ApplicationFormCache
+    event_bus: EventBus
     metrics: MetricsGateway
 
     async def execute(self, competition_id: CompetitionId) -> None:
@@ -59,7 +60,9 @@ class DeleteApplicationForm:
 
         await self.uow.delete(form)
         await self.uow.commit()
-        await self.application_form_cache.delete(competition_id)
+        await self.event_bus.publish(
+            ApplicationFormDeleted(application_form_id=form.id, competition_id=competition_id),
+        )
 
         self.metrics.record_application_form_deleted()
         logger.info("Application form deleted", competition_id=competition_id, user_id=user_id)

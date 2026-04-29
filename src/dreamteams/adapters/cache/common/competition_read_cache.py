@@ -2,7 +2,6 @@ from abc import abstractmethod
 from typing import Protocol
 
 from dreamteams.application.common.dto.competition import CompetitionModel
-from dreamteams.application.common.dto.preview_competition import PreviewCompetitionModel
 from dreamteams.entities.common.identifiers import CompetitionId
 
 
@@ -20,11 +19,11 @@ class CompetitionReadCache(Protocol):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_preview(self, *, page: int, page_size: int) -> tuple[list[PreviewCompetitionModel], int] | None:
-        """Return a cached anonymous preview page, or None on miss/error."""
+    async def delete_read(self, competition_id: CompetitionId) -> None:
+        """Delete one single-competition read model entry."""
         raise NotImplementedError
 
     @abstractmethod
-    async def set_preview(self, *, page: int, page_size: int, items: list[PreviewCompetitionModel], total: int) -> None:
-        """Store an anonymous preview page."""
+    async def clear_read(self) -> None:
+        """Clear all single-competition read model entries."""
         raise NotImplementedError

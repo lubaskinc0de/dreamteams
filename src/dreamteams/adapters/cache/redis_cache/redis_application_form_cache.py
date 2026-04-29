@@ -7,8 +7,8 @@ from adaptix.load_error import LoadError
 from redis.asyncio import Redis
 from redis.exceptions import RedisError
 
+from dreamteams.adapters.cache.common.application_form_cache import ApplicationFormCache
 from dreamteams.adapters.cache.config import CacheConfig
-from dreamteams.application.common.application_form_cache import ApplicationFormCache
 from dreamteams.entities.application_form.entity import ApplicationForm
 from dreamteams.entities.application_form.field import Field
 from dreamteams.entities.application_form.fields import ApplicationFormFields

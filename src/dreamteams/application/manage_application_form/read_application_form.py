@@ -1,6 +1,5 @@
 import structlog
 
-from dreamteams.application.common.application_form_cache import ApplicationFormCache
 from dreamteams.application.common.dto.application_form import (
     ApplicationFormModel,
     FieldChoiceModel,
@@ -37,7 +36,6 @@ class ReadApplicationForm:
     organizer_gateway: OrganizerGateway
     competition_gateway: CompetitionGateway
     application_form_gateway: ApplicationFormGateway
-    application_form_cache: ApplicationFormCache
 
     async def execute(self, competition_id: CompetitionId) -> ApplicationFormModel:
         """Read the application form for a competition."""
@@ -56,14 +54,9 @@ class ReadApplicationForm:
             logger.warning("Access denied to read application form", competition_id=competition_id, user_id=user_id)
             raise AccessDeniedError(message="Only the organizer who created this competition can view its form")
 
-        form = await self.application_form_cache.get(competition_id)
-        if form is not None:
-            return to_application_form_model(form)
-
         form = await self.application_form_gateway.get_by_competition_id(competition_id)
         if form is None:
             logger.warning("Application form not found", competition_id=competition_id, user_id=user_id)
             raise ApplicationFormNotFoundError
 
-        await self.application_form_cache.set(competition_id, form)
         return to_application_form_model(form)

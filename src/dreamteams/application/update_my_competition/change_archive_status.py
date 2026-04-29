@@ -1,7 +1,8 @@
 import structlog
 from pydantic import BaseModel
 
-from dreamteams.application.common.competition_cache import CompetitionCache
+from dreamteams.application.common.event_bus import EventBus
+from dreamteams.application.common.events import CompetitionChanged
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
 from dreamteams.application.common.idp import IdProvider
@@ -30,7 +31,7 @@ class ChangeCompetitionArchiveStatus:
     idp: IdProvider
     organizer_gateway: OrganizerGateway
     competition_gateway: CompetitionGateway
-    competition_cache: CompetitionCache
+    event_bus: EventBus
     clock: Clock
 
     async def execute(self, competition_id: CompetitionId, data: ChangeCompetitionArchiveStatusForm) -> None:
@@ -54,7 +55,6 @@ class ChangeCompetitionArchiveStatus:
         )
 
         await self.uow.commit()
-        await self.competition_cache.delete_read(competition_id)
-        await self.competition_cache.clear_preview()
+        await self.event_bus.publish(CompetitionChanged(competition_id=competition_id))
 
         logger.info("Competition archive status changed", competition_id=competition_id, user_id=user_id)

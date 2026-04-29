@@ -7,7 +7,7 @@ from adaptix.load_error import LoadError
 from redis.asyncio import Redis
 from redis.exceptions import RedisError
 
-from dreamteams.adapters.cache.blocked_user_cache import BlockedUserCache  # full read+write protocol
+from dreamteams.adapters.cache.common.blocked_user_cache import BlockedUserCache
 from dreamteams.adapters.cache.config import CacheConfig
 from dreamteams.entities.common.identifiers import UserId
 from dreamteams.entities.user import BanStatus

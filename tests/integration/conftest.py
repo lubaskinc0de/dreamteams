@@ -189,7 +189,6 @@ def app_config(
             blocked_user_ttl_seconds=86400,
             application_form_ttl_seconds=900,
             competition_tags_ttl_seconds=1800,
-            competition_preview_ttl_seconds=60,
             competition_read_ttl_seconds=120,
         ),
     )

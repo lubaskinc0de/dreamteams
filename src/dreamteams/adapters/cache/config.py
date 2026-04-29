@@ -16,7 +16,5 @@ class CacheConfig:
     application_form_ttl_seconds: int
     # TTL for competition tag entries and list pages.
     competition_tags_ttl_seconds: int
-    # TTL for anonymous competition preview list pages.
-    competition_preview_ttl_seconds: int
     # TTL for single competition read models.
     competition_read_ttl_seconds: int

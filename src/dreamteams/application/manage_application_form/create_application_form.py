@@ -1,7 +1,8 @@
 import structlog
 from pydantic import BaseModel, Field
 
-from dreamteams.application.common.application_form_cache import ApplicationFormCache
+from dreamteams.application.common.event_bus import EventBus
+from dreamteams.application.common.events import ApplicationFormCreated
 from dreamteams.application.common.gateway.application_form import ApplicationFormGateway
 from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
@@ -59,7 +60,7 @@ class CreateApplicationForm:
     organizer_gateway: OrganizerGateway
     competition_gateway: CompetitionGateway
     application_form_gateway: ApplicationFormGateway
-    application_form_cache: ApplicationFormCache
+    event_bus: EventBus
     clock: Clock
     metrics: MetricsGateway
 
@@ -105,7 +106,9 @@ class CreateApplicationForm:
 
         self.uow.add(form)
         await self.uow.commit()
-        await self.application_form_cache.set(competition_id, form)
+        await self.event_bus.publish(
+            ApplicationFormCreated(application_form_id=form.id, competition_id=competition_id),
+        )
 
         self.metrics.record_application_form_created()
         logger.info("Application form created", form_id=form.id, competition_id=competition_id)

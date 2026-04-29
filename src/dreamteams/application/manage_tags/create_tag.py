@@ -1,7 +1,8 @@
 from pydantic import BaseModel, Field
 
 from dreamteams.application.block_user.shared import ensure_admin
-from dreamteams.application.common.competition_tag_cache import CompetitionTagCache
+from dreamteams.application.common.event_bus import EventBus
+from dreamteams.application.common.events import CompetitionTagCreated
 from dreamteams.application.common.gateway.competition_tag import CompetitionTagGateway
 from dreamteams.application.common.gateway.user import UserGateway
 from dreamteams.application.common.idp import IdProvider
@@ -25,7 +26,7 @@ class CreateCompetitionTag:
     idp: IdProvider
     user_gateway: UserGateway
     competition_tag_gateway: CompetitionTagGateway
-    competition_tag_cache: CompetitionTagCache
+    event_bus: EventBus
 
     async def execute(self, data: CompetitionTagInput) -> CompetitionTag:
         """Create a competition tag."""
@@ -40,6 +41,6 @@ class CreateCompetitionTag:
         tag = competition_tag_factory(data.value)
         self.uow.add(tag)
         await self.uow.commit()
-        await self.competition_tag_cache.clear()
+        await self.event_bus.publish(CompetitionTagCreated(tag_id=tag.id))
 
         return tag

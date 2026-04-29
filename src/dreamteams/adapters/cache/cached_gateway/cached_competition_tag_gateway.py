@@ -1,6 +1,6 @@
 from typing import override
 
-from dreamteams.adapters.cache.competition_tag_read_cache import CompetitionTagReadCache
+from dreamteams.adapters.cache.common.competition_tag_read_cache import CompetitionTagReadCache
 from dreamteams.application.common.gateway.competition_tag import CompetitionTagGateway
 from dreamteams.entities.common.identifiers import CompetitionTagId
 from dreamteams.entities.competition.tag import CompetitionTag
