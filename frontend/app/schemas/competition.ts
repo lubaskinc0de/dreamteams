@@ -314,6 +314,37 @@ export const createCompetitionSchemas = (t: (key: string) => string) => {
       .string()
       .max(50, t("competition.form.milestone.title.maxLength")),
     timestamp: z.string().min(1, t("competition.form.milestone.timestamp.required")),
+    description: z
+      .string()
+      .max(300, t("competition.form.milestone.description.maxLength"))
+      .nullable()
+      .optional(),
+  });
+
+  const competitionGeneralInfoUpdateSchema = z.object({
+    title: titleSchema,
+    description: descriptionSchema,
+    participant_limits: participantLimitsSchema,
+    tag_ids: tagIdsSchema,
+    tracks: tracksSchema,
+    participant_type: z.enum(["schoolchild", "student", "any"]),
+    venue: venueSchema,
+    milestones: z.array(updateMilestoneSchema).nullable(),
+    auto_accept: z.boolean(),
+  });
+
+  const competitionRescheduleSchema = z.object({
+    schedule: updateScheduleSchema,
+    team_size: teamSizeSchema.nullable(),
+  }).superRefine((data, ctx) => {
+    const hasTeamSize = data.team_size != null;
+    const tfs = data.schedule.team_formation_start;
+    const hasTeamFormation = tfs != null && tfs !== "";
+    if (hasTeamSize !== hasTeamFormation) {
+      const msg = t("errors.team_size_schedule_pairing");
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: msg, path: ["team_size"] });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: msg, path: ["schedule", "team_formation_start"] });
+    }
   });
 
   const competitionUpdateSchema = z.object({
@@ -353,6 +384,8 @@ export const createCompetitionSchemas = (t: (key: string) => string) => {
     venueSchema,
     milestoneSchema,
     competitionFormSchema,
+    competitionGeneralInfoUpdateSchema,
+    competitionRescheduleSchema,
     competitionUpdateSchema,
   };
 };

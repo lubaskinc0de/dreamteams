@@ -7,7 +7,9 @@ import type {
   UpdateParticipantForm,
   CreatedParticipant,
   CompetitionForm,
-  UpdateCompetitionForm,
+  UpdateCompetitionGeneralInfoForm,
+  RescheduleCompetitionForm,
+  ChangeCompetitionArchiveStatusForm,
   CreatedCompetition,
   CompetitionModel,
   CompetitionsList,
@@ -1027,9 +1029,9 @@ export const useMockApi = () => {
     };
   };
 
-  const updateCompetition = async (
+  const updateCompetitionGeneralInfo = async (
     competitionId: string,
-    form: UpdateCompetitionForm,
+    form: UpdateCompetitionGeneralInfoForm,
   ): Promise<{ data: {} | null; error: ApiError | null }> => {
     await delay(500);
 
@@ -1046,7 +1048,6 @@ export const useMockApi = () => {
       };
     }
 
-    // Update the competition
     const currentCompetition = mockCompetitions[index]!;
     const selectedTags = tagsByIds(form.tag_ids);
     if (selectedTags.length !== form.tag_ids.length) {
@@ -1066,22 +1067,87 @@ export const useMockApi = () => {
       banner: currentCompetition.banner,
       title: form.title,
       description: form.description,
-      schedule: form.schedule,
+      schedule: currentCompetition.schedule,
       participant_limits: form.participant_limits,
       tags: selectedTags,
       tracks: form.tracks,
       participant_type: form.participant_type,
       venue: form.venue,
-      team_size: form.team_size,
-      milestones: form.milestones.map((m) => ({
+      team_size: currentCompetition.team_size,
+      milestones: (form.milestones ?? []).map((m) => ({
         title: m.title,
         timestamp: m.timestamp,
         description: m.description,
       })),
       auto_accept: form.auto_accept,
-      is_archived: form.is_archived,
+      is_archived: currentCompetition.is_archived,
       members_count: currentCompetition.members_count,
       created_at: currentCompetition.created_at,
+      updated_at: new Date().toISOString(),
+    };
+
+    return {
+      data: {},
+      error: null,
+    };
+  };
+
+  const rescheduleCompetition = async (
+    competitionId: string,
+    form: RescheduleCompetitionForm,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    await delay(500);
+
+    const index = mockCompetitions.findIndex((c) => c.id === competitionId);
+
+    if (index === -1) {
+      return {
+        data: null,
+        error: {
+          code: "USER_NOT_FOUND",
+          message: "Соревнование не найдено",
+          meta: null,
+        },
+      };
+    }
+
+    const currentCompetition = mockCompetitions[index]!;
+    mockCompetitions[index] = {
+      ...currentCompetition,
+      schedule: form.schedule,
+      team_size: form.team_size,
+      updated_at: new Date().toISOString(),
+    };
+
+    return {
+      data: {},
+      error: null,
+    };
+  };
+
+  const changeCompetitionArchiveStatus = async (
+    competitionId: string,
+    form: ChangeCompetitionArchiveStatusForm,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    await delay(500);
+
+    const index = mockCompetitions.findIndex((c) => c.id === competitionId);
+
+    if (index === -1) {
+      return {
+        data: null,
+        error: {
+          code: "USER_NOT_FOUND",
+          message: "Соревнование не найдено",
+          meta: null,
+        },
+      };
+    }
+
+    const currentCompetition = mockCompetitions[index]!;
+    mockCompetitions[index] = {
+      ...currentCompetition,
+      is_archived: form.is_archived,
       updated_at: new Date().toISOString(),
     };
 
@@ -2002,7 +2068,9 @@ const mockExportJobs = new Map<string, ExportJobModel>();
     exploreCompetitions,
     createCompetition,
     getCompetition,
-    updateCompetition,
+    updateCompetitionGeneralInfo,
+    rescheduleCompetition,
+    changeCompetitionArchiveStatus,
     deleteCompetition,
     deleteUserProfile,
     attachAvatar,

@@ -174,7 +174,7 @@ def competition_factory(
         team_size=data.team_size,
         milestones=CompetitionMilestones([milestone_factory(m, clock) for m in (data.milestones or [])]),
         auto_accept=data.auto_accept,
-        is_archived=True,
+        is_archived=False,
         created_at=now,
         updated_at=now,
     )

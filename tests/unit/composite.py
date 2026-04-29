@@ -264,19 +264,19 @@ def valid_competition(
     organizer: Organizer,
     clock: Clock,
     *,
-    is_archived: bool = True,
+    is_archived: bool = False,
     is_open: bool = False,
     is_ended: bool = False,
 ) -> Competition:
     """
     Valid competition entity.
 
-    By default mirrors ``competition_factory`` behaviour: ``is_archived=True`` with a future
+    By default mirrors ``competition_factory`` behaviour: ``is_archived=False`` with a future
     registration schedule.  Keyword flags override the schedule / archive state:
 
     - ``is_open=True``  — registration window is currently open (started in past, ends in future)
     - ``is_ended=True`` — registration window is in the past (already ended)
-    - ``is_archived``   — controls ``Competition.is_archived`` (default True)
+    - ``is_archived``   — controls ``Competition.is_archived`` (default False)
 
     ``is_open`` and ``is_ended`` are mutually exclusive.
     """

@@ -54,7 +54,7 @@ def test_create_competition_with_valid_data(
         team_size=data.team_size,
         banner=None,
         auto_accept=data.auto_accept,
-        is_archived=True,
+        is_archived=False,
         milestones=CompetitionMilestones(
             [milestone_factory(milestone_data, clock) for milestone_data in data.milestones],
         )

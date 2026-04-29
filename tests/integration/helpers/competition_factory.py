@@ -294,19 +294,6 @@ class CompetitionGateway:
 
         return comp
 
-    async def create_unarchived(
-        self,
-        organizer_auth_id: str,
-    ) -> CompetitionCreated:
-        """Create a competition that is visible (unarchived) but whose registration hasn't started yet."""
-        comp = await self.create(organizer_auth_id)
-        await self.change_archive_status(
-            comp.created.competition_id,
-            ChangeCompetitionArchiveStatusForm(is_archived=False),
-            organizer_auth_id,
-        )
-        return comp
-
     async def create_from_form(self, organizer_auth_id: str, form: CompetitionForm) -> CompetitionModel:
         """Create a competition from an existing form and return the read model."""
         with self.api_client.authenticate(auth_user_id=organizer_auth_id):

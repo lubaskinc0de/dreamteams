@@ -39,7 +39,8 @@ async def test_preview_competitions_does_not_show_archived_competitions(
     # Arrange
     owner = await gateway.organizer.create_with_admin(gateway.admin)
     competitions = await gateway.competition.create_many(owner.organizer.auth_id, 5)
-    await gateway.competition.change_archived_state(competitions, owner.organizer.auth_id, is_archived=True)
+    active_competitions = await gateway.competition.make_all_active(competitions, owner.organizer.auth_id)
+    await gateway.competition.change_archived_state(active_competitions, owner.organizer.auth_id, is_archived=True)
 
     # Act
     response = await api_client.list_preview_competitions()

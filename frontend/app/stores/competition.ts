@@ -2,7 +2,9 @@ import { defineStore } from "pinia";
 import { useNotificationsStore } from "~/stores/notifications";
 import type {
   CompetitionForm,
-  UpdateCompetitionForm,
+  UpdateCompetitionGeneralInfoForm,
+  RescheduleCompetitionForm,
+  ChangeCompetitionArchiveStatusForm,
   CreatedCompetition,
   CompetitionModel,
   CompetitionSortBy,
@@ -73,15 +75,16 @@ export const useCompetitionStore = defineStore("competition", {
       await this.fetchCompetitions(this.currentPage + 1, undefined, undefined, isArchived, false, search);
     },
 
-    async updateCompetition(competitionId: string, form: UpdateCompetitionForm) {
-      const { $i18n } = useNuxtApp();
-      const notifications = useNotificationsStore();
+    async updateCompetitionGeneralInfo(
+      competitionId: string,
+      form: UpdateCompetitionGeneralInfoForm,
+    ) {
       const api = useApi();
 
       this.loading = true;
       this.error = null;
 
-      const { error } = await api.updateCompetition(competitionId, form);
+      const { error } = await api.updateCompetitionGeneralInfo(competitionId, form);
 
       if (error) {
         this.error = error;
@@ -89,14 +92,52 @@ export const useCompetitionStore = defineStore("competition", {
         return { success: false, error };
       }
 
-      notifications.add({
-        title: $i18n.t("toast.competitionUpdated.title"),
-        description: $i18n.t("toast.competitionUpdated.description"),
-        icon: "i-heroicons-check-circle",
-        color: "success",
-      });
+      await this.fetchCompetition(competitionId);
 
-      // Refresh the competition
+      this.loading = false;
+      return { success: true, error: null };
+    },
+
+    async rescheduleCompetition(
+      competitionId: string,
+      form: RescheduleCompetitionForm,
+    ) {
+      const api = useApi();
+
+      this.loading = true;
+      this.error = null;
+
+      const { error } = await api.rescheduleCompetition(competitionId, form);
+
+      if (error) {
+        this.error = error;
+        this.loading = false;
+        return { success: false, error };
+      }
+
+      await this.fetchCompetition(competitionId);
+
+      this.loading = false;
+      return { success: true, error: null };
+    },
+
+    async changeCompetitionArchiveStatus(
+      competitionId: string,
+      form: ChangeCompetitionArchiveStatusForm,
+    ) {
+      const api = useApi();
+
+      this.loading = true;
+      this.error = null;
+
+      const { error } = await api.changeCompetitionArchiveStatus(competitionId, form);
+
+      if (error) {
+        this.error = error;
+        this.loading = false;
+        return { success: false, error };
+      }
+
       await this.fetchCompetition(competitionId);
 
       this.loading = false;

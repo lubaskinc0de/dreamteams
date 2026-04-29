@@ -9,9 +9,14 @@ interface Props {
   participantLimitsMax: number;
   teamSize: TeamSizeRange | null;
   isTeamCompetition: boolean;
+  showParticipantLimits?: boolean;
+  showTeamSize?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  showParticipantLimits: true,
+  showTeamSize: true,
+});
 const emit = defineEmits<{
   "update:participantLimitsMax": [value: number];
   "update:teamSize": [value: TeamSizeRange | null];
@@ -26,7 +31,7 @@ const updateTeamSize = (patch: Partial<TeamSizeRange>) => {
 </script>
 
 <template>
-  <UCard>
+  <UCard v-if="showParticipantLimits || (showTeamSize && isTeamCompetition && teamSize)">
     <template #header>
       <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
         {{ t('competition.create.sections.participants') }}
@@ -36,6 +41,7 @@ const updateTeamSize = (patch: Partial<TeamSizeRange>) => {
     <div class="space-y-6">
       <!-- Participant Limits -->
       <UFormField
+        v-if="showParticipantLimits"
         name="participant_limits"
         required
         size="xl"
@@ -65,7 +71,7 @@ const updateTeamSize = (patch: Partial<TeamSizeRange>) => {
 
       <!-- Team Size (only for team competitions) -->
       <UFormField
-        v-if="isTeamCompetition && teamSize"
+        v-if="showTeamSize && isTeamCompetition && teamSize"
         name="team_size"
         :required="isTeamCompetition"
         size="xl"

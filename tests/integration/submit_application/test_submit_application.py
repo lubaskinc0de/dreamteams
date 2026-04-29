@@ -4,6 +4,7 @@ from dreamteams.application.common.dto.competition_track import CompetitionTrack
 from dreamteams.application.manage_application_form import ApplicationFormInput
 from dreamteams.application.manage_application_form.create_application_form import FieldForm
 from dreamteams.application.submit_application import CreatedApplication
+from dreamteams.application.update_my_competition import ChangeCompetitionArchiveStatusForm
 from dreamteams.entities.application_form.field import FieldType
 from dreamteams.entities.common.participant_type import ParticipantType
 from tests.common.factory.application import SubmitApplicationInputFactory
@@ -176,11 +177,16 @@ async def test_archived_competition_rejects_submission(
     gateway: Gateway,
     submit_application_input_factory: SubmitApplicationInputFactory,
 ) -> None:
-    """Submitting to an archived competition (default state after creation) is rejected with COMPETITION_NOT_ACTIVE."""
-    # Arrange — competition is archived by default
+    """Submitting to an archived competition is rejected with COMPETITION_NOT_ACTIVE."""
+    # Arrange
     owner = await gateway.organizer.create_with_admin(gateway.admin)
     participant = await gateway.participant.create()
-    comp = await gateway.competition.create(owner.organizer.auth_id)
+    comp = await gateway.competition.create_active(owner.organizer.auth_id)
+    await gateway.competition.change_archive_status(
+        comp.created.competition_id,
+        ChangeCompetitionArchiveStatusForm(is_archived=True),
+        owner.organizer.auth_id,
+    )
     data = submit_application_input_factory.build(
         track=CompetitionTrackForm(name=comp.form.tracks[0].name),
         form_data=None,
@@ -199,11 +205,11 @@ async def test_registration_not_open_rejects_submission(
     gateway: Gateway,
     submit_application_input_factory: SubmitApplicationInputFactory,
 ) -> None:
-    """Submitting to an unarchived competition whose registration hasn't started yet is rejected."""
-    # Arrange — unarchive without opening registration (schedule stays in the future)
+    """Submitting to a competition whose registration hasn't started yet is rejected."""
+    # Arrange
     owner = await gateway.organizer.create_with_admin(gateway.admin)
     participant = await gateway.participant.create()
-    comp = await gateway.competition.create_unarchived(owner.organizer.auth_id)
+    comp = await gateway.competition.create(owner.organizer.auth_id)
     data = submit_application_input_factory.build(
         track=CompetitionTrackForm(name=comp.form.tracks[0].name),
         form_data=None,

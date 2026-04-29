@@ -892,7 +892,24 @@
     },
     "edit": {
       "title": "Edit Competition",
-      "description": "Update competition information"
+      "description": "Update competition information",
+      "question": "What do you want to update?",
+      "backToChoices": "Back to update choice",
+      "cards": {
+        "generalInfo": {
+          "title": "General info",
+          "description": "Title, description, tags, tracks, participant limit, venue, and milestones"
+        },
+        "schedule": {
+          "title": "Reschedule",
+          "description": "Registration schedule, team formation period, and team size"
+        },
+        "archiveStatus": {
+          "title": "Change archive state",
+          "archive": "Archive competition",
+          "unarchive": "Restore competition from archive"
+        }
+      }
     },
     "form": {
       "title": {

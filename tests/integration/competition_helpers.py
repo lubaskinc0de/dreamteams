@@ -92,7 +92,7 @@ def competition_form_to_model(
             for milestone in sorted(form.milestones, key=lambda item: item.timestamp)
         ],
         auto_accept=form.auto_accept,
-        is_archived=True,
+        is_archived=False,
         members_count=members_count,
         created_at=created_at,
         updated_at=updated_at,

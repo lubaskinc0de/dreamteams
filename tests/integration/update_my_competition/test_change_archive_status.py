@@ -20,12 +20,12 @@ async def test_archive_status_change_as_owner_succeeds(
     competition_gateway = await request_container.get(CompetitionGateway)
     db_competition = await competition_gateway.get(comp.created.competition_id)
     current_model = await gateway.competition.read(comp.created.competition_id, owner.organizer.auth_id)
-    expected_model = current_model.model_copy(update={"is_archived": False, "updated_at": db_competition.updated_at})
+    expected_model = current_model.model_copy(update={"is_archived": True, "updated_at": db_competition.updated_at})
 
     # Act
     actual_model = await gateway.competition.change_archive_status(
         comp.created.competition_id,
-        ChangeCompetitionArchiveStatusForm(is_archived=False),
+        ChangeCompetitionArchiveStatusForm(is_archived=True),
         owner.organizer.auth_id,
     )
 
@@ -43,7 +43,7 @@ async def test_archive_status_change_fails_if_unauthorized(
     # Arrange
     owner = await gateway.organizer.create_with_admin(gateway.admin)
     comp = await gateway.competition.create(owner.organizer.auth_id)
-    data = ChangeCompetitionArchiveStatusForm(is_archived=False).model_dump(mode="json")
+    data = ChangeCompetitionArchiveStatusForm(is_archived=True).model_dump(mode="json")
 
     # Act
     response = await api_client.change_competition_archive_status(comp.created.competition_id, data)
@@ -61,7 +61,7 @@ async def test_archive_status_change_fails_if_not_owner(
     owner = await gateway.organizer.create_with_admin(gateway.admin)
     interloper = await gateway.organizer.create(owner.admin.auth_id)
     comp = await gateway.competition.create(owner.organizer.auth_id)
-    data = ChangeCompetitionArchiveStatusForm(is_archived=False).model_dump(mode="json")
+    data = ChangeCompetitionArchiveStatusForm(is_archived=True).model_dump(mode="json")
 
     # Act
     with api_client.authenticate(auth_user_id=interloper.auth_id):
@@ -78,7 +78,7 @@ async def test_archive_status_change_fails_if_not_found(
     """Archive status change fails when competition does not exist."""
     # Arrange
     owner = await gateway.organizer.create_with_admin(gateway.admin)
-    data = ChangeCompetitionArchiveStatusForm(is_archived=False).model_dump(mode="json")
+    data = ChangeCompetitionArchiveStatusForm(is_archived=True).model_dump(mode="json")
 
     # Act
     with api_client.authenticate(auth_user_id=owner.organizer.auth_id):

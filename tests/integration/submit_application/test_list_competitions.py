@@ -71,7 +71,13 @@ async def test_archived_competitions_are_hidden(
     # Arrange
     owner = await gateway.organizer.create_with_admin(gateway.admin)
     participant = await gateway.participant.create()
-    await gateway.competition.create_many(owner.organizer.auth_id, 3)  # archived by default
+    competitions = await gateway.competition.create_many(owner.organizer.auth_id, 3)
+    active_competitions = await gateway.competition.make_all_active(competitions, owner.organizer.auth_id)
+    await gateway.competition.change_archived_state(
+        active_competitions,
+        owner.organizer.auth_id,
+        is_archived=True,
+    )
 
     # Act
     with api_client.authenticate(auth_user_id=participant.auth_id):

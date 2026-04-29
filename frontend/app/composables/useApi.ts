@@ -8,7 +8,9 @@ import type {
   UpdateOrganizerForm,
   CreatedParticipant,
   CompetitionForm,
-  UpdateCompetitionForm,
+  UpdateCompetitionGeneralInfoForm,
+  RescheduleCompetitionForm,
+  ChangeCompetitionArchiveStatusForm,
   CreatedCompetition,
   CompetitionModel,
   CompetitionsList,
@@ -347,14 +349,44 @@ export const useApi = () => {
     }
   };
 
-  const updateCompetition = async (
+  const updateCompetitionGeneralInfo = async (
     competitionId: string,
-    form: UpdateCompetitionForm,
+    form: UpdateCompetitionGeneralInfoForm,
   ): Promise<{ data: {} | null; error: ApiError | null }> => {
     try {
       const data = await apiFetch<{}>(
-        `${apiBase}/api/competitions/${competitionId}`,
-        { method: "PUT", body: form, headers: { "Content-Type": "application/json" } },
+        `${apiBase}/api/competitions/${competitionId}/general-info`,
+        { method: "PATCH", body: form, headers: { "Content-Type": "application/json" } },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const rescheduleCompetition = async (
+    competitionId: string,
+    form: RescheduleCompetitionForm,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<{}>(
+        `${apiBase}/api/competitions/${competitionId}/schedule`,
+        { method: "PATCH", body: form, headers: { "Content-Type": "application/json" } },
+      );
+      return { data, error: null };
+    } catch (err: any) {
+      return { data: null, error: handleApiError(err) };
+    }
+  };
+
+  const changeCompetitionArchiveStatus = async (
+    competitionId: string,
+    form: ChangeCompetitionArchiveStatusForm,
+  ): Promise<{ data: {} | null; error: ApiError | null }> => {
+    try {
+      const data = await apiFetch<{}>(
+        `${apiBase}/api/competitions/${competitionId}/archive-status`,
+        { method: "PATCH", body: form, headers: { "Content-Type": "application/json" } },
       );
       return { data, error: null };
     } catch (err: any) {
@@ -904,7 +936,9 @@ export const useApi = () => {
     exploreCompetitions,
     createCompetition,
     getCompetition,
-    updateCompetition,
+    updateCompetitionGeneralInfo,
+    rescheduleCompetition,
+    changeCompetitionArchiveStatus,
     deleteCompetition,
     deleteUserProfile,
     attachAvatar,

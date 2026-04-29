@@ -340,6 +340,27 @@ export interface UpdateCompetitionForm {
   is_archived: boolean;
 }
 
+export interface UpdateCompetitionGeneralInfoForm {
+  title: string;
+  description: string;
+  participant_limits: ParticipantLimits;
+  tag_ids: string[];
+  tracks: CompetitionTrack[];
+  participant_type: ParticipantType;
+  venue: CompetitionVenue;
+  milestones: MilestoneForm[] | null;
+  auto_accept: boolean;
+}
+
+export interface RescheduleCompetitionForm {
+  schedule: CompetitionSchedule;
+  team_size: TeamSizeRange | null;
+}
+
+export interface ChangeCompetitionArchiveStatusForm {
+  is_archived: boolean;
+}
+
 export interface CompetitionModel {
   id: string;
   organizer_id: string;

@@ -16,10 +16,12 @@ interface Props {
   autoAccept?: boolean;
   isArchived?: boolean;
   showArchiveField?: boolean;
+  showTeamCompetitionField?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showArchiveField: false,
+  showTeamCompetitionField: true,
   autoAccept: false,
   initialTags: () => [],
 });
@@ -262,7 +264,7 @@ const participantTypeOptions = [
       </UFormField>
 
       <!-- Is Team Competition -->
-      <UFormField size="xl">
+      <UFormField v-if="showTeamCompetitionField" size="xl">
         <template #label>
           {{ t('competition.form.isTeam.label') }}
           <HelpTooltip :text="t('competition.form.isTeam.tooltip')" />
