@@ -10,10 +10,10 @@ from dreamteams.adapters.auth.auth_provider import SimpleAuthProvider
 from dreamteams.adapters.auth.idp.auth_user import WebAuthUserIdProvider
 from dreamteams.adapters.auth.idp.user import IdProviderImpl
 from dreamteams.adapters.avatar_storage import S3AvatarStorage, S3Config
-from dreamteams.adapters.cache.common.application_form_cache import ApplicationFormCache
 from dreamteams.adapters.cache.cached_gateway.cached_application_form_gateway import CachedApplicationFormGateway
 from dreamteams.adapters.cache.cached_gateway.cached_competition_gateway import CachedCompetitionGateway
 from dreamteams.adapters.cache.cached_gateway.cached_competition_tag_gateway import CachedCompetitionTagGateway
+from dreamteams.adapters.cache.common.application_form_cache import ApplicationFormCache
 from dreamteams.adapters.cache.common.competition_read_cache import CompetitionReadCache
 from dreamteams.adapters.cache.common.competition_tag_read_cache import CompetitionTagReadCache
 from dreamteams.adapters.cache.config import CacheConfig
