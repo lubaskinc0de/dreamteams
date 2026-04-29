@@ -58,7 +58,7 @@ jobs:
               run: uv pip install ".[test]" --system
 
             - name: Run integration tests
-              run: pytest -vvv tests/integration -n auto --dist=loadfile
+              run: pytest -vvv tests -n auto --dist=loadfile
 
     frontend:
         name: "Build frontend"
