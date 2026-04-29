@@ -13,6 +13,12 @@ export default defineNuxtConfig({
 
   css: ["~/assets/css/main.css"],
 
+  app: {
+    head: {
+      script: [{ src: "/config.js", defer: false }],
+    },
+  },
+
   typescript: {
     strict: true,
     typeCheck: true,

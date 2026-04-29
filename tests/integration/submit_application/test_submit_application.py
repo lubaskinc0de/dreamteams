@@ -1,3 +1,4 @@
+import asyncio
 from uuid import uuid4
 
 from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
@@ -5,6 +6,7 @@ from dreamteams.application.manage_application_form import ApplicationFormInput
 from dreamteams.application.manage_application_form.create_application_form import FieldForm
 from dreamteams.application.submit_application import CreatedApplication
 from dreamteams.application.update_my_competition import ChangeCompetitionArchiveStatusForm
+from dreamteams.entities.application.entity import ApplicationStatus
 from dreamteams.entities.application_form.field import FieldType
 from dreamteams.entities.common.participant_type import ParticipantType
 from tests.common.factory.application import SubmitApplicationInputFactory
@@ -275,3 +277,46 @@ async def test_full_competition_rejects_submission(
 
     # Assert
     response.assert_error(409, "PARTICIPANT_LIMITS_EXCEEDED")
+
+
+async def test_concurrent_auto_accepted_submissions_do_not_exceed_participant_limit(
+    api_client: ApiClient,
+    gateway: Gateway,
+    submit_application_input_factory: SubmitApplicationInputFactory,
+) -> None:
+    """Concurrent auto-accepted submissions are serialized by competition capacity."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    first_participant = await gateway.participant.create()
+    second_participant = await gateway.participant.create()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=True, max_participants=1)
+    data = submit_application_input_factory.build(
+        track=CompetitionTrackForm(name=comp.form.tracks[0].name),
+        form_data=None,
+    )
+    payload = data.model_dump(mode="json")
+
+    async def submit(auth_id: str) -> int:
+        with api_client.authenticate(auth_user_id=auth_id):
+            return (await api_client.submit_application(comp.created.competition_id, payload)).status
+
+    # Act
+    statuses = await asyncio.gather(
+        submit(first_participant.auth_id),
+        submit(second_participant.auth_id),
+    )
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        accepted = (
+            (
+                await api_client.list_applications_by_competition(
+                    comp.created.competition_id,
+                    status=ApplicationStatus.ACCEPTED,
+                )
+            )
+            .assert_status(200)
+            .ensure_content()
+        )
+
+    # Assert
+    assert sorted(statuses) == [200, 409]
+    assert accepted.total == 1

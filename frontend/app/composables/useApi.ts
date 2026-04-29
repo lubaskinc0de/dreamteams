@@ -46,6 +46,7 @@ import type {
   ExportJobModel,
 } from "~/types/api";
 import { useBlockedAccount } from "~/composables/useBlockedAccount";
+import { useRuntimePublicConfig } from "~/composables/useRuntimePublicConfig";
 
 interface RetryConfig {
   timeout: number;
@@ -89,9 +90,9 @@ const retryFetch = async <T>(
 };
 
 export const useApi = () => {
-  const config = useRuntimeConfig();
-  const apiBase = config.public.apiBase;
-  const useMock = config.public.useMock;
+  const config = useRuntimePublicConfig();
+  const apiBase = config.apiBase;
+  const useMock = config.useMock;
   const { isAccountBlocked, accountBlockedError, blockFromError } = useBlockedAccount();
 
   // If mock mode is enabled, use mock API
@@ -100,10 +101,10 @@ export const useApi = () => {
   }
 
   const retryCfg: RetryConfig = {
-    timeout: config.public.apiTimeout as number,
-    maxRetries: config.public.apiMaxRetries as number,
-    baseDelay: config.public.apiRetryBaseDelay as number,
-    maxDelay: config.public.apiRetryMaxDelay as number,
+    timeout: config.apiTimeout,
+    maxRetries: config.apiMaxRetries,
+    baseDelay: config.apiRetryBaseDelay,
+    maxDelay: config.apiRetryMaxDelay,
   };
 
   /** $fetch with timeout and automatic exponential-backoff retries. */

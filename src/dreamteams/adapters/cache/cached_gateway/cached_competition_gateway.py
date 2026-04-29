@@ -30,6 +30,7 @@ class CachedCompetitionGateway(CompetitionGateway):
         eager_milestones: bool = False,
         eager_tags: bool = False,
         eager_tracks: bool = False,
+        for_update: bool = False,
     ) -> Competition | None:
         """Delegate entity loading to the wrapped gateway."""
         return await self._wrapped.get(
@@ -37,6 +38,7 @@ class CachedCompetitionGateway(CompetitionGateway):
             eager_milestones=eager_milestones,
             eager_tags=eager_tags,
             eager_tracks=eager_tracks,
+            for_update=for_update,
         )
 
     @override

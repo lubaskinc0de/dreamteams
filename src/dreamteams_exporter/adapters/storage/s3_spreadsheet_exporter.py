@@ -1,11 +1,10 @@
 import csv
 import io
-import json
 from collections.abc import Iterable
-from typing import Any, override
-from urllib.parse import quote
+from typing import Any, cast, override
 
 import aioboto3
+from botocore.config import Config as BotoConfig
 from botocore.exceptions import ClientError
 from opentelemetry import trace
 
@@ -20,7 +19,20 @@ _CONTENT_TYPE = "text/csv; charset=utf-8"
 _PART_SIZE = 5 * 1024 * 1024  # S3's minimum for non-final multipart parts
 _UTF8_BOM = b"\xef\xbb\xbf"  # lets Excel detect UTF-8 when opening the CSV
 _EXPORTS_PREFIX = "exports/"
+_DANGEROUS_CSV_PREFIXES = ("=", "+", "-", "@")
+_DANGEROUS_LEADING_CHARS = ("\t", "\r", "\n")
+_S3_CLIENT_CONFIG = BotoConfig(signature_version="s3v4", s3={"addressing_style": "path"})
 _tracer = trace.get_tracer(__name__)
+
+
+def escape_csv_cell(cell: str) -> str:
+    """Prefix spreadsheet formula-like cells so CSV consumers treat them as literal text."""
+    if not cell:
+        return cell
+    stripped = cell.lstrip()
+    if cell[0] in _DANGEROUS_LEADING_CHARS or (stripped and stripped[0] in _DANGEROUS_CSV_PREFIXES):
+        return f"'{cell}"
+    return cell
 
 
 class CsvS3SpreadsheetSession(SpreadsheetSession):
@@ -47,7 +59,7 @@ class CsvS3SpreadsheetSession(SpreadsheetSession):
 
     def _encode_cells(self, cells: list[str]) -> None:
         sink = io.StringIO()
-        csv.writer(sink).writerow(cells)
+        csv.writer(sink).writerow([escape_csv_cell(cell) for cell in cells])
         self._buffer.extend(sink.getvalue().encode("utf-8"))
 
     @override
@@ -73,6 +85,7 @@ class CsvS3SpreadsheetSession(SpreadsheetSession):
                 service_name="s3",
                 endpoint_url=self._config.endpoint_url,
                 region_name=self._config.region,
+                config=_S3_CLIENT_CONFIG,
             ) as s3_client:
                 response = await s3_client.upload_part(
                     Bucket=self._config.bucket_name,
@@ -86,7 +99,7 @@ class CsvS3SpreadsheetSession(SpreadsheetSession):
 
     @override
     async def finish(self) -> str:
-        """Flushes the tail as the final part, completes the multipart upload and returns the public URL."""
+        """Flushes the tail as the final part, completes the multipart upload and returns the private object key."""
         if self._closed:
             msg = "SpreadsheetSession already closed"
             raise RuntimeError(msg)
@@ -103,6 +116,7 @@ class CsvS3SpreadsheetSession(SpreadsheetSession):
                 service_name="s3",
                 endpoint_url=self._config.endpoint_url,
                 region_name=self._config.region,
+                config=_S3_CLIENT_CONFIG,
             ) as s3_client:
                 await s3_client.complete_multipart_upload(
                     Bucket=self._config.bucket_name,
@@ -111,7 +125,7 @@ class CsvS3SpreadsheetSession(SpreadsheetSession):
                     MultipartUpload={"Parts": self._parts},
                 )
         self._closed = True
-        return self._public_url()
+        return self._key
 
     @override
     async def abort(self) -> None:
@@ -127,6 +141,7 @@ class CsvS3SpreadsheetSession(SpreadsheetSession):
                 service_name="s3",
                 endpoint_url=self._config.endpoint_url,
                 region_name=self._config.region,
+                config=_S3_CLIENT_CONFIG,
             ) as s3_client:
                 await s3_client.abort_multipart_upload(
                     Bucket=self._config.bucket_name,
@@ -134,10 +149,6 @@ class CsvS3SpreadsheetSession(SpreadsheetSession):
                     UploadId=self._upload_id,
                 )
         self._closed = True
-
-    def _public_url(self) -> str:
-        base = self._config.public_url.rstrip("/")
-        return f"{base}/{quote(self._key)}"
 
 
 class CsvS3SpreadsheetExporter(SpreadsheetExporter):
@@ -151,7 +162,7 @@ class CsvS3SpreadsheetExporter(SpreadsheetExporter):
         )
 
     async def ensure_bucket(self) -> None:
-        """Creates the S3 bucket if it does not exist and applies a public-read policy."""
+        """Creates the S3 bucket if it does not exist, keeps it private, and applies export expiry."""
         with _tracer.start_as_current_span("dreamteams_exporter.s3.ensure_bucket") as span:
             span.set_attribute("dreamteams_exporter.s3.bucket", self._config.bucket_name)
 
@@ -159,6 +170,7 @@ class CsvS3SpreadsheetExporter(SpreadsheetExporter):
                 service_name="s3",
                 endpoint_url=self._config.endpoint_url,
                 region_name=self._config.region,
+                config=_S3_CLIENT_CONFIG,
             ) as s3_client:
                 try:
                     await s3_client.create_bucket(Bucket=self._config.bucket_name)
@@ -169,22 +181,15 @@ class CsvS3SpreadsheetExporter(SpreadsheetExporter):
                         raise
                     bucket_created = False
                     span.set_attribute("dreamteams_exporter.s3.bucket_created", bucket_created)
-                await s3_client.put_bucket_policy(
-                    Bucket=self._config.bucket_name,
-                    Policy=json.dumps(
-                        {
-                            "Version": "2012-10-17",
-                            "Statement": [
-                                {
-                                    "Effect": "Allow",
-                                    "Principal": "*",
-                                    "Action": ["s3:GetObject"],
-                                    "Resource": [f"arn:aws:s3:::{self._config.bucket_name}/*"],
-                                },
-                            ],
-                        },
-                    ),
-                )
+                try:
+                    await s3_client.delete_bucket_policy(Bucket=self._config.bucket_name)
+                    bucket_policy_deleted = True
+                    span.set_attribute("dreamteams_exporter.s3.bucket_policy_deleted", bucket_policy_deleted)
+                except ClientError as exc:
+                    if exc.response.get("Error", {}).get("Code") != "NoSuchBucketPolicy":
+                        raise
+                    bucket_policy_deleted = False
+                    span.set_attribute("dreamteams_exporter.s3.bucket_policy_deleted", bucket_policy_deleted)
                 await s3_client.put_bucket_lifecycle_configuration(
                     Bucket=self._config.bucket_name,
                     LifecycleConfiguration={
@@ -211,6 +216,7 @@ class CsvS3SpreadsheetExporter(SpreadsheetExporter):
                 service_name="s3",
                 endpoint_url=self._config.endpoint_url,
                 region_name=self._config.region,
+                config=_S3_CLIENT_CONFIG,
             ) as s3_client:
                 create = await s3_client.create_multipart_upload(
                     Bucket=self._config.bucket_name,
@@ -224,3 +230,21 @@ class CsvS3SpreadsheetExporter(SpreadsheetExporter):
             create["UploadId"],
             headers,
         )
+
+    @override
+    async def get_download_url(self, key: str) -> str:
+        """Generate a short-lived signed URL for a private exported file."""
+        async with self._aws_session.client(
+            service_name="s3",
+            endpoint_url=self._config.download_endpoint_url,
+            region_name=self._config.region,
+            config=_S3_CLIENT_CONFIG,
+        ) as s3_client:
+            return cast(
+                "str",
+                await s3_client.generate_presigned_url(
+                    "get_object",
+                    Params={"Bucket": self._config.bucket_name, "Key": key},
+                    ExpiresIn=self._config.presigned_url_ttl_seconds,
+                ),
+            )

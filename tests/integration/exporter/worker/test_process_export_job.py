@@ -44,6 +44,11 @@ def _read_headers(text: str) -> list[str]:
     return next(csv.reader(io.StringIO(text)))
 
 
+def _unsigned_object_url(exporter_config: ExporterConfig, key: str) -> str:
+    base = exporter_config.s3.download_endpoint_url.rstrip("/")
+    return f"{base}/{exporter_config.s3.bucket_name}/{quote(key)}"
+
+
 def expected_row(application: ApplicationModel) -> dict[str, str]:
     """Project an application into the expected process-job CSV row."""
     form_data = application.form_data or {}
@@ -70,6 +75,7 @@ def expected_row(application: ApplicationModel) -> dict[str, str]:
 )
 async def test_process_job_writes_csv_and_marks_job_successful(
     exporter_gateway: ExporterGateway,
+    exporter_config: ExporterConfig,
     gateway: Gateway,
     submit_application_input_factory: SubmitApplicationInputFactory,
     count: int,
@@ -118,10 +124,16 @@ async def test_process_job_writes_csv_and_marks_job_successful(
         finished_at=model.finished_at,
     )
     assert model.file_url is not None
+    assert "X-Amz-Expires=900" in model.file_url
+    assert "X-Amz-Signature=" in model.file_url
     rows = await exporter_gateway.fetch_csv_rows(model.file_url)
     text = await exporter_gateway.fetch_csv_text(model.file_url)
+    raw_status = await exporter_gateway.fetch_public_file_status(
+        _unsigned_object_url(exporter_config, f"exports/{job.id}.csv"),
+    )
     assert _read_headers(text) == EXPECTED_FORM_HEADERS
     assert _sort_rows(rows) == _sort_rows([expected_row(application) for application in accepted_models])
+    assert raw_status != 200
 
 
 async def test_process_unfiltered_job_writes_applications_with_all_statuses(
@@ -300,6 +312,6 @@ async def test_process_job_marks_job_failed_when_main_api_listing_fails(
         finished_at=model.finished_at,
     )
     status = await exporter_gateway.fetch_public_file_status(
-        f"{exporter_config.s3.public_url}/{quote(f'exports/{job.id}.csv')}",
+        _unsigned_object_url(exporter_config, f"exports/{job.id}.csv"),
     )
-    assert status == 404
+    assert status != 200

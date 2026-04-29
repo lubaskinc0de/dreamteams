@@ -79,7 +79,7 @@ class ExporterGateway:
         competition_id: CompetitionId,
         application_status: ApplicationStatus | None = ApplicationStatus.PENDING,
         finished_status: str | None = None,
-        file_url: str = "http://storage.example.com/exports/file.csv",
+        file_key: str = "exports/file.csv",
         failed_reason: str = "seeded failure",
     ) -> ExportJobModel:
         """Persist an exporter job through the real exporter job gateway."""
@@ -92,7 +92,7 @@ class ExporterGateway:
         )
 
         if finished_status == "success":
-            job.mark_success(file_url, clock)
+            job.mark_success(file_key, clock)
         elif finished_status == "failed":
             job.mark_failed(failed_reason, clock)
         await self.job_gateway.create(job)

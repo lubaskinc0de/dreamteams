@@ -62,7 +62,7 @@ class SubmitApplication:
             logger.warning("User has no participant profile", user_id=user_id)
             raise AccessDeniedError(message="Only participants can submit applications")
 
-        competition = await self.competition_gateway.get(competition_id, eager_tracks=True)
+        competition = await self.competition_gateway.get(competition_id, eager_tracks=True, for_update=True)
         if competition is None:
             logger.warning("Competition not found", competition_id=competition_id, user_id=user_id)
             raise CompetitionNotFoundError

@@ -40,7 +40,7 @@ class ProcessExportJobInput:
 class ExportStreamResult:
     """Result of streaming one export job to spreadsheet storage."""
 
-    file_url: str
+    file_key: str
     rows_count: int
     pages_count: int
 
@@ -152,7 +152,7 @@ class ExportApplicationsToSheets:
             )
             raise
 
-        job.mark_success(result.file_url, self.clock)
+        job.mark_success(result.file_key, self.clock)
         await self.job_gateway.save(job)
 
         duration_seconds = monotonic() - started_at
@@ -169,7 +169,7 @@ class ExportApplicationsToSheets:
                 pages_count=result.pages_count,
             ),
         )
-        logger.info("Export finished", job_id=job.id, file_url=result.file_url)
+        logger.info("Export finished", job_id=job.id, rows_count=result.rows_count, pages_count=result.pages_count)
 
     async def _stream_to_spreadsheet(self, job: ExportApplicationsJob) -> ExportStreamResult:
         form = await self.application_form_gateway.get_by_competition_id(job.competition_id)
@@ -203,5 +203,5 @@ class ExportApplicationsToSheets:
             await session.abort()
             raise
 
-        file_url = await session.finish()
-        return ExportStreamResult(file_url=file_url, rows_count=rows_count, pages_count=pages_count)
+        file_key = await session.finish()
+        return ExportStreamResult(file_key=file_key, rows_count=rows_count, pages_count=pages_count)

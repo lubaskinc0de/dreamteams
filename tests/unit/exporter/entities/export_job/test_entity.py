@@ -23,20 +23,20 @@ def make_pending_job(
         competition_id=uuid4(),
         application_status=application_status,
         status=JobStatus.pending(),
-        file_url=None,
+        file_key=None,
         created_at=created_at,
         finished_at=None,
     )
 
 
 def test_mark_success_transitions_pending_to_success(clock: Clock) -> None:
-    """mark_success flips the status to success with the given file_url and finished_at."""
+    """mark_success flips the status to success with the given file_key and finished_at."""
     job = make_pending_job()
 
-    job.mark_success("https://example.com/file.xlsx", clock)
+    job.mark_success("exports/file.csv", clock)
 
     assert job.status == JobStatus.success()
-    assert job.file_url == "https://example.com/file.xlsx"
+    assert job.file_key == "exports/file.csv"
     assert job.finished_at == NOW
 
 
@@ -47,7 +47,7 @@ def test_mark_failed_transitions_pending_to_failed_with_reason(clock: Clock) -> 
     job.mark_failed("upload aborted", clock)
 
     assert job.status == JobStatus.failed("upload aborted")
-    assert job.file_url is None
+    assert job.file_key is None
     assert job.finished_at == NOW
 
 

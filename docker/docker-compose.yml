@@ -17,6 +17,7 @@ services:
             WATCHPACK_POLLING: "true"
         volumes:
             - ../frontend:/app
+            - ../.config/frontend-config.js:/app/public/config.js:ro
         expose:
             - 3000
         networks:

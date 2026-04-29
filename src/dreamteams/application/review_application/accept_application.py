@@ -38,7 +38,7 @@ class AcceptApplication:
             logger.warning("Application not found", application_id=application_id, user_id=user_id)
             raise ApplicationNotFoundError
 
-        competition = await self.competition_gateway.get(application.competition_id)
+        competition = await self.competition_gateway.get(application.competition_id, for_update=True)
         if competition is None:
             raise CompetitionNotFoundError
 
@@ -46,7 +46,8 @@ class AcceptApplication:
         if organizer is None:
             raise OrganizerNotFoundError
 
-        application.accept(organizer, competition)
+        accepted_count = await self.application_gateway.count_accepted_by_competition(application.competition_id)
+        application.accept(organizer, competition, accepted_count)
 
         self.uow.add(application)
         await self.uow.commit()

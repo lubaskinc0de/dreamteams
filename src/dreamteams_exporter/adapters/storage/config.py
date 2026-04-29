@@ -14,11 +14,12 @@ class S3Config:
 
     bucket_name: str
     endpoint_url: str
+    download_endpoint_url: str
     access_key: str
     secret_key: str
     region: str
-    public_url: str
     export_file_lifetime_days: int = 1
+    presigned_url_ttl_seconds: int = 900
 
     @classmethod
     def from_toml(cls, path: str | Path) -> Self:

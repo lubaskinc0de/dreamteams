@@ -10,7 +10,11 @@ from dreamteams.entities.base import Entity
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId, ParticipantId
 from dreamteams.entities.competition.entity import Competition
 from dreamteams.entities.competition.track import CompetitionTrack
-from dreamteams.entities.errors.application import ApplicationAlreadyResolvedError, InvalidApplicationDataError
+from dreamteams.entities.errors.application import (
+    ApplicationAlreadyResolvedError,
+    InvalidApplicationDataError,
+    ParticipantLimitsExceededError,
+)
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams.entities.user import Organizer, Participant
 from dreamteams_common.clock import Clock
@@ -36,12 +40,18 @@ class Application(Entity):
     created_at: datetime
     form_data: dict[str, Any] | None = None
 
-    def accept(self, organizer: Organizer, competition: Competition) -> None:
-        """Assert organizer access and transition application to ACCEPTED (only from PENDING)."""
+    def ensure_can_accept(self, organizer: Organizer, competition: Competition) -> None:
+        """Assert organizer access and that the application is still PENDING."""
         if not competition.is_owned_by(organizer):
             raise AccessDeniedError(message="Only the organizer who owns this competition can accept its applications")
         if self.status != ApplicationStatus.PENDING:
             raise ApplicationAlreadyResolvedError
+
+    def accept(self, organizer: Organizer, competition: Competition, accepted_count: int) -> None:
+        """Assert organizer access and transition application to ACCEPTED (only from PENDING)."""
+        self.ensure_can_accept(organizer, competition)
+        if accepted_count >= competition.participant_limits.max:
+            raise ParticipantLimitsExceededError
         self.status = ApplicationStatus.ACCEPTED
 
     def reject(self, organizer: Organizer, competition: Competition) -> None:

@@ -1,5 +1,6 @@
 from uuid import uuid4
 
+from dreamteams.entities.application.entity import ApplicationStatus
 from tests.integration.api_client import ApiClient
 from tests.integration.helpers.facade import Gateway
 
@@ -79,6 +80,39 @@ async def test_already_accepted_application_cannot_be_accepted_again(
 
     # Assert
     response.assert_error(409, "APPLICATION_ALREADY_RESOLVED")
+
+
+async def test_full_competition_rejects_manual_application_accept(
+    api_client: ApiClient,
+    gateway: Gateway,
+) -> None:
+    """Accepting a pending application is rejected when the competition is already full."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    first_participant = await gateway.participant.create()
+    second_participant = await gateway.participant.create()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False, max_participants=1)
+    first_application_id = await gateway.application.submit(first_participant.auth_id, comp)
+    second_application_id = await gateway.application.submit(second_participant.auth_id, comp)
+    await gateway.application.accept(first_application_id, owner.organizer.auth_id)
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.accept_application(second_application_id)
+        accepted = (
+            (
+                await api_client.list_applications_by_competition(
+                    comp.created.competition_id,
+                    status=ApplicationStatus.ACCEPTED,
+                )
+            )
+            .assert_status(200)
+            .ensure_content()
+        )
+
+    # Assert
+    response.assert_error(409, "PARTICIPANT_LIMITS_EXCEEDED")
+    assert accepted.total == 1
 
 
 async def test_rejected_application_cannot_be_accepted(

@@ -36,10 +36,10 @@ def exporter_config(
         s3=S3Config(
             bucket_name=rustfs_bucket,
             endpoint_url=rustfs_endpoint,
+            download_endpoint_url=rustfs_endpoint,
             access_key=RUSTFS_ACCESS_KEY,
             secret_key=RUSTFS_SECRET_KEY,
             region="us-east-1",
-            public_url=f"{rustfs_endpoint}/{rustfs_bucket}",
         ),
         dreamteams_api=DreamteamsApiConfig(
             base_url="http://dreamteams.test",

@@ -2,7 +2,7 @@ import asyncio
 from dataclasses import dataclass
 
 import structlog
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from dreamteams.application.common.gateway.user import UserGateway
 from dreamteams.application.common.idp import IdProvider
@@ -27,7 +27,7 @@ class SuperuserConfig:
 class SuperuserForm(BaseModel):
     """Form for registering as superuser."""
 
-    password: str
+    password: str = Field(min_length=1, max_length=256)
 
 
 class CreatedSuperuser(BaseModel):

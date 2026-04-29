@@ -157,9 +157,10 @@ class SACompetitionGateway(CompetitionGateway):
         eager_milestones: bool = False,
         eager_tags: bool = False,
         eager_tracks: bool = False,
+        for_update: bool = False,
     ) -> Competition | None:
         """
-        Fetch a competition by ID, optionally eager-loading its milestones.
+        Fetch a competition by ID, optionally eager-loading relationships or locking the competition row.
 
         Returns None if the organizer's account is blocked.
         """
@@ -175,6 +176,8 @@ class SACompetitionGateway(CompetitionGateway):
             query = query.options(selectinload(Competition.tags))  # type: ignore[arg-type]
         if eager_tracks:
             query = query.options(selectinload(Competition.tracks))  # type: ignore[arg-type]
+        if for_update:
+            query = query.with_for_update(of=competition_table)
         result = await self._session.execute(query)
         return result.scalar_one_or_none()
 

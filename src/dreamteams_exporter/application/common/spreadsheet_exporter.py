@@ -15,7 +15,7 @@ class SpreadsheetSession(Protocol):
 
     @abstractmethod
     async def finish(self) -> str:
-        """Finalises the spreadsheet and returns the URL of the stored file."""
+        """Finalises the spreadsheet and returns the private storage key of the stored file."""
         raise NotImplementedError
 
     @abstractmethod
@@ -30,4 +30,9 @@ class SpreadsheetExporter(Protocol):
     @abstractmethod
     async def start(self, *, key: str, headers: list[str]) -> SpreadsheetSession:
         """Opens a session whose first line is ``headers``; subsequent batches stream into it."""
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_download_url(self, key: str) -> str:
+        """Return a short-lived signed URL for a private stored spreadsheet key."""
         raise NotImplementedError

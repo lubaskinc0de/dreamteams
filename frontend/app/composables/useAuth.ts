@@ -3,14 +3,14 @@
  * Provides authentication state checking and login/logout functionality
  */
 import { useBlockedAccount } from "~/composables/useBlockedAccount";
+import { useRuntimePublicConfig } from "~/composables/useRuntimePublicConfig";
 
 export const useAuth = () => {
   const isAuthenticated = useState<boolean>('auth-isAuthenticated', () => false);
   const needsOnboarding = useState<boolean>('auth-needsOnboarding', () => false);
   const hasProfile = useState<boolean>('auth-hasProfile', () => false);
   const isLoading = useState<boolean>('auth-isLoading', () => true);
-  const config = useRuntimeConfig();
-  const apiBase = config.public.apiBase;
+  const { apiBase } = useRuntimePublicConfig();
   const api = useApi();
   const userStore = useUserStore();
   const { isAccountBlocked, blockFromError, clearBlockedAccount } = useBlockedAccount();

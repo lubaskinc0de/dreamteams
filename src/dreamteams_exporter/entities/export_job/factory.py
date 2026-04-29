@@ -22,7 +22,7 @@ def export_job_factory(
         competition_id=competition_id,
         application_status=application_status,
         status=JobStatus.pending(),
-        file_url=None,
+        file_key=None,
         created_at=now,
         finished_at=None,
     )

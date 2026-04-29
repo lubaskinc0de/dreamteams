@@ -30,7 +30,7 @@ def test_factory_creates_pending_job_with_requested_fields(clock: Clock, status:
         competition_id=competition_id,
         application_status=status,
         status=JobStatus.pending(),
-        file_url=None,
+        file_key=None,
         created_at=NOW,
         finished_at=None,
     )

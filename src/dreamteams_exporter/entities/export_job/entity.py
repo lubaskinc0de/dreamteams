@@ -21,18 +21,18 @@ class ExportApplicationsJob:
     competition_id: CompetitionId
     application_status: ApplicationStatus | None
     status: JobStatus
-    file_url: str | None
+    file_key: str | None
     created_at: datetime
     finished_at: datetime | None
 
-    def mark_success(self, file_url: str, clock: Clock) -> None:
-        """Transitions a pending job to success with the resulting file URL."""
+    def mark_success(self, file_key: str, clock: Clock) -> None:
+        """Transitions a pending job to success with the resulting private file key."""
         if self.status.kind is not JobStatusKind.PENDING:
             raise InvalidJobStatusTransitionError(
                 message=f"Cannot mark success from status {self.status.kind}",
             )
         self.status = JobStatus.success()
-        self.file_url = file_url
+        self.file_key = file_key
         self.finished_at = clock.now()
 
     def mark_failed(self, reason: str, clock: Clock) -> None:

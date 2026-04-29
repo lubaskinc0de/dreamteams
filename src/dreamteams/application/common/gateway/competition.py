@@ -38,6 +38,7 @@ class CompetitionGateway(Protocol):
         eager_milestones: bool = False,
         eager_tags: bool = False,
         eager_tracks: bool = False,
+        for_update: bool = False,
     ) -> Competition | None:
         """
         Retrieves a competition entity by its unique identifier.
@@ -47,6 +48,7 @@ class CompetitionGateway(Protocol):
 
         Set eager flags when the caller renders or validates relationship-backed fields —
         otherwise the relationship raises on access.
+        Set ``for_update`` for write flows that make decisions based on mutable competition state.
         """
         raise NotImplementedError
 

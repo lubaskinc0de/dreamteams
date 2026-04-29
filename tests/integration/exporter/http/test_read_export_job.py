@@ -1,5 +1,6 @@
 from uuid import uuid4
 
+from dreamteams_exporter.application.common.dto.export_job import ExportJobModel
 from dreamteams_exporter.entities.common.vo.application_status import ApplicationStatus
 from tests.integration.api_client import ApiClient
 from tests.integration.exporter.facade import ExporterGateway
@@ -48,7 +49,18 @@ async def test_owner_reads_seeded_successful_export_job(
 
     # Assert
     model = response.assert_status(200).ensure_content()
-    assert model == job
+    assert model.file_url is not None
+    assert model == ExportJobModel(
+        id=job.id,
+        user_id=job.user_id,
+        competition_id=job.competition_id,
+        application_status=ApplicationStatus.ACCEPTED,
+        status_kind="success",
+        status_reason=None,
+        file_url=model.file_url,
+        created_at=job.created_at,
+        finished_at=job.finished_at,
+    )
 
 
 async def test_owner_reads_seeded_failed_export_job(
