@@ -62,7 +62,7 @@ jobs:
 
         - name: Run tests (split)
           run: |
-            pytest tests \
+            uv run pytest tests \
               -n auto \
               --dist=loadfile \
               --splits ${{ strategy.matrix.splitCount || 4 }} \
