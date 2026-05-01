@@ -1,12 +1,13 @@
 # mypy: disable-error-code="empty-body"
 from collections.abc import Callable
 from datetime import UTC, datetime
-from typing import override
+from typing import ClassVar, override
 
 import structlog
 from adaptix.conversion import coercer, impl_converter
 from opentelemetry import trace
 from sqlalchemy import ColumnElement, Subquery, and_, asc, delete, desc, exists, func, or_, select
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -41,12 +42,21 @@ from dreamteams.entities.competition.tags import CompetitionTags
 from dreamteams.entities.competition.track import CompetitionTrack
 from dreamteams.entities.competition.tracks import CompetitionTracks
 from dreamteams.entities.user import Organizer
+from dreamteams_common.errors import AppError, app_error
 from dreamteams_common.logger import Logger
 
 _tracer = trace.get_tracer("dreamteams.adapters")
 
 SIMILARITY_THRESHOLD = 0.15
 logger: Logger = structlog.get_logger(__name__)
+
+
+@app_error
+class CompetitionBusyError(AppError):
+    """Raised when competition is locked."""
+
+    message: str = "Try again"
+    code: ClassVar[str] = "COMPETITION_BUSY"
 
 
 def _milestones_to_list(milestones: CompetitionMilestones) -> list[Milestone]:
@@ -177,8 +187,13 @@ class SACompetitionGateway(CompetitionGateway):
         if eager_tracks:
             query = query.options(selectinload(Competition.tracks))  # type: ignore[arg-type]
         if for_update:
-            query = query.with_for_update(of=competition_table)
-        result = await self._session.execute(query)
+            query = query.with_for_update(of=competition_table, nowait=True)
+
+        try:
+            result = await self._session.execute(query)
+        except DBAPIError as e:
+            raise CompetitionBusyError from e
+
         return result.scalar_one_or_none()
 
     @override

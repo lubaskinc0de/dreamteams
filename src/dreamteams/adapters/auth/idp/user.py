@@ -63,12 +63,15 @@ class IdProviderImpl(IdProvider):
 
     async def _check_not_blocked(self, user_id: UserId) -> None:
         with _tracer.start_as_current_span("auth.idp_blocked_check"):
-            ban_status = await self._blocked_cache.get_ban_status(user_id)
-            if ban_status is None:
-                user = await self._user_gateway.get(user_id)
-                if user is not None and user.ban_status.is_blocked:
-                    await self._blocked_cache.set_blocked(user_id, user.ban_status)
-                    ban_status = user.ban_status
+            with _tracer.start_as_current_span("auth.idp_blocked_check_cache"):
+                ban_status = await self._blocked_cache.get_ban_status(user_id)
+
+            with _tracer.start_as_current_span("auth.idp_blocked_check_db"):
+                if ban_status is None:
+                    user = await self._user_gateway.get(user_id)
+                    if user is not None and user.ban_status.is_blocked:
+                        await self._blocked_cache.set_blocked(user_id, user.ban_status)
+                        ban_status = user.ban_status
             if ban_status is not None:
                 raise UserBlockedError(reason=ban_status.reason, blocked_at=ban_status.blocked_at)
 

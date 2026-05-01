@@ -18,7 +18,11 @@ from dreamteams.entities.competition.entity import Competition
 class CachedCompetitionGateway(CompetitionGateway):
     """Competition gateway decorator backed by Redis for read-model methods."""
 
-    def __init__(self, wrapped: CompetitionGateway, cache: CompetitionReadCache) -> None:
+    def __init__(
+        self,
+        wrapped: CompetitionGateway,
+        cache: CompetitionReadCache,
+    ) -> None:
         self._wrapped = wrapped
         self._cache = cache
 

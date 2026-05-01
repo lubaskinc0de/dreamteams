@@ -163,6 +163,8 @@ services:
                 condition: service_completed_successfully
             rustfs:
                 condition: service_started
+            redis:
+                condition: "service_healthy"
         networks:
             - "shared"
 

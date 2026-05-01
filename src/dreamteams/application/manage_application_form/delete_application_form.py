@@ -56,7 +56,7 @@ class DeleteApplicationForm:
             logger.warning("Application form not found", competition_id=competition_id, user_id=user_id)
             raise ApplicationFormNotFoundError
 
-        await self.uow.delete(form)
+        await self.application_form_gateway.delete_by_id(form.id)
         await self.uow.commit()
         await self.event_bus.publish(
             ApplicationFormDeleted(application_form_id=form.id, competition_id=competition_id),

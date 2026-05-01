@@ -2,7 +2,7 @@ from abc import abstractmethod
 from typing import Protocol
 
 from dreamteams.entities.application_form.entity import ApplicationForm
-from dreamteams.entities.common.identifiers import CompetitionId
+from dreamteams.entities.common.identifiers import ApplicationFormId, CompetitionId
 
 
 class ApplicationFormGateway(Protocol):
@@ -16,4 +16,9 @@ class ApplicationFormGateway(Protocol):
         Returns None if not found or if the competition's organizer account is blocked.
         Implementations must exclude forms whose organizer has ``ban_status.is_blocked = True``.
         """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def delete_by_id(self, entity_id: ApplicationFormId) -> None:
+        """Delete application form by id."""
         raise NotImplementedError
