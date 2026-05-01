@@ -83,7 +83,7 @@ export default defineAppConfig({
 
   // Color mode configuration
   colorMode: {
-    preference: "system",
+    preference: "light",
     fallback: "light",
     classSuffix: "",
   },
