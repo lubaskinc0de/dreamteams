@@ -151,7 +151,7 @@ const handleLogin = async () => {
             icon="i-heroicons-arrow-right-on-rectangle"
             class="hidden md:flex"
           />
-          <UPopover>
+          <UPopover class="hidden md:block">
             <UButton
               color="neutral"
               variant="ghost"

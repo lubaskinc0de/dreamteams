@@ -1,5 +1,6 @@
 import { useCookieConsent } from "~/composables/useCookieConsent";
 import { useBlockedAccount } from "~/composables/useBlockedAccount";
+import { useRuntimePublicConfig } from "~/composables/useRuntimePublicConfig";
 
 /**
  * Global authentication middleware
@@ -23,6 +24,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   const { isAuthenticated, needsOnboarding, hasProfile, isLoading } = useAuth();
   const { isAccountBlocked } = useBlockedAccount();
+  const { apiBase } = useRuntimePublicConfig();
 
   // Wait for auth to finish loading before making any decisions
   if (isLoading.value) {
@@ -56,13 +58,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return navigateTo(isAuthenticated.value && hasProfile.value ? "/me" : "/", { replace: true });
   }
 
-  // If not authenticated and trying to access protected route, throw 401 error
+  // If not authenticated and trying to access protected route, redirect to OAuth.
   if (!isAuthenticated.value && isProtectedRoute) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized',
-      fatal: true,
-    });
+    return navigateTo(
+      `${apiBase}/oauth2/sign_in?rd=${encodeURIComponent(to.fullPath)}`,
+      { external: true },
+    );
   }
 
   const userStore = useUserStore();
