@@ -58,7 +58,7 @@ jobs:
             cache-dependency-glob: "uv.lock"
 
         - name: Install dependencies
-          run: uv sync --extra test
+          run: uv sync --extra test --frozen
 
         - name: Run tests (split)
           run: |
