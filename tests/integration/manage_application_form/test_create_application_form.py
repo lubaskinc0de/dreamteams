@@ -1,7 +1,14 @@
 from uuid import uuid4
 
 from dreamteams.application.manage_application_form import ApplicationFormInput, CreatedApplicationForm
-from dreamteams.application.manage_application_form.create_application_form import FieldChoiceForm, FieldForm
+from dreamteams.application.manage_application_form.create_application_form import (
+    MAX_APPLICATION_FORM_CHOICE_LENGTH,
+    MAX_APPLICATION_FORM_CHOICES,
+    MAX_APPLICATION_FORM_FIELD_NAME_LENGTH,
+    MAX_APPLICATION_FORM_FIELDS,
+    FieldChoiceForm,
+    FieldForm,
+)
 from dreamteams.entities.application_form.field import FieldType
 from tests.common.factory.application_form import ApplicationFormInputFactory
 from tests.integration.api_client import ApiClient
@@ -137,6 +144,112 @@ async def test_application_form_requires_at_least_one_field(
 
     # Assert
     response.assert_error(400, "INVALID_APPLICATION_FORM_DATA")
+
+
+async def test_application_form_rejects_too_many_fields(api_client: ApiClient, gateway: Gateway) -> None:
+    """A form with too many fields is rejected by request validation."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    comp = await gateway.competition.create(owner.organizer.auth_id)
+    data = ApplicationFormInput.model_construct(
+        fields=[
+            FieldForm(name=f"field-{i}", type=FieldType.STRING, required=True, choices=None)
+            for i in range(MAX_APPLICATION_FORM_FIELDS + 1)
+        ],
+    )
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.create_application_form(
+            comp.created.competition_id,
+            data.model_dump(mode="json"),
+        )
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_application_form_rejects_too_long_field_name(api_client: ApiClient, gateway: Gateway) -> None:
+    """A form field with an oversized name is rejected by request validation."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    comp = await gateway.competition.create(owner.organizer.auth_id)
+    data = ApplicationFormInput.model_construct(
+        fields=[
+            FieldForm.model_construct(
+                name="a" * (MAX_APPLICATION_FORM_FIELD_NAME_LENGTH + 1),
+                type=FieldType.STRING,
+                required=True,
+                choices=None,
+            ),
+        ],
+    )
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.create_application_form(
+            comp.created.competition_id,
+            data.model_dump(mode="json"),
+        )
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_application_form_rejects_too_many_choices(api_client: ApiClient, gateway: Gateway) -> None:
+    """A selectable form field with too many choices is rejected by request validation."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    comp = await gateway.competition.create(owner.organizer.auth_id)
+    data = ApplicationFormInput.model_construct(
+        fields=[
+            FieldForm.model_construct(
+                name="role",
+                type=FieldType.SELECT,
+                required=True,
+                choices=[FieldChoiceForm(value=f"choice-{i}") for i in range(MAX_APPLICATION_FORM_CHOICES + 1)],
+            ),
+        ],
+    )
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.create_application_form(
+            comp.created.competition_id,
+            data.model_dump(mode="json"),
+        )
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_application_form_rejects_too_long_choice_value(api_client: ApiClient, gateway: Gateway) -> None:
+    """A selectable form field with an oversized choice value is rejected by request validation."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    comp = await gateway.competition.create(owner.organizer.auth_id)
+    data = ApplicationFormInput.model_construct(
+        fields=[
+            FieldForm.model_construct(
+                name="role",
+                type=FieldType.SELECT,
+                required=True,
+                choices=[
+                    FieldChoiceForm.model_construct(value="a" * (MAX_APPLICATION_FORM_CHOICE_LENGTH + 1)),
+                ],
+            ),
+        ],
+    )
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.create_application_form(
+            comp.created.competition_id,
+            data.model_dump(mode="json"),
+        )
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
 
 
 async def test_application_form_field_names_must_be_unique(

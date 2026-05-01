@@ -1,6 +1,7 @@
 import structlog
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
+from dreamteams.application.common.competition_input_limits import MAX_TEAM_SIZE
 from dreamteams.application.common.event_bus import EventBus
 from dreamteams.application.common.events import CompetitionChanged
 from dreamteams.application.common.gateway.competition import CompetitionGateway
@@ -24,6 +25,19 @@ class RescheduleCompetitionForm(BaseModel):
 
     schedule: ScheduleData
     team_size: TeamSizeRange | None
+
+    @model_validator(mode="after")
+    def validate_input_bounds(self) -> "RescheduleCompetitionForm":
+        """Validate application-level request bounds."""
+        if self.team_size is None:
+            return self
+        if self.team_size.max > MAX_TEAM_SIZE:
+            msg = f"Max team size must be at most {MAX_TEAM_SIZE}"
+            raise ValueError(msg)
+        if self.team_size.min > MAX_TEAM_SIZE:
+            msg = f"Min team size must be at most {MAX_TEAM_SIZE}"
+            raise ValueError(msg)
+        return self
 
 
 @interactor

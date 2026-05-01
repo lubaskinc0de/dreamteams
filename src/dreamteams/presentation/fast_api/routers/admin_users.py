@@ -3,7 +3,7 @@ from typing import Annotated
 from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from dreamteams.application.block_user import (
     AdminUserDetails,
@@ -24,11 +24,13 @@ router = APIRouter(
     prefix="/admin/users",
 )
 
+MAX_BLOCK_REASON_LENGTH = 500
+
 
 class BlockUserRequest(BaseModel):
     """Request body for blocking a user account."""
 
-    reason: str | None = None
+    reason: str | None = Field(default=None, max_length=MAX_BLOCK_REASON_LENGTH)
 
 
 @router.get("/")

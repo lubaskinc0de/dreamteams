@@ -1,5 +1,6 @@
 import pytest
 
+from dreamteams.application.common.input_limits import MAX_PAGE
 from dreamteams.application.view_issued_invites.list_invites import PAGE_SIZE
 from tests.integration.api_client import ApiClient
 from tests.integration.helpers.facade import Gateway
@@ -63,3 +64,29 @@ async def test_unauthenticated_cannot_list_invites(api_client: ApiClient) -> Non
     response = await api_client.list_invites()
 
     response.assert_error(401, "UNAUTHORIZED")
+
+
+async def test_list_invites_rejects_non_positive_page(api_client: ApiClient, gateway: Gateway) -> None:
+    """Invite list rejects page numbers below 1."""
+    # Arrange
+    admin = await gateway.admin.create()
+
+    # Act
+    with api_client.authenticate(auth_user_id=admin.auth_id):
+        response = await api_client.list_invites(page=0)
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_list_invites_rejects_too_large_page(api_client: ApiClient, gateway: Gateway) -> None:
+    """Invite list rejects page numbers above the configured cap."""
+    # Arrange
+    admin = await gateway.admin.create()
+
+    # Act
+    with api_client.authenticate(auth_user_id=admin.auth_id):
+        response = await api_client.list_invites(page=MAX_PAGE + 1)
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")

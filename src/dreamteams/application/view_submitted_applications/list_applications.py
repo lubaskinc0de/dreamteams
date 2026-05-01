@@ -7,6 +7,7 @@ from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
 from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.common.idp import IdProvider
+from dreamteams.application.common.input_limits import MAX_PAGE
 from dreamteams.application.errors.organizer import OrganizerNotFoundError
 from dreamteams.entities.application.entity import ApplicationStatus
 from dreamteams.entities.common.identifiers import CompetitionId
@@ -23,7 +24,7 @@ MAX_PAGE_SIZE = 100
 class ListApplicationsByCompetitionInput(BaseModel):
     """Input parameters for listing applications of a competition."""
 
-    page: int = Field(ge=1, default=1)
+    page: int = Field(ge=1, le=MAX_PAGE, default=1)
     page_size: int = Field(ge=1, le=MAX_PAGE_SIZE, default=PAGE_SIZE)
     sort_by: ApplicationSortBy = ApplicationSortBy.CREATED_AT
     sort_order: SortOrder = SortOrder.DESC

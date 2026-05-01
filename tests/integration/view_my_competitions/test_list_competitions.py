@@ -2,6 +2,7 @@ import pytest
 
 from dreamteams.application.common.gateway.competition import CompetitionSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
+from dreamteams.application.common.input_limits import MAX_PAGE, MAX_SEARCH_LENGTH
 from dreamteams.application.view_my_competitions.list_competitions import PAGE_SIZE
 from tests.common.factory.competition import CompetitionFormFactory
 from tests.integration.api_client import ApiClient
@@ -415,6 +416,32 @@ async def test_list_competitions_with_invalid_pagination_fails(
 
     # Assert
     list_response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_list_competitions_rejects_too_large_page(api_client: ApiClient, gateway: Gateway) -> None:
+    """Organizer competition list rejects page numbers above the configured cap."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.list_competitions(page=MAX_PAGE + 1)
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_list_competitions_rejects_too_long_search(api_client: ApiClient, gateway: Gateway) -> None:
+    """Organizer competition list rejects oversized search strings before similarity calculation."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.list_competitions(search="a" * (MAX_SEARCH_LENGTH + 1))
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
 
 
 async def test_list_competitions_fails_if_unauthorized(

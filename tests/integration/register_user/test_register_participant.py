@@ -4,7 +4,10 @@ from uuid import uuid4
 import pytest
 from faker import Faker
 
+from dreamteams.application.common.dto.participant_contact import MAX_CONTACT_VALUE_LENGTH, ParticipantContactForm
+from dreamteams.application.common.dto.participant_skill import MAX_PARTICIPANT_SKILLS, ParticipantSkillForm
 from dreamteams.entities.participant.participant_contact import ParticipantContact
+from dreamteams.entities.participant.participant_skill import SkillLevel
 from tests.common.factory.participant import ParticipantFormFactory
 from tests.integration.api_client import ApiClient
 
@@ -104,6 +107,56 @@ async def test_register_participant_rejects_more_than_fifteen_contacts(
     response.assert_error(422, "VALIDATION_ERROR")
 
 
+async def test_register_participant_rejects_too_many_skills(
+    api_client: ApiClient,
+    participant_form_factory: ParticipantFormFactory,
+    faker: Faker,
+) -> None:
+    """Registering a participant with too many skills is rejected by request validation."""
+    # Arrange
+    data = participant_form_factory.build().model_copy(
+        update={
+            "skills": [
+                ParticipantSkillForm(name=f"skill-{i}", level=SkillLevel.BEGINNER)
+                for i in range(MAX_PARTICIPANT_SKILLS + 1)
+            ],
+        },
+    )
+
+    # Act
+    with api_client.authenticate(auth_user_id=str(uuid4()), auth_user_email=faker.email()):
+        response = await api_client.register_participant(data=data.model_dump(mode="json"))
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_register_participant_rejects_too_long_contact_value(
+    api_client: ApiClient,
+    participant_form_factory: ParticipantFormFactory,
+    faker: Faker,
+) -> None:
+    """Registering a participant with an oversized contact value is rejected by request validation."""
+    # Arrange
+    data = participant_form_factory.build().model_copy(
+        update={
+            "contacts": [
+                ParticipantContactForm.model_construct(
+                    title="Telegram",
+                    value="a" * (MAX_CONTACT_VALUE_LENGTH + 1),
+                ),
+            ],
+        },
+    )
+
+    # Act
+    with api_client.authenticate(auth_user_id=str(uuid4()), auth_user_email=faker.email()):
+        response = await api_client.register_participant(data=data.model_dump(mode="json"))
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
 @pytest.mark.parametrize(
     "update_data",
     [
@@ -146,7 +199,7 @@ async def test_register_as_participant_with_invalid_age(
     with api_client.authenticate(auth_user_id=str(uuid4()), auth_user_email=faker.email()):
         response = await api_client.register_participant(data.model_dump(mode="json"))
 
-    response.assert_error(400, "INVALID_PARTICIPANT_DATA")
+    response.assert_error(422, "VALIDATION_ERROR")
 
 
 async def test_register_as_participant_fails_if_unauthorized(

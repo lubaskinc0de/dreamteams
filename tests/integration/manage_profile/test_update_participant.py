@@ -2,10 +2,11 @@ from uuid import uuid4
 
 from faker import Faker
 
-from dreamteams.application.common.dto.participant_contact import ParticipantContactForm
+from dreamteams.application.common.dto.participant_contact import MAX_CONTACT_VALUE_LENGTH, ParticipantContactForm
+from dreamteams.application.common.dto.participant_skill import MAX_PARTICIPANT_SKILLS, ParticipantSkillForm
 from dreamteams.application.manage_profile import ParticipantModel, ProfileModel
 from dreamteams.entities.participant.participant_contact import ParticipantContact
-from dreamteams.entities.participant.participant_skill import ParticipantSkill
+from dreamteams.entities.participant.participant_skill import ParticipantSkill, SkillLevel
 from tests.common.factory.participant import UpdateParticipantFormFactory
 from tests.integration.api_client import ApiClient
 from tests.integration.helpers.facade import Gateway
@@ -155,22 +156,74 @@ async def test_update_participant_rejects_more_than_fifteen_contacts(
     response.assert_error(422, "VALIDATION_ERROR")
 
 
-async def test_update_participant_fails_if_age_is_negative(
+async def test_update_participant_rejects_too_many_skills(
     api_client: ApiClient,
     gateway: Gateway,
     update_participant_form_factory: UpdateParticipantFormFactory,
 ) -> None:
-    """Test that a negative age is rejected with 400."""
+    """Updating a participant with too many skills is rejected by request validation."""
     # Arrange
     participant = await gateway.participant.create()
-    data = update_participant_form_factory.build(age=-1)
+    data = update_participant_form_factory.build().model_copy(
+        update={
+            "skills": [
+                ParticipantSkillForm(name=f"skill-{i}", level=SkillLevel.BEGINNER)
+                for i in range(MAX_PARTICIPANT_SKILLS + 1)
+            ],
+        },
+    )
 
     # Act
     with api_client.authenticate(auth_user_id=participant.auth_id):
         response = await api_client.update_participant(data.model_dump(mode="json"))
 
     # Assert
-    response.assert_error(400, "INVALID_PARTICIPANT_DATA")
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_update_participant_rejects_too_long_contact_value(
+    api_client: ApiClient,
+    gateway: Gateway,
+    update_participant_form_factory: UpdateParticipantFormFactory,
+) -> None:
+    """Updating a participant with an oversized contact value is rejected by request validation."""
+    # Arrange
+    participant = await gateway.participant.create()
+    data = update_participant_form_factory.build().model_copy(
+        update={
+            "contacts": [
+                ParticipantContactForm.model_construct(
+                    title="Telegram",
+                    value="a" * (MAX_CONTACT_VALUE_LENGTH + 1),
+                ),
+            ],
+        },
+    )
+
+    # Act
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        response = await api_client.update_participant(data.model_dump(mode="json"))
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_update_participant_fails_if_age_is_negative(
+    api_client: ApiClient,
+    gateway: Gateway,
+    update_participant_form_factory: UpdateParticipantFormFactory,
+) -> None:
+    """Test that a negative age is rejected by request validation."""
+    # Arrange
+    participant = await gateway.participant.create()
+    data = update_participant_form_factory.build().model_copy(update={"age": -1})
+
+    # Act
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        response = await api_client.update_participant(data.model_dump(mode="json"))
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
 
 
 async def test_update_participant_fails_if_age_exceeds_maximum(
@@ -178,17 +231,17 @@ async def test_update_participant_fails_if_age_exceeds_maximum(
     gateway: Gateway,
     update_participant_form_factory: UpdateParticipantFormFactory,
 ) -> None:
-    """Test that age above 150 is rejected with 400."""
+    """Test that age above 150 is rejected by request validation."""
     # Arrange
     participant = await gateway.participant.create()
-    data = update_participant_form_factory.build(age=151)
+    data = update_participant_form_factory.build().model_copy(update={"age": 151})
 
     # Act
     with api_client.authenticate(auth_user_id=participant.auth_id):
         response = await api_client.update_participant(data.model_dump(mode="json"))
 
     # Assert
-    response.assert_error(400, "INVALID_PARTICIPANT_DATA")
+    response.assert_error(422, "VALIDATION_ERROR")
 
 
 async def test_update_participant_fails_if_user_has_no_participant_role(

@@ -2,13 +2,13 @@ import structlog
 from pydantic import BaseModel, Field
 
 from dreamteams.application.common.dto.participant_contact import ParticipantContactForm
-from dreamteams.application.common.dto.participant_skill import ParticipantSkillForm
+from dreamteams.application.common.dto.participant_skill import MAX_PARTICIPANT_SKILLS, ParticipantSkillForm
 from dreamteams.application.common.event_bus import EventBus
 from dreamteams.application.common.events import UserRegistered
 from dreamteams.application.register_user.shared.user_factory import UserFactory
 from dreamteams.entities.common.identifiers import ParticipantId, UserId
 from dreamteams.entities.common.participant_type import ParticipantType
-from dreamteams.entities.participant.age import Age
+from dreamteams.entities.participant.age import AGE_MAX, AGE_MIN, Age
 from dreamteams.entities.participant.participant_contact import ParticipantContact
 from dreamteams.entities.participant.participant_contacts import ParticipantContacts
 from dreamteams.entities.participant.participant_skill import ParticipantSkill
@@ -39,9 +39,9 @@ class ParticipantForm(BaseModel):
 
     full_name: str = Field(min_length=1, max_length=70)
     participant_type: ParticipantType
-    age: int
+    age: int = Field(ge=AGE_MIN, le=AGE_MAX)
     bio: str | None = Field(default=None, max_length=500)
-    skills: list[ParticipantSkillForm] = Field(default_factory=list)
+    skills: list[ParticipantSkillForm] = Field(default_factory=list, max_length=MAX_PARTICIPANT_SKILLS)
     experience_level: ExperienceLevel | None = None
     contacts: list[ParticipantContactForm] = Field(default_factory=list, max_length=15)
     email: str | None = None

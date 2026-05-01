@@ -187,7 +187,7 @@ class SACompetitionGateway(CompetitionGateway):
         if eager_tracks:
             query = query.options(selectinload(Competition.tracks))  # type: ignore[arg-type]
         if for_update:
-            query = query.with_for_update(of=competition_table, nowait=True)
+            query = query.with_for_update(of=competition_table)
 
         try:
             result = await self._session.execute(query)

@@ -2,6 +2,7 @@ from uuid import uuid4
 
 import pytest
 
+from dreamteams.application.common.input_limits import MAX_PAGE, MAX_SEARCH_LENGTH
 from dreamteams.application.manage_tags import CompetitionTagsList
 from dreamteams.application.manage_tags.list_tags import PAGE_SIZE
 from dreamteams.entities.competition.tag import CompetitionTag
@@ -128,6 +129,32 @@ async def test_invalid_admin_tag_list_page_is_rejected(api_client: ApiClient, ga
     # Act
     with api_client.authenticate(auth_user_id=admin.auth_id):
         response = await api_client.list_admin_tags(page=0)
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_admin_tag_list_rejects_too_large_page(api_client: ApiClient, gateway: Gateway) -> None:
+    """Admin tag list rejects page numbers above the configured cap."""
+    # Arrange
+    admin = await gateway.admin.create()
+
+    # Act
+    with api_client.authenticate(auth_user_id=admin.auth_id):
+        response = await api_client.list_admin_tags(page=MAX_PAGE + 1)
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_admin_tag_list_rejects_too_long_search(api_client: ApiClient, gateway: Gateway) -> None:
+    """Admin tag list rejects oversized search values before using them in SQL and cache keys."""
+    # Arrange
+    admin = await gateway.admin.create()
+
+    # Act
+    with api_client.authenticate(auth_user_id=admin.auth_id):
+        response = await api_client.list_admin_tags(search="a" * (MAX_SEARCH_LENGTH + 1))
 
     # Assert
     response.assert_error(422, "VALIDATION_ERROR")

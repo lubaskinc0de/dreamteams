@@ -6,6 +6,7 @@ from dreamteams.application.common.gateway.application import ApplicationGateway
 from dreamteams.application.common.gateway.participant import ParticipantGateway
 from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.common.idp import IdProvider
+from dreamteams.application.common.input_limits import MAX_PAGE
 from dreamteams.entities.application.entity import ApplicationStatus
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams_common.interactor import interactor
@@ -18,7 +19,7 @@ PAGE_SIZE = 20
 class ListMyApplicationsInput(BaseModel):
     """Input parameters for listing the current participant's applications."""
 
-    page: int = Field(ge=1, default=1)
+    page: int = Field(ge=1, le=MAX_PAGE, default=1)
     sort_by: ApplicationSortBy = ApplicationSortBy.CREATED_AT
     sort_order: SortOrder = SortOrder.DESC
     status: ApplicationStatus | None = None

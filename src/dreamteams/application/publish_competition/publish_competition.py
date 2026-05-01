@@ -1,6 +1,14 @@
 import structlog
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
+from dreamteams.application.common.competition_input_limits import (
+    MAX_COMPETITION_DESCRIPTION_LENGTH,
+    MAX_COMPETITION_MILESTONES,
+    MAX_COMPETITION_TRACKS,
+    MAX_LOCATION_LENGTH,
+    MAX_PARTICIPANTS,
+    MAX_TEAM_SIZE,
+)
 from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.common.dto.milestone import MilestoneForm
 from dreamteams.application.common.event_bus import EventBus
@@ -29,6 +37,29 @@ from dreamteams_common.uow import UoW
 logger: Logger = structlog.get_logger(__name__)
 
 
+def _validate_competition_bounds(
+    participant_limits: ParticipantLimits,
+    team_size: TeamSizeRange | None,
+    venue: CompetitionVenue,
+) -> None:
+    """Validate application-level request bounds for competition input."""
+    if participant_limits.max > MAX_PARTICIPANTS:
+        msg = f"Max participants must be at most {MAX_PARTICIPANTS}"
+        raise ValueError(msg)
+
+    if team_size is not None:
+        if team_size.max > MAX_TEAM_SIZE:
+            msg = f"Max team size must be at most {MAX_TEAM_SIZE}"
+            raise ValueError(msg)
+        if team_size.min > MAX_TEAM_SIZE:
+            msg = f"Min team size must be at most {MAX_TEAM_SIZE}"
+            raise ValueError(msg)
+
+    if venue.location is not None and len(venue.location) > MAX_LOCATION_LENGTH:
+        msg = f"Location must be at most {MAX_LOCATION_LENGTH} characters"
+        raise ValueError(msg)
+
+
 class CreatedCompetition(BaseModel):
     """Response model containing the created competition identifier."""
 
@@ -39,16 +70,26 @@ class CompetitionForm(BaseModel):
     """Form for creating a competition."""
 
     title: str = Field(max_length=200)
-    description: str = Field(min_length=1)
+    description: str = Field(min_length=1, max_length=MAX_COMPETITION_DESCRIPTION_LENGTH)
     schedule: ScheduleData
     participant_limits: ParticipantLimits
     tag_ids: list[CompetitionTagId] = Field(default_factory=list, max_length=30)
-    tracks: list[CompetitionTrackForm] = Field(min_length=1)
+    tracks: list[CompetitionTrackForm] = Field(min_length=1, max_length=MAX_COMPETITION_TRACKS)
     participant_type: ParticipantType
     venue: CompetitionVenue
     team_size: TeamSizeRange | None
     auto_accept: bool = False
-    milestones: list[MilestoneForm] = Field(default_factory=list)
+    milestones: list[MilestoneForm] = Field(default_factory=list, max_length=MAX_COMPETITION_MILESTONES)
+
+    @model_validator(mode="after")
+    def validate_input_bounds(self) -> "CompetitionForm":
+        """Validate application-level request bounds."""
+        _validate_competition_bounds(
+            participant_limits=self.participant_limits,
+            team_size=self.team_size,
+            venue=self.venue,
+        )
+        return self
 
 
 @interactor

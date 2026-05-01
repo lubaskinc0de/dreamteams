@@ -1,7 +1,10 @@
+from typing import Annotated
+
 from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 
+from dreamteams.application.common.input_limits import MAX_PAGE
 from dreamteams.application.issue_invite import (
     InviteIssued,
     InviteModel,
@@ -33,7 +36,7 @@ async def issue_invite(
 @router.get("/")
 async def list_invites(
     interactor: FromDishka[ListInvites],
-    page: int = 1,
+    page: Annotated[int, Query(ge=1, le=MAX_PAGE)] = 1,
 ) -> InvitesList:
     """HTTP endpoint for listing organizer invites. Admin only."""
     return await interactor.execute(page=page)

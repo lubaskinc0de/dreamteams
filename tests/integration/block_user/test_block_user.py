@@ -2,7 +2,7 @@ from uuid import uuid4
 
 from dreamteams.application.common.gateway.competition import CompetitionSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
-from dreamteams.presentation.fast_api.routers.admin_users import BlockUserRequest
+from dreamteams.presentation.fast_api.routers.admin_users import MAX_BLOCK_REASON_LENGTH, BlockUserRequest
 from tests.integration.api_client import ApiClient
 from tests.integration.competition_helpers import competitions_list_to_preview_list, create_competitions_list
 from tests.integration.helpers.facade import Gateway
@@ -109,6 +109,25 @@ async def test_block_nonexistent_user_returns_not_found(api_client: ApiClient, g
 
     # Assert
     response.assert_error(404, "USER_NOT_FOUND")
+
+
+async def test_block_user_rejects_too_long_reason(api_client: ApiClient, gateway: Gateway) -> None:
+    """Blocking a user rejects oversized reason text before updating the account."""
+    # Arrange
+    admin = await gateway.admin.create()
+    participant = await gateway.participant.create()
+
+    # Act
+    with api_client.authenticate(auth_user_id=admin.auth_id):
+        response = await api_client.block_user(
+            participant.created.user_id,
+            BlockUserRequest.model_construct(
+                reason="a" * (MAX_BLOCK_REASON_LENGTH + 1),
+            ).model_dump(mode="json"),
+        )
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
 
 
 async def test_blocked_organizers_competitions_hidden_from_preview(

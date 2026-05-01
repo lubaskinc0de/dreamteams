@@ -21,6 +21,8 @@ from dreamteams_common.uow import UoW
 
 logger: Logger = structlog.get_logger(__name__)
 
+MAX_INVITE_CODE_LENGTH = 64
+
 
 class CreatedOrganizer(BaseModel):
     """Response model containing the info about newly created ``Organizer`` and ``User``."""
@@ -35,7 +37,7 @@ class OrganizerForm(BaseModel):
     organizer_name: str = Field(max_length=70)
     phone_number: RussianPhoneNumber
     contact_email: EmailStr
-    invite_code: str
+    invite_code: str = Field(min_length=1, max_length=MAX_INVITE_CODE_LENGTH)
 
 
 @interactor

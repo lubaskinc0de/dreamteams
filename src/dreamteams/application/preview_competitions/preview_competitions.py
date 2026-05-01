@@ -6,6 +6,7 @@ from dreamteams.application.common.dto.preview_competition import (  # noqa: F40
     PreviewOrganizerModel,
 )
 from dreamteams.application.common.gateway.competition import CompetitionGateway
+from dreamteams.application.common.input_limits import MAX_PAGE
 from dreamteams_common.interactor import interactor
 from dreamteams_common.logger import Logger
 
@@ -16,7 +17,7 @@ logger: Logger = structlog.get_logger(__name__)
 class PreviewCompetitionsInput(BaseModel):
     """Input parameters for listing preview competitions."""
 
-    page: int = Field(ge=1, default=1)
+    page: int = Field(ge=1, le=MAX_PAGE, default=1)
 
 
 class PreviewCompetitionsList(BaseModel):

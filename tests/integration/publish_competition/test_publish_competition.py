@@ -4,7 +4,20 @@ from uuid import uuid4
 
 import pytest
 
+from dreamteams.application.common.competition_input_limits import (
+    MAX_COMPETITION_DESCRIPTION_LENGTH,
+    MAX_COMPETITION_MILESTONES,
+    MAX_COMPETITION_TRACKS,
+    MAX_LOCATION_LENGTH,
+    MAX_PARTICIPANTS,
+    MAX_TEAM_SIZE,
+)
+from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
+from dreamteams.application.common.dto.milestone import MilestoneForm
+from dreamteams.entities.competition.participant_limits import ParticipantLimits
 from dreamteams.entities.competition.schedule import ScheduleData
+from dreamteams.entities.competition.team_size_range import TeamSizeRange
+from dreamteams.entities.competition.venue import CompetitionFormat, CompetitionVenue
 from dreamteams_common.clock import Clock
 from tests.common.factory.competition import CompetitionFormFactory
 from tests.common.helpers.competition import (
@@ -100,6 +113,146 @@ async def test_create_competition_rejects_more_than_thirty_tag_ids(
     # Act
     with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
         response = await api_client.create_competition(data)
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_create_competition_rejects_too_long_description(
+    api_client: ApiClient,
+    competition_form_factory: CompetitionFormFactory,
+    gateway: Gateway,
+) -> None:
+    """Creating a competition with an oversized description is rejected by request validation."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    data = competition_form_factory.build().model_copy(
+        update={"description": "a" * (MAX_COMPETITION_DESCRIPTION_LENGTH + 1)},
+    )
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.create_competition(data.model_dump(mode="json"))
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_create_competition_rejects_too_many_tracks(
+    api_client: ApiClient,
+    competition_form_factory: CompetitionFormFactory,
+    gateway: Gateway,
+) -> None:
+    """Creating a competition with too many tracks is rejected by request validation."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    data = competition_form_factory.build().model_copy(
+        update={
+            "tracks": [CompetitionTrackForm(name=f"track-{i}") for i in range(MAX_COMPETITION_TRACKS + 1)],
+        },
+    )
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.create_competition(data.model_dump(mode="json"))
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_create_competition_rejects_too_many_milestones(
+    api_client: ApiClient,
+    competition_form_factory: CompetitionFormFactory,
+    gateway: Gateway,
+) -> None:
+    """Creating a competition with too many milestones is rejected by request validation."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    now = datetime.now(tz=UTC)
+    data = competition_form_factory.build().model_copy(
+        update={
+            "milestones": [
+                MilestoneForm(timestamp=now + timedelta(days=i + 1), title=f"Stage {i}", description=None)
+                for i in range(MAX_COMPETITION_MILESTONES + 1)
+            ],
+        },
+    )
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.create_competition(data.model_dump(mode="json"))
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_create_competition_rejects_too_large_participant_limit(
+    api_client: ApiClient,
+    competition_form_factory: CompetitionFormFactory,
+    gateway: Gateway,
+) -> None:
+    """Creating a competition with an impractically large participant limit is rejected."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    base = competition_form_factory.build()
+    data = base.model_copy(
+        update={
+            "participant_limits": ParticipantLimits(max=MAX_PARTICIPANTS + 1),
+        },
+    )
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.create_competition(data.model_dump(mode="json"))
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_create_competition_rejects_too_large_team_size(
+    api_client: ApiClient,
+    competition_form_factory: CompetitionFormFactory,
+    gateway: Gateway,
+) -> None:
+    """Creating a competition with an impractically large team size is rejected."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    base = competition_form_factory.build()
+    data = base.model_copy(
+        update={
+            "team_size": TeamSizeRange(min=1, max=MAX_TEAM_SIZE + 1),
+        },
+    )
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.create_competition(data.model_dump(mode="json"))
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_create_competition_rejects_too_long_location(
+    api_client: ApiClient,
+    competition_form_factory: CompetitionFormFactory,
+    gateway: Gateway,
+) -> None:
+    """Creating a competition with an impractically long location is rejected."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    base = competition_form_factory.build()
+    data = base.model_copy(
+        update={
+            "venue": CompetitionVenue(
+                format=CompetitionFormat.OFFLINE,
+                location="a" * (MAX_LOCATION_LENGTH + 1),
+            ),
+        },
+    )
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.create_competition(data.model_dump(mode="json"))
 
     # Assert
     response.assert_error(422, "VALIDATION_ERROR")
