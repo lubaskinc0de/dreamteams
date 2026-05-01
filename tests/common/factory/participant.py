@@ -53,6 +53,7 @@ class ParticipantFormFactory(ModelFactory[ParticipantForm]):
     """Factory of ParticipantForm models."""
 
     __model__ = ParticipantForm
+    email: str | None = None
     bio = _bio
     skills = _skills
     contacts = _contacts

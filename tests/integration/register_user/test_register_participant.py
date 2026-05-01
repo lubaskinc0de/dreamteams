@@ -4,6 +4,7 @@ from uuid import uuid4
 import pytest
 from faker import Faker
 
+from dreamteams.entities.participant.participant_contact import ParticipantContact
 from tests.common.factory.participant import ParticipantFormFactory
 from tests.integration.api_client import ApiClient
 
@@ -39,6 +40,50 @@ async def test_register_as_participant_without_optional_fields(
         response = await api_client.register_participant(data=data)
 
     response.assert_status(200).ensure_content()
+
+
+async def test_register_as_participant_adds_auth_email_to_contacts(
+    api_client: ApiClient,
+    participant_form_factory: ParticipantFormFactory,
+    faker: Faker,
+) -> None:
+    """Registering as participant adds the auth email as an Email contact."""
+    # Arrange
+    auth_user_id = str(uuid4())
+    auth_user_email = faker.email()
+    data = participant_form_factory.build(contacts=[]).model_dump(mode="json", exclude={"email"})
+
+    # Act
+    with api_client.authenticate(auth_user_id=auth_user_id, auth_user_email=auth_user_email):
+        register_response = await api_client.register_participant(data=data)
+        profile_response = await api_client.view_profile()
+
+    # Assert
+    register_response.assert_status(200).ensure_content()
+    profile = profile_response.assert_status(200).ensure_content()
+    assert profile.participant is not None
+    assert profile.participant.contacts == [ParticipantContact(title="Email", value=auth_user_email)]
+
+
+async def test_register_as_participant_without_auth_email_does_not_add_email_contact(
+    api_client: ApiClient,
+    participant_form_factory: ParticipantFormFactory,
+) -> None:
+    """Registering as participant without auth email keeps contacts unchanged."""
+    # Arrange
+    auth_user_id = str(uuid4())
+    data = participant_form_factory.build(contacts=[]).model_dump(mode="json", exclude={"email"})
+
+    # Act
+    with api_client.authenticate(auth_user_id=auth_user_id):
+        register_response = await api_client.register_participant(data=data)
+        profile_response = await api_client.view_profile()
+
+    # Assert
+    register_response.assert_status(200).ensure_content()
+    profile = profile_response.assert_status(200).ensure_content()
+    assert profile.participant is not None
+    assert profile.participant.contacts == []
 
 
 async def test_register_participant_rejects_more_than_fifteen_contacts(

@@ -13,6 +13,7 @@ Registers a new participant
 | `skills`            | `list[ParticipantSkill]`  | No       | List of participant skills (default: empty) |
 | `experience_level`  | `ExperienceLevel \| None` | No       | Experience level |
 | `contacts`          | `list[ParticipantContact]`| No       | List of contacts (default: empty, max 15) |
+| `email`             | `str \| None`             | No       | Email from auth provider; not part of the public request body |
 
 
 ## Output
@@ -30,6 +31,7 @@ Registers a new participant
 5. Contact titles must be unique within the contacts list
 6. Contact values must be unique within the contacts list
 7. At most 15 contacts are accepted by the request model
+8. If auth email is present and not blank, the interactor adds it to contacts as `Email`
 
 
 ## Errors

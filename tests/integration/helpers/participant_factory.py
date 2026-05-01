@@ -5,6 +5,7 @@ from uuid import uuid4
 
 from faker import Faker
 
+from dreamteams.application.common.dto.participant_contact import ParticipantContactForm
 from dreamteams.entities.common.participant_type import ParticipantType
 from tests.common.factory.participant import ParticipantFormFactory
 from tests.integration.api_client import ApiClient
@@ -31,9 +32,15 @@ class ParticipantGateway:
 
         with self.api_client.authenticate(auth_user_id=auth_id, auth_user_email=email):
             participant = (
-                (await self.api_client.register_participant(data=form.model_dump(mode="json")))
+                (await self.api_client.register_participant(data=form.model_dump(mode="json", exclude={"email"})))
                 .assert_status(200)
                 .ensure_content()
             )
 
-        return ParticipantCreated(auth_id=auth_id, email=email, form=form, created=participant)
+        created_form = form.model_copy(
+            update={
+                "email": email,
+                "contacts": [*form.contacts, ParticipantContactForm(title="Email", value=email)],
+            },
+        )
+        return ParticipantCreated(auth_id=auth_id, email=email, form=created_form, created=participant)

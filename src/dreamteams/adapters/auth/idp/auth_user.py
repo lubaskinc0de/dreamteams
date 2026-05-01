@@ -46,6 +46,13 @@ class WebAuthUserIdProvider(AuthUserIdProvider):
             )
         return user_email
 
+    def get_auth_user_email_or_none(self) -> str | None:
+        """Reads the auth user email from the configured HTTP header if it is present."""
+        user_email = self._http_request.headers.get(self._config.user_email_header)
+        if user_email is None or not user_email.strip():
+            return None
+        return user_email
+
     @override
     async def get_auth_user_id(self) -> AuthUserId:
         """Reads the auth user ID from the configured HTTP header, raises UnauthorizedError if header is missing."""

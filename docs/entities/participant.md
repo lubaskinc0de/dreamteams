@@ -54,7 +54,8 @@ A value object wrapping a participant's age as an integer.
 5. Skill names in `skills` must be unique.
 6. Contacts in `contacts` must be unique by `title`.
 7. Contacts in `contacts` must be unique by `value`.
-8. Participant create/update requests accept at most 15 contacts.
+8. Participant create/update request bodies accept at most 15 submitted contacts.
+9. During registration, a non-blank auth email is saved as a contact with title `Email`.
 
 ## Relationships
 
