@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 from dreamteams.adapters.auth.idp.auth_user import WebAuthUserIdProvider
 from dreamteams.application.common.phone_number import RussianPhoneNumber
 from dreamteams.application.register_user.register_organizer import (
+    MAX_INVITE_CODE_LENGTH,
     CreatedOrganizer,
     RegisterOrganizer,
 )
@@ -25,7 +26,7 @@ class OrganizerForm(BaseModel):
 
     organizer_name: str = Field(max_length=70)
     phone_number: RussianPhoneNumber
-    invite_code: str
+    invite_code: str = Field(min_length=1, max_length=MAX_INVITE_CODE_LENGTH)
 
 
 @router.post("/")

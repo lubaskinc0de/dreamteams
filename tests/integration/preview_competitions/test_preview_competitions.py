@@ -2,6 +2,7 @@ import pytest
 
 from dreamteams.application.common.gateway.competition import CompetitionSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
+from dreamteams.application.common.input_limits import MAX_PAGE
 from dreamteams.application.preview_competitions.preview_competitions import PAGE_SIZE, PreviewCompetitionsList
 from tests.integration.api_client import ApiClient
 from tests.integration.competition_helpers import competitions_list_to_preview_list, create_competitions_list
@@ -142,6 +143,15 @@ async def test_preview_competitions_with_invalid_page_fails(
     """Requesting an invalid page number is rejected with VALIDATION_ERROR."""
     # Act
     response = await api_client.list_preview_competitions(page)
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_preview_competitions_rejects_too_large_page(api_client: ApiClient) -> None:
+    """Requesting a page above the configured cap is rejected with VALIDATION_ERROR."""
+    # Act
+    response = await api_client.list_preview_competitions(MAX_PAGE + 1)
 
     # Assert
     response.assert_error(422, "VALIDATION_ERROR")

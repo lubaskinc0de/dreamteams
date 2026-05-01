@@ -1,6 +1,7 @@
 import pytest
 
 from dreamteams.application.common.gateway.sorting import SortOrder
+from dreamteams.application.common.input_limits import MAX_PAGE
 from dreamteams.application.view_my_applications import ApplicationsList, MyApplicationModel
 from dreamteams.application.view_my_applications.list_my_applications import PAGE_SIZE
 from dreamteams.entities.application.entity import ApplicationStatus
@@ -210,6 +211,19 @@ async def test_list_my_applications_with_invalid_page_fails(
     # Act
     with api_client.authenticate(auth_user_id=participant.auth_id):
         response = await api_client.list_my_applications(page=page)
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_list_my_applications_rejects_too_large_page(api_client: ApiClient, gateway: Gateway) -> None:
+    """Participant application list rejects page numbers above the configured cap."""
+    # Arrange
+    participant = await gateway.participant.create()
+
+    # Act
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        response = await api_client.list_my_applications(page=MAX_PAGE + 1)
 
     # Assert
     response.assert_error(422, "VALIDATION_ERROR")

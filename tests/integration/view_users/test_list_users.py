@@ -2,6 +2,7 @@ import pytest
 
 from dreamteams.application.block_user import AdminUserListItem, UsersList
 from dreamteams.application.common.gateway.user import UserRoleFilter
+from dreamteams.application.common.input_limits import MAX_PAGE, MAX_SEARCH_LENGTH
 from dreamteams.application.view_users.list_users import PAGE_SIZE
 from dreamteams.entities.common.identifiers import UserId
 from dreamteams.entities.user import BanStatus
@@ -363,3 +364,29 @@ async def test_admin_user_list_rejects_invalid_filters(api_client: ApiClient, ga
     # Assert
     page_response.assert_error(422, "VALIDATION_ERROR")
     role_response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_admin_user_list_rejects_too_large_page(api_client: ApiClient, gateway: Gateway) -> None:
+    """Admin user list rejects page numbers above the configured cap."""
+    # Arrange
+    admin = await gateway.admin.create()
+
+    # Act
+    with api_client.authenticate(auth_user_id=admin.auth_id):
+        response = await api_client.list_admin_users(page=MAX_PAGE + 1)
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_admin_user_list_rejects_too_long_search(api_client: ApiClient, gateway: Gateway) -> None:
+    """Admin user list rejects oversized search strings before building LIKE predicates."""
+    # Arrange
+    admin = await gateway.admin.create()
+
+    # Act
+    with api_client.authenticate(auth_user_id=admin.auth_id):
+        response = await api_client.list_admin_users(search="a" * (MAX_SEARCH_LENGTH + 1))
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")

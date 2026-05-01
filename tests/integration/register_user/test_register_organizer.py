@@ -4,6 +4,7 @@ from uuid import uuid4
 import pytest
 from faker import Faker
 
+from dreamteams.application.register_user.register_organizer import MAX_INVITE_CODE_LENGTH
 from tests.common.factory.organizer import OrganizerFormFactory
 from tests.integration.api_client import ApiClient
 from tests.integration.helpers.facade import Gateway
@@ -185,6 +186,25 @@ async def test_register_with_nonexistent_invite_code_fails(
         )
 
     response.assert_error(404, "INVITE_NOT_FOUND")
+
+
+async def test_register_with_too_long_invite_code_fails_validation(
+    api_client: ApiClient,
+    organizer_form_factory: OrganizerFormFactory,
+    faker: Faker,
+) -> None:
+    """Registering with an oversized invite code is rejected before invite lookup."""
+    # Arrange
+    data = organizer_form_factory.build().model_copy(
+        update={"invite_code": "a" * (MAX_INVITE_CODE_LENGTH + 1)},
+    )
+
+    # Act
+    with api_client.authenticate(auth_user_id=str(uuid4()), auth_user_email=faker.email()):
+        response = await api_client.register_organizer(data.model_dump(mode="json"))
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
 
 
 async def test_register_with_revoked_invite_code_fails(

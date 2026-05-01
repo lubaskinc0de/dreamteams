@@ -1,6 +1,6 @@
 from typing import override
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dreamteams.adapters.db.models.application_form import application_form_table
@@ -9,7 +9,7 @@ from dreamteams.adapters.db.models.organizer import organizer_table
 from dreamteams.adapters.db.models.user import user_table
 from dreamteams.application.common.gateway.application_form import ApplicationFormGateway
 from dreamteams.entities.application_form.entity import ApplicationForm
-from dreamteams.entities.common.identifiers import CompetitionId
+from dreamteams.entities.common.identifiers import ApplicationFormId, CompetitionId
 
 
 class SAApplicationFormGateway(ApplicationFormGateway):
@@ -37,3 +37,9 @@ class SAApplicationFormGateway(ApplicationFormGateway):
         )
         result = await self._session.scalars(query)
         return result.first()
+
+    @override
+    async def delete_by_id(self, entity_id: ApplicationFormId) -> None:
+        """Delete application form by id."""
+        query = delete(ApplicationForm).where(application_form_table.c.id == entity_id)
+        await self._session.execute(query)

@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 from dreamteams.application.common.gateway.competition_tag import CompetitionTagGateway
 from dreamteams.application.common.gateway.user import UserGateway
 from dreamteams.application.common.idp import IdProvider
+from dreamteams.application.common.input_limits import MAX_PAGE, MAX_SEARCH_LENGTH
 from dreamteams.application.errors.user import UserNotFoundError
 from dreamteams.entities.competition.tag import CompetitionTag
 from dreamteams.entities.errors.base import AccessDeniedError
@@ -14,8 +15,8 @@ PAGE_SIZE = 30
 class ListCompetitionTagsInput(BaseModel):
     """Input parameters for listing competition tags."""
 
-    page: int = Field(ge=1, default=1)
-    search: str | None = None
+    page: int = Field(ge=1, le=MAX_PAGE, default=1)
+    search: str | None = Field(default=None, max_length=MAX_SEARCH_LENGTH)
 
 
 class CompetitionTagsList(BaseModel):

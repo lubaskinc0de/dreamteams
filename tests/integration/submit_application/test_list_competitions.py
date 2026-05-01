@@ -5,8 +5,13 @@ import pytest
 from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.common.gateway.competition import CompetitionSortBy, ExploreSortBy
 from dreamteams.application.common.gateway.sorting import SortOrder
+from dreamteams.application.common.input_limits import MAX_PAGE, MAX_SEARCH_LENGTH
 from dreamteams.application.manage_tags import CompetitionTagInput
-from dreamteams.application.submit_application.list_competitions import PAGE_SIZE, ExploreCompetitionsList
+from dreamteams.application.submit_application.list_competitions import (
+    MAX_EXPLORE_TAG_IDS,
+    PAGE_SIZE,
+    ExploreCompetitionsList,
+)
 from dreamteams.entities.common.participant_type import ParticipantType
 from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from tests.common.factory.application import SubmitApplicationInputFactory
@@ -517,6 +522,46 @@ async def test_explore_with_invalid_pagination_fails(
     # Act
     with api_client.authenticate(auth_user_id=participant.auth_id):
         response = await api_client.explore_competitions(page=page)
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_explore_rejects_too_large_page(api_client: ApiClient, gateway: Gateway) -> None:
+    """Participant-facing explore rejects page numbers above the configured cap."""
+    # Arrange
+    participant = await gateway.participant.create()
+
+    # Act
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        response = await api_client.explore_competitions(page=MAX_PAGE + 1)
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_explore_rejects_too_long_search(api_client: ApiClient, gateway: Gateway) -> None:
+    """Participant-facing explore rejects oversized search strings before hitting the database."""
+    # Arrange
+    participant = await gateway.participant.create()
+
+    # Act
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        response = await api_client.explore_competitions(search="a" * (MAX_SEARCH_LENGTH + 1))
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_explore_rejects_too_many_tag_ids(api_client: ApiClient, gateway: Gateway) -> None:
+    """Participant-facing explore rejects oversized tag filters before building an IN query."""
+    # Arrange
+    participant = await gateway.participant.create()
+    tag_ids = [uuid4() for _ in range(MAX_EXPLORE_TAG_IDS + 1)]
+
+    # Act
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        response = await api_client.explore_competitions(tag_ids=tag_ids)
 
     # Assert
     response.assert_error(422, "VALIDATION_ERROR")

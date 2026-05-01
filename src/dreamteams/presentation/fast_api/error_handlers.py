@@ -8,6 +8,7 @@ from opentelemetry.trace import StatusCode
 
 from dreamteams.adapters.auth.errors.auth_user import AuthUserAlreadyExistsError
 from dreamteams.adapters.auth.errors.base import UnauthorizedError
+from dreamteams.adapters.db.gateway.competition import CompetitionBusyError
 from dreamteams.adapters.errors.http.response import ErrorResponse, InternalServerError, ValidationError
 from dreamteams.application.errors.application import ApplicationAlreadyExistsError, ApplicationNotFoundError
 from dreamteams.application.errors.application_form import (
@@ -73,6 +74,7 @@ error_to_http_status: dict[type[AppError], int] = {
     ParticipantNotFoundError: 404,
     CompetitionTagNotFoundError: 404,
     CompetitionTagAlreadyExistsError: 409,
+    CompetitionBusyError: 429,
 }
 
 

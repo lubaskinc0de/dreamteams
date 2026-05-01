@@ -152,7 +152,16 @@ class AdapterProvider(Provider):
     @provide(scope=Scope.APP)
     async def get_redis(self, config: CacheConfig) -> AsyncIterator[Redis]:
         """Shared async Redis client; used by cache adapters."""
-        client: Redis = Redis.from_url(config.url, decode_responses=False)
+        client: Redis = Redis.from_url(
+            config.url,
+            decode_responses=False,
+            socket_connect_timeout=1.0,
+            socket_timeout=2.0,
+            socket_keepalive=True,
+            max_connections=50,
+            retry_on_timeout=True,
+            health_check_interval=30,
+        )
         try:
             yield client
         finally:

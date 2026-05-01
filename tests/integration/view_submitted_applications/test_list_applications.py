@@ -4,6 +4,7 @@ import pytest
 
 from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.common.gateway.sorting import SortOrder
+from dreamteams.application.common.input_limits import MAX_PAGE
 from dreamteams.application.view_submitted_applications.list_applications import MAX_PAGE_SIZE, PAGE_SIZE
 from dreamteams.entities.application.entity import ApplicationStatus
 from tests.common.factory.application import SubmitApplicationInputFactory
@@ -278,6 +279,23 @@ async def test_list_applications_with_invalid_page_fails(
         response = await api_client.list_applications_by_competition(
             comp.created.competition_id,
             page=page,
+        )
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_list_applications_rejects_too_large_page(api_client: ApiClient, gateway: Gateway) -> None:
+    """Submitted application list rejects page numbers above the configured cap."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+
+    # Act
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.list_applications_by_competition(
+            comp.created.competition_id,
+            page=MAX_PAGE + 1,
         )
 
     # Assert

@@ -2,6 +2,7 @@ from uuid import uuid4
 
 import pytest
 
+from dreamteams.application.common.input_limits import MAX_PAGE, MAX_SEARCH_LENGTH
 from dreamteams.application.view_tags import CompetitionTagsList
 from dreamteams.application.view_tags.list_tags import PAGE_SIZE
 from dreamteams.entities.competition.tag import CompetitionTag
@@ -163,6 +164,32 @@ async def test_invalid_visible_tag_list_page_is_rejected(api_client: ApiClient, 
     # Act
     with api_client.authenticate(auth_user_id=participant.auth_id):
         response = await api_client.list_tags(page=0)
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_visible_tag_list_rejects_too_large_page(api_client: ApiClient, gateway: Gateway) -> None:
+    """Visible tag list rejects page numbers above the configured cap."""
+    # Arrange
+    participant = await gateway.participant.create()
+
+    # Act
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        response = await api_client.list_tags(page=MAX_PAGE + 1)
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_visible_tag_list_rejects_too_long_search(api_client: ApiClient, gateway: Gateway) -> None:
+    """Visible tag list rejects oversized search values before using them in SQL and cache keys."""
+    # Arrange
+    participant = await gateway.participant.create()
+
+    # Act
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        response = await api_client.list_tags(search="a" * (MAX_SEARCH_LENGTH + 1))
 
     # Assert
     response.assert_error(422, "VALIDATION_ERROR")

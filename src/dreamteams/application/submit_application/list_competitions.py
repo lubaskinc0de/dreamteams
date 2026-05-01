@@ -1,6 +1,7 @@
 import structlog
 from pydantic import BaseModel, Field
 
+from dreamteams.application.common.competition_input_limits import MAX_TEAM_SIZE
 from dreamteams.application.common.dto.explore_competition import (  # noqa: F401
     ExploreCompetitionModel,
     ExploreOrganizerModel,
@@ -8,25 +9,27 @@ from dreamteams.application.common.dto.explore_competition import (  # noqa: F40
 from dreamteams.application.common.gateway.competition import CompetitionGateway, ExploreSortBy
 from dreamteams.application.common.gateway.participant import ParticipantGateway
 from dreamteams.application.common.idp import IdProvider
+from dreamteams.application.common.input_limits import MAX_PAGE, MAX_SEARCH_LENGTH
 from dreamteams.entities.common.identifiers import CompetitionTagId
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams_common.interactor import interactor
 from dreamteams_common.logger import Logger
 
 PAGE_SIZE = 10
+MAX_EXPLORE_TAG_IDS = 30
 logger: Logger = structlog.get_logger(__name__)
 
 
 class ExploreCompetitionsInput(BaseModel):
     """Input parameters for participant-facing explore list."""
 
-    page: int = Field(ge=1, default=1)
+    page: int = Field(ge=1, le=MAX_PAGE, default=1)
     sort_by: ExploreSortBy = ExploreSortBy.MOST_POPULAR
-    search: str | None = None
-    min_team_size: int | None = Field(default=None, ge=1)
-    max_team_size: int | None = Field(default=None, ge=1)
+    search: str | None = Field(default=None, max_length=MAX_SEARCH_LENGTH)
+    min_team_size: int | None = Field(default=None, ge=1, le=MAX_TEAM_SIZE)
+    max_team_size: int | None = Field(default=None, ge=1, le=MAX_TEAM_SIZE)
     auto_accept: bool | None = None
-    tag_ids: list[CompetitionTagId] | None = None
+    tag_ids: list[CompetitionTagId] | None = Field(default=None, max_length=MAX_EXPLORE_TAG_IDS)
 
 
 class ExploreCompetitionsList(BaseModel):

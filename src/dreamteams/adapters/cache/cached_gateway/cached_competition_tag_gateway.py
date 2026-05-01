@@ -9,7 +9,11 @@ from dreamteams.entities.competition.tag import CompetitionTag
 class CachedCompetitionTagGateway(CompetitionTagGateway):
     """Competition tag gateway decorator for cache-safe read paths."""
 
-    def __init__(self, wrapped: CompetitionTagGateway, cache: CompetitionTagReadCache) -> None:
+    def __init__(
+        self,
+        wrapped: CompetitionTagGateway,
+        cache: CompetitionTagReadCache,
+    ) -> None:
         self._wrapped = wrapped
         self._cache = cache
 
@@ -20,15 +24,8 @@ class CachedCompetitionTagGateway(CompetitionTagGateway):
 
     @override
     async def get_by_value(self, value: str) -> CompetitionTag | None:
-        """Fetch a tag by value, using cache for positive hits."""
-        cached = await self._cache.get_by_value(value)
-        if cached is not None:
-            return cached
-
-        tag = await self._wrapped.get_by_value(value)
-        if tag is not None:
-            await self._cache.set_by_value(value, tag)
-        return tag
+        """Fetch a tag by value."""
+        return await self._wrapped.get_by_value(value)
 
     @override
     async def get_many(self, tag_ids: list[CompetitionTagId]) -> list[CompetitionTag]:

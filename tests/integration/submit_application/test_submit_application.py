@@ -3,8 +3,14 @@ from uuid import uuid4
 
 from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.manage_application_form import ApplicationFormInput
-from dreamteams.application.manage_application_form.create_application_form import FieldForm
+from dreamteams.application.manage_application_form.create_application_form import FieldChoiceForm, FieldForm
 from dreamteams.application.submit_application import CreatedApplication
+from dreamteams.application.submit_application.form_data_input_validator import (
+    MAX_FORM_DATA_INTEGER_ABS,
+    MAX_FORM_DATA_LIST_LENGTH,
+    MAX_FORM_DATA_STRING_LENGTH,
+)
+from dreamteams.application.submit_application.submit_application import SubmitApplicationInput
 from dreamteams.application.update_my_competition import ChangeCompetitionArchiveStatusForm
 from dreamteams.entities.application.entity import ApplicationStatus
 from dreamteams.entities.application_form.field import FieldType
@@ -66,6 +72,89 @@ async def test_participant_can_submit_application_with_form_data(
     # Assert
     result = response.assert_status(200).ensure_content()
     assert result == CreatedApplication(application_id=result.application_id)
+
+
+async def test_submit_application_rejects_too_long_form_string(
+    api_client: ApiClient,
+    gateway: Gateway,
+    submit_application_input_factory: SubmitApplicationInputFactory,
+) -> None:
+    """Submitting a form string above the configured cap is rejected."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id)
+    form = ApplicationFormInput(fields=[FieldForm(name="bio", type=FieldType.STRING, required=True, choices=None)])
+    await gateway.application_form.create(comp.created.competition_id, owner.organizer.auth_id, form)
+    data = submit_application_input_factory.build(
+        track=CompetitionTrackForm(name=comp.form.tracks[0].name),
+        form_data={"bio": "ok"},
+    ).model_copy(update={"form_data": {"bio": "a" * (MAX_FORM_DATA_STRING_LENGTH + 1)}})
+
+    # Act
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        response = await api_client.submit_application(comp.created.competition_id, data.model_dump(mode="json"))
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_submit_application_rejects_too_large_form_integer(
+    api_client: ApiClient,
+    gateway: Gateway,
+    submit_application_input_factory: SubmitApplicationInputFactory,
+) -> None:
+    """Submitting a form integer above the configured absolute cap is rejected."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id)
+    form = ApplicationFormInput(fields=[FieldForm(name="age", type=FieldType.INT, required=True, choices=None)])
+    await gateway.application_form.create(comp.created.competition_id, owner.organizer.auth_id, form)
+    data = submit_application_input_factory.build(
+        track=CompetitionTrackForm(name=comp.form.tracks[0].name),
+        form_data={"age": 18},
+    ).model_copy(update={"form_data": {"age": MAX_FORM_DATA_INTEGER_ABS + 1}})
+
+    # Act
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        response = await api_client.submit_application(comp.created.competition_id, data.model_dump(mode="json"))
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
+
+
+async def test_submit_application_rejects_too_long_multiselect_answer(
+    api_client: ApiClient,
+    gateway: Gateway,
+) -> None:
+    """Submitting a multiselect answer above the configured list cap is rejected."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id)
+    form = ApplicationFormInput(
+        fields=[
+            FieldForm(
+                name="roles",
+                type=FieldType.MULTISELECT,
+                required=True,
+                choices=[FieldChoiceForm(value="backend")],
+            ),
+        ],
+    )
+    await gateway.application_form.create(comp.created.competition_id, owner.organizer.auth_id, form)
+    data = SubmitApplicationInput(
+        track=CompetitionTrackForm(name=comp.form.tracks[0].name),
+        form_data={"roles": ["backend"]},
+    ).model_copy(update={"form_data": {"roles": ["backend"] * (MAX_FORM_DATA_LIST_LENGTH + 1)}})
+
+    # Act
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        response = await api_client.submit_application(comp.created.competition_id, data.model_dump(mode="json"))
+
+    # Assert
+    response.assert_error(422, "VALIDATION_ERROR")
 
 
 async def test_unauthenticated_user_cannot_submit_application(

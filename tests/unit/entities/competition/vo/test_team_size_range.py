@@ -6,8 +6,18 @@ from dreamteams.entities.competition.team_size_range import TeamSizeRange
 from dreamteams.entities.errors.competition import InvalidCompetitionDataError
 from tests.unit.composite import ordered_pairs
 
+TEST_TEAM_SIZE_MAX = 1_000
 
-@given(ordered_pairs().filter(lambda pair: pair[0] > 0 and pair[1] > 0))
+valid_team_size_pairs = st.integers(min_value=1, max_value=TEST_TEAM_SIZE_MAX).flatmap(
+    lambda min_value: st.tuples(st.just(min_value), st.integers(min_value=min_value, max_value=TEST_TEAM_SIZE_MAX)),
+)
+
+invalid_ordered_team_size_pairs = st.integers(min_value=1, max_value=TEST_TEAM_SIZE_MAX - 1).flatmap(
+    lambda max_value: st.tuples(st.just(max_value), st.integers(min_value=max_value + 1, max_value=TEST_TEAM_SIZE_MAX)),
+)
+
+
+@given(valid_team_size_pairs)
 def test_create_team_size_with_valid_values(pair: tuple[int, int]) -> None:
     """Test creating TeamSizeRange with valid values."""
     min_value, max_value = pair
@@ -33,7 +43,7 @@ def test_max_greater_than_zero(pair: tuple[int, int]) -> None:
         TeamSizeRange(max=max_value, min=min_value)
 
 
-@given(ordered_pairs().filter(lambda pair: pair[0] > 0 and pair[0] != pair[1]))
+@given(invalid_ordered_team_size_pairs)
 def test_min_not_exceed_max(pair: tuple[int, int]) -> None:
     """Test that max team size should be >= min team size."""
     max_value, min_value = pair

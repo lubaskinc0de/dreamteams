@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 from dreamteams.application.block_user.shared import ensure_admin
 from dreamteams.application.common.gateway.user import UserGateway, UserListFilters, UserRoleFilter
 from dreamteams.application.common.idp import IdProvider
+from dreamteams.application.common.input_limits import MAX_PAGE, MAX_SEARCH_LENGTH
 from dreamteams.entities.common.identifiers import UserId
 from dreamteams.entities.user import BanStatus
 from dreamteams_common.interactor import interactor
@@ -16,8 +17,8 @@ PAGE_SIZE = 20
 class ListUsersInput(BaseModel):
     """Input parameters for admin-facing user listing."""
 
-    page: int = Field(ge=1, default=1)
-    search: str | None = None
+    page: int = Field(ge=1, le=MAX_PAGE, default=1)
+    search: str | None = Field(default=None, max_length=MAX_SEARCH_LENGTH)
     is_admin: bool | None = None
     is_blocked: bool | None = None
     role: UserRoleFilter | None = None

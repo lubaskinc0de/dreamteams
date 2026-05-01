@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 import structlog
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from dreamteams.application.common.gateway.user import UserGateway
 from dreamteams.application.common.idp import IdProvider
@@ -14,11 +14,13 @@ from dreamteams_common.uow import UoW
 
 logger: Logger = structlog.get_logger(__name__)
 
+MAX_INVITE_DISPLAY_NAME_LENGTH = 150
+
 
 class IssueInviteForm(BaseModel):
     """Form for issuing a new organizer invite."""
 
-    display_name: str | None = None
+    display_name: str | None = Field(default=None, max_length=MAX_INVITE_DISPLAY_NAME_LENGTH)
 
 
 class InviteIssued(BaseModel):

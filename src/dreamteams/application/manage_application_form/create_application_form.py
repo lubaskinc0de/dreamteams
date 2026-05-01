@@ -22,26 +22,31 @@ from dreamteams_common.uow import UoW
 
 logger: Logger = structlog.get_logger(__name__)
 
+MAX_APPLICATION_FORM_FIELDS = 50
+MAX_APPLICATION_FORM_CHOICES = 50
+MAX_APPLICATION_FORM_FIELD_NAME_LENGTH = 100
+MAX_APPLICATION_FORM_CHOICE_LENGTH = 200
+
 
 class FieldChoiceForm(BaseModel):
     """A single selectable option for SELECT or MULTISELECT fields."""
 
-    value: str = Field(min_length=1)
+    value: str = Field(min_length=1, max_length=MAX_APPLICATION_FORM_CHOICE_LENGTH)
 
 
 class FieldForm(BaseModel):
     """A single input field definition."""
 
-    name: str = Field(min_length=1)
+    name: str = Field(min_length=1, max_length=MAX_APPLICATION_FORM_FIELD_NAME_LENGTH)
     type: FieldType
     required: bool = True
-    choices: list[FieldChoiceForm] | None = None
+    choices: list[FieldChoiceForm] | None = Field(default=None, max_length=MAX_APPLICATION_FORM_CHOICES)
 
 
 class ApplicationFormInput(BaseModel):
     """Request body for creating an application form."""
 
-    fields: list[FieldForm]
+    fields: list[FieldForm] = Field(max_length=MAX_APPLICATION_FORM_FIELDS)
 
 
 class CreatedApplicationForm(BaseModel):

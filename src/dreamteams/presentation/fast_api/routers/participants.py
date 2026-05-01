@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 from dreamteams.adapters.auth.idp.auth_user import WebAuthUserIdProvider
 from dreamteams.application.common.dto.participant_contact import ParticipantContactForm
-from dreamteams.application.common.dto.participant_skill import ParticipantSkillForm
+from dreamteams.application.common.dto.participant_skill import MAX_PARTICIPANT_SKILLS, ParticipantSkillForm
 from dreamteams.application.register_user.register_participant import (
     CreatedParticipant,
     RegisterParticipant,
@@ -14,6 +14,7 @@ from dreamteams.application.register_user.register_participant import (
     ParticipantForm as InteractorParticipantForm,
 )
 from dreamteams.entities.common.participant_type import ParticipantType
+from dreamteams.entities.participant.age import AGE_MAX, AGE_MIN
 from dreamteams.entities.user import ExperienceLevel
 
 router = APIRouter(
@@ -28,9 +29,9 @@ class ParticipantForm(BaseModel):
 
     full_name: str = Field(min_length=1, max_length=70)
     participant_type: ParticipantType
-    age: int
+    age: int = Field(ge=AGE_MIN, le=AGE_MAX)
     bio: str | None = Field(default=None, max_length=500)
-    skills: list[ParticipantSkillForm] = Field(default_factory=list)
+    skills: list[ParticipantSkillForm] = Field(default_factory=list, max_length=MAX_PARTICIPANT_SKILLS)
     experience_level: ExperienceLevel | None = None
     contacts: list[ParticipantContactForm] = Field(default_factory=list, max_length=15)
 

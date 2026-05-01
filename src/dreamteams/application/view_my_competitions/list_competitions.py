@@ -6,6 +6,7 @@ from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.organizer import OrganizerGateway
 from dreamteams.application.common.gateway.sorting import SortOrder
 from dreamteams.application.common.idp import IdProvider
+from dreamteams.application.common.input_limits import MAX_PAGE, MAX_SEARCH_LENGTH
 from dreamteams.entities.errors.base import AccessDeniedError
 from dreamteams_common.interactor import interactor
 from dreamteams_common.logger import Logger
@@ -17,11 +18,11 @@ PAGE_SIZE = 10
 class ListCompetitionsInput(BaseModel):
     """Input parameters for listing competitions."""
 
-    page: int = Field(ge=1, default=1)
+    page: int = Field(ge=1, le=MAX_PAGE, default=1)
     sort_by: CompetitionSortBy = CompetitionSortBy.CREATED_AT
     sort_order: SortOrder = SortOrder.DESC
     is_archived: bool | None = None
-    search: str | None = None
+    search: str | None = Field(default=None, max_length=MAX_SEARCH_LENGTH)
 
 
 class CompetitionsList(BaseModel):
