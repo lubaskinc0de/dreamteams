@@ -24,6 +24,7 @@ from dreamteams_common.logger import Logger
 from dreamteams_common.uow import UoW
 
 logger: Logger = structlog.get_logger(__name__)
+EMAIL_CONTACT_TITLE = "Email"
 
 
 class CreatedParticipant(BaseModel):
@@ -43,6 +44,7 @@ class ParticipantForm(BaseModel):
     skills: list[ParticipantSkillForm] = Field(default_factory=list)
     experience_level: ExperienceLevel | None = None
     contacts: list[ParticipantContactForm] = Field(default_factory=list, max_length=15)
+    email: str | None = None
 
 
 @interactor
@@ -59,6 +61,10 @@ class RegisterParticipant:
         logger.debug("Registering as participant", **data.model_dump())
 
         user = await self.user_factory.create_user()
+        contacts = [ParticipantContact(title=c.title, value=c.value) for c in data.contacts]
+        email = data.email.strip() if data.email is not None else None
+        if email:
+            contacts.append(ParticipantContact(title=EMAIL_CONTACT_TITLE, value=email))
 
         participant_data = ParticipantData(
             full_name=data.full_name,
@@ -73,7 +79,7 @@ class RegisterParticipant:
                 ],
             ),
             experience_level=data.experience_level,
-            contacts=ParticipantContacts([ParticipantContact(title=c.title, value=c.value) for c in data.contacts]),
+            contacts=ParticipantContacts(contacts),
             participant_type=data.participant_type,
             age=Age(data.age),
         )

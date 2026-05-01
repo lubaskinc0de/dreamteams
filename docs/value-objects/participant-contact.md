@@ -15,3 +15,4 @@ Represents a participant contact entry. The value is an arbitrary string such as
 
 1. Non-empty `title` validation happens at the application boundary.
 2. Contact collection uniqueness is owned by [`ParticipantContacts`](participant-contacts.md).
+3. Participant registration may add auth email as a contact with title `Email`.
