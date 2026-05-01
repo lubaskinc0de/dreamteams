@@ -5,14 +5,14 @@ from dreamteams.application.common.dto.competition_track import CompetitionTrack
 from dreamteams.application.manage_application_form import ApplicationFormInput
 from dreamteams.application.manage_application_form.create_application_form import FieldChoiceForm, FieldForm
 from dreamteams.application.submit_application import CreatedApplication
-from dreamteams.application.submit_application.submit_application import SubmitApplicationInput
-from dreamteams.application.update_my_competition import ChangeCompetitionArchiveStatusForm
-from dreamteams.entities.application.entity import ApplicationStatus
-from dreamteams.entities.application.form_data_validator import (
+from dreamteams.application.submit_application.form_data_input_validator import (
     MAX_FORM_DATA_INTEGER_ABS,
     MAX_FORM_DATA_LIST_LENGTH,
     MAX_FORM_DATA_STRING_LENGTH,
 )
+from dreamteams.application.submit_application.submit_application import SubmitApplicationInput
+from dreamteams.application.update_my_competition import ChangeCompetitionArchiveStatusForm
+from dreamteams.entities.application.entity import ApplicationStatus
 from dreamteams.entities.application_form.field import FieldType
 from dreamteams.entities.common.participant_type import ParticipantType
 from tests.common.factory.application import SubmitApplicationInputFactory
@@ -96,7 +96,7 @@ async def test_submit_application_rejects_too_long_form_string(
         response = await api_client.submit_application(comp.created.competition_id, data.model_dump(mode="json"))
 
     # Assert
-    response.assert_error(400, "INVALID_APPLICATION_DATA")
+    response.assert_error(422, "VALIDATION_ERROR")
 
 
 async def test_submit_application_rejects_too_large_form_integer(
@@ -121,7 +121,7 @@ async def test_submit_application_rejects_too_large_form_integer(
         response = await api_client.submit_application(comp.created.competition_id, data.model_dump(mode="json"))
 
     # Assert
-    response.assert_error(400, "INVALID_APPLICATION_DATA")
+    response.assert_error(422, "VALIDATION_ERROR")
 
 
 async def test_submit_application_rejects_too_long_multiselect_answer(
@@ -154,7 +154,7 @@ async def test_submit_application_rejects_too_long_multiselect_answer(
         response = await api_client.submit_application(comp.created.competition_id, data.model_dump(mode="json"))
 
     # Assert
-    response.assert_error(400, "INVALID_APPLICATION_DATA")
+    response.assert_error(422, "VALIDATION_ERROR")
 
 
 async def test_unauthenticated_user_cannot_submit_application(

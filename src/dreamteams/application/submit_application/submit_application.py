@@ -1,7 +1,7 @@
 from typing import Any
 
 import structlog
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 from dreamteams.application.common.dto.competition_track import CompetitionTrackForm
 from dreamteams.application.common.event_bus import EventBus
@@ -12,6 +12,7 @@ from dreamteams.application.common.gateway.competition import CompetitionGateway
 from dreamteams.application.common.gateway.participant import ParticipantGateway
 from dreamteams.application.common.idp import IdProvider
 from dreamteams.application.errors.application import ApplicationAlreadyExistsError
+from dreamteams.application.submit_application.form_data_input_validator import validate_form_data_input_bounds
 from dreamteams.entities.application.entity import ApplicationData, ApplicationStatus
 from dreamteams.entities.application.submit_service import submit_application
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId
@@ -31,6 +32,13 @@ class SubmitApplicationInput(BaseModel):
 
     track: CompetitionTrackForm
     form_data: dict[str, Any] | None = None
+
+    @model_validator(mode="after")
+    def validate_input_bounds(self) -> "SubmitApplicationInput":
+        """Validate application-level request bounds for dynamic form answers."""
+        if self.form_data is not None:
+            validate_form_data_input_bounds(self.form_data)
+        return self
 
 
 class CreatedApplication(BaseModel):
