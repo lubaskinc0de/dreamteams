@@ -21,12 +21,7 @@ async def tracing_middleware(
             "span_id": format(ctx.span_id, "016x"),
         }
 
-    with (
-        structlog.contextvars.bound_contextvars(**context),
-        _tracer.start_as_current_span("fastapi.middleware.call_next") as call_next_span,
-    ):
-        call_next_span.set_attribute("http.method", request.method)
-        call_next_span.set_attribute("http.target", request.url.path)
+    with structlog.contextvars.bound_contextvars(**context):
         response = await call_next(request)
 
         with _tracer.start_as_current_span("fastapi.middleware.after_call") as after_call:

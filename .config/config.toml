@@ -50,7 +50,7 @@ region = "us-east-1"
 public_url = "http://localhost/s3"
 
 [superuser]
-password_hash = '$argon2id$v=19$m=65536,t=3,p=4$WtB09we21GMOQ8kjBOFnrQ$ZU8lTm3cNPhFe90PGfH5sliQvzlbZf6DKztbxNlOl2s'
+password_hash = "$argon2id$v=19$m=65536,t=3,p=4$WtB09we21GMOQ8kjBOFnrQ$ZU8lTm3cNPhFe90PGfH5sliQvzlbZf6DKztbxNlOl2s"
 
 [sentry]
 dsn = ""
