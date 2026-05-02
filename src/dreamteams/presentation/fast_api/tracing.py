@@ -4,6 +4,8 @@ import structlog
 from fastapi import Request, Response
 from opentelemetry import trace
 
+_tracer = trace.get_tracer(__name__)
+
 
 async def tracing_middleware(
     request: Request,
@@ -12,10 +14,21 @@ async def tracing_middleware(
     """Bind OTel trace_id and span_id into structlog context for each request."""
     span = trace.get_current_span()
     ctx = span.get_span_context()
+    context = {}
     if ctx.is_valid:
-        with structlog.contextvars.bound_contextvars(
-            trace_id=format(ctx.trace_id, "032x"),
-            span_id=format(ctx.span_id, "016x"),
-        ):
-            return await call_next(request)
-    return await call_next(request)
+        context = {
+            "trace_id": format(ctx.trace_id, "032x"),
+            "span_id": format(ctx.span_id, "016x"),
+        }
+
+    with (
+        structlog.contextvars.bound_contextvars(**context),
+        _tracer.start_as_current_span("fastapi.middleware.call_next") as call_next_span,
+    ):
+        call_next_span.set_attribute("http.method", request.method)
+        call_next_span.set_attribute("http.target", request.url.path)
+        response = await call_next(request)
+
+        with _tracer.start_as_current_span("fastapi.middleware.after_call") as after_call:
+            after_call.set_attribute("http.status_code", response.status_code)
+            return response

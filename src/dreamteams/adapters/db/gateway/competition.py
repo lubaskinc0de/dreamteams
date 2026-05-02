@@ -1,5 +1,4 @@
 # mypy: disable-error-code="empty-body"
-from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import ClassVar, override
 
@@ -81,56 +80,69 @@ def _tracks_to_list(tracks: CompetitionTracks) -> list[CompetitionTrack]:
 def _to_competition_model(competition: Competition, members_count: int) -> CompetitionModel: ...
 
 
-def _build_preview_converter(
+def _to_preview_model(
+    competition: Competition,
+    members_count: int,
     avatar_storage: AvatarStorage,
-) -> Callable[[Competition, int], PreviewCompetitionModel]:
-    """Build a Competition → PreviewCompetitionModel converter wired to this instance's avatar storage."""
-
-    def organizer_to_preview(organizer: Organizer) -> PreviewOrganizerModel:
-        avatar_key = organizer.user.avatar
-        return PreviewOrganizerModel(
-            id=organizer.id,
-            name=organizer.organizer_name,
+) -> PreviewCompetitionModel:
+    """Map a Competition entity to the anonymous preview read model."""
+    avatar_key = competition.organizer.user.avatar
+    return PreviewCompetitionModel(
+        id=competition.id,
+        organizer=PreviewOrganizerModel(
+            id=competition.organizer.id,
+            name=competition.organizer.organizer_name,
             avatar_url=avatar_storage.get_url(avatar_key) if avatar_key is not None else None,
-        )
-
-    @impl_converter(
-        recipe=[
-            coercer(Organizer, PreviewOrganizerModel, func=organizer_to_preview),
-            coercer(CompetitionMilestones, list[Milestone], func=_milestones_to_list),
-            coercer(CompetitionTags, list[CompetitionTag], func=_tags_to_list),
-            coercer(CompetitionTracks, list[CompetitionTrack], func=_tracks_to_list),
-        ],
+        ),
+        title=competition.title,
+        banner=competition.banner,
+        description=competition.description,
+        schedule=competition.schedule,
+        participant_limits=competition.participant_limits,
+        tags=list(competition.tags),
+        tracks=list(competition.tracks),
+        participant_type=competition.participant_type,
+        venue=competition.venue,
+        team_size=competition.team_size,
+        milestones=list(competition.milestones),
+        auto_accept=competition.auto_accept,
+        is_archived=competition.is_archived,
+        members_count=members_count,
+        created_at=competition.created_at,
+        updated_at=competition.updated_at,
     )
-    def convert(competition: Competition, members_count: int) -> PreviewCompetitionModel: ...
-
-    return convert
 
 
-def _build_explore_converter(
+def _to_explore_model(
+    competition: Competition,
+    members_count: int,
     avatar_storage: AvatarStorage,
-) -> Callable[[Competition, int], ExploreCompetitionModel]:
-    """Build a Competition → ExploreCompetitionModel converter wired to this instance's avatar storage."""
-
-    def organizer_to_explore(organizer: Organizer) -> ExploreOrganizerModel:
-        avatar_key = organizer.user.avatar
-        return ExploreOrganizerModel(
-            id=organizer.id,
-            name=organizer.organizer_name,
+) -> ExploreCompetitionModel:
+    """Map a Competition entity to the participant-facing explore read model."""
+    avatar_key = competition.organizer.user.avatar
+    return ExploreCompetitionModel(
+        id=competition.id,
+        organizer=ExploreOrganizerModel(
+            id=competition.organizer.id,
+            name=competition.organizer.organizer_name,
             avatar_url=avatar_storage.get_url(avatar_key) if avatar_key is not None else None,
-        )
-
-    @impl_converter(
-        recipe=[
-            coercer(Organizer, ExploreOrganizerModel, func=organizer_to_explore),
-            coercer(CompetitionMilestones, list[Milestone], func=_milestones_to_list),
-            coercer(CompetitionTags, list[CompetitionTag], func=_tags_to_list),
-            coercer(CompetitionTracks, list[CompetitionTrack], func=_tracks_to_list),
-        ],
+        ),
+        title=competition.title,
+        banner=competition.banner,
+        description=competition.description,
+        schedule=competition.schedule,
+        participant_limits=competition.participant_limits,
+        tags=list(competition.tags),
+        tracks=list(competition.tracks),
+        participant_type=competition.participant_type,
+        venue=competition.venue,
+        team_size=competition.team_size,
+        milestones=list(competition.milestones),
+        auto_accept=competition.auto_accept,
+        members_count=members_count,
+        created_at=competition.created_at,
+        updated_at=competition.updated_at,
     )
-    def convert(competition: Competition, members_count: int) -> ExploreCompetitionModel: ...
-
-    return convert
 
 
 def _accepted_counts_subquery() -> Subquery:
@@ -156,8 +168,7 @@ class SACompetitionGateway(CompetitionGateway):
 
     def __init__(self, session: AsyncSession, avatar_storage: AvatarStorage) -> None:
         self._session = session
-        self._to_preview = _build_preview_converter(avatar_storage)
-        self._to_explore = _build_explore_converter(avatar_storage)
+        self._avatar_storage = avatar_storage
 
     @override
     async def get(
@@ -339,7 +350,7 @@ class SACompetitionGateway(CompetitionGateway):
                 )
             )
             result = (await self._session.execute(query)).all()
-            rows = [self._to_preview(row[0], row.members_count) for row in result]
+            rows = [_to_preview_model(row[0], row.members_count, self._avatar_storage) for row in result]
             total = result[0].total if result else 0
             return rows, total
 
@@ -441,6 +452,6 @@ class SACompetitionGateway(CompetitionGateway):
                 )
             )
             result = (await self._session.execute(query)).all()
-            rows = [self._to_explore(row[0], row.members_count) for row in result]
+            rows = [_to_explore_model(row[0], row.members_count, self._avatar_storage) for row in result]
             total = result[0].total if result else 0
             return rows, total

@@ -77,17 +77,21 @@ docs:
 profile-up:
     PROFILE_BUILD=1 docker compose -f docker/docker-compose.yml up --build api -d
 
-# Record a flamegraph from the running api process.
+# Print the hottest uvicorn worker PID inside the api container.
+profile-pid:
+    @docker exec -u root api /venv/bin/python3 -c 'import os,sys; vals=[]; [vals.append((int(open("/proc/"+p+"/stat").read().split()[13])+int(open("/proc/"+p+"/stat").read().split()[14]),p)) for p in os.listdir("/proc") if p.isdigit() and "multiprocessing-fork" in open("/proc/"+p+"/cmdline","rb").read().replace(b"\0",b" ").decode("utf-8","ignore")]; print(max(vals)[1]) if vals else sys.exit(1)'
+
+# Record a flamegraph from the hottest running api worker.
 profile DURATION="30":
     mkdir -p ./profiling
-    docker exec -u root api py-spy record --pid 1 --duration {{DURATION}} --rate 100 --idle --output /tmp/flame.svg
+    pid=$(just profile-pid); echo Profiling api worker PID $pid; docker exec -u root api py-spy record --pid $pid --duration {{DURATION}} --rate 100 --idle --output /tmp/flame.svg
     docker cp api:/tmp/flame.svg ./profiling/flame-$(date -u +%Y%m%dT%H%M%SZ).svg
     ls -lh ./profiling/ | tail -1
 
-# Live top
+# Live top for the hottest running api worker.
 profile-top:
-    docker exec -u root -it api py-spy top --pid 1 --rate 100
+    pid=$(just profile-pid); echo Profiling api worker PID $pid; docker exec -u root -it api py-spy top --pid $pid --rate 100
 
 # Per-thread stack dump at the moment of execution. Useful when something hangs.
 profile-dump:
-    docker exec -u root api py-spy dump --pid 1
+    pid=$(just profile-pid); echo Dumping api worker PID $pid; docker exec -u root api py-spy dump --pid $pid
