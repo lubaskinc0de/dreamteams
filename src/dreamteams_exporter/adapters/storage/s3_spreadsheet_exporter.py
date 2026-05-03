@@ -184,10 +184,7 @@ class CsvS3SpreadsheetExporter(SpreadsheetExporter):
                         await s3_client.create_bucket(Bucket=self._config.bucket_name)
                         bucket_created = True
                     except ClientError as create_exc:
-                        if (
-                            create_exc.response.get("Error", {}).get("Code")
-                            not in _BUCKET_ALREADY_EXISTS_ERROR_CODES
-                        ):
+                        if create_exc.response.get("Error", {}).get("Code") not in _BUCKET_ALREADY_EXISTS_ERROR_CODES:
                             raise
                         await s3_client.head_bucket(Bucket=self._config.bucket_name)
                         bucket_created = False
