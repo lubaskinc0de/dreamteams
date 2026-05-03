@@ -1,5 +1,11 @@
 name: lint_test_deploy
-on: [push, pull_request]
+on:
+    push:
+        branches:
+            - "**"
+        tags:
+            - "v*"
+    pull_request:
 jobs:
     lint:
         name: "Run linters"
@@ -72,6 +78,7 @@ jobs:
 
     frontend:
         name: "Build frontend"
+        if: (github.ref_type == 'tag' && startsWith(github.ref_name, 'v')) || (github.ref_type == 'branch' && startsWith(github.ref_name, 'stage/'))
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
@@ -94,56 +101,14 @@ jobs:
               run: npm run generate
               working-directory: frontend
 
-    bump_version:
-        name: "Bump version"
-        if: github.ref == 'refs/heads/master'
+    release_metadata:
+        name: "Prepare release metadata"
+        if: github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
         needs: [lint, test, frontend]
         runs-on: ubuntu-latest
+        outputs:
+            image_version: ${{ steps.version.outputs.IMAGE_VERSION }}
         permissions:
-            contents: write
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v6
-              with:
-                  fetch-depth: "0"
-
-            - name: Bump version and push tag
-              id: bump_version
-              uses: anothrNick/github-tag-action@v1
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  TAG_PREFIX: v
-                  PRERELEASE: false
-                  DEFAULT_BUMP: patch
-
-            - name: Create version file
-              run: |
-                  echo "${STEPS_BUMP_VERSION_OUTPUTS_NEW_TAG}" > VERSION.txt
-              env:
-                  STEPS_BUMP_VERSION_OUTPUTS_NEW_TAG: ${{ steps.bump_version.outputs.new_tag }}
-
-            - name: Upload version file
-              uses: actions/upload-artifact@v4
-              with:
-                  name: version
-                  path: VERSION.txt
-                  retention-days: 1
-
-            - name: Output version info
-              run: |
-                  echo "New version: ${STEPS_BUMP_VERSION_OUTPUTS_NEW_TAG}"
-                  echo "Previous version: ${STEPS_BUMP_VERSION_OUTPUTS_PREVIOUS_TAG}"
-              env:
-                  STEPS_BUMP_VERSION_OUTPUTS_NEW_TAG: ${{ steps.bump_version.outputs.new_tag }}
-                  STEPS_BUMP_VERSION_OUTPUTS_PREVIOUS_TAG: ${{ steps.bump_version.outputs.previous_tag }}
-
-    build_and_push:
-        name: "Build and push"
-        if: always() && ((github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev') && (needs.lint.result == 'success' && needs.test.result == 'success' && needs.frontend.result == 'success') && (github.ref != 'refs/heads/master' || needs.bump_version.result == 'success'))
-        needs: [lint, test, frontend, bump_version]
-        runs-on: ubuntu-latest
-        permissions:
-            packages: write
             contents: read
         steps:
             - name: Checkout the repository
@@ -152,55 +117,63 @@ jobs:
                   fetch-depth: "0"
                   persist-credentials: false
 
-            - name: Download version file if exists
-              uses: actions/download-artifact@v4
-              with:
-                  name: version
-                  path: ./
-              continue-on-error: true
-
-            - name: Get version tag
-              id: get_version
+            - name: Verify tag is on master
               run: |
-                  if [ -f "VERSION.txt" ]; then
-                    VERSION=$(cat VERSION.txt)
-                    echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-                    echo "Using bumped version: $VERSION"
-
-                  elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
-                    VERSION="${GITHUB_REF#refs/tags/}"
-                    echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-                    echo "Using existing tag: $VERSION"
-
-                  else
-                    SHORT_SHA=$(git rev-parse --short HEAD)
-                    echo "VERSION=$SHORT_SHA" >> $GITHUB_OUTPUT
-                    echo "Using commit SHA: $SHORT_SHA"
+                  TAG_COMMIT="$(git rev-list -n 1 "${GITHUB_REF_NAME}")"
+                  if ! git branch --remotes --contains "${TAG_COMMIT}" | grep -q "origin/master"; then
+                    echo "Tag ${GITHUB_REF_NAME} does not point to a commit on master"
+                    exit 1
                   fi
 
-            - name: Determine image tag suffix and version
-              id: tag
+            - name: Set image version
+              id: version
               run: |
-                  echo "Github ref: ${GITHUB_REF}"
-                  echo "Version: ${STEPS_GET_VERSION_OUTPUTS_VERSION}"
-
-                  if [ "${GITHUB_REF}" == "refs/heads/dev" ]; then
-                    echo "TAG_SUFFIX=-dev" >> $GITHUB_OUTPUT
-                    echo "IMAGE_VERSION=${STEPS_GET_VERSION_OUTPUTS_VERSION}-dev" >> $GITHUB_OUTPUT
-                  else
-                    echo "TAG_SUFFIX=" >> $GITHUB_OUTPUT
-                    echo "IMAGE_VERSION=${STEPS_GET_VERSION_OUTPUTS_VERSION}" >> $GITHUB_OUTPUT
-                  fi
-              env:
-                  STEPS_GET_VERSION_OUTPUTS_VERSION: ${{ steps.get_version.outputs.VERSION }}
+                  echo "IMAGE_VERSION=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
 
             - name: Release info
               run: |
-                  echo "Tag suffix: ${STEPS_TAG_OUTPUTS_TAG_SUFFIX}"
-                  echo "Image version: ${STEPS_TAG_OUTPUTS_IMAGE_VERSION}"
+                  echo "Image version: ${GITHUB_REF_NAME}"
+
+    stage_metadata:
+        name: "Prepare stage metadata"
+        if: github.ref_type == 'branch' && startsWith(github.ref_name, 'stage/')
+        needs: [lint, test, frontend]
+        runs-on: ubuntu-latest
+        outputs:
+            image_version: ${{ steps.version.outputs.IMAGE_VERSION }}
+            image_alias: ${{ steps.version.outputs.IMAGE_ALIAS }}
+        steps:
+            - name: Set stage image tags
+              id: version
+              run: |
+                  STAGE_NAME="${GITHUB_REF_NAME#stage/}"
+                  SAFE_STAGE_NAME="$(printf "%s" "${STAGE_NAME}" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9_.-' '-')"
+                  SHORT_SHA="$(printf "%s" "${GITHUB_SHA}" | cut -c1-12)"
+
+                  echo "IMAGE_VERSION=stage-${SHORT_SHA}" >> $GITHUB_OUTPUT
+                  echo "IMAGE_ALIAS=stage-${SAFE_STAGE_NAME}" >> $GITHUB_OUTPUT
+
+            - name: Stage info
+              run: |
+                  echo "Stage image version: ${STEPS_VERSION_OUTPUTS_IMAGE_VERSION}"
+                  echo "Stage image alias: ${STEPS_VERSION_OUTPUTS_IMAGE_ALIAS}"
               env:
-                  STEPS_TAG_OUTPUTS_TAG_SUFFIX: ${{ steps.tag.outputs.TAG_SUFFIX }}
-                  STEPS_TAG_OUTPUTS_IMAGE_VERSION: ${{ steps.tag.outputs.IMAGE_VERSION }}
+                  STEPS_VERSION_OUTPUTS_IMAGE_VERSION: ${{ steps.version.outputs.IMAGE_VERSION }}
+                  STEPS_VERSION_OUTPUTS_IMAGE_ALIAS: ${{ steps.version.outputs.IMAGE_ALIAS }}
+
+    build_backend:
+        name: "Build and push backend"
+        if: needs.release_metadata.result == 'success'
+        needs: [release_metadata]
+        runs-on: ubuntu-latest
+        permissions:
+            packages: write
+            contents: read
+        steps:
+            - name: Checkout the repository
+              uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
 
             - name: Docker Setup Buildx
               uses: docker/setup-buildx-action@v3
@@ -219,8 +192,66 @@ jobs:
                   file: ./docker/Dockerfile
                   push: true
                   tags: |
-                      ghcr.io/${{ github.repository }}:${{ steps.tag.outputs.IMAGE_VERSION }}
-                      ghcr.io/${{ github.repository }}:latest${{ steps.tag.outputs.TAG_SUFFIX }}
+                      ghcr.io/${{ github.repository }}:${{ needs.release_metadata.outputs.image_version }}
+                      ghcr.io/${{ github.repository }}:latest
+
+    build_stage_backend:
+        name: "Build and push stage backend"
+        if: needs.stage_metadata.result == 'success'
+        needs: [stage_metadata]
+        runs-on: ubuntu-latest
+        permissions:
+            packages: write
+            contents: read
+        steps:
+            - name: Checkout the repository
+              uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
+
+            - name: Docker Setup Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Docker Login
+              uses: docker/login-action@v3
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Build and push stage backend
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  file: ./docker/Dockerfile
+                  push: true
+                  tags: |
+                      ghcr.io/${{ github.repository }}:${{ needs.stage_metadata.outputs.image_version }}
+                      ghcr.io/${{ github.repository }}:${{ needs.stage_metadata.outputs.image_alias }}
+
+    build_frontend:
+        name: "Build and push frontend"
+        if: needs.release_metadata.result == 'success'
+        needs: [release_metadata]
+        runs-on: ubuntu-latest
+        permissions:
+            packages: write
+            contents: read
+        steps:
+            - name: Checkout the repository
+              uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
+
+            - name: Docker Setup Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Docker Login
+              uses: docker/login-action@v3
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Build and push frontend
               uses: docker/build-push-action@v6
@@ -229,5 +260,39 @@ jobs:
                   file: ./frontend/Dockerfile
                   push: true
                   tags: |
-                      ghcr.io/${{ github.repository }}-frontend:${{ steps.tag.outputs.IMAGE_VERSION }}
-                      ghcr.io/${{ github.repository }}-frontend:latest${{ steps.tag.outputs.TAG_SUFFIX }}
+                      ghcr.io/${{ github.repository }}-frontend:${{ needs.release_metadata.outputs.image_version }}
+                      ghcr.io/${{ github.repository }}-frontend:latest
+
+    build_stage_frontend:
+        name: "Build and push stage frontend"
+        if: needs.stage_metadata.result == 'success'
+        needs: [stage_metadata]
+        runs-on: ubuntu-latest
+        permissions:
+            packages: write
+            contents: read
+        steps:
+            - name: Checkout the repository
+              uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
+
+            - name: Docker Setup Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Docker Login
+              uses: docker/login-action@v3
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Build and push stage frontend
+              uses: docker/build-push-action@v6
+              with:
+                  context: ./frontend
+                  file: ./frontend/Dockerfile
+                  push: true
+                  tags: |
+                      ghcr.io/${{ github.repository }}-frontend:${{ needs.stage_metadata.outputs.image_version }}
+                      ghcr.io/${{ github.repository }}-frontend:${{ needs.stage_metadata.outputs.image_alias }}
