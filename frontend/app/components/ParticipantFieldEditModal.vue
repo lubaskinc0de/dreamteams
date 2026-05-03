@@ -38,7 +38,13 @@ const reset = () => {
   participantStore.clearError();
 };
 
-watch(() => props.open, (v) => { if (v) reset(); });
+watch(
+  [() => props.open, () => props.field],
+  ([isOpen]) => {
+    if (isOpen) reset();
+  },
+  { immediate: true },
+);
 
 // Options
 const experienceLevelOptions = computed(() => [

@@ -39,7 +39,9 @@ const isMobile = computed(() => width.value < 768);
 // Computed for v-model binding
 const isOpen = computed({
   get: () => props.open,
-  set: () => emit("close"),
+  set: (value) => {
+    if (!value) emit("close");
+  },
 });
 
 const handleRegister = () => {

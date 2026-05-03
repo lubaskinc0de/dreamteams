@@ -22,6 +22,8 @@ _EXPORTS_PREFIX = "exports/"
 _DANGEROUS_CSV_PREFIXES = ("=", "+", "-", "@")
 _DANGEROUS_LEADING_CHARS = ("\t", "\r", "\n")
 _S3_CLIENT_CONFIG = BotoConfig(signature_version="s3v4", s3={"addressing_style": "path"})
+_BUCKET_MISSING_ERROR_CODES = frozenset({"404", "NoSuchBucket", "NotFound"})
+_BUCKET_ALREADY_EXISTS_ERROR_CODES = frozenset({"BucketAlreadyOwnedByYou", "BucketAlreadyExists"})
 _tracer = trace.get_tracer(__name__)
 
 
@@ -173,14 +175,23 @@ class CsvS3SpreadsheetExporter(SpreadsheetExporter):
                 config=_S3_CLIENT_CONFIG,
             ) as s3_client:
                 try:
-                    await s3_client.create_bucket(Bucket=self._config.bucket_name)
-                    bucket_created = True
-                    span.set_attribute("dreamteams_exporter.s3.bucket_created", bucket_created)
-                except ClientError as exc:
-                    if exc.response.get("Error", {}).get("Code") != "BucketAlreadyOwnedByYou":
-                        raise
+                    await s3_client.head_bucket(Bucket=self._config.bucket_name)
                     bucket_created = False
-                    span.set_attribute("dreamteams_exporter.s3.bucket_created", bucket_created)
+                except ClientError as exc:
+                    if exc.response.get("Error", {}).get("Code") not in _BUCKET_MISSING_ERROR_CODES:
+                        raise
+                    try:
+                        await s3_client.create_bucket(Bucket=self._config.bucket_name)
+                        bucket_created = True
+                    except ClientError as create_exc:
+                        if (
+                            create_exc.response.get("Error", {}).get("Code")
+                            not in _BUCKET_ALREADY_EXISTS_ERROR_CODES
+                        ):
+                            raise
+                        await s3_client.head_bucket(Bucket=self._config.bucket_name)
+                        bucket_created = False
+                span.set_attribute("dreamteams_exporter.s3.bucket_created", bucket_created)
                 try:
                     await s3_client.delete_bucket_policy(Bucket=self._config.bucket_name)
                     bucket_policy_deleted = True
