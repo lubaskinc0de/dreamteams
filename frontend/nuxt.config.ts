@@ -1,4 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+const seoDescription = "DreamTeams - IT hackathon aggregator and team search platform.";
+
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: {
@@ -15,7 +17,38 @@ export default defineNuxtConfig({
 
   app: {
     head: {
+      title: "DreamTeams",
+      titleTemplate: "DreamTeams",
+      htmlAttrs: {
+        lang: "ru",
+      },
       script: [{ src: "/config.js", defer: false }],
+      meta: [
+        { charset: "utf-8" },
+        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        { name: "theme-color", content: "#3b82f6" },
+        { name: "description", content: seoDescription },
+        { name: "robots", content: "index, follow" },
+        { property: "og:type", content: "website" },
+        { property: "og:site_name", content: "DreamTeams" },
+        { property: "og:title", content: "DreamTeams" },
+        { property: "og:description", content: seoDescription },
+        { property: "og:image", content: "/banner.webp" },
+        { property: "og:image:type", content: "image/webp" },
+        { property: "og:image:width", content: "1536" },
+        { property: "og:image:height", content: "1024" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: "DreamTeams" },
+        { name: "twitter:description", content: seoDescription },
+        { name: "twitter:image", content: "/banner.webp" },
+      ],
+      link: [
+        { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
+        { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32x32.png" },
+        { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16x16.png" },
+        { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
+        { rel: "manifest", href: "/site.webmanifest" },
+      ],
     },
   },
 

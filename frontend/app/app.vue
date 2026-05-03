@@ -13,15 +13,13 @@ const { locale } = useI18n();
 // Get Nuxt UI locale based on current i18n locale
 const uiLocale = computed(() => uiLocales[locale.value as keyof typeof uiLocales] || uiLocales.ru);
 
-// SEO Configuration for the app
+// Keep the browser title stable even when pages provide their own route meta.
 useHead({
-  titleTemplate: "%s - DreamTeams",
-  meta: [
-    { charset: "utf-8" },
-    { name: "viewport", content: "width=device-width, initial-scale=1" },
-    { name: "theme-color", content: "#3b82f6" },
-  ],
-  link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }],
+  title: "DreamTeams",
+  titleTemplate: () => "DreamTeams",
+  htmlAttrs: {
+    lang: locale,
+  },
 });
 
 // Toaster configuration (from MCP documentation)

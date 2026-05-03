@@ -72,7 +72,6 @@ const handleRegister = () => {
         <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white leading-tight mb-4">
           {{ competition.title }}
         </h2>
-        <CompetitionTagBadges :tags="competition.tags" size="md" />
       </div>
     </template>
 
@@ -243,6 +242,15 @@ const handleRegister = () => {
             }))"
             color="primary"
           />
+        </section>
+
+        <!-- Tags -->
+        <section v-if="competition.tags.length > 0">
+          <div class="border-t border-gray-200 dark:border-gray-700 mb-6" />
+          <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+            {{ t("competitionsPreview.detail.tags") }}
+          </h3>
+          <CompetitionTagBadges :tags="competition.tags" size="md" />
         </section>
       </div>
     </template>
