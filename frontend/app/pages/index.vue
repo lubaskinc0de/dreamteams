@@ -47,7 +47,7 @@ useSeoMeta({
   twitterCard: "summary_large_image",
 });
 
-const organizerFeatures: Feature[] = [
+const organizerFeatures = computed<Feature[]>(() => [
   {
     icon: "i-heroicons-building-office-2",
     title: t("home.features.organizers.title"),
@@ -75,9 +75,9 @@ const organizerFeatures: Feature[] = [
       color: "primary" as const,
     },
   },
-];
+]);
 
-const participantFeatures: Feature[] = [
+const participantFeatures = computed<Feature[]>(() => [
   {
     icon: "i-heroicons-rectangle-stack",
     title: t("home.features.aggregator.title"),
@@ -102,9 +102,9 @@ const participantFeatures: Feature[] = [
       color: "success" as const,
     },
   },
-];
+]);
 
-const roadmapItems = [
+const roadmapItems = computed(() => [
   {
     icon: "i-heroicons-user-group",
     title: t("home.roadmap.teamFormation.title"),
@@ -123,7 +123,7 @@ const roadmapItems = [
     description: t("home.roadmap.winnerElection.description"),
     status: t("home.roadmap.planned"),
   },
-];
+]);
 </script>
 
 <template>

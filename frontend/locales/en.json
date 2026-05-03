@@ -59,25 +59,25 @@
   },
   "home": {
     "title": "DreamTeams",
-    "heroTitle": "Browse competitions, publish events, and manage applications in one place.",
-    "heroDescription": "DreamTeams currently helps organizers publish competitions with custom application forms and review incoming applications, while participants can browse the catalog and apply from their profile.",
+    "heroTitle": "All IT competitions and applications on one platform.",
+    "heroDescription": "Find relevant events, publish your own competitions, and manage applications without unnecessary routine.",
     "heroHighlights": {
-      "catalog": "Public competition catalog",
-      "forms": "Custom application forms",
-      "export": "CSV export for organizers"
+      "catalog": "Competition catalog",
+      "forms": "Application forms",
+      "export": "Application export"
     },
     "ctaText": "Competition discovery and organizer workflows in one place",
-    "startButton": "Start Now",
-    "findHackathonButton": "Find Competitions",
-    "registerButton": "Become an Organizer",
-    "profileButton": "Go to Profile",
-    "findEvents": "Find Events",
+    "startButton": "Start now",
+    "findHackathonButton": "Find competitions",
+    "registerButton": "Register",
+    "profileButton": "Go to profile",
+    "findEvents": "Find events",
     "about": {
-      "title": "About the Platform",
-      "description": "DreamTeams is an IT competition platform focused on the workflows that already work today: a public competition catalog, participant applications, organizer competition management, and application review."
+      "title": "About the platform",
+      "description": "DreamTeams brings IT competition participants and organizers together: it helps users find relevant events, collect applications, and manage selection conveniently."
     },
-    "featuresTitle": "What works today",
-    "featuresDescription": "Current product capabilities for participants and organizers",
+    "featuresTitle": "Key platform features",
+    "featuresDescription": "Tools for participants and organizers in DreamTeams",
     "featuresSections": {
       "organizers": {
         "eyebrow": "For organizers",
@@ -129,8 +129,8 @@
       }
     },
     "cta": {
-      "title": "Use the live workflows",
-      "description": "Browse active competitions or set up your organizer profile and publish the next event."
+      "title": "Start working with DreamTeams",
+      "description": "Find new competitions or launch your own on DreamTeams."
     },
     "features": {
       "aggregator": {
