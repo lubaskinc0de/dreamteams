@@ -41,10 +41,7 @@ onMounted(() => {
 useSeoMeta({
   title: t("seo.home.title"),
   description: t("seo.home.description"),
-  ogTitle: t("seo.home.title"),
   ogDescription: t("seo.home.description"),
-  ogImage: "/og-image.png",
-  twitterCard: "summary_large_image",
 });
 
 const organizerFeatures = computed<Feature[]>(() => [
