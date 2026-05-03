@@ -79,6 +79,7 @@ jobs:
     frontend:
         name: "Build frontend"
         if: (github.ref_type == 'tag' && startsWith(github.ref_name, 'v')) || (github.ref_type == 'branch' && startsWith(github.ref_name, 'stage/'))
+        needs: [lint, test]
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
@@ -101,13 +102,14 @@ jobs:
               run: npm run generate
               working-directory: frontend
 
-    release_metadata:
-        name: "Prepare release metadata"
-        if: github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
+    build_metadata:
+        name: "Prepare build metadata"
+        if: (github.ref_type == 'tag' && startsWith(github.ref_name, 'v')) || (github.ref_type == 'branch' && startsWith(github.ref_name, 'stage/'))
         needs: [lint, test, frontend]
         runs-on: ubuntu-latest
         outputs:
-            image_version: ${{ steps.version.outputs.IMAGE_VERSION }}
+            backend_tags: ${{ steps.tags.outputs.BACKEND_TAGS }}
+            frontend_tags: ${{ steps.tags.outputs.FRONTEND_TAGS }}
         permissions:
             contents: read
         steps:
@@ -118,6 +120,7 @@ jobs:
                   persist-credentials: false
 
             - name: Verify tag is on master
+              if: github.ref_type == 'tag'
               run: |
                   TAG_COMMIT="$(git rev-list -n 1 "${GITHUB_REF_NAME}")"
                   if ! git branch --remotes --contains "${TAG_COMMIT}" | grep -q "origin/master"; then
@@ -125,46 +128,45 @@ jobs:
                     exit 1
                   fi
 
-            - name: Set image version
-              id: version
+            - name: Set image tags
+              id: tags
               run: |
-                  echo "IMAGE_VERSION=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+                  if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+                    BACKEND_TAGS="ghcr.io/${GITHUB_REPOSITORY}:${GITHUB_REF_NAME}"$'\n'"ghcr.io/${GITHUB_REPOSITORY}:latest"
+                    FRONTEND_TAGS="ghcr.io/${GITHUB_REPOSITORY}-frontend:${GITHUB_REF_NAME}"$'\n'"ghcr.io/${GITHUB_REPOSITORY}-frontend:latest"
+                  else
+                    STAGE_NAME="${GITHUB_REF_NAME#stage/}"
+                    SAFE_STAGE_NAME="$(printf "%s" "${STAGE_NAME}" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9_.-' '-')"
+                    SHORT_SHA="$(printf "%s" "${GITHUB_SHA}" | cut -c1-12)"
 
-            - name: Release info
+                    BACKEND_TAGS="ghcr.io/${GITHUB_REPOSITORY}:stage-${SHORT_SHA}"$'\n'"ghcr.io/${GITHUB_REPOSITORY}:stage-${SAFE_STAGE_NAME}"
+                    FRONTEND_TAGS="ghcr.io/${GITHUB_REPOSITORY}-frontend:stage-${SHORT_SHA}"$'\n'"ghcr.io/${GITHUB_REPOSITORY}-frontend:stage-${SAFE_STAGE_NAME}"
+                  fi
+
+                  {
+                    echo "BACKEND_TAGS<<EOF"
+                    echo "${BACKEND_TAGS}"
+                    echo "EOF"
+                    echo "FRONTEND_TAGS<<EOF"
+                    echo "${FRONTEND_TAGS}"
+                    echo "EOF"
+                  } >> $GITHUB_OUTPUT
+
+            - name: Build info
               run: |
-                  echo "Image version: ${GITHUB_REF_NAME}"
-
-    stage_metadata:
-        name: "Prepare stage metadata"
-        if: github.ref_type == 'branch' && startsWith(github.ref_name, 'stage/')
-        needs: [lint, test, frontend]
-        runs-on: ubuntu-latest
-        outputs:
-            image_version: ${{ steps.version.outputs.IMAGE_VERSION }}
-            image_alias: ${{ steps.version.outputs.IMAGE_ALIAS }}
-        steps:
-            - name: Set stage image tags
-              id: version
-              run: |
-                  STAGE_NAME="${GITHUB_REF_NAME#stage/}"
-                  SAFE_STAGE_NAME="$(printf "%s" "${STAGE_NAME}" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9_.-' '-')"
-                  SHORT_SHA="$(printf "%s" "${GITHUB_SHA}" | cut -c1-12)"
-
-                  echo "IMAGE_VERSION=stage-${SHORT_SHA}" >> $GITHUB_OUTPUT
-                  echo "IMAGE_ALIAS=stage-${SAFE_STAGE_NAME}" >> $GITHUB_OUTPUT
-
-            - name: Stage info
-              run: |
-                  echo "Stage image version: ${STEPS_VERSION_OUTPUTS_IMAGE_VERSION}"
-                  echo "Stage image alias: ${STEPS_VERSION_OUTPUTS_IMAGE_ALIAS}"
+                  echo "Backend tags:"
+                  echo "${STEPS_TAGS_OUTPUTS_BACKEND_TAGS}"
+                  echo "Frontend tags:"
+                  echo "${STEPS_TAGS_OUTPUTS_FRONTEND_TAGS}"
               env:
-                  STEPS_VERSION_OUTPUTS_IMAGE_VERSION: ${{ steps.version.outputs.IMAGE_VERSION }}
-                  STEPS_VERSION_OUTPUTS_IMAGE_ALIAS: ${{ steps.version.outputs.IMAGE_ALIAS }}
+                  STEPS_TAGS_OUTPUTS_BACKEND_TAGS: ${{ steps.tags.outputs.BACKEND_TAGS }}
+                  STEPS_TAGS_OUTPUTS_FRONTEND_TAGS: ${{ steps.tags.outputs.FRONTEND_TAGS }}
+
 
     build_backend:
         name: "Build and push backend"
-        if: needs.release_metadata.result == 'success'
-        needs: [release_metadata]
+        if: needs.build_metadata.result == 'success'
+        needs: [build_metadata]
         runs-on: ubuntu-latest
         permissions:
             packages: write
@@ -191,48 +193,12 @@ jobs:
                   context: .
                   file: ./docker/Dockerfile
                   push: true
-                  tags: |
-                      ghcr.io/${{ github.repository }}:${{ needs.release_metadata.outputs.image_version }}
-                      ghcr.io/${{ github.repository }}:latest
-
-    build_stage_backend:
-        name: "Build and push stage backend"
-        if: needs.stage_metadata.result == 'success'
-        needs: [stage_metadata]
-        runs-on: ubuntu-latest
-        permissions:
-            packages: write
-            contents: read
-        steps:
-            - name: Checkout the repository
-              uses: actions/checkout@v4
-              with:
-                  persist-credentials: false
-
-            - name: Docker Setup Buildx
-              uses: docker/setup-buildx-action@v3
-
-            - name: Docker Login
-              uses: docker/login-action@v3
-              with:
-                  registry: ghcr.io
-                  username: ${{ github.actor }}
-                  password: ${{ secrets.GITHUB_TOKEN }}
-
-            - name: Build and push stage backend
-              uses: docker/build-push-action@v6
-              with:
-                  context: .
-                  file: ./docker/Dockerfile
-                  push: true
-                  tags: |
-                      ghcr.io/${{ github.repository }}:${{ needs.stage_metadata.outputs.image_version }}
-                      ghcr.io/${{ github.repository }}:${{ needs.stage_metadata.outputs.image_alias }}
+                  tags: ${{ needs.build_metadata.outputs.backend_tags }}
 
     build_frontend:
         name: "Build and push frontend"
-        if: needs.release_metadata.result == 'success'
-        needs: [release_metadata]
+        if: needs.build_metadata.result == 'success'
+        needs: [build_metadata]
         runs-on: ubuntu-latest
         permissions:
             packages: write
@@ -259,40 +225,4 @@ jobs:
                   context: ./frontend
                   file: ./frontend/Dockerfile
                   push: true
-                  tags: |
-                      ghcr.io/${{ github.repository }}-frontend:${{ needs.release_metadata.outputs.image_version }}
-                      ghcr.io/${{ github.repository }}-frontend:latest
-
-    build_stage_frontend:
-        name: "Build and push stage frontend"
-        if: needs.stage_metadata.result == 'success'
-        needs: [stage_metadata]
-        runs-on: ubuntu-latest
-        permissions:
-            packages: write
-            contents: read
-        steps:
-            - name: Checkout the repository
-              uses: actions/checkout@v4
-              with:
-                  persist-credentials: false
-
-            - name: Docker Setup Buildx
-              uses: docker/setup-buildx-action@v3
-
-            - name: Docker Login
-              uses: docker/login-action@v3
-              with:
-                  registry: ghcr.io
-                  username: ${{ github.actor }}
-                  password: ${{ secrets.GITHUB_TOKEN }}
-
-            - name: Build and push stage frontend
-              uses: docker/build-push-action@v6
-              with:
-                  context: ./frontend
-                  file: ./frontend/Dockerfile
-                  push: true
-                  tags: |
-                      ghcr.io/${{ github.repository }}-frontend:${{ needs.stage_metadata.outputs.image_version }}
-                      ghcr.io/${{ github.repository }}-frontend:${{ needs.stage_metadata.outputs.image_alias }}
+                  tags: ${{ needs.build_metadata.outputs.frontend_tags }}
