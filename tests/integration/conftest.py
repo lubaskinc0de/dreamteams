@@ -45,14 +45,14 @@ from tests.common.factory.organizer import OrganizerFormFactory, UpdateOrganizer
 from tests.common.factory.participant import ParticipantFormFactory, UpdateParticipantFormFactory
 from tests.integration.api_client import ApiClient, APIClientConfig
 from tests.integration.containers import RUSTFS_ACCESS_KEY, RUSTFS_SECRET_KEY, RustFsContainer
-from tests.integration.helpers.admin_factory import AdminGateway
-from tests.integration.helpers.application_factory import ApplicationGateway
-from tests.integration.helpers.application_form_factory import ApplicationFormGateway
-from tests.integration.helpers.competition_factory import CompetitionGateway
+from tests.integration.helpers.admin_gateway import AdminGateway
+from tests.integration.helpers.application_form_gateway import ApplicationFormGateway
+from tests.integration.helpers.application_gateway import ApplicationGateway
+from tests.integration.helpers.competition_gateway import CompetitionGateway
 from tests.integration.helpers.facade import Gateway
-from tests.integration.helpers.organizer_factory import OrganizerGateway
-from tests.integration.helpers.participant_factory import ParticipantGateway
-from tests.integration.helpers.tag_factory import TagGateway
+from tests.integration.helpers.organizer_gateway import OrganizerGateway
+from tests.integration.helpers.participant_gateway import ParticipantGateway
+from tests.integration.helpers.tag_gateway import TagGateway
 
 SUPERUSER_PW_HASH = "$argon2id$v=19$m=65536,t=3,p=4$WtB09we21GMOQ8kjBOFnrQ$ZU8lTm3cNPhFe90PGfH5sliQvzlbZf6DKztbxNlOl2s"
 

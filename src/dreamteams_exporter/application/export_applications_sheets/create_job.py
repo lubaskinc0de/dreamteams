@@ -14,6 +14,8 @@ from dreamteams_exporter.entities.common.vo.application_status import Applicatio
 from dreamteams_exporter.entities.errors.user import InvalidRoleError
 from dreamteams_exporter.entities.export_job.factory import export_job_factory
 
+logger: Logger = structlog.get_logger(__name__)
+
 
 @dataclass(slots=True, kw_only=True, frozen=True)
 class CreateExportJobInput:
@@ -28,9 +30,6 @@ class CreatedExportJob:
     """Result returned by the create-job interactor."""
 
     job_id: ExportJobId
-
-
-logger: Logger = structlog.get_logger(__name__)
 
 
 @interactor
