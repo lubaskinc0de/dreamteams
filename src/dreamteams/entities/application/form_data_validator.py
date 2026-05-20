@@ -19,7 +19,7 @@ def _validate_select_field(field: Field, value: Any) -> None:
     if field.choices is None:
         msg = f"SELECT field '{field.name}' has no choices — this is a bug"
         raise RuntimeError(msg)
-    valid_values = {c.value for c in field.choices}
+    valid_values = tuple(c.value for c in field.choices)
     if not isinstance(value, str) or value not in valid_values:
         raise InvalidApplicationDataError(
             message=f"Field '{field.name}' must be one of: {', '.join(sorted(valid_values))}",
@@ -30,9 +30,9 @@ def _validate_multiselect_field(field: Field, value: Any) -> None:
     if field.choices is None:
         msg = f"MULTISELECT field '{field.name}' has no choices — this is a bug"
         raise RuntimeError(msg)
-    valid_values = {c.value for c in field.choices}
     if not isinstance(value, list) or not value:
         raise InvalidApplicationDataError(message=f"Field '{field.name}' must be a non-empty list")
+    valid_values = {c.value for c in field.choices}
     invalid = [v for v in value if not isinstance(v, str) or v not in valid_values]
     if invalid:
         raise InvalidApplicationDataError(
@@ -60,8 +60,6 @@ def validate_form_data(
             )
         return
 
-    field_map = {f.name: f for f in form.fields}
-
     if form_data is None:
         missing = [f.name for f in form.fields if f.required]
         if missing:
@@ -70,7 +68,8 @@ def validate_form_data(
             )
         return
 
-    extra = set(form_data) - field_map.keys()
+    field_names = {f.name for f in form.fields}
+    extra = set(form_data).difference(field_names)
     if extra:
         raise InvalidApplicationDataError(
             message=f"Unknown form fields: {', '.join(sorted(extra))}",

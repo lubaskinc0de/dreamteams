@@ -26,6 +26,8 @@ from dreamteams_exporter.entities.common.identifiers import ExportJobId
 from dreamteams_exporter.entities.common.vo.participant_contact import ParticipantContact
 from dreamteams_exporter.entities.export_job.entity import ExportApplicationsJob
 
+logger: Logger = structlog.get_logger(__name__)
+
 _PAGE_SIZE = 100
 
 
@@ -43,9 +45,6 @@ class ExportStreamResult:
     file_key: str
     rows_count: int
     pages_count: int
-
-
-logger: Logger = structlog.get_logger(__name__)
 
 
 def _format_contacts(contacts: list[ParticipantContact]) -> str:

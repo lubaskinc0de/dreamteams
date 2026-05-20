@@ -10,15 +10,14 @@ from dreamteams_exporter.application.common.idp import IdProvider
 from dreamteams_exporter.application.errors.job import JobNotFoundError
 from dreamteams_exporter.entities.common.identifiers import ExportJobId
 
+logger: Logger = structlog.get_logger(__name__)
+
 
 @dataclass(slots=True, kw_only=True, frozen=True)
 class ReadExportJobInput:
     """Payload accepted by the read-job interactor."""
 
     job_id: ExportJobId
-
-
-logger: Logger = structlog.get_logger(__name__)
 
 
 @interactor
