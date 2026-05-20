@@ -13,9 +13,9 @@ from dreamteams.application.view_my_applications import MyApplicationModel
 from dreamteams.entities.common.identifiers import ApplicationId, CompetitionId
 from tests.common.factory.application import SubmitApplicationInputFactory
 from tests.integration.api_client import ApiClient
-from tests.integration.helpers.competition_factory import CompetitionGateway
+from tests.integration.helpers.competition_gateway import CompetitionGateway
 from tests.integration.helpers.models import CompetitionCreated
-from tests.integration.helpers.participant_factory import ParticipantGateway
+from tests.integration.helpers.participant_gateway import ParticipantGateway
 
 
 @dataclass

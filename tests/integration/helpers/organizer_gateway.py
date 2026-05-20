@@ -7,7 +7,7 @@ from faker import Faker
 
 from tests.common.factory.organizer import OrganizerFormFactory
 from tests.integration.api_client import ApiClient
-from tests.integration.helpers.admin_factory import AdminGateway
+from tests.integration.helpers.admin_gateway import AdminGateway
 from tests.integration.helpers.models import OrganizerCreated, OrganizerWithAdmin
 
 

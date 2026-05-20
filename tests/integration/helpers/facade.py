@@ -2,13 +2,13 @@
 
 from dataclasses import dataclass
 
-from tests.integration.helpers.admin_factory import AdminGateway
-from tests.integration.helpers.application_factory import ApplicationGateway
-from tests.integration.helpers.application_form_factory import ApplicationFormGateway
-from tests.integration.helpers.competition_factory import CompetitionGateway
-from tests.integration.helpers.organizer_factory import OrganizerGateway
-from tests.integration.helpers.participant_factory import ParticipantGateway
-from tests.integration.helpers.tag_factory import TagGateway
+from tests.integration.helpers.admin_gateway import AdminGateway
+from tests.integration.helpers.application_form_gateway import ApplicationFormGateway
+from tests.integration.helpers.application_gateway import ApplicationGateway
+from tests.integration.helpers.competition_gateway import CompetitionGateway
+from tests.integration.helpers.organizer_gateway import OrganizerGateway
+from tests.integration.helpers.participant_gateway import ParticipantGateway
+from tests.integration.helpers.tag_gateway import TagGateway
 
 
 @dataclass
