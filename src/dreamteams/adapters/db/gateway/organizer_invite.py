@@ -18,19 +18,28 @@ class SAOrganizerInviteGateway(OrganizerInviteGateway):
         self._session = session
 
     @override
-    async def get_by_id(self, invite_id: OrganizerInviteId) -> OrganizerInvite | None:
+    async def get_by_id(self, invite_id: OrganizerInviteId, *, for_update: bool = False) -> OrganizerInvite | None:
         """Retrieve an invite by its UUID primary key."""
-        result = await self._session.execute(
+        query = (
             select(OrganizerInvite)
             .where(organizer_invite_table.c.id == invite_id)
-            .options(selectinload(OrganizerInvite.used_by).selectinload(Organizer.user)),  # type: ignore[arg-type]
+            .options(selectinload(OrganizerInvite.used_by).selectinload(Organizer.user))  # type: ignore[arg-type]
+        )
+        if for_update:
+            query = query.with_for_update(of=organizer_invite_table)
+
+        result = await self._session.execute(
+            query,
         )
         return result.scalar_one_or_none()
 
     @override
-    async def get_by_code(self, code: str) -> OrganizerInvite | None:
+    async def get_by_code(self, code: str, *, for_update: bool = False) -> OrganizerInvite | None:
         """Retrieve an invite by its unique code string."""
         query = select(OrganizerInvite).where(organizer_invite_table.c.code == code)
+        if for_update:
+            query = query.with_for_update(of=organizer_invite_table)
+
         result = await self._session.scalars(query)
         return result.first()
 

@@ -1,3 +1,4 @@
+import asyncio
 from uuid import uuid4
 
 from dreamteams.application.manage_application_form import ApplicationFormInput, CreatedApplicationForm
@@ -11,8 +12,16 @@ from dreamteams.application.manage_application_form.create_application_form impo
 )
 from dreamteams.entities.application_form.field import FieldType
 from tests.common.factory.application_form import ApplicationFormInputFactory
-from tests.integration.api_client import ApiClient
+from tests.integration.api_client import ApiClient, APIResponse
 from tests.integration.helpers.facade import Gateway
+from tests.integration.helpers.race import assert_one_success_one_error
+
+_APPLICATION_FORM_CREATION_RACE_ERRORS = frozenset(
+    {
+        (409, "APPLICATION_FORM_ALREADY_EXISTS"),
+        (429, "INTEGRITY_CONFLICT"),
+    },
+)
 
 
 async def test_competition_owner_can_attach_application_form(
@@ -80,6 +89,35 @@ async def test_competition_can_only_have_one_application_form(
 
     # Assert
     response.assert_error(409, "APPLICATION_FORM_ALREADY_EXISTS")
+
+
+async def test_concurrent_application_form_creation_creates_one_form(
+    api_client: ApiClient,
+    gateway: Gateway,
+    application_form_input_factory: ApplicationFormInputFactory,
+) -> None:
+    """Concurrent application form creation for one competition creates exactly one form."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    comp = await gateway.competition.create(owner.organizer.auth_id)
+    form_input = application_form_input_factory.build()
+    payload = form_input.model_dump(mode="json")
+
+    async def create() -> APIResponse[CreatedApplicationForm]:
+        with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+            return await api_client.create_application_form(comp.created.competition_id, payload)
+
+    # Act
+    responses = await asyncio.gather(create(), create())
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        actual = (
+            (await api_client.read_application_form(comp.created.competition_id)).assert_status(200).ensure_content()
+        )
+
+    # Assert
+    assert_one_success_one_error(responses, _APPLICATION_FORM_CREATION_RACE_ERRORS)
+    assert actual.competition_id == comp.created.competition_id
+    assert actual.model_dump(mode="json")["fields"] == form_input.model_dump(mode="json")["fields"]
 
 
 async def test_non_owner_organizer_cannot_attach_application_form(

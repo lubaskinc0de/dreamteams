@@ -27,7 +27,7 @@ class RevokeInvite:
         user_id = await self.idp.get_user_id()
         logger.debug("Revoking invite", invite_id=invite_id, user_id=user_id)
 
-        invite = await self.organizer_invite_gateway.get_by_id(invite_id)
+        invite = await self.organizer_invite_gateway.get_by_id(invite_id, for_update=True)
         if invite is None:
             logger.warning("Invite not found", invite_id=invite_id)
             raise InviteNotFoundError

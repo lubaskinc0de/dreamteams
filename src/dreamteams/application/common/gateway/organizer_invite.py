@@ -9,12 +9,12 @@ class OrganizerInviteGateway(Protocol):
     """Gateway for managing organizer invite codes."""
 
     @abstractmethod
-    async def get_by_id(self, invite_id: OrganizerInviteId) -> OrganizerInvite | None:
+    async def get_by_id(self, invite_id: OrganizerInviteId, *, for_update: bool = False) -> OrganizerInvite | None:
         """Retrieve an invite by its UUID primary key."""
         raise NotImplementedError
 
     @abstractmethod
-    async def get_by_code(self, code: str) -> OrganizerInvite | None:
+    async def get_by_code(self, code: str, *, for_update: bool = False) -> OrganizerInvite | None:
         """Retrieve an invite by its unique code string."""
         raise NotImplementedError
 

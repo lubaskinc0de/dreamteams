@@ -1,3 +1,4 @@
+import asyncio
 from uuid import uuid4
 
 from dreamteams.application.issue_invite import InviteModel
@@ -54,6 +55,31 @@ async def test_cannot_revoke_already_revoked_invite(
 
     # Assert
     response.assert_error(409, "INVITE_ALREADY_REVOKED")
+
+
+async def test_concurrent_invite_revokes_revoke_once(
+    api_client: ApiClient,
+    gateway: Gateway,
+) -> None:
+    """Concurrent revokes of the same invite revoke it exactly once."""
+    # Arrange
+    admin = await gateway.admin.create()
+    with api_client.authenticate(auth_user_id=admin.auth_id):
+        invite = (await api_client.issue_invite({})).assert_status(200).ensure_content()
+
+    async def revoke() -> int:
+        with api_client.authenticate(auth_user_id=admin.auth_id):
+            return (await api_client.revoke_invite(invite.invite_id)).status
+
+    # Act
+    statuses = await asyncio.gather(revoke(), revoke())
+    with api_client.authenticate(auth_user_id=admin.auth_id):
+        actual = (await api_client.read_invite(invite.invite_id)).assert_status(200).ensure_content()
+
+    # Assert
+    assert sorted(statuses) == [200, 409]
+    assert actual.is_revoked is True
+    assert actual.is_used is False
 
 
 async def test_cannot_revoke_used_invite(

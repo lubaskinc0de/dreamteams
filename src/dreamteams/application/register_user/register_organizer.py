@@ -56,7 +56,7 @@ class RegisterOrganizer:
         """Creates a new ``User`` and ``Organizer`` role."""
         logger.debug("Registering as organizer", **data.model_dump(exclude={"invite_code"}))
 
-        invite = await self.organizer_invite_gateway.get_by_code(data.invite_code)
+        invite = await self.organizer_invite_gateway.get_by_code(data.invite_code, for_update=True)
         if invite is None:
             logger.warning("Invite not found during organizer registration")
             raise InviteNotFoundError

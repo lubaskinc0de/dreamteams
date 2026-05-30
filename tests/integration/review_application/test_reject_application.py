@@ -1,5 +1,7 @@
+import asyncio
 from uuid import uuid4
 
+from dreamteams.entities.application.entity import ApplicationStatus
 from tests.integration.api_client import ApiClient
 from tests.integration.helpers.facade import Gateway
 
@@ -21,6 +23,30 @@ async def test_organizer_can_reject_pending_application(
 
     # Assert
     response.assert_status(200)
+
+
+async def test_concurrent_rejects_resolve_application_once(
+    api_client: ApiClient,
+    gateway: Gateway,
+) -> None:
+    """Concurrent rejects of the same application resolve it exactly once."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+    application_id = await gateway.application.submit(participant.auth_id, comp)
+
+    async def reject() -> int:
+        with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+            return (await api_client.reject_application(application_id)).status
+
+    # Act
+    statuses = await asyncio.gather(reject(), reject())
+    actual = await gateway.application.read_as_organizer(application_id, owner.organizer.auth_id)
+
+    # Assert
+    assert sorted(statuses) == [200, 409]
+    assert actual.status == ApplicationStatus.REJECTED
 
 
 async def test_unauthenticated_cannot_reject_application(

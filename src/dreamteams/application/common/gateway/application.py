@@ -18,7 +18,7 @@ class ApplicationGateway(Protocol):
     """Protocol defining the interface for reading Application data from persistent storage."""
 
     @abstractmethod
-    async def get(self, application_id: ApplicationId) -> Application | None:
+    async def get(self, application_id: ApplicationId, *, for_update: bool = False) -> Application | None:
         """Retrieve an application by its unique identifier, returns None if not found."""
         raise NotImplementedError
 
