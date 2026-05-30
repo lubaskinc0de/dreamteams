@@ -23,6 +23,15 @@ class InternalServerError(AppError):
 
 
 @app_error
+class IntegrityConflictError(AppError):
+    """Generic error used when a database integrity constraint rejects a write."""
+
+    code: ClassVar[str] = "INTEGRITY_CONFLICT"
+    message: str = "Integrity constraint violated"
+    orig_error: Exception
+
+
+@app_error
 class ValidationError(AppError):
     """Error used as when fastapi ``RequestValidationError`` exception occurs."""
 

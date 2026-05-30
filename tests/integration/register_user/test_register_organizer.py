@@ -1,13 +1,22 @@
+import asyncio
 from typing import Any
 from uuid import uuid4
 
 import pytest
 from faker import Faker
 
-from dreamteams.application.register_user.register_organizer import MAX_INVITE_CODE_LENGTH
+from dreamteams.application.register_user.register_organizer import MAX_INVITE_CODE_LENGTH, CreatedOrganizer
 from tests.common.factory.organizer import OrganizerFormFactory
-from tests.integration.api_client import ApiClient
+from tests.integration.api_client import ApiClient, APIResponse
 from tests.integration.helpers.facade import Gateway
+from tests.integration.helpers.race import assert_one_success_one_error
+
+_ORGANIZER_UNIQUENESS_RACE_ERRORS = frozenset(
+    {
+        (409, "ORGANIZER_ALREADY_EXISTS"),
+        (429, "INTEGRITY_CONFLICT"),
+    },
+)
 
 
 async def test_register_as_organizer(gateway: Gateway) -> None:
@@ -253,3 +262,145 @@ async def test_register_with_used_invite_code_fails(
         )
 
     response.assert_error(409, "INVITE_ALREADY_USED")
+
+
+async def test_concurrent_registrations_with_same_invite_use_invite_once(
+    api_client: ApiClient,
+    organizer_form_factory: OrganizerFormFactory,
+    faker: Faker,
+    gateway: Gateway,
+) -> None:
+    """Concurrent registrations with one invite use it exactly once."""
+    # Arrange
+    admin = await gateway.admin.create()
+    with api_client.authenticate(auth_user_id=admin.auth_id):
+        invite = (await api_client.issue_invite({})).assert_status(200).ensure_content()
+
+    first_form = organizer_form_factory.build(invite_code=invite.code)
+    second_form = organizer_form_factory.build(invite_code=invite.code)
+
+    async def register(data: dict[str, Any]) -> APIResponse[CreatedOrganizer]:
+        with api_client.authenticate(auth_user_id=str(uuid4()), auth_user_email=faker.email()):
+            return await api_client.register_organizer(data)
+
+    # Act
+    responses = await asyncio.gather(
+        register(first_form.model_dump(mode="json")),
+        register(second_form.model_dump(mode="json")),
+    )
+    with api_client.authenticate(auth_user_id=admin.auth_id):
+        actual = (await api_client.read_invite(invite.invite_id)).assert_status(200).ensure_content()
+
+    # Assert
+    statuses = [response.status for response in responses]
+    assert sorted(statuses) == [200, 409]
+    next(response for response in responses if response.status == 409).assert_error(409, "INVITE_ALREADY_USED")
+    assert actual.is_used is True
+    assert actual.is_revoked is False
+    assert actual.used_by is not None
+
+
+async def test_concurrent_register_and_revoke_invite_resolve_once(
+    api_client: ApiClient,
+    organizer_form_factory: OrganizerFormFactory,
+    faker: Faker,
+    gateway: Gateway,
+) -> None:
+    """Concurrent registration and revoke of one invite resolve it exactly once."""
+    # Arrange
+    admin = await gateway.admin.create()
+    with api_client.authenticate(auth_user_id=admin.auth_id):
+        invite = (await api_client.issue_invite({})).assert_status(200).ensure_content()
+
+    form = organizer_form_factory.build(invite_code=invite.code)
+
+    async def register() -> APIResponse[CreatedOrganizer]:
+        with api_client.authenticate(auth_user_id=str(uuid4()), auth_user_email=faker.email()):
+            return await api_client.register_organizer(form.model_dump(mode="json"))
+
+    async def revoke() -> APIResponse[None]:
+        with api_client.authenticate(auth_user_id=admin.auth_id):
+            return await api_client.revoke_invite(invite.invite_id)
+
+    # Act
+    register_response, revoke_response = await asyncio.gather(register(), revoke())
+    with api_client.authenticate(auth_user_id=admin.auth_id):
+        actual = (await api_client.read_invite(invite.invite_id)).assert_status(200).ensure_content()
+
+    # Assert
+    register_status = register_response.status
+    revoke_status = revoke_response.status
+    assert register_status == 200 or revoke_status == 200
+    assert not (register_status == 200 and revoke_status == 200)
+    if register_status == 200:
+        revoke_response.assert_error(409, "INVITE_ALREADY_USED")
+        assert actual.is_used is True
+        assert actual.is_revoked is False
+        assert actual.used_by is not None
+    else:
+        register_response.assert_error(403, "INVITE_REVOKED")
+        assert actual.is_revoked is True
+        assert actual.is_used is False
+
+
+async def test_concurrent_organizer_registrations_with_same_email_create_one_organizer(
+    api_client: ApiClient,
+    organizer_form_factory: OrganizerFormFactory,
+    faker: Faker,
+    gateway: Gateway,
+) -> None:
+    """Concurrent organizer registrations with the same contact email create exactly one organizer."""
+    # Arrange
+    admin = await gateway.admin.create()
+    with api_client.authenticate(auth_user_id=admin.auth_id):
+        first_invite = (await api_client.issue_invite({})).assert_status(200).ensure_content()
+        second_invite = (await api_client.issue_invite({})).assert_status(200).ensure_content()
+
+    shared_email = faker.email()
+    first_form = organizer_form_factory.build(invite_code=first_invite.code)
+    second_form = organizer_form_factory.build(invite_code=second_invite.code)
+
+    async def register(data: dict[str, Any]) -> APIResponse[CreatedOrganizer]:
+        with api_client.authenticate(auth_user_id=str(uuid4()), auth_user_email=shared_email):
+            return await api_client.register_organizer(data)
+
+    # Act
+    responses = await asyncio.gather(
+        register(first_form.model_dump(mode="json")),
+        register(second_form.model_dump(mode="json")),
+    )
+
+    # Assert
+    assert_one_success_one_error(responses, _ORGANIZER_UNIQUENESS_RACE_ERRORS)
+
+
+async def test_concurrent_organizer_registrations_with_same_phone_create_one_organizer(
+    api_client: ApiClient,
+    organizer_form_factory: OrganizerFormFactory,
+    faker: Faker,
+    gateway: Gateway,
+) -> None:
+    """Concurrent organizer registrations with the same phone create exactly one organizer."""
+    # Arrange
+    admin = await gateway.admin.create()
+    with api_client.authenticate(auth_user_id=admin.auth_id):
+        first_invite = (await api_client.issue_invite({})).assert_status(200).ensure_content()
+        second_invite = (await api_client.issue_invite({})).assert_status(200).ensure_content()
+
+    first_form = organizer_form_factory.build(invite_code=first_invite.code)
+    second_form = organizer_form_factory.build(invite_code=second_invite.code).model_copy(
+        update={"phone_number": first_form.phone_number},
+    )
+
+    async def register(data: dict[str, Any]) -> APIResponse[CreatedOrganizer]:
+        with api_client.authenticate(auth_user_id=str(uuid4()), auth_user_email=faker.email()):
+            return await api_client.register_organizer(data)
+
+    # Act
+    responses = await asyncio.gather(
+        register(first_form.model_dump(mode="json")),
+        register(second_form.model_dump(mode="json")),
+    )
+
+    # Assert
+    assert_one_success_one_error(responses, _ORGANIZER_UNIQUENESS_RACE_ERRORS)

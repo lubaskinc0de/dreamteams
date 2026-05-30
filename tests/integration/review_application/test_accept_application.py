@@ -1,6 +1,8 @@
+import asyncio
 from uuid import uuid4
 
 from dreamteams.entities.application.entity import ApplicationStatus
+from dreamteams.entities.common.identifiers import ApplicationId
 from tests.integration.api_client import ApiClient
 from tests.integration.helpers.facade import Gateway
 
@@ -22,6 +24,95 @@ async def test_organizer_can_accept_pending_application(
 
     # Assert
     response.assert_status(200)
+
+
+async def test_concurrent_accepts_resolve_application_once(
+    api_client: ApiClient,
+    gateway: Gateway,
+) -> None:
+    """Concurrent accepts of the same application resolve it exactly once."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+    application_id = await gateway.application.submit(participant.auth_id, comp)
+
+    async def accept() -> int:
+        with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+            return (await api_client.accept_application(application_id)).status
+
+    # Act
+    statuses = await asyncio.gather(accept(), accept())
+    actual = await gateway.application.read_as_organizer(application_id, owner.organizer.auth_id)
+
+    # Assert
+    assert sorted(statuses) == [200, 409]
+    assert actual.status == ApplicationStatus.ACCEPTED
+
+
+async def test_concurrent_accept_and_reject_resolve_application_once(
+    api_client: ApiClient,
+    gateway: Gateway,
+) -> None:
+    """Concurrent accept and reject of the same application resolve it exactly once."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+    application_id = await gateway.application.submit(participant.auth_id, comp)
+
+    async def accept() -> int:
+        with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+            return (await api_client.accept_application(application_id)).status
+
+    async def reject() -> int:
+        with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+            return (await api_client.reject_application(application_id)).status
+
+    # Act
+    accept_status, reject_status = await asyncio.gather(accept(), reject())
+    actual = await gateway.application.read_as_organizer(application_id, owner.organizer.auth_id)
+
+    # Assert
+    assert sorted([accept_status, reject_status]) == [200, 409]
+    expected_status = ApplicationStatus.ACCEPTED if accept_status == 200 else ApplicationStatus.REJECTED
+    assert actual.status == expected_status
+
+
+async def test_concurrent_accepts_do_not_exceed_participant_limit(
+    api_client: ApiClient,
+    gateway: Gateway,
+) -> None:
+    """Concurrent accepts of different applications do not exceed competition capacity."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    first_participant = await gateway.participant.create()
+    second_participant = await gateway.participant.create()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False, max_participants=1)
+    first_application_id = await gateway.application.submit(first_participant.auth_id, comp)
+    second_application_id = await gateway.application.submit(second_participant.auth_id, comp)
+
+    async def accept(application_id: ApplicationId) -> int:
+        with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+            return (await api_client.accept_application(application_id)).status
+
+    # Act
+    statuses = await asyncio.gather(accept(first_application_id), accept(second_application_id))
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        accepted = (
+            (
+                await api_client.list_applications_by_competition(
+                    comp.created.competition_id,
+                    status=ApplicationStatus.ACCEPTED,
+                )
+            )
+            .assert_status(200)
+            .ensure_content()
+        )
+
+    # Assert
+    assert sorted(statuses) == [200, 409]
+    assert accepted.total == 1
 
 
 async def test_unauthenticated_cannot_accept_application(

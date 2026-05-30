@@ -1,9 +1,18 @@
+import asyncio
 from uuid import uuid4
 
 from dreamteams.application.manage_tags import CompetitionTagInput
 from dreamteams.entities.competition.tag import CompetitionTag
-from tests.integration.api_client import ApiClient
+from tests.integration.api_client import ApiClient, APIResponse
 from tests.integration.helpers.facade import Gateway
+from tests.integration.helpers.race import assert_one_success_one_error
+
+_TAG_CREATION_RACE_ERRORS = frozenset(
+    {
+        (409, "COMPETITION_TAG_ALREADY_EXISTS"),
+        (429, "INTEGRITY_CONFLICT"),
+    },
+)
 
 
 async def test_admin_can_create_tag(api_client: ApiClient, gateway: Gateway) -> None:
@@ -52,6 +61,30 @@ async def test_duplicate_tag_value_is_rejected_case_insensitively(
     # Assert
     first.assert_status(200)
     second.assert_error(409, "COMPETITION_TAG_ALREADY_EXISTS")
+
+
+async def test_concurrent_duplicate_tag_creation_creates_one_tag(
+    api_client: ApiClient,
+    gateway: Gateway,
+) -> None:
+    """Concurrent duplicate tag creation creates exactly one tag."""
+    # Arrange
+    admin = await gateway.admin.create()
+    tag_input = CompetitionTagInput(value=f"ConcurrentDuplicateTag-{uuid4()}")
+    payload = tag_input.model_dump(mode="json")
+
+    async def create() -> APIResponse[CompetitionTag]:
+        with api_client.authenticate(auth_user_id=admin.auth_id):
+            return await api_client.create_tag(payload)
+
+    # Act
+    responses = await asyncio.gather(create(), create())
+    with api_client.authenticate(auth_user_id=admin.auth_id):
+        tags = (await api_client.list_admin_tags(search=tag_input.value)).assert_status(200).ensure_content()
+
+    # Assert
+    assert_one_success_one_error(responses, _TAG_CREATION_RACE_ERRORS)
+    assert tags.total == 1
 
 
 async def test_non_admin_cannot_create_tag(api_client: ApiClient, gateway: Gateway) -> None:

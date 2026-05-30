@@ -5,11 +5,17 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from opentelemetry import trace
 from opentelemetry.trace import StatusCode
+from sqlalchemy.exc import IntegrityError
 
 from dreamteams.adapters.auth.errors.auth_user import AuthUserAlreadyExistsError
 from dreamteams.adapters.auth.errors.base import UnauthorizedError
 from dreamteams.adapters.db.gateway.competition import CompetitionBusyError
-from dreamteams.adapters.errors.http.response import ErrorResponse, InternalServerError, ValidationError
+from dreamteams.adapters.errors.http.response import (
+    ErrorResponse,
+    IntegrityConflictError,
+    InternalServerError,
+    ValidationError,
+)
 from dreamteams.application.errors.application import ApplicationAlreadyExistsError, ApplicationNotFoundError
 from dreamteams.application.errors.application_form import (
     ApplicationFormAlreadyExistsError,
@@ -75,6 +81,7 @@ error_to_http_status: dict[type[AppError], int] = {
     CompetitionTagNotFoundError: 404,
     CompetitionTagAlreadyExistsError: 409,
     CompetitionBusyError: 429,
+    IntegrityConflictError: 429,
 }
 
 
@@ -115,6 +122,9 @@ async def app_error_handler(_request: Request, exc: Exception) -> JSONResponse:
     span = trace.get_current_span()
     span.record_exception(exc)
     app_error = exc if isinstance(exc, AppError) else None
+    if app_error is None and isinstance(exc, IntegrityError):
+        logger.info("Handling database integrity conflict", exc_info=exc)
+        app_error = IntegrityConflictError(orig_error=exc)
     if app_error is None:
         logger.exception("Handling unexpected internal server error", exc_info=exc)
         span.set_status(StatusCode.ERROR, str(exc))

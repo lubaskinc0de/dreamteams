@@ -30,7 +30,7 @@ class WithdrawApplication:
         user_id = await self.idp.get_user_id()
         logger.debug("Withdrawing application", application_id=application_id, user_id=user_id)
 
-        application = await self.application_gateway.get(application_id)
+        application = await self.application_gateway.get(application_id, for_update=True)
         if application is None:
             logger.warning("Application not found", application_id=application_id, user_id=user_id)
             raise ApplicationNotFoundError

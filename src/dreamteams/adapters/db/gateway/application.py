@@ -73,9 +73,14 @@ class SAApplicationGateway(ApplicationGateway):
         self._session = session
 
     @override
-    async def get(self, application_id: ApplicationId) -> Application | None:
+    async def get(self, application_id: ApplicationId, *, for_update: bool = False) -> Application | None:
         """Retrieve an application by its unique identifier, returns None if not found."""
-        return await self._session.get(Application, application_id)
+        query = select(Application).where(application_table.c.id == application_id)
+        if for_update:
+            query = query.with_for_update(of=application_table)
+
+        result = await self._session.scalars(query)
+        return result.one_or_none()
 
     @override
     async def get_by_participant_and_competition(
