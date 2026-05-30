@@ -409,3 +409,37 @@ async def test_concurrent_auto_accepted_submissions_do_not_exceed_participant_li
     # Assert
     assert sorted(statuses) == [200, 409]
     assert accepted.total == 1
+
+
+async def test_concurrent_duplicate_submissions_create_one_application(
+    api_client: ApiClient,
+    gateway: Gateway,
+    submit_application_input_factory: SubmitApplicationInputFactory,
+) -> None:
+    """Concurrent duplicate submissions by one participant create exactly one application."""
+    # Arrange
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+    data = submit_application_input_factory.build(
+        track=CompetitionTrackForm(name=comp.form.tracks[0].name),
+        form_data=None,
+    )
+    payload = data.model_dump(mode="json")
+
+    async def submit() -> int:
+        with api_client.authenticate(auth_user_id=participant.auth_id):
+            return (await api_client.submit_application(comp.created.competition_id, payload)).status
+
+    # Act
+    statuses = await asyncio.gather(submit(), submit())
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        applications = (
+            (await api_client.list_my_applications(status=ApplicationStatus.PENDING))
+            .assert_status(200)
+            .ensure_content()
+        )
+
+    # Assert
+    assert sorted(statuses) == [200, 409]
+    assert applications.total == 1

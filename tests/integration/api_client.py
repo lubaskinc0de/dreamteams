@@ -1,3 +1,4 @@
+from collections.abc import Collection
 from contextvars import ContextVar, Token
 from dataclasses import dataclass
 from pathlib import Path
@@ -99,6 +100,15 @@ class APIResponse[T]:
         self.assert_status(status)
         if self.ensure_err().code != error_code:
             msg = "Error code does not equal"
+            raise ValueError(msg)
+
+        return self
+
+    def assert_error_in(self, expected_errors: Collection[tuple[int, str]]) -> Self:
+        """Assert that response status and error code match one of expected pairs."""
+        actual = (self.status, self.ensure_err().code)
+        if actual not in expected_errors:
+            msg = f"Error does not match any expected error. {actual} not in {expected_errors}."
             raise ValueError(msg)
 
         return self
