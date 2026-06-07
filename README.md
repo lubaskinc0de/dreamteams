@@ -11,8 +11,6 @@
 </p>
 
 <p align="center">
-  <a href="https://dreamteams.luba.skin">Website</a>
-  ·
   <a href="docs/index.md">Project documentation</a>
 </p>
 
