@@ -27,11 +27,6 @@ The platform follows strict **Clean Architecture** with five layers enforced by 
 | **Participant** | Individual user — submits applications to competitions |
 | **Admin** | Superuser — manages organizer invites and platform administration |
 
----
-
-## Public API Notes
-
-- [User Bans](user-bans.md) — admin block/unblock endpoints, blocked-account errors, and public visibility behavior
 
 ---
 
