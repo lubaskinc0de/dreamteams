@@ -13,6 +13,7 @@ from alembic.config import Config as AlembicConfig
 from asgi_lifespan import LifespanManager
 from dishka import AsyncContainer
 from faker import Faker
+from fastapi import FastAPI
 from polyfactory.pytest_plugin import register_fixture
 from redis.asyncio import Redis
 from sqlalchemy import URL, make_url, text
@@ -203,7 +204,7 @@ def redis_url(redis_testcontainer: RedisContainer) -> str:
 
 
 @pytest_asyncio.fixture(loop_scope="session")
-async def app(app_config: Config) -> AsyncIterator[object]:
+async def app(app_config: Config) -> AsyncIterator[FastAPI]:
     """Per-test FastAPI app with lifespan (Dishka container start/stop) wired in-process."""
     fastapi_app = create_app(app_config)
     async with LifespanManager(fastapi_app):
@@ -211,9 +212,9 @@ async def app(app_config: Config) -> AsyncIterator[object]:
 
 
 @pytest_asyncio.fixture(loop_scope="session")
-async def container(app: object) -> AsyncContainer:
+async def container(app: FastAPI) -> AsyncContainer:
     """Dishka AsyncContainer belonging to the per-test app."""
-    return cast("AsyncContainer", app.state.dishka_container)  # type: ignore[attr-defined]
+    return cast("AsyncContainer", app.state.dishka_container)
 
 
 @pytest_asyncio.fixture(loop_scope="session")
@@ -239,9 +240,9 @@ async def _flush_redis(container: AsyncContainer) -> AsyncIterator[None]:
 
 
 @pytest_asyncio.fixture(loop_scope="session")
-async def api_client(app: object, app_config: Config) -> AsyncIterator[ApiClient]:
+async def api_client(app: FastAPI, app_config: Config) -> AsyncIterator[ApiClient]:
     """API client speaking to the in-process FastAPI app via httpx.ASGITransport."""
-    transport = httpx.ASGITransport(app=app, raise_app_exceptions=False)  # type: ignore[arg-type]
+    transport = httpx.ASGITransport(app=app, raise_app_exceptions=False)
     async with httpx.AsyncClient(transport=transport, base_url="http://test", follow_redirects=True) as http:
         yield ApiClient(
             session=http,

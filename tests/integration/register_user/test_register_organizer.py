@@ -404,3 +404,23 @@ async def test_concurrent_organizer_registrations_with_same_phone_create_one_org
 
     # Assert
     assert_one_success_one_error(responses, _ORGANIZER_UNIQUENESS_RACE_ERRORS)
+
+
+async def test_existing_user_can_register_as_organizer(
+    api_client: ApiClient,
+    organizer_form_factory: OrganizerFormFactory,
+    gateway: Gateway,
+) -> None:
+    """A user who already exists (via participant registration) can also register as organizer."""
+    admin = await gateway.admin.create()
+    with api_client.authenticate(auth_user_id=admin.auth_id):
+        invite = (await api_client.issue_invite({})).assert_status(200).ensure_content()
+    participant = await gateway.participant.create()
+
+    with api_client.authenticate(auth_user_id=participant.auth_id, auth_user_email=participant.email):
+        response = await api_client.register_organizer(
+            organizer_form_factory.build(invite_code=invite.code).model_dump(mode="json"),
+        )
+
+    result = response.assert_status(200).ensure_content()
+    assert result.user_id is not None

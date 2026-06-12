@@ -49,6 +49,22 @@ async def test_concurrent_rejects_resolve_application_once(
     assert actual.status == ApplicationStatus.REJECTED
 
 
+async def test_reject_application_fails_if_user_has_no_organizer_role(
+    api_client: ApiClient,
+    gateway: Gateway,
+) -> None:
+    """Rejecting application fails when user has no organizer role."""
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+    application_id = await gateway.application.submit(participant.auth_id, comp)
+
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        response = await api_client.reject_application(application_id)
+
+    response.assert_error(404, "ORGANIZER_NOT_FOUND")
+
+
 async def test_unauthenticated_cannot_reject_application(
     api_client: ApiClient,
     gateway: Gateway,

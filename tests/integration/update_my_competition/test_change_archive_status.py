@@ -35,6 +35,25 @@ async def test_archive_status_change_as_owner_succeeds(
     assert actual_model == expected_model
 
 
+async def test_archive_status_change_fails_if_user_has_no_organizer_role(
+    api_client: ApiClient,
+    gateway: Gateway,
+) -> None:
+    """Archive status change fails when user has no organizer role."""
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    comp = await gateway.competition.create(owner.organizer.auth_id)
+    data = ChangeCompetitionArchiveStatusForm(is_archived=True).model_dump(mode="json")
+
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        response = await api_client.change_competition_archive_status(
+            comp.created.competition_id,
+            data,
+        )
+
+    response.assert_error(404, "ORGANIZER_NOT_FOUND")
+
+
 async def test_archive_status_change_fails_if_unauthorized(
     api_client: ApiClient,
     gateway: Gateway,

@@ -53,6 +53,22 @@ async def test_organizer_can_read_application(
     )
 
 
+async def test_read_application_fails_if_user_has_no_organizer_role(
+    api_client: ApiClient,
+    gateway: Gateway,
+) -> None:
+    """Reading application fails when user has no organizer role."""
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+    application_id = await gateway.application.submit(participant.auth_id, comp)
+
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        response = await api_client.read_application(application_id)
+
+    response.assert_error(404, "ORGANIZER_NOT_FOUND")
+
+
 async def test_unauthenticated_cannot_read_application(
     api_client: ApiClient,
     gateway: Gateway,

@@ -149,6 +149,26 @@ async def test_general_info_update_rejects_unknown_tag(
     response.assert_error(404, "COMPETITION_TAG_NOT_FOUND")
 
 
+async def test_general_info_update_fails_if_user_has_no_organizer_role(
+    api_client: ApiClient,
+    gateway: Gateway,
+    update_competition_general_info_form_factory: UpdateCompetitionGeneralInfoFormFactory,
+) -> None:
+    """General info update fails when user has no organizer role."""
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    comp = await gateway.competition.create(owner.organizer.auth_id)
+    data = update_competition_general_info_form_factory.build().model_dump(mode="json")
+
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        response = await api_client.update_competition_general_info(
+            comp.created.competition_id,
+            data,
+        )
+
+    response.assert_error(404, "ORGANIZER_NOT_FOUND")
+
+
 async def test_general_info_update_fails_if_unauthorized(
     api_client: ApiClient,
     gateway: Gateway,

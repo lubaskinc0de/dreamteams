@@ -62,6 +62,23 @@ async def test_organizer_sees_empty_list_when_no_applications(
     assert result == create_applications_list([])
 
 
+async def test_list_applications_fails_if_user_has_no_organizer_role(
+    api_client: ApiClient,
+    gateway: Gateway,
+) -> None:
+    """Listing applications fails when user has no organizer role."""
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        response = await api_client.list_applications_by_competition(
+            comp.created.competition_id,
+        )
+
+    response.assert_error(404, "ORGANIZER_NOT_FOUND")
+
+
 async def test_unauthenticated_cannot_list_applications_by_competition(
     api_client: ApiClient,
     gateway: Gateway,
