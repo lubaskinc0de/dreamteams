@@ -122,6 +122,22 @@ async def test_concurrent_withdraw_and_reject_resolve_application_once(
         assert actual.status == ApplicationStatus.REJECTED
 
 
+async def test_withdraw_application_fails_if_user_has_no_participant_role(
+    api_client: ApiClient,
+    gateway: Gateway,
+) -> None:
+    """Withdrawing application fails when user has no participant role."""
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    comp = await gateway.competition.create_active(owner.organizer.auth_id, auto_accept=False)
+    application_id = await gateway.application.submit(participant.auth_id, comp)
+
+    with api_client.authenticate(auth_user_id=owner.organizer.auth_id):
+        response = await api_client.withdraw_application(application_id)
+
+    response.assert_error(404, "PARTICIPANT_NOT_FOUND")
+
+
 async def test_unauthenticated_cannot_withdraw_application(
     api_client: ApiClient,
     gateway: Gateway,

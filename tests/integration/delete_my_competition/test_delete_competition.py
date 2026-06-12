@@ -58,6 +58,21 @@ async def test_delete_competition_fails_if_not_owner(
     response.assert_error(403, "ACCESS_DENIED")
 
 
+async def test_delete_competition_fails_if_user_has_no_organizer_role(
+    api_client: ApiClient,
+    gateway: Gateway,
+) -> None:
+    """Test deleting competition fails when user has no organizer role."""
+    owner = await gateway.organizer.create_with_admin(gateway.admin)
+    participant = await gateway.participant.create()
+    comp = await gateway.competition.create(owner.organizer.auth_id)
+
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        response = await api_client.delete_competition(comp.created.competition_id)
+
+    response.assert_error(404, "ORGANIZER_NOT_FOUND")
+
+
 async def test_delete_competition_fails_if_unauthorized(
     api_client: ApiClient,
     gateway: Gateway,

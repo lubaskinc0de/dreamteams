@@ -7,7 +7,9 @@ import structlog
 from opentelemetry import trace as otel_trace
 
 
-def _inject_otel_context(_logger: object, _method: str, event_dict: dict[str, Any]) -> dict[str, Any]:
+def _inject_otel_context(
+    _logger: structlog.stdlib.BoundLogger, _method: str, event_dict: dict[str, Any]
+) -> dict[str, Any]:
     span = otel_trace.get_current_span()
     ctx = span.get_span_context()
     if ctx.is_valid:

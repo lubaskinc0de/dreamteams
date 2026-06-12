@@ -59,6 +59,19 @@ async def test_non_admin_cannot_list_invites(
     response.assert_error(403, "ACCESS_DENIED")
 
 
+async def test_list_invites_fails_if_user_has_no_organizer_role(
+    api_client: ApiClient,
+    gateway: Gateway,
+) -> None:
+    """Listing invites fails when user has no organizer role."""
+    participant = await gateway.participant.create()
+
+    with api_client.authenticate(auth_user_id=participant.auth_id):
+        response = await api_client.list_invites()
+
+    response.assert_error(403, "ACCESS_DENIED")
+
+
 async def test_unauthenticated_cannot_list_invites(api_client: ApiClient) -> None:
     """Unauthenticated requests get UNAUTHORIZED when trying to list invites."""
     response = await api_client.list_invites()

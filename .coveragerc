@@ -1,0 +1,9 @@
+[run]
+source = src
+omit = 
+    */dreamteams/adapters/db/alembic/*
+
+[report]
+exclude_lines = 
+    pragma: not covered
+    @overload

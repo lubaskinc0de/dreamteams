@@ -4,6 +4,7 @@ from typing import cast
 import httpx
 import pytest
 from dishka import AsyncContainer
+from fastapi import FastAPI
 from faststream.nats import NatsBroker
 from faststream.nats.publisher.usecase import LogicPublisher
 
@@ -82,11 +83,11 @@ async def exporter_container(exporter_app: object) -> AsyncContainer:
 
 @pytest.fixture
 async def exporter_client(
-    exporter_app: object,
+    exporter_app: FastAPI,
     exporter_config: ExporterConfig,
 ) -> AsyncIterator[ApiClient]:
     """HTTP client speaking to the in-process exporter API."""
-    transport = httpx.ASGITransport(app=exporter_app, raise_app_exceptions=False)  # type: ignore[arg-type]
+    transport = httpx.ASGITransport(app=exporter_app, raise_app_exceptions=False)
     async with httpx.AsyncClient(transport=transport, base_url="http://exporter.test") as session:
         yield ApiClient(
             session=session,
