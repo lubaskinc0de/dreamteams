@@ -13,6 +13,7 @@ jobs:
         steps:
             - uses: actions/checkout@v6
               with:
+                  fetch-depth: 0
                   persist-credentials: false
 
             - name: Set up Python
@@ -42,6 +43,12 @@ jobs:
 
             - name: Typos
               run: typos
+
+            - name: Gitleaks
+              uses: gitleaks/gitleaks-action@v2
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GITLEAKS_BASELINE_PATH: .gitleaks-baseline.json
 
     test:
       name: "Run tests"

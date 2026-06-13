@@ -18,7 +18,7 @@ test:
     pytest -vvv -n auto --dist=worksteal
 
 test-cov:
-    pytest -vvv --cov=src --cov-report=term-missing
+    pytest -vvv -n auto --cov=src --cov-report=term-missing
 
 test-unit:
     pytest -vvv tests/unit -n auto --dist=worksteal --cov=src/dreamteams/entities --cov-report=term-missing
